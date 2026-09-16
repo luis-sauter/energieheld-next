@@ -1,6 +1,12 @@
 # Energieheld
 
-Next.js mit TypeScript, App Router, ESLint und technischer Supabase-Anbindung. Keine Businesslogik, Login-Oberfläche oder Business-Tabellen.
+Next.js mit TypeScript, App Router, ESLint, technischer Supabase-Anbindung und einer statischen Frontend-Vorschau. Keine produktive Businesslogik, Login-Oberfläche oder Business-Tabellen.
+
+## Frontend-Vorschau
+
+Startseite: / · Experten: /experten · Beispielprofil: /experten/mueller-haustechnik · Komponenten-/Werbeplatz-Demo: /portal-vorschau.
+
+Architektur, Seiten, Bildquellen und nächste Schritte: [Frontend-Dokumentation](docs/frontend-preview.md).
 
 ## Voraussetzungen
 
