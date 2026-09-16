@@ -1,26 +1,50 @@
 import type { Category, Listing } from "@/types/portal";
+import { formatLocation } from "@/lib/listings";
 import { Badge } from "./listings";
 import { Icon } from "./icon";
 import { ImageGallery } from "./image-gallery";
 
+function safeWebsite(value: string): string | null {
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
 export function ContactSection({ listing }: { listing: Listing }) {
+  const website = safeWebsite(listing.contact.website);
+  const location = formatLocation(listing.location);
   return (
     <section className="contact-card" aria-labelledby="contact-title">
       <h2 id="contact-title">Kontakt & Standort</h2>
-      <p className="location">
-        <Icon name="pin" />
-        {listing.location.postalCode} {listing.location.city}
-        <br />
-        {listing.location.region}, {listing.location.country}
-      </p>
+      {location && (
+        <p className="location">
+          <Icon name="pin" />
+          {location}
+        </p>
+      )}
       <hr />
       <dl>
-        <dt>Telefon</dt>
-        <dd>{listing.contact.phone}</dd>
-        <dt>E-Mail</dt>
-        <dd>{listing.contact.email}</dd>
-        <dt>Website</dt>
-        <dd>{listing.contact.website.replace("https://", "")}</dd>
+        {listing.contact.phone && (
+          <>
+            <dt>Telefon</dt>
+            <dd>{listing.contact.phone}</dd>
+          </>
+        )}
+        {listing.contact.email && (
+          <>
+            <dt>E-Mail</dt>
+            <dd>{listing.contact.email}</dd>
+          </>
+        )}
+        {website && (
+          <>
+            <dt>Website</dt>
+            <dd>{website}</dd>
+          </>
+        )}
       </dl>
       {listing.isDemo ? (
         <>
@@ -35,20 +59,24 @@ export function ContactSection({ listing }: { listing: Listing }) {
         </>
       ) : (
         <>
-          <a
-            className="button button-primary"
-            href={`mailto:${listing.contact.email}`}
-          >
-            Kontakt aufnehmen
-          </a>
-          <a
-            className="text-link"
-            href={listing.contact.website}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Website besuchen
-          </a>
+          {listing.contact.email && (
+            <a
+              className="button button-primary"
+              href={`mailto:${listing.contact.email}`}
+            >
+              Kontakt aufnehmen
+            </a>
+          )}
+          {website && (
+            <a
+              className="text-link"
+              href={website}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Website besuchen
+            </a>
+          )}
         </>
       )}
     </section>
@@ -70,10 +98,7 @@ export function ListingDetail({
   return (
     <>
       <div className="detail-heading">
-        <div
-          className="detail-logo"
-          aria-label={`Beispiellogo ${listing.name}`}
-        >
+        <div className="detail-logo" aria-label={`Initialen ${listing.name}`}>
           {listing.initials}
         </div>
         <div>
@@ -87,31 +112,45 @@ export function ListingDetail({
           </div>
           <Heading className="detail-title">{listing.name}</Heading>
           <p className="detail-tagline">{listing.tagline}</p>
-          <p className="location">
-            <Icon name="pin" size={18} />
-            {listing.location.city}, {listing.location.region}
-          </p>
+          {formatLocation(listing.location) && (
+            <p className="location">
+              <Icon name="pin" size={18} />
+              {formatLocation(listing.location)}
+            </p>
+          )}
         </div>
       </div>
       <div className="detail-grid">
         <div>
-          <ImageGallery images={listing.images} />
-          <section className="detail-section">
-            <p className="eyebrow">Ein guter erster Eindruck</p>
-            <h2>Über {listing.name}</h2>
-            <p>{listing.description}</p>
-          </section>
-          <section className="detail-section">
-            <h2>Leistungen im Überblick</h2>
-            <ul className="service-list">
-              {listing.services.map((service) => (
-                <li key={service}>
-                  <Icon name="check" />
-                  {service}
-                </li>
-              ))}
-            </ul>
-          </section>
+          {listing.images.length > 0 && (
+            <ImageGallery images={listing.images} />
+          )}
+          {listing.description && (
+            <section className="detail-section">
+              <p className="eyebrow">Ein guter erster Eindruck</p>
+              <h2>Über {listing.name}</h2>
+              <p>{listing.description}</p>
+            </section>
+          )}
+          {listing.businessAreas && (
+            <section className="detail-section">
+              <h2>Branchen & Tätigkeitsbereiche</h2>
+              <p style={{ whiteSpace: "pre-wrap" }}>{listing.businessAreas}</p>
+            </section>
+          )}
+          {listing.services.length > 0 && (
+            <section className="detail-section">
+              <h2>Leistungen im Überblick</h2>
+              <ul className="service-list">
+                {listing.services.map((service) => (
+                  <li key={service}>
+                    <Icon name="check" />
+                    {service}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           {qualityArea}
         </div>
         <aside>

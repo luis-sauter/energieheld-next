@@ -14,6 +14,7 @@ export type Listing = {
   initials: string;
   tagline: string;
   description: string;
+  businessAreas?: string;
   categoryIds: string[];
   location: Location;
   services: string[];

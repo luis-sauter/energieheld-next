@@ -1,24 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { listings } from "@/data/listings";
+import { loadPublicCompanyBySlug } from "@/lib/public-companies";
 import { energieheld } from "@/config/energieheld";
 import { ListingDetail } from "@/components/portal/listing-detail";
 import { Icon } from "@/components/portal/icon";
 
-export function generateStaticParams() {
-  return listings.map(({ slug }) => ({ slug }));
-}
-export const dynamicParams = false;
+export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  return {
-    title:
-      listings.find((l) => l.slug === slug)?.name ?? "Profil nicht gefunden",
-  };
+  const result = await loadPublicCompanyBySlug(slug);
+  return { title: result.data?.name ?? "Unternehmensprofil" };
 }
 
 export default async function ExpertDetail({
@@ -27,7 +22,16 @@ export default async function ExpertDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const listing = listings.find((l) => l.slug === slug);
+  const result = await loadPublicCompanyBySlug(slug);
+  if (result.error)
+    return (
+      <main id="hauptinhalt" className="container detail-page">
+        <div className="empty-state" role="alert">
+          <p>{result.error}</p>
+        </div>
+      </main>
+    );
+  const listing = result.data;
   if (!listing) notFound();
   return (
     <main id="hauptinhalt" className="container detail-page">

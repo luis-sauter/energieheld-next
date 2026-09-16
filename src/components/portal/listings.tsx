@@ -100,7 +100,7 @@ export function ListingGrid({
   );
 }
 
-export function EmptyState() {
+export function EmptyState({ isDemo = true }: { isDemo?: boolean }) {
   return (
     <div className="empty-state">
       <span className="icon-tile">
@@ -108,11 +108,13 @@ export function EmptyState() {
       </span>
       <h2>Noch kein passender Treffer.</h2>
       <p>
-        Versuchen Sie einen anderen Ort oder wählen Sie weniger Filter. Diese
-        Vorschau enthält acht Beispielbetriebe.
+        Versuchen Sie einen anderen Ort oder wählen Sie weniger Filter.
+        {isDemo && " Diese Vorschau enthält acht Beispielbetriebe."}
       </p>
       <Link className="button button-primary" href="/experten">
-        Alle Beispielbetriebe anzeigen
+        {isDemo
+          ? "Alle Beispielbetriebe anzeigen"
+          : "Alle Fachbetriebe anzeigen"}
       </Link>
     </div>
   );
