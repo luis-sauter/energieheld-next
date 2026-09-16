@@ -19,18 +19,18 @@ ALTER TABLE public.company_profiles ENABLE ROW LEVEL SECURITY;
 GRANT SELECT ON public.companies, public.company_profiles TO authenticated;
 GRANT SELECT (user_id) ON public.portal_admins TO authenticated;
 GRANT UPDATE (display_name, status, submitted_at) ON public.company_profiles TO authenticated;
-CREATE POLICY admins_self ON public.portal_admins FOR SELECT USING (user_id = auth.uid());
-CREATE POLICY companies_read ON public.companies FOR SELECT USING (
+CREATE POLICY admins_self ON public.portal_admins FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE POLICY companies_read ON public.companies FOR SELECT TO authenticated USING (
   owner_user_id=auth.uid() OR EXISTS(SELECT 1 FROM public.portal_admins WHERE user_id=auth.uid())
 );
-CREATE POLICY profiles_owner_read ON public.company_profiles FOR SELECT USING (
+CREATE POLICY profiles_owner_read ON public.company_profiles FOR SELECT TO authenticated USING (
   EXISTS(SELECT 1 FROM public.companies WHERE id=company_id AND owner_user_id=auth.uid())
 );
-CREATE POLICY profiles_public_read ON public.company_profiles FOR SELECT USING (status='approved');
-CREATE POLICY profiles_admin_read ON public.company_profiles FOR SELECT USING (
+CREATE POLICY profiles_public_read ON public.company_profiles FOR SELECT TO anon, authenticated USING (status='approved');
+CREATE POLICY profiles_admin_read ON public.company_profiles FOR SELECT TO authenticated USING (
   EXISTS(SELECT 1 FROM public.portal_admins WHERE user_id=auth.uid())
 );
-CREATE POLICY profiles_owner_update ON public.company_profiles FOR UPDATE USING (
+CREATE POLICY profiles_owner_update ON public.company_profiles FOR UPDATE TO authenticated USING (
   EXISTS(SELECT 1 FROM public.companies WHERE id=company_id AND owner_user_id=auth.uid())
 ) WITH CHECK (status IN ('draft','pending') AND EXISTS(
   SELECT 1 FROM public.companies WHERE id=company_id AND owner_user_id=auth.uid()
