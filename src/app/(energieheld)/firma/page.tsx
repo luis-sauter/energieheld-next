@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { loadCompanyDashboard } from "@/lib/company-dashboard";
 import { profileStatus } from "@/lib/auth";
@@ -54,15 +55,9 @@ export default async function CompanyPage() {
             </>
           )}
         </dl>
-        <button
-          type="button"
-          className="button"
-          disabled
-          aria-describedby="editing-hint"
-        >
+        <Link className="button" href="/firma/profil">
           Profil bearbeiten
-        </button>
-        <p id="editing-hint">Die Profilbearbeitung ist demnächst verfügbar.</p>
+        </Link>
         <LogoutButton />
       </div>
     </main>

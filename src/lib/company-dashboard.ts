@@ -24,7 +24,9 @@ export async function loadCompanyDashboard(supabase: SupabaseClient) {
   }
   const { data: profile, error: profileError } = await supabase
     .from("company_profiles")
-    .select("display_name, status, postal_code, city, region")
+    .select(
+      "display_name, tagline, description, phone, public_email, website, street, postal_code, city, region, status",
+    )
     .eq("company_id", company.id)
     .maybeSingle();
   return {
