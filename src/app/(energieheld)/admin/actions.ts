@@ -1,0 +1,32 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { requireAdminAccess } from "@/lib/admin";
+import {
+  approvePendingProfile,
+  rejectPendingProfile,
+  type ReviewResult,
+} from "@/lib/admin-review";
+
+async function finish(result: ReviewResult, profileId: string) {
+  requireAdminAccess(result.access);
+  if (result.success) {
+    revalidatePath("/admin");
+    revalidatePath(`/admin/firmen/${profileId}`);
+    revalidatePath("/experten");
+    revalidatePath("/firma");
+    revalidatePath("/firma/profil");
+  }
+  return { error: result.error, success: result.success };
+}
+
+export async function approveProfile(profileId: string) {
+  const result = await approvePendingProfile(await createClient(), profileId);
+  return finish(result, profileId);
+}
+
+export async function rejectProfile(profileId: string) {
+  const result = await rejectPendingProfile(await createClient(), profileId);
+  return finish(result, profileId);
+}
