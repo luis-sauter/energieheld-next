@@ -1,0 +1,62 @@
+.page {
+  max-width: 760px;
+  padding-top: 64px;
+  padding-bottom: 80px;
+  min-height: 60vh;
+}
+.card {
+  padding: clamp(20px, 4vw, 36px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--brand-surface);
+}
+.form {
+  display: grid;
+  gap: 20px;
+}
+.field {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+.field input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #9299a5;
+  border-radius: 6px;
+  background: white;
+  color: var(--text);
+}
+.error {
+  color: #9b2525;
+  margin: 0;
+}
+.success {
+  color: #245b39;
+  margin: 0;
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+.links a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.details {
+  margin: 0 0 24px;
+}
+.details dt {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-top: 16px;
+}
+.details dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
