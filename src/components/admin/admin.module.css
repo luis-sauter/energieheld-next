@@ -1,0 +1,70 @@
+.page {
+  max-width: 1040px;
+  padding-top: 48px;
+  padding-bottom: 80px;
+  min-height: 60vh;
+}
+.page h1 {
+  margin-top: 24px;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 32px 0 48px;
+}
+.metrics > div,
+.card {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--brand-surface);
+}
+.metrics dd {
+  margin: 8px 0 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+.queue {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 20px;
+}
+.queue p {
+  margin-bottom: 8px;
+}
+.queue a {
+  margin-top: 12px;
+}
+.details {
+  margin: 0 0 32px;
+  display: grid;
+  gap: 20px;
+}
+.details dt {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.details dd {
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 24px 0;
+}
+.error {
+  color: #9b2525;
+}
+.success {
+  color: #245b39;
+}
+@media (max-width: 640px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+}
