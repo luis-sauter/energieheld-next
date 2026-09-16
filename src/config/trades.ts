@@ -1,0 +1,103 @@
+import type { Category } from "@/types/portal";
+
+export type Trade = Category & { image: string; description: string };
+export const trades: Trade[] = [
+  {
+    id: "dach",
+    name: "Dach",
+    icon: "home",
+    image: "dach",
+    description: "Gut geschützt – von der Dachsanierung bis zur Neueindeckung.",
+  },
+  {
+    id: "daemmung",
+    name: "Dämmung",
+    icon: "home",
+    image: "daemmung",
+    description: "Wärme im Haus behalten und den Wohnkomfort verbessern.",
+  },
+  {
+    id: "keller",
+    name: "Keller",
+    icon: "home",
+    image: "keller",
+    description: "Die Grundlage für trockene, gut nutzbare Räume.",
+  },
+  {
+    id: "fassade",
+    name: "Fassade",
+    icon: "home",
+    image: "fassade",
+    description: "Schutz und Gestaltung für die Außenhülle Ihres Hauses.",
+  },
+  {
+    id: "fenster",
+    name: "Fenster & Türen",
+    icon: "window",
+    image: "fenster-tuer",
+    description: "Mehr Licht, gute Dämmung und ein sicherer Zugang.",
+  },
+  {
+    id: "elektro",
+    name: "Smart Home & Elektro",
+    icon: "bolt",
+    image: "smarthome",
+    description: "Elektrotechnik und intelligente Lösungen für Ihr Zuhause.",
+  },
+  {
+    id: "heizung",
+    name: "Heizung",
+    icon: "heat",
+    image: "heizung",
+    description: "Heiztechnik, die zu Ihrem Gebäude und Ihrem Alltag passt.",
+  },
+  {
+    id: "lueftung",
+    name: "Lüftung",
+    icon: "heat",
+    image: "lueftung",
+    description: "Frische Luft und ein angenehmes Raumklima.",
+  },
+  {
+    id: "klimatechnik",
+    name: "Klimatechnik",
+    icon: "sun",
+    image: "klimatechnik",
+    description: "Durchdachte Technik für angenehme Temperaturen.",
+  },
+  {
+    id: "solar",
+    name: "Photovoltaik",
+    icon: "sun",
+    image: "photovoltaik",
+    description: "Sonnenenergie für Strom, Speicher und Mobilität nutzen.",
+  },
+  {
+    id: "solarthermie",
+    name: "Solarthermie",
+    icon: "sun",
+    image: "solarthermie",
+    description: "Die Sonne für Warmwasser und Heizung einsetzen.",
+  },
+  {
+    id: "aussenbereich",
+    name: "Außenbereich",
+    icon: "leaf",
+    image: "aussenbereich",
+    description: "Garten, Terrasse und Wege rund um Ihr Zuhause gestalten.",
+  },
+  {
+    id: "trockenbau",
+    name: "Trockenbau",
+    icon: "home",
+    image: "trockenbau-1",
+    description: "Neue Möglichkeiten für Räume und Innenausbau.",
+  },
+  {
+    id: "boden",
+    name: "Boden und Belag",
+    icon: "home",
+    image: "bodenarbeiten",
+    description: "Die passende Basis für jeden Raum.",
+  },
+];

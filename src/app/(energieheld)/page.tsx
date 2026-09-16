@@ -3,7 +3,11 @@ import Link from "next/link";
 import { energieheld } from "@/config/energieheld";
 import { listings, qualityBadges } from "@/data/listings";
 import { HeroSearch } from "@/components/portal/search";
-import { CategoryGrid, ListingGrid } from "@/components/portal/listings";
+import { ListingGrid } from "@/components/portal/listings";
+import { TradeTiles } from "@/components/portal/trades";
+import { trades } from "@/config/trades";
+import { AdSlot } from "@/components/portal/ads";
+import { energyAds } from "@/data/energy-ads";
 import { Icon } from "@/components/portal/icon";
 
 export default function Home() {
@@ -15,14 +19,11 @@ export default function Home() {
             <p className="eyebrow">
               <span className="orange-line" /> Ihr Zuhause. Ihre Zukunft.
             </p>
-            <h1>
-              Große Pläne.
-              <br />
-              Die richtigen <span>Experten.</span>
-            </h1>
+            <h1>Sanieren mit Grips in München und Bayern.</h1>
             <p className="hero-description">
-              Vom ersten Gedanken bis zum guten Gefühl: Finden Sie Fachbetriebe
-              für Energie, Bauen und Sanieren – in München und ganz Bayern.
+              Sie planen eine energetische Sanierung oder einen Neubau?
+              Entdecken Sie Gewerke, lernen Sie Fachbetriebe kennen und finden
+              Sie die passenden Menschen für Ihr Vorhaben.
             </p>
             <div className="hero-note">
               <Icon name="pin" size={18} />
@@ -48,6 +49,9 @@ export default function Home() {
           <HeroSearch />
         </div>
       </section>
+      <div className="container homepage-ad">
+        <AdSlot placement="trade_top" ad={energyAds[0]} />
+      </div>
       <div className="trust-row container">
         <span>
           <Icon name="home" /> Bauen & Sanieren
@@ -64,14 +68,14 @@ export default function Home() {
         <div className="section-heading">
           <div>
             <p className="eyebrow">Hier beginnt Ihr Projekt</p>
-            <h2>Was haben Sie vor?</h2>
+            <h2>Gewerke für Ihr Vorhaben</h2>
             <p>Entdecken Sie die passenden Fachbetriebe für Ihr Vorhaben.</p>
           </div>
-          <Link className="text-link" href="/experten">
-            Alle Experten entdecken <Icon name="arrow" size={19} />
+          <Link className="text-link" href="/gewerke">
+            Alle 14 Gewerke ansehen <Icon name="arrow" size={19} />
           </Link>
         </div>
-        <CategoryGrid categories={energieheld.categories} listings={listings} />
+        <TradeTiles items={trades.slice(0, 8)} />
       </section>
       <section className="section soft-section">
         <div className="container">
