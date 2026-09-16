@@ -1,3 +1,5 @@
+import { signCompanyMedia } from "@/lib/company-media";
+import { CompanyImage } from "@/components/portal/company-image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -19,10 +21,19 @@ export default async function ReviewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const result = await loadReviewProfile(await createClient(), id);
+  const client = await createClient();
+  const result = await loadReviewProfile(client, id);
   requireAdminAccess(result.access);
   if (!result.error && !result.profile) notFound();
   const profile = result.profile;
+  let media;
+  if (profile && !result.error) {
+    try {
+      media = await signCompanyMedia(client, profile);
+    } catch {
+      /* Approval is disabled until media can be reviewed. */
+    }
+  }
   const fields = profile
     ? [
         ["Firmenname", legalName(profile.companies)],
@@ -63,14 +74,43 @@ export default async function ReviewPage({
                 </div>
               ))}
             </dl>
-            <ReviewActions
-              key={profile.id}
-              profileId={profile.id}
-              status={profile.status}
-              initialCategoryIds={profile.company_profile_categories.map(
-                (category) => category.category_id,
+            <section>
+              <h2>Firmenlogo und Unternehmensbilder</h2>
+              {!media ? (
+                <p role="alert">
+                  Die Medien konnten nicht geladen werden. Bitte laden Sie die
+                  Seite vor der Freigabe neu.
+                </p>
+              ) : (
+                <>
+                  {media.logo ? (
+                    <CompanyImage image={media.logo} />
+                  ) : (
+                    <p>Kein Firmenlogo vorhanden.</p>
+                  )}
+                  {media.images.length ? (
+                    media.images.map((image) => (
+                      <figure key={image.id}>
+                        <CompanyImage image={image} width={480} height={320} />
+                        <figcaption>{image.alt}</figcaption>
+                      </figure>
+                    ))
+                  ) : (
+                    <p>Keine Unternehmensbilder vorhanden.</p>
+                  )}
+                </>
               )}
-            />
+            </section>
+            {media && (
+              <ReviewActions
+                key={profile.id}
+                profileId={profile.id}
+                status={profile.status}
+                initialCategoryIds={profile.company_profile_categories.map(
+                  (category) => category.category_id,
+                )}
+              />
+            )}
           </div>
         )
       )}

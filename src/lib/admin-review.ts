@@ -100,7 +100,7 @@ export async function loadReviewProfile(
   const { data, error } = await supabase
     .from("company_profiles")
     .select(
-      "id, display_name, business_areas, status, submitted_at, tagline, description, phone, public_email, website, street, postal_code, city, region, companies!inner(legal_name), company_profile_categories(category_id)",
+      "id, logo_path, company_profile_images(id,storage_path,alt_text,sort_order), display_name, business_areas, status, submitted_at, tagline, description, phone, public_email, website, street, postal_code, city, region, companies!inner(legal_name), company_profile_categories(category_id)",
     )
     .eq("id", profileId)
     .maybeSingle();

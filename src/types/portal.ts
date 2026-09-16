@@ -19,6 +19,7 @@ export type Listing = {
   location: Location;
   services: string[];
   images: PortalImage[];
+  logo?: PortalImage;
   contact: { email: string; phone: string; website: string };
   isDemo: boolean;
 };
