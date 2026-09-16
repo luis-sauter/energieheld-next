@@ -20,12 +20,22 @@ export default function ProvidersPage() {
         <div>
           <h2>Wir gestalten gerade die Grundlage.</h2>
           <p>
-            Die Registrierung ist noch nicht geöffnet. In dieser Vorschau können
-            Sie bereits entdecken, wie ein Unternehmensprofil aussehen wird. Es
-            werden keine Daten aufgenommen.
+            Registrieren Sie Ihre Firma und erhalten Sie Zugang zu Ihrem
+            Firmenbereich. Ihr Profil startet als Entwurf. Im Beispielprofil
+            können Sie entdecken, wie ein Unternehmensprofil aussehen wird.
           </p>
         </div>
       </div>
+      <p>
+        <Link className="button button-primary" href="/registrieren">
+          Firma registrieren
+        </Link>
+      </p>
+      <p>
+        <Link className="button" href="/login">
+          Bereits registriert? Einloggen
+        </Link>
+      </p>
       <Link
         className="button button-primary"
         href="/experten/mueller-haustechnik"
