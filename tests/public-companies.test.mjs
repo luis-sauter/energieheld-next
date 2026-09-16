@@ -77,7 +77,8 @@ const row = {
   phone: null,
   public_email: null,
   website: null,
-  logo_url: null,
+  logo_path: null,
+  company_profile_images: [],
   company_profile_categories: [
     { category_id: "daemmung" },
     { category_id: "fassade" },
@@ -102,6 +103,23 @@ function api(rows = [row], failure = false) {
         }),
         { headers: { "content-type": "application/json" } },
       );
+    if (url.pathname === "/storage/v1/object/sign/company-media") {
+      assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
+      assert.equal(headers.get("cookie"), null);
+      const body = JSON.parse(init.body);
+      assert.equal(body.expiresIn, 3600);
+      return new Response(
+        JSON.stringify(
+          body.paths.map((path) => ({
+            path,
+            error: null,
+            signedURL:
+              "/object/sign/company-media/" + path + "?token=temporary",
+          })),
+        ),
+        { headers: { "content-type": "application/json" } },
+      );
+    }
     assert.equal(url.pathname, "/rest/v1/company_profiles");
     assert.equal(url.searchParams.get("status"), "eq.approved");
     assert.equal(headers.get("apikey"), "sb_publishable_test");
@@ -297,7 +315,9 @@ test("pagination loads all approved profiles", async () => {
   assert.equal((await loadPublicCompanies()).data.length, 501);
 });
 test("owner and admin sessions on other clients cannot enter anonymous requests", async () => {
-  const requests = api();
+  const requests = api([
+    { ...row, logo_path: "profiles/profile-1/logo/test.png" },
+  ]);
   for (const role of ["owner", "admin"]) {
     const other = createPublicClient();
     const payload = Buffer.from(
@@ -452,4 +472,62 @@ test("database errors never expose demos in directory, detail or metadata", asyn
       { title: "Unternehmensprofil" },
     );
   }
+});
+
+test("public directory displays signed logo and detail displays sorted real gallery", async () => {
+  api([
+    {
+      ...row,
+      logo_path: "profiles/profile-1/logo/test.png",
+      company_profile_images: [
+        {
+          id: "second",
+          storage_path: "profiles/profile-1/gallery/second.png",
+          sort_order: 1,
+          alt_text: null,
+        },
+        {
+          id: "first",
+          storage_path: "profiles/profile-1/gallery/first.png",
+          sort_order: 0,
+          alt_text: "Unser Team",
+        },
+      ],
+    },
+  ]);
+  const result = await loadPublicCompanyBySlug(row.slug);
+  assert.equal(result.error, null);
+  assert.deepEqual(
+    result.data.images.map((i) => i.alt),
+    ["Unser Team", "Unternehmensbild von Test Firma"],
+  );
+  assert.match(result.data.logo.src, /token=temporary/);
+  const directory = renderToStaticMarkup(
+    await DirectoryPage({ searchParams: Promise.resolve({ q: "Test Firma" }) }),
+  );
+  assert.match(directory, /alt="Logo von Test Firma"/);
+  const detail = renderToStaticMarkup(
+    await Detail({ params: Promise.resolve({ slug: row.slug }) }),
+  );
+  assert.match(detail, /alt="Unser Team"/);
+  assert.match(detail, /Unternehmensbild/);
+  assert.doesNotMatch(detail, /Symbolbild/);
+});
+
+test("directory retains initials and no image element inside real logo without uploaded logo", async () => {
+  api();
+  const html = renderToStaticMarkup(
+    await DirectoryPage({ searchParams: Promise.resolve({ q: "Test Firma" }) }),
+  );
+  assert.match(html, /<div class="row-logo"[^>]*>TF<\/div>/);
+});
+
+test("demo details keep local symbol galleries after media integration", async () => {
+  api([]);
+  const html = renderToStaticMarkup(
+    await Detail({ params: Promise.resolve({ slug: demos[0].slug }) }),
+  );
+  assert.match(html, /src="\/images\//);
+  assert.match(html, /Symbolbild/);
+  assert.match(html, /Beispielprofil/);
 });

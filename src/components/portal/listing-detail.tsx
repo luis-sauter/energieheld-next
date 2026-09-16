@@ -1,6 +1,7 @@
 import type { Category, Listing } from "@/types/portal";
 import { formatLocation } from "@/lib/listings";
 import { Badge } from "./listings";
+import { CompanyLogo } from "./company-image";
 import { Icon } from "./icon";
 import { ImageGallery } from "./image-gallery";
 
@@ -98,8 +99,19 @@ export function ListingDetail({
   return (
     <>
       <div className="detail-heading">
-        <div className="detail-logo" aria-label={`Initialen ${listing.name}`}>
-          {listing.initials}
+        <div
+          className="detail-logo"
+          aria-label={
+            listing.logo
+              ? `Logo von ${listing.name}`
+              : `Initialen ${listing.name}`
+          }
+        >
+          <CompanyLogo
+            key={listing.logo?.src ?? listing.initials}
+            image={listing.logo}
+            initials={listing.initials}
+          />
         </div>
         <div>
           <div className="inline-tags">
@@ -123,7 +135,11 @@ export function ListingDetail({
       <div className="detail-grid">
         <div>
           {listing.images.length > 0 && (
-            <ImageGallery images={listing.images} />
+            <ImageGallery
+              key={listing.images.map((image) => image.src).join("|")}
+              images={listing.images}
+              isDemo={listing.isDemo}
+            />
           )}
           {listing.description && (
             <section className="detail-section">

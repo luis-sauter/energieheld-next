@@ -1,4 +1,6 @@
 import "server-only";
+import { signCompanyMedia, type MediaRow } from "./company-media";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Listing } from "@/types/portal";
 import { createPublicClient } from "./supabase/public";
 
@@ -6,7 +8,7 @@ export const PUBLIC_COMPANIES_ERROR =
   "Die Unternehmensprofile konnten gerade nicht geladen werden.";
 
 const publicFields =
-  "id,status,slug,display_name,tagline,description,phone,public_email,website,postal_code,city,region,country,logo_url,business_areas,company_profile_categories(category_id)";
+  "id,status,slug,display_name,tagline,description,phone,public_email,website,postal_code,city,region,country,logo_path,company_profile_images(id,storage_path,alt_text,sort_order),business_areas,company_profile_categories(category_id)";
 
 type PublicProfile = {
   id: string;
@@ -22,11 +24,16 @@ type PublicProfile = {
   city: string | null;
   region: string | null;
   country: string | null;
-  logo_url: string | null;
+  logo_path: string | null;
+  company_profile_images: MediaRow[];
   business_areas: string | null;
   company_profile_categories: { category_id: string }[];
 };
-function toListing(row: PublicProfile): Listing {
+async function toListing(
+  client: SupabaseClient,
+  row: PublicProfile,
+): Promise<Listing> {
+  const media = await signCompanyMedia(client, row);
   return {
     id: row.id,
     slug: row.slug,
@@ -51,7 +58,8 @@ function toListing(row: PublicProfile): Listing {
     },
     businessAreas: row.business_areas ?? "",
     services: [],
-    images: [],
+    images: media.images,
+    logo: media.logo,
     contact: {
       email: row.public_email ?? "",
       phone: row.phone ?? "",
@@ -79,7 +87,11 @@ export async function loadPublicCompanies(): Promise<Result<Listing[]>> {
       if (error) throw error;
       const rows = data as PublicProfile[];
       profiles.push(
-        ...rows.filter((row) => row.status === "approved").map(toListing),
+        ...(await Promise.all(
+          rows
+            .filter((row) => row.status === "approved")
+            .map((row) => toListing(client, row)),
+        )),
       );
       if (rows.length < pageSize) break;
     }
@@ -94,7 +106,8 @@ export async function loadPublicCompanyBySlug(
   slug: string,
 ): Promise<Result<Listing | null>> {
   try {
-    const { data, error } = await createPublicClient()
+    const client = createPublicClient();
+    const { data, error } = await client
       .from("company_profiles")
       .select(publicFields)
       .eq("status", "approved")
@@ -103,7 +116,9 @@ export async function loadPublicCompanyBySlug(
     if (error) throw error;
     return {
       data:
-        data?.status === "approved" ? toListing(data as PublicProfile) : null,
+        data?.status === "approved"
+          ? await toListing(client, data as PublicProfile)
+          : null,
       error: null,
     };
   } catch {

@@ -1,3 +1,5 @@
+import { signCompanyMedia } from "@/lib/company-media";
+import { CompanyMediaForm } from "@/components/auth/company-media-form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -14,9 +16,18 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CompanyProfilePage() {
-  const dashboard = await loadCompanyDashboard(await createClient());
+  const client = await createClient();
+  const dashboard = await loadCompanyDashboard(client);
   if (!dashboard.authenticated) redirect("/login");
   const { profile, error } = dashboard;
+  let media;
+  if (profile && !error) {
+    try {
+      media = await signCompanyMedia(client, profile);
+    } catch {
+      /* Show a neutral retry hint below. */
+    }
+  }
   const values = profile
     ? (Object.fromEntries(
         profileFields.map((field) => [field, profile[field] ?? ""]),
@@ -43,6 +54,14 @@ export default async function CompanyProfilePage() {
               anschließend erneut zur Prüfung ein.
             </p>
             <CompanyProfileForm initialValues={values} />
+            {media ? (
+              <CompanyMediaForm media={media} />
+            ) : (
+              <p role="alert">
+                Die Medien konnten gerade nicht geladen werden. Bitte laden Sie
+                die Seite neu.
+              </p>
+            )}
           </>
         )}
         <div className={styles.links}>

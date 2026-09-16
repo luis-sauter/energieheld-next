@@ -4,20 +4,38 @@ import { useState } from "react";
 import Image from "next/image";
 import type { PortalImage } from "@/types/portal";
 
-export function ImageGallery({ images }: { images: PortalImage[] }) {
+export function ImageGallery({
+  images,
+  isDemo = true,
+}: {
+  images: PortalImage[];
+  isDemo?: boolean;
+}) {
   const [selected, setSelected] = useState(0);
+  const [failed, setFailed] = useState<Record<string, boolean>>({});
+  const current = images[selected] ?? images[0];
+  if (!current) return null;
   return (
     <div className="gallery">
       <div className="gallery-main">
-        <Image
-          src={images[selected].src}
-          alt={images[selected].alt}
-          fill
-          sizes="(max-width: 900px) 100vw, 70vw"
-          priority
-        />
+        {failed[current.src] ? (
+          <p>Bild nicht verfügbar</p>
+        ) : (
+          <Image
+            src={current.src}
+            alt={current.alt}
+            unoptimized={!isDemo}
+            onError={() =>
+              setFailed((previous) => ({ ...previous, [current.src]: true }))
+            }
+            fill
+            sizes="(max-width: 900px) 100vw, 70vw"
+            priority
+          />
+        )}
         <span className="image-caption">
-          Symbolbild · {selected + 1} / {images.length}
+          {isDemo ? "Symbolbild" : "Unternehmensbild"} · {selected + 1} /{" "}
+          {images.length}
         </span>
       </div>
       <div className="gallery-thumbs" aria-label="Bilderauswahl">
@@ -29,7 +47,20 @@ export function ImageGallery({ images }: { images: PortalImage[] }) {
             aria-pressed={selected === index}
             onClick={() => setSelected(index)}
           >
-            <Image src={image.src} alt="" width={150} height={90} />
+            {failed[image.src] ? (
+              <span>Bild {index + 1}</span>
+            ) : (
+              <Image
+                src={image.src}
+                alt=""
+                width={150}
+                height={90}
+                unoptimized={!isDemo}
+                onError={() =>
+                  setFailed((previous) => ({ ...previous, [image.src]: true }))
+                }
+              />
+            )}
           </button>
         ))}
       </div>

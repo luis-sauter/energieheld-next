@@ -6,6 +6,7 @@ import { loadPortalCompanies } from "@/lib/portal-companies";
 import { filterListings, formatLocation } from "@/lib/listings";
 import { AdvertisingLayout } from "./trades";
 import { EmptyState } from "./listings";
+import { CompanyLogo } from "./company-image";
 import { Icon } from "./icon";
 
 export async function DirectoryPage({
@@ -139,9 +140,17 @@ export async function DirectoryPage({
               <article className="listing-row" key={listing.id}>
                 <div
                   className="row-logo"
-                  aria-label={`Initialen ${listing.name}`}
+                  aria-label={
+                    listing.logo
+                      ? `Logo von ${listing.name}`
+                      : `Initialen ${listing.name}`
+                  }
                 >
-                  {listing.initials}
+                  <CompanyLogo
+                    key={listing.logo?.src ?? listing.initials}
+                    image={listing.logo}
+                    initials={listing.initials}
+                  />
                 </div>
                 <div className="row-content">
                   <span className="row-category">
