@@ -1,4 +1,21 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { energieheld } from "../config/energieheld";
+
+export function validateCategoryIds(value: unknown) {
+  if (!Array.isArray(value) || value.length === 0) {
+    return { error: "Bitte wählen Sie mindestens ein Gewerk aus." };
+  }
+  const allowed = new Set(
+    energieheld.categories.map((category) => category.id),
+  );
+  if (value.some((id) => typeof id !== "string" || !allowed.has(id))) {
+    return {
+      error:
+        "Die Gewerke-Auswahl ist ungültig. Bitte wählen Sie ausschließlich die angebotenen Gewerke.",
+    };
+  }
+  return { ids: [...new Set(value as string[])] };
+}
 
 export type AdminAccess = "admin" | "unauthenticated" | "forbidden";
 export async function checkAdmin(
@@ -83,7 +100,7 @@ export async function loadReviewProfile(
   const { data, error } = await supabase
     .from("company_profiles")
     .select(
-      "id, display_name, status, submitted_at, tagline, description, phone, public_email, website, street, postal_code, city, region, companies!inner(legal_name)",
+      "id, display_name, business_areas, status, submitted_at, tagline, description, phone, public_email, website, street, postal_code, city, region, companies!inner(legal_name), company_profile_categories(category_id)",
     )
     .eq("id", profileId)
     .maybeSingle();
@@ -106,16 +123,24 @@ async function reviewProfile(
   supabase: SupabaseClient,
   profileId: string,
   decision: "approved" | "rejected",
+  categoryIds?: unknown,
 ): Promise<ReviewResult> {
   const access = await checkAdmin(supabase);
   if (access !== "admin") return { access };
   if (!isProfileId(profileId))
     return { access, error: "Das Firmenprofil wurde nicht gefunden." };
+  const categories =
+    decision === "approved" ? validateCategoryIds(categoryIds) : { ids: [] };
+  if (categories.error) return { access, error: categories.error };
   try {
-    const { data, error } = await supabase.rpc("review_company_profile", {
-      p_profile_id: profileId,
-      p_decision: decision,
-    });
+    const { data, error } = await supabase.rpc(
+      "review_company_profile_with_categories",
+      {
+        p_profile_id: profileId,
+        p_decision: decision,
+        p_category_ids: categories.ids,
+      },
+    );
     if (error || data !== decision)
       return {
         access,
@@ -142,8 +167,9 @@ async function reviewProfile(
 export function approvePendingProfile(
   supabase: SupabaseClient,
   profileId: string,
+  categoryIds: unknown,
 ) {
-  return reviewProfile(supabase, profileId, "approved");
+  return reviewProfile(supabase, profileId, "approved", categoryIds);
 }
 export function rejectPendingProfile(
   supabase: SupabaseClient,

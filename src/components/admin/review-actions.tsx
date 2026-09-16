@@ -5,27 +5,34 @@ import {
   approveProfile,
   rejectProfile,
 } from "@/app/(energieheld)/admin/actions";
-import { canReviewProfile } from "@/lib/admin-review-state";
+import {
+  canReviewProfile,
+  reviewStatusMessage,
+} from "@/lib/admin-review-state";
+import { energieheld } from "@/config/energieheld";
 import styles from "./admin.module.css";
 
 export function ReviewActions({
   profileId,
   status,
+  initialCategoryIds,
 }: {
   profileId: string;
   status: string;
+  initialCategoryIds: string[];
 }) {
   const [pending, startTransition] = useTransition();
+  const [categoryIds, setCategoryIds] = useState(initialCategoryIds);
   const [message, setMessage] = useState<{ error?: string; success?: string }>(
     {},
   );
   const disabled =
     pending || !canReviewProfile(status) || Boolean(message.success);
-  function run(action: typeof approveProfile) {
+  function run(action: () => ReturnType<typeof rejectProfile>) {
     setMessage({});
     startTransition(async () => {
       try {
-        setMessage(await action(profileId));
+        setMessage(await action());
       } catch {
         setMessage({
           error:
@@ -36,18 +43,38 @@ export function ReviewActions({
   }
   return (
     <section aria-label="Profilentscheidung" aria-busy={pending}>
-      {!canReviewProfile(status) && (
+      {!canReviewProfile(status) && <p>{reviewStatusMessage(status)}</p>}
+      <fieldset className={styles.categories} disabled={disabled}>
+        <legend>Öffentliche Gewerke</legend>
         <p>
-          Dieses Profil wartet nicht auf Prüfung. Es kann hier nicht erneut
-          geprüft werden.
+          Wählen Sie für die Freigabe mindestens ein Gewerk aus. Diese Zuordnung
+          wird ausschließlich durch Energieheld festgelegt.
         </p>
-      )}
+        {energieheld.categories.map((category) => (
+          <label key={category.id}>
+            <input
+              type="checkbox"
+              name="categoryIds"
+              value={category.id}
+              checked={categoryIds.includes(category.id)}
+              onChange={(event) =>
+                setCategoryIds((current) =>
+                  event.target.checked
+                    ? [...current, category.id]
+                    : current.filter((id) => id !== category.id),
+                )
+              }
+            />
+            {category.name}
+          </label>
+        ))}
+      </fieldset>
       <div className={styles.actions}>
         <button
           type="button"
           className="button button-primary"
           disabled={disabled}
-          onClick={() => run(approveProfile)}
+          onClick={() => run(() => approveProfile(profileId, categoryIds))}
         >
           Profil freigeben
         </button>
@@ -55,7 +82,7 @@ export function ReviewActions({
           type="button"
           className="button"
           disabled={disabled}
-          onClick={() => run(rejectProfile)}
+          onClick={() => run(() => rejectProfile(profileId))}
         >
           Änderungen erforderlich
         </button>

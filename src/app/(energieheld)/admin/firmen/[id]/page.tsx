@@ -27,6 +27,10 @@ export default async function ReviewPage({
     ? [
         ["Firmenname", legalName(profile.companies)],
         ["Öffentlicher Profilname", profile.display_name],
+        [
+          "Von der Firma angegebene Branchen / Tätigkeitsbereiche",
+          profile.business_areas,
+        ],
         ["Status", profileStatus(profile.status)],
         ["Einreichungsdatum", formatSubmission(profile.submitted_at)],
         ["Kurzbeschreibung", profile.tagline],
@@ -59,7 +63,14 @@ export default async function ReviewPage({
                 </div>
               ))}
             </dl>
-            <ReviewActions profileId={profile.id} status={profile.status} />
+            <ReviewActions
+              key={profile.id}
+              profileId={profile.id}
+              status={profile.status}
+              initialCategoryIds={profile.company_profile_categories.map(
+                (category) => category.category_id,
+              )}
+            />
           </div>
         )
       )}

@@ -60,6 +60,27 @@
 .error {
   color: #9b2525;
 }
+.categories {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin: 24px 0;
+  padding: 20px;
+}
+.categories legend {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.categories label {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+}
+.categories input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand-primary);
+}
 .success {
   color: #245b39;
 }

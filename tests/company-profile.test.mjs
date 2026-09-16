@@ -10,6 +10,7 @@ function form(overrides = {}) {
   const data = new FormData();
   Object.entries({
     display_name: " Meine Firma ",
+    business_areas: "WDVS, Fassadensanierung",
     intent: "save",
     ...overrides,
   }).forEach(([name, value]) => data.set(name, value));
@@ -73,6 +74,48 @@ test("profile name is required; optional fields may be empty", () => {
   );
   assert.equal(validateProfile(form()).error, undefined);
   assert.equal(validateProfile(form()).values.display_name, "Meine Firma");
+});
+
+test("company can save business areas as text without assigning categories", async () => {
+  const db = client({ status: "approved" });
+  const result = await updateOwnCompanyProfile(
+    db,
+    form({
+      business_areas: "  Dämmung und Fassade  ",
+      category_ids: "dach",
+      company_profile_categories: "solar",
+    }),
+  );
+  assert.ok(result.success);
+  const write = db.queries.find((q) => q.payload);
+  assert.equal(write.payload.business_areas, "Dämmung und Fassade");
+  assert.equal(write.payload.status, "draft");
+  assert.equal("category_ids" in write.payload, false);
+  assert.equal("company_profile_categories" in write.payload, false);
+  assert.equal(
+    db.queries.some((q) => q.table === "company_profile_categories"),
+    false,
+  );
+});
+
+test("submission requires non-whitespace business areas; draft saves may be empty", async () => {
+  for (const business_areas of ["", "  \n\t "]) {
+    const db = client();
+    assert.match(
+      (
+        await updateOwnCompanyProfile(
+          db,
+          form({ business_areas, intent: "submit" }),
+        )
+      ).error,
+      /Tätigkeitsbereiche/,
+    );
+    assert.equal(db.queries.length, 0);
+    assert.ok(
+      (await updateOwnCompanyProfile(client(), form({ business_areas })))
+        .success,
+    );
+  }
 });
 
 test("validates optional email, HTTP(S) website and simple postal code", () => {

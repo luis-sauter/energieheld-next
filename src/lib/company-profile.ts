@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const profileFields = [
   "display_name",
+  "business_areas",
   "tagline",
   "description",
   "phone",
@@ -72,6 +73,12 @@ export async function updateOwnCompanyProfile(
   const intent = form.get("intent");
   if (intent !== "save" && intent !== "submit")
     return { error: "Bitte wählen Sie Speichern oder Zur Prüfung einreichen." };
+  if (intent === "submit" && !values.business_areas) {
+    return {
+      error:
+        "Bitte beschreiben Sie Ihre Branchen / Tätigkeitsbereiche, bevor Sie das Profil zur Prüfung einreichen.",
+    };
+  }
 
   const { data: company, error: companyError } = await supabase
     .from("companies")
