@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Trade } from "@/config/trades";
 import { energieheld } from "@/config/energieheld";
-import { listings } from "@/data/listings";
-import { filterListings } from "@/lib/listings";
+import { loadPublicCompanies } from "@/lib/public-companies";
+import { filterListings, formatLocation } from "@/lib/listings";
 import { AdvertisingLayout } from "./trades";
 import { EmptyState } from "./listings";
 import { Icon } from "./icon";
@@ -22,18 +22,12 @@ export async function DirectoryPage({
     query: read("q"),
     category: trade?.id ?? read("kategorie"),
     location: read("ort"),
-    service: read("leistung"),
+    service: "",
     sort: read("sort"),
   };
-  const results = filterListings(listings, filters);
+  const loaded = await loadPublicCompanies();
+  const results = loaded.data ? filterListings(loaded.data, filters) : [];
   const action = trade ? `/gewerke/${trade.id}` : "/experten";
-  const services = [
-    ...new Set(
-      listings
-        .filter((l) => !trade || l.categoryIds.includes(trade.id))
-        .flatMap((l) => l.services),
-    ),
-  ].sort((a, b) => a.localeCompare(b, "de"));
   return (
     <main id="hauptinhalt" className="container trade-page">
       <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
@@ -57,7 +51,7 @@ export async function DirectoryPage({
           </p>
           <p>
             Vom ersten Überblick zum passenden Unternehmensprofil: Vergleichen
-            Sie die Beispielbetriebe und verfeinern Sie Ihre Auswahl.
+            Sie die Fachbetriebe und verfeinern Sie Ihre Auswahl.
           </p>
         </div>
         <div className="reference-image">
@@ -85,7 +79,7 @@ export async function DirectoryPage({
             <input
               name="q"
               defaultValue={filters.query}
-              placeholder="Name oder Leistung"
+              placeholder="Name oder Tätigkeitsbereich"
             />
           </label>
           <label>
@@ -108,15 +102,6 @@ export async function DirectoryPage({
             />
           </label>
           <label>
-            Leistung
-            <select name="leistung" defaultValue={filters.service}>
-              <option value="">Alle Leistungen</option>
-              {services.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-          </label>
-          <label>
             Sortieren nach
             <select name="sort" defaultValue={filters.sort}>
               <option value="">Standard</option>
@@ -134,20 +119,27 @@ export async function DirectoryPage({
         <div className="results-heading">
           <div>
             <h2>
-              {results.length}{" "}
+              {loaded.error ? "" : results.length}{" "}
               {results.length === 1 ? "Fachbetrieb" : "Fachbetriebe"}
               {trade ? ` für ${trade.name}` : ""}
             </h2>
-            <p>Fiktive Einträge zur Vorschau · Keine bezahlte Reihenfolge</p>
+            <p>
+              Öffentlich freigegebene Unternehmensprofile · Keine bezahlte
+              Reihenfolge
+            </p>
           </div>
         </div>
-        {results.length ? (
+        {loaded.error ? (
+          <div className="empty-state" role="alert">
+            <p>{loaded.error}</p>
+          </div>
+        ) : results.length ? (
           <div className="listing-rows">
             {results.map((listing) => (
               <article className="listing-row" key={listing.id}>
                 <div
                   className="row-logo"
-                  aria-label={`Beispiellogo ${listing.name}`}
+                  aria-label={`Initialen ${listing.name}`}
                 >
                   {listing.initials}
                 </div>
@@ -163,17 +155,14 @@ export async function DirectoryPage({
                       {listing.name}
                     </Link>
                   </h3>
-                  <p className="location">
-                    <Icon name="pin" size={16} />
-                    {listing.location.postalCode} {listing.location.city},{" "}
-                    {listing.location.country}
-                  </p>
+                  {formatLocation(listing.location) && (
+                    <p className="location">
+                      <Icon name="pin" size={16} />
+                      {formatLocation(listing.location)}
+                    </p>
+                  )}
                   <p>{listing.tagline}</p>
-                  <div className="card-services">
-                    {listing.services.map((s) => (
-                      <span key={s}>{s}</span>
-                    ))}
-                  </div>
+                  {listing.businessAreas && <p>{listing.businessAreas}</p>}
                   <div className="row-bottom">
                     <Link
                       className="button button-primary"
@@ -181,14 +170,13 @@ export async function DirectoryPage({
                     >
                       Unternehmensprofil <Icon name="arrow" size={16} />
                     </Link>
-                    <span>Beispielprofil</span>
                   </div>
                 </div>
               </article>
             ))}
           </div>
         ) : (
-          <EmptyState />
+          <EmptyState isDemo={false} />
         )}
       </AdvertisingLayout>
     </main>

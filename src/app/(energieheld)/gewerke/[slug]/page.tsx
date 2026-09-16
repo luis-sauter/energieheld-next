@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { trades } from "@/config/trades";
 import { DirectoryPage } from "@/components/portal/directory-page";
