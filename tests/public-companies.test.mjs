@@ -54,11 +54,14 @@ const { ListingDetail } =
   await import("../src/components/portal/listing-detail.tsx");
 const { DirectoryPage } =
   await import("../src/components/portal/directory-page.tsx");
-const { default: Detail } =
+const { default: Detail, generateMetadata: detailMetadata } =
   await import("../src/app/(energieheld)/experten/[slug]/page.tsx");
 const { default: TradePage } =
   await import("../src/app/(energieheld)/gewerke/[slug]/page.tsx");
 const { energieheld } = await import("../src/config/energieheld.ts");
+const { listings: demos } = await import("../src/data/listings.ts");
+const { combinePortalCompanies, loadPortalCompanies, loadPortalCompanyBySlug } =
+  await import("../src/lib/portal-companies.ts");
 const row = {
   id: "profile-1",
   status: "approved",
@@ -269,13 +272,15 @@ test("database errors produce neutral error, never mocks or empty-success", asyn
   assert.ok(html.includes(PUBLIC_COMPANIES_ERROR));
   assert.doesNotMatch(
     html,
-    /Beispielprofil|Noch kein passender Treffer|private database error/,
+    /class="listing-row"|Noch kein passender Treffer|private database error/,
   );
 });
-test("empty directory and real directory have distinct UI without service filter or demo listings", async () => {
+test("empty filtered directory and combined directory have distinct UI without service filter", async () => {
   api([]);
   let html = renderToStaticMarkup(
-    await DirectoryPage({ searchParams: Promise.resolve({}) }),
+    await DirectoryPage({
+      searchParams: Promise.resolve({ q: "kein-treffer-xyz" }),
+    }),
   );
   assert.match(html, /Noch kein passender Treffer/);
   assert.doesNotMatch(html, /Beispielbetriebe|name="leistung"/);
@@ -284,8 +289,8 @@ test("empty directory and real directory have distinct UI without service filter
     await DirectoryPage({ searchParams: Promise.resolve({}) }),
   );
   assert.match(html, /Test Firma/);
-  assert.match(html, /Öffentlich freigegebene/);
-  assert.doesNotMatch(html, /Beispielprofil|Fiktive Einträge/);
+  assert.match(html, /Unternehmensprofile und gekennzeichnete Beispielprofile/);
+  assert.doesNotMatch(html, /Fiktive Einträge/);
 });
 test("pagination loads all approved profiles", async () => {
   api(Array.from({ length: 501 }, (_, i) => ({ ...row, id: String(i) })));
@@ -321,7 +326,7 @@ test("owner and admin sessions on other clients cannot enter anonymous requests"
     /next\/headers|supabase\/server|SERVICE_ROLE|SECRET_KEY/,
   );
 });
-test("public route source paths contain no mock imports and use dynamic rendering", () => {
+test("public routes remain dynamic and Supabase data layer stays separate from presentation examples", () => {
   for (const path of [
     "src/app/(energieheld)/experten/page.tsx",
     "src/app/(energieheld)/gewerke/[slug]/page.tsx",
@@ -339,4 +344,112 @@ test("public route source paths contain no mock imports and use dynamic renderin
     "src/lib/public-companies.ts",
   ])
     assert.doesNotMatch(source(path), /data\/listings|supabase\/server/);
+});
+
+test("combined directory shows real and demo profiles, with badges only on demos", async () => {
+  api();
+  const result = await loadPortalCompanies();
+  assert.equal(result.error, null);
+  assert.equal(result.data.length, demos.length + 1);
+  assert.equal(result.data[0].isDemo, false);
+  assert.ok(result.data.slice(1).every((item) => item.isDemo));
+  const html = renderToStaticMarkup(
+    await DirectoryPage({ searchParams: Promise.resolve({}) }),
+  );
+  const cards = html.match(/<article class="listing-row"[\s\S]*?<\/article>/g);
+  assert.equal(cards.length, demos.length + 1);
+  for (const card of cards) {
+    if (card.includes("Test Firma"))
+      assert.doesNotMatch(card, /Beispielprofil/);
+    else assert.match(card, /class="badge">Beispielprofil/);
+  }
+});
+
+test("combined category and location filtering and sorting include both sources", async () => {
+  api([{ ...row, company_profile_categories: [{ category_id: "heizung" }] }]);
+  const items = (await loadPortalCompanies()).data;
+  for (const filtersToUse of [
+    { category: "heizung" },
+    { location: "München" },
+    { location: "80331" },
+  ]) {
+    const result = filterListings(items, { ...filters, ...filtersToUse });
+    assert.ok(result.some((item) => !item.isDemo));
+    assert.ok(result.some((item) => item.isDemo));
+  }
+  for (const category of energieheld.categories) {
+    const result = filterListings(items, { ...filters, category: category.id });
+    assert.ok(result.every((item) => item.categoryIds.includes(category.id)));
+  }
+  for (const [sort, value] of [
+    ["name", (item) => item.name],
+    ["city", (item) => item.location.city],
+  ]) {
+    const result = filterListings(items, { ...filters, sort });
+    assert.deepEqual(
+      result.map(value),
+      items.map(value).sort((a, b) => a.localeCompare(b, "de")),
+    );
+  }
+  assert.equal(
+    filterListings(items, { ...filters, query: "Müller" })[0].slug,
+    "mueller-haustechnik",
+  );
+});
+
+test("real profiles win ID and slug collisions without duplicate cards", async () => {
+  api();
+  const real = (await loadPublicCompanies()).data[0];
+  for (const collision of [{ id: demos[0].id }, { slug: demos[0].slug }]) {
+    const winner = { ...real, ...collision };
+    const combined = combinePortalCompanies([winner]);
+    assert.equal(combined.length, demos.length);
+    assert.equal(combined[0], winner);
+    assert.ok(!combined.includes(demos[0]));
+  }
+  api([{ ...row, slug: demos[0].slug }]);
+  const detail = await loadPortalCompanyBySlug(demos[0].slug);
+  assert.equal(detail.data.name, row.display_name);
+  assert.equal(detail.data.isDemo, false);
+  const html = renderToStaticMarkup(
+    await Detail({ params: Promise.resolve({ slug: demos[0].slug }) }),
+  );
+  assert.doesNotMatch(html, /Beispielprofil/);
+});
+
+test("all known demo slugs open labelled detail pages with disabled fictional contacts", async () => {
+  api([]);
+  for (const demo of demos) {
+    const result = await loadPortalCompanyBySlug(demo.slug);
+    assert.equal(result.data, demo);
+    assert.equal(result.data.isDemo, true);
+    const html = renderToStaticMarkup(
+      await Detail({ params: Promise.resolve({ slug: demo.slug }) }),
+    );
+    assert.ok(html.includes(demo.name.replaceAll("&", "&amp;")));
+    assert.match(html, /Beispielprofil/);
+    assert.match(html, /Kontaktdaten sind fiktiv/);
+    assert.match(html, /<button[^>]*disabled/);
+    assert.doesNotMatch(html, /href="mailto:|Website besuchen/);
+  }
+});
+
+test("database errors never expose demos in directory, detail or metadata", async () => {
+  api([], true);
+  assert.equal((await loadPortalCompanies()).data, null);
+  for (const demo of demos) {
+    assert.deepEqual(await loadPortalCompanyBySlug(demo.slug), {
+      data: null,
+      error: PUBLIC_COMPANIES_ERROR,
+    });
+    const html = renderToStaticMarkup(
+      await Detail({ params: Promise.resolve({ slug: demo.slug }) }),
+    );
+    assert.ok(html.includes(PUBLIC_COMPANIES_ERROR));
+    assert.ok(!html.includes(demo.name));
+    assert.deepEqual(
+      await detailMetadata({ params: Promise.resolve({ slug: demo.slug }) }),
+      { title: "Unternehmensprofil" },
+    );
+  }
 });

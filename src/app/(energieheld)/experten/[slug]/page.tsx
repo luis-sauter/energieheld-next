@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { loadPublicCompanyBySlug } from "@/lib/public-companies";
+import { loadPortalCompanyBySlug } from "@/lib/portal-companies";
 import { energieheld } from "@/config/energieheld";
 import { ListingDetail } from "@/components/portal/listing-detail";
 import { Icon } from "@/components/portal/icon";
@@ -12,7 +12,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const result = await loadPublicCompanyBySlug(slug);
+  const result = await loadPortalCompanyBySlug(slug);
   return { title: result.data?.name ?? "Unternehmensprofil" };
 }
 
@@ -22,7 +22,7 @@ export default async function ExpertDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const result = await loadPublicCompanyBySlug(slug);
+  const result = await loadPortalCompanyBySlug(slug);
   if (result.error)
     return (
       <main id="hauptinhalt" className="container detail-page">
