@@ -12,7 +12,17 @@
   mit dem Publishable Key und der Nutzersitzung über RLS. Zusätzlich wird auf
   `companies.owner_user_id = user.id` und dann die eigene `company_id` gefiltert.
 - Logout läuft als Server Action über `signOut` und leitet nach `/` weiter.
-- Profilstatus und Firmenprofile werden ausschließlich gelesen.
+- `/firma/profil` lädt das eigene Profil serverseitig. Die Server Action ermittelt
+  bei jedem Speichern die Firmenzuordnung erneut über den verifizierten Nutzer.
+  Nur die zehn freigegebenen Formularfelder werden übernommen; IDs, Slug,
+  Status und Zeitstempel aus dem Formular werden ignoriert.
+- Normales Speichern erhält `draft` bzw. `pending`. Änderungen an `approved`
+  oder `rejected` werden als `draft` gespeichert. Einreichen speichert die
+  Formulardaten zusammen mit `pending` und der serverseitigen `submitted_at`
+  atomar. Eine zwischenzeitliche Statusänderung führt zum Konflikthinweis.
+- Eine zusätzliche, genehmigte Migration erlaubt UPDATE nur auf diesen zehn
+  Feldern sowie `status` und `submitted_at`. RLS bleibt unverändert und verhindert
+  fremde Zugriffe sowie Selbstfreigaben. Es entstehen keine neuen Tabellen.
 
 ## Vorhandene Datenbank und Leserechte
 

@@ -19,7 +19,8 @@
   gap: 6px;
   font-weight: 600;
 }
-.field input {
+.field input,
+.field textarea {
   width: 100%;
   min-width: 0;
   padding: 12px 14px;
@@ -27,6 +28,14 @@
   border-radius: 6px;
   background: white;
   color: var(--text);
+  font: inherit;
+}
+.field textarea {
+  resize: vertical;
+}
+.field textarea:focus-visible {
+  outline: 3px solid #326bb2;
+  outline-offset: 4px;
 }
 .error {
   color: #9b2525;
