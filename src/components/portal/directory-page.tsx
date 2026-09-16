@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Trade } from "@/config/trades";
 import { energieheld } from "@/config/energieheld";
-import { loadPublicCompanies } from "@/lib/public-companies";
+import { loadPortalCompanies } from "@/lib/portal-companies";
 import { filterListings, formatLocation } from "@/lib/listings";
 import { AdvertisingLayout } from "./trades";
 import { EmptyState } from "./listings";
@@ -25,7 +25,7 @@ export async function DirectoryPage({
     service: "",
     sort: read("sort"),
   };
-  const loaded = await loadPublicCompanies();
+  const loaded = await loadPortalCompanies();
   const results = loaded.data ? filterListings(loaded.data, filters) : [];
   const action = trade ? `/gewerke/${trade.id}` : "/experten";
   return (
@@ -124,8 +124,8 @@ export async function DirectoryPage({
               {trade ? ` für ${trade.name}` : ""}
             </h2>
             <p>
-              Öffentlich freigegebene Unternehmensprofile · Keine bezahlte
-              Reihenfolge
+              Unternehmensprofile und gekennzeichnete Beispielprofile · Keine
+              bezahlte Reihenfolge
             </p>
           </div>
         </div>
@@ -164,6 +164,9 @@ export async function DirectoryPage({
                   <p>{listing.tagline}</p>
                   {listing.businessAreas && <p>{listing.businessAreas}</p>}
                   <div className="row-bottom">
+                    {listing.isDemo && (
+                      <span className="badge">Beispielprofil</span>
+                    )}
                     <Link
                       className="button button-primary"
                       href={`/experten/${listing.slug}`}
