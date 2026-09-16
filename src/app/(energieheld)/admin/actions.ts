@@ -21,8 +21,12 @@ async function finish(result: ReviewResult, profileId: string) {
   return { error: result.error, success: result.success };
 }
 
-export async function approveProfile(profileId: string) {
-  const result = await approvePendingProfile(await createClient(), profileId);
+export async function approveProfile(profileId: string, categoryIds: unknown) {
+  const result = await approvePendingProfile(
+    await createClient(),
+    profileId,
+    categoryIds,
+  );
   return finish(result, profileId);
 }
 

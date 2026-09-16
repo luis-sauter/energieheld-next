@@ -19,6 +19,11 @@ const fields: {
   },
   { name: "tagline", label: "Kurzbeschreibung" },
   { name: "description", label: "Beschreibung", multiline: true },
+  {
+    name: "business_areas",
+    label: "Branchen / Tätigkeitsbereiche",
+    multiline: true,
+  },
   { name: "phone", label: "Telefon", type: "tel", autoComplete: "tel" },
   {
     name: "public_email",
@@ -51,6 +56,14 @@ export function CompanyProfileForm({
               id={name}
               name={name}
               rows={6}
+              aria-describedby={
+                name === "business_areas" ? "business-areas-help" : undefined
+              }
+              placeholder={
+                name === "business_areas"
+                  ? "z. B. Wärmedämmung, WDVS, Fassadensanierung, Dachbodendämmung"
+                  : undefined
+              }
               value={values[name]}
               disabled={pending}
               onChange={(event) =>
@@ -72,6 +85,13 @@ export function CompanyProfileForm({
                 setValues({ ...values, [name]: event.target.value })
               }
             />
+          )}
+          {name === "business_areas" && (
+            <small id="business-areas-help">
+              Beschreiben Sie, in welchen Branchen und Tätigkeitsbereichen Ihr
+              Unternehmen arbeitet. Die öffentliche Zuordnung zu den
+              Energieheld-Gewerken erfolgt anschließend bei der Prüfung.
+            </small>
           )}
         </label>
       ))}

@@ -1,12 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
+import "./helpers/load-ts.mjs";
+const {
   checkAdmin,
   loadReviewOverview,
   loadReviewProfile,
   approvePendingProfile,
   rejectPendingProfile,
-} from "../src/lib/admin-review.ts";
+  validateCategoryIds,
+} = await import("../src/lib/admin-review.ts");
 import { canReviewProfile } from "../src/lib/admin-review-state.ts";
 
 const profileId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -188,14 +190,18 @@ test("invalid profile IDs fail without querying company profiles or RPC", async 
 
 test("approve sends only the fixed approved decision, ignoring extra client data", async () => {
   const db = client();
-  const result = await approvePendingProfile(db, profileId, {
+  const result = await approvePendingProfile(db, profileId, ["daemmung"], {
     decision: "rejected",
     user_id: "forged-admin",
   });
   assert.equal(result.success, "Das Firmenprofil wurde freigegeben.");
   assert.deepEqual(db.calls.at(-1), {
-    rpc: "review_company_profile",
-    params: { p_profile_id: profileId, p_decision: "approved" },
+    rpc: "review_company_profile_with_categories",
+    params: {
+      p_profile_id: profileId,
+      p_decision: "approved",
+      p_category_ids: ["daemmung"],
+    },
   });
 });
 
@@ -218,9 +224,60 @@ test("RPC prevents reviewing a previously reviewed profile even with a stale UI"
   const result = await approvePendingProfile(
     client({ reviewed: true }),
     profileId,
+    ["daemmung"],
   );
   assert.ok(result.error);
   assert.equal(result.success, undefined);
+});
+
+test("approval requires categories and rejects unknown or malformed IDs before RPC", async () => {
+  for (const ids of [
+    [],
+    undefined,
+    "dach",
+    ["invented"],
+    [null],
+    ["dach", "unknown"],
+  ]) {
+    const db = client();
+    const result = await approvePendingProfile(db, profileId, ids);
+    assert.ok(result.error);
+    assert.equal(
+      db.calls.some((call) => call.rpc),
+      false,
+    );
+  }
+  assert.equal(
+    validateCategoryIds([]).error,
+    "Bitte wählen Sie mindestens ein Gewerk aus.",
+  );
+});
+
+test("approval accepts multiple canonical IDs, deduplicates and passes exact IDs", async () => {
+  const db = client();
+  assert.ok(
+    (
+      await approvePendingProfile(db, profileId, [
+        "daemmung",
+        "fassade",
+        "daemmung",
+      ])
+    ).success,
+  );
+  assert.deepEqual(db.calls.at(-1).params.p_category_ids, [
+    "daemmung",
+    "fassade",
+  ]);
+});
+
+test("admin detail loads business areas and existing category assignments", async () => {
+  const db = client();
+  await loadReviewProfile(db, profileId);
+  assert.match(db.calls.at(-1).columns, /business_areas/);
+  assert.match(
+    db.calls.at(-1).columns,
+    /company_profile_categories\(category_id\)/,
+  );
 });
 
 test("RPC and queue errors never expose raw backend messages", async () => {
