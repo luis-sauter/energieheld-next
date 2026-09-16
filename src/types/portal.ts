@@ -39,11 +39,16 @@ export type BrandConfig = {
 
 // Descriptive UI data only. Campaign selection, scheduling and billing come later.
 export type AdPlacement =
+  | "trade_top"
+  | "trade_sidebar_1"
+  | "trade_sidebar_2"
+  | "trade_sidebar_3"
   | "destination_top"
   | "destination_sidebar_1"
   | "destination_sidebar_2"
   | "destination_sidebar_3";
 export type AdCreative = {
+  tone?: "blue" | "orange" | "green";
   id: string;
   placement: AdPlacement;
   advertiser: string;

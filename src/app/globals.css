@@ -1766,3 +1766,434 @@ button {
   overflow-wrap: anywhere;
   hyphens: auto;
 }
+/* Reference-led portal pages: shared content and independent advertising rail. */
+.hero {
+  background: #fff;
+  padding-top: 35px;
+}
+.hero h1 {
+  font-size: clamp(2rem, 3.3vw, 3.1rem);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.17;
+}
+.hero-visual {
+  border-radius: 8px;
+}
+.hero-visual:after,
+.hero-image-label {
+  display: none;
+}
+.hero-search {
+  box-shadow: none;
+  background: #f7f9fc;
+}
+.hero-description {
+  color: #344581;
+}
+.homepage-ad {
+  margin-top: 30px;
+}
+.site-header {
+  box-shadow: 0 2px 4px #13237f0c;
+}
+.desktop-nav {
+  font-weight: 400;
+  font-size: 0.88rem;
+}
+.trade-page {
+  padding-block: 24px 65px;
+}
+.reference-intro {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 46px;
+  align-items: center;
+  margin: 32px 0 42px;
+}
+.reference-intro h1 {
+  font-size: 2.65rem;
+  font-weight: 400;
+  margin-bottom: 20px;
+}
+.reference-intro p:not(.eyebrow) {
+  color: #344581;
+  line-height: 1.9;
+  font-size: 0.96rem;
+}
+.reference-intro .eyebrow {
+  font-size: 0.64rem;
+}
+.reference-intro .button {
+  margin-top: 8px;
+}
+.reference-image {
+  position: relative;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.directory-intro .reference-image {
+  aspect-ratio: 16/8;
+}
+.commercial-layout {
+  margin-top: 25px;
+}
+.commercial-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 28px;
+  margin-top: 44px;
+  align-items: start;
+}
+.commercial-content {
+  min-width: 0;
+}
+.commercial-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 23px;
+  min-width: 0;
+}
+.sidebar-title {
+  font-size: 0.8rem;
+  color: #13237f;
+  margin: 0;
+}
+.commercial-layout .section-heading {
+  align-items: center;
+  gap: 12px;
+}
+.commercial-layout h2 {
+  font-size: 1.7rem;
+  font-weight: 400;
+}
+.trade-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+}
+.commercial-content .trade-tiles {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.trade-tile {
+  border: 1px solid #e6e9f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px #13237f06;
+  background: white;
+}
+.trade-tile:hover {
+  border-color: #ed9a20;
+}
+.trade-tile > div {
+  position: relative;
+  aspect-ratio: 16/10;
+}
+.trade-tile h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 17px 14px;
+  font-weight: 400;
+  font-size: 1.06rem;
+  letter-spacing: -0.02em;
+  min-height: 66px;
+}
+.ad-top .ad-banner {
+  min-height: 135px;
+}
+.ad-top .ad-copy {
+  min-height: 135px;
+  padding: 17px 34px;
+  justify-content: center;
+  gap: 5px;
+}
+.ad-top .ad-copy strong {
+  max-width: 750px;
+  font-size: 1.6rem;
+}
+.ad-top .ad-cta {
+  position: absolute;
+  right: 28px;
+  bottom: 24px;
+  background: white;
+  color: #13237f;
+  padding: 10px 15px;
+  border-radius: 4px;
+}
+.ad-top .ad-banner img {
+  object-position: center 45%;
+}
+.ad-description {
+  font-size: 0.7rem;
+  max-width: 80%;
+}
+.ad-tone-orange:after {
+  background: linear-gradient(90deg, #713c06ef, #713c0680);
+}
+.ad-tone-green:after {
+  background: linear-gradient(90deg, #164b3bee, #164b3b75);
+}
+.commercial-sidebar .ad-side .ad-banner {
+  min-height: 245px;
+}
+.commercial-sidebar .ad-copy {
+  min-height: 245px;
+  justify-content: flex-end;
+  padding: 25px;
+}
+.commercial-sidebar .ad-copy strong {
+  font-size: 1.7rem;
+  font-weight: 450;
+}
+.commercial-sidebar .ad-copy > span:first-child {
+  font-size: 0.59rem;
+}
+.commercial-sidebar .ad-description {
+  font-size: 0.72rem;
+}
+.advertise-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.75rem;
+  padding: 15px;
+  border: 1px dashed #cad0e0;
+  border-radius: 5px;
+}
+.directory-search {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+  padding: 20px;
+  border: 1px solid #dfe4ee;
+  background: #f7f9fc;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+.directory-search label {
+  font-size: 0.72rem;
+  color: #253775;
+  font-weight: 600;
+  min-width: 0;
+}
+.directory-search input,
+.directory-search select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  margin-top: 6px;
+  padding: 9px;
+  border: 1px solid #cfd6e4;
+  background: #fff;
+  color: #29334f;
+  border-radius: 4px;
+  font-size: 0.77rem;
+}
+.directory-search .button {
+  min-height: 42px;
+  padding: 10px;
+  font-size: 0.74rem;
+}
+.directory-reset {
+  grid-column: 1/-1;
+  font-size: 0.7rem;
+  text-decoration: underline;
+  justify-self: end;
+}
+.listing-rows {
+  display: grid;
+  gap: 20px;
+}
+.listing-row {
+  display: grid;
+  grid-template-columns: 125px minmax(0, 1fr);
+  gap: 25px;
+  border: 1px solid #e3e7f0;
+  border-radius: 8px;
+  padding: 25px;
+  background: white;
+}
+.row-logo {
+  width: 115px;
+  height: 115px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f0f4fa;
+  color: #28477e;
+  font-family: Georgia, serif;
+  font-size: 2.8rem;
+  letter-spacing: -0.08em;
+  align-self: center;
+}
+.row-category {
+  font-size: 0.66rem;
+  color: #606c89;
+}
+.row-content h3 {
+  font-weight: 400;
+  font-size: 1.55rem;
+  margin: 7px 0 10px;
+  color: #ac6100;
+}
+.row-content h3 a:hover {
+  text-decoration: underline;
+}
+.row-content > p:not(.location) {
+  color: #344581;
+  font-size: 0.86rem;
+  margin-bottom: 12px;
+}
+.row-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.row-bottom .button {
+  min-height: 37px;
+  font-size: 0.7rem;
+  padding: 9px 12px;
+}
+.row-bottom > span {
+  color: #666e7d;
+  font-size: 0.65rem;
+}
+@media (max-width: 1000px) {
+  .commercial-columns {
+    grid-template-columns: minmax(0, 1fr) 235px;
+    gap: 20px;
+  }
+  .commercial-content .trade-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .reference-intro {
+    gap: 28px;
+  }
+  .reference-intro h1 {
+    font-size: 2.2rem;
+  }
+  .reference-intro p:not(.eyebrow) {
+    font-size: 0.86rem;
+  }
+  .listing-row {
+    grid-template-columns: 75px minmax(0, 1fr);
+    padding: 18px;
+    gap: 18px;
+  }
+  .row-logo {
+    width: 70px;
+    height: 70px;
+    font-size: 2rem;
+  }
+  .directory-search {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ad-top .ad-copy {
+    padding-right: 160px;
+  }
+  .ad-top .ad-copy strong {
+    font-size: 1.4rem;
+  }
+}
+@media (max-width: 760px) {
+  .reference-intro {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 20px;
+  }
+  .reference-image {
+    aspect-ratio: 16/9;
+  }
+  .commercial-columns {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 28px;
+  }
+  .commercial-sidebar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .sidebar-title,
+  .advertise-link {
+    grid-column: 1/-1;
+  }
+  .commercial-sidebar .ad-copy {
+    padding: 16px;
+  }
+  .commercial-sidebar .ad-copy strong {
+    font-size: 1.2rem;
+  }
+  .trade-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .hero h1 {
+    font-size: 2.4rem;
+  }
+  .ad-top .ad-copy {
+    padding: 20px;
+  }
+  .ad-top .ad-cta {
+    position: static;
+    align-self: flex-start;
+    margin-top: 7px;
+  }
+  .ad-top .ad-copy strong {
+    font-size: 1.35rem;
+  }
+  .ad-description {
+    max-width: 100%;
+  }
+}
+@media (max-width: 500px) {
+  .commercial-sidebar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .commercial-sidebar .ad-copy,
+  .commercial-sidebar .ad-side .ad-banner {
+    min-height: 200px;
+  }
+  .commercial-sidebar .ad-copy {
+    padding: 25px;
+  }
+  .commercial-sidebar .ad-copy strong {
+    font-size: 1.7rem;
+  }
+  .directory-search {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 17px;
+  }
+  .listing-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .row-logo {
+    border-radius: 10px;
+  }
+  .row-content h3 {
+    font-size: 1.45rem;
+  }
+  .row-bottom {
+    flex-wrap: wrap;
+  }
+  .trade-tile h3 {
+    font-size: 0.88rem;
+    padding: 13px 10px;
+  }
+  .commercial-content .trade-tiles {
+    gap: 12px;
+  }
+  .trade-page .section-heading {
+    align-items: flex-start;
+  }
+}

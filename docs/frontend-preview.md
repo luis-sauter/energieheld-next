@@ -8,7 +8,7 @@ Eine einzelne Next.js-Anwendung mit App Router und TypeScript Strict. Es wurden 
 
 | Route               | Inhalt                                                                                                                                             |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                 | Markeneinstieg, Expertensuche, sechs Gewerke, drei Beispielprofile, Portalerklärung und Unternehmens-CTA                                           |
+| `/`                 | Markeneinstieg, Expertensuche, 14 Gewerke, drei Beispielprofile, Portalerklärung und Unternehmens-CTA                                              |
 | `/experten`         | Suche, Kategorie, Ort/PLZ, Leistung, Sortierung, Ergebnisanzahl, Filterzusammenfassung und Leerzustand                                             |
 | `/experten/[slug]`  | Acht statisch generierte Profile mit Beispiellogo, Beschreibung, Galerie, Leistungen, Standort, Kontaktplatzhaltern und separatem Qualitätsbereich |
 | `/fuer-unternehmen` | Erklärung des künftigen Eintrags; keine Registrierung und keine Datenerfassung                                                                     |
@@ -34,7 +34,7 @@ Die öffentliche Homepage, Texte, Gewerke, Experten-Routen, Unternehmensseite, W
 
 GET-Formulare speichern `q`, `kategorie`, `ort`, `leistung` und `sort` in der URL. Links sind teilbar; Zurücksetzen und Browser-Navigation funktionieren ohne einen globalen Zustandsspeicher. Die Auswahl wird auf dem Server ausschließlich gegen Mock-Daten gefiltert. Ortssuche bedeutet Text-/PLZ-Abgleich, keine Umkreissuche oder Geocodierung.
 
-Clientseitiges JavaScript beschränkt sich auf Bilderauswahl und mobile Filter. Auf kleinen Displays können die Filter geöffnet und geschlossen werden; am Desktop sind sie direkt sichtbar. Native Formulare, Labels, Fokusmarkierungen, semantische Navigation, ein Sprunglink und reduzierte Bewegung bilden die Accessibility-Grundlage.
+Die Bilderauswahl verwendet clientseitiges JavaScript; die Verzeichnissuche bleibt ein GET-Formular. Die Filter stehen kompakt oberhalb der Einträge und werden auf kleinen Displays untereinander dargestellt. Native Formulare, Labels, Fokusmarkierungen, semantische Navigation, ein Sprunglink und reduzierte Bewegung bilden die Accessibility-Grundlage.
 
 ## Werbung und Qualitätsstempel
 
@@ -84,3 +84,18 @@ Browserprüfung mit Edge/Playwright bei 320, 390, 768 und 1440 Pixeln: Seitenauf
 4. Nach Freigabe Datenbankmigrationen, Authentifizierung und Berechtigungen entwickeln; vorhandene UI schrittweise an echte Daten anbinden.
 
 Diese Phase ist nur zur lokalen Begutachtung vorgesehen. Commit und Push erfolgen erst nach ausdrücklicher Freigabe.
+
+## Überarbeitung nach Referenzabgleich
+
+Die aktuelle Vorschau folgt stärker den bestehenden Portalen:
+
+- `/gewerke`: Text-/Bild-Einstieg und alle 14 bebilderten Gewerke der bestehenden Energieheld-Struktur.
+- `/gewerke/[slug]`: gewerkespezifische Ergebnisse, kombinierbar mit Suchbegriff, Ort, Leistung und Sortierung. Kategorien ohne Mock-Betrieb zeigen einen Leerzustand.
+- `/experten`: breite Unternehmenszeilen statt eines Card-Grids, kompakte Filter oberhalb der Ergebnisse.
+- Werbung ist auf den Gewerke- und Expertseiten sichtbar: ein horizontaler Top-Banner und drei rechts gestapelte Sidebar-Banner. Auf kleinen Displays folgt die Werbung unter dem Hauptinhalt.
+- Die Homepage zeigt ebenfalls einen Top-Banner und bebilderte Gewerkekacheln. Die Navigation „Gewerke“ führt auf die eigene Übersichtsseite.
+- `/werbung` erläutert die Mock-Platzierungen; keine Buchung oder Zahlung.
+- `AdvertisingLayout`, `TradeTiles` und `DirectoryPage` trennen Seitenaufbau, Werbung und Filterdarstellung. `trade_*` ergänzt die bisherigen `destination_*`-Placements.
+- Die 15 Bilder in `public/images/trades/` stammen aus der öffentlich sichtbaren Referenz `https://energieheld.bayern/gewerke`: Hauptmotiv `/images/Headerunterseiten/gewerke-1280x960.jpg`, Kacheln `/images/headers/gewerke/*-800x450.jpg`. Dateinamen entsprechen den lokal gespeicherten Motiven. Anzeigen verwenden diese Bilder als Symbolbilder und ausschließlich fiktive Werbekunden.
+
+Erneut geprüft: ESLint, TypeScript, sechs Filtertests, Produktionsbuild sowie 24 Browser-/Viewport-Kombinationen (320, 390, 768, 1440 Pixel). Zusätzlich: alle 14 Kacheln, Kategorie plus Ort, Anzeigenanordnung, Bilddateien und 404 für unbekannte Gewerke. Keine Supabase-Änderungen.
