@@ -35,8 +35,6 @@ GRANT SELECT ON public.company_profile_categories TO anon, authenticated;
 -- Minimal column privileges needed by the invoker's RLS subqueries. Existing
 -- profile/company/admin RLS still restricts the rows; no write rights are added.
 GRANT SELECT (id, status) ON public.company_profiles TO anon;
-GRANT SELECT (id, owner_user_id) ON public.companies TO anon;
-GRANT SELECT (user_id) ON public.portal_admins TO anon;
 
 CREATE POLICY company_categories_public_approved ON public.company_profile_categories
 FOR SELECT TO anon, authenticated USING (
