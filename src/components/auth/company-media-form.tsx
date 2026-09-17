@@ -3,11 +3,20 @@ import { createClient } from "@/lib/supabase/client";
 import type { MediaState } from "@/lib/company-media";
 import { useActionState } from "react";
 import { saveCompanyMedia } from "@/app/(energieheld)/firma/profil/media-actions";
-import { CompanyImage } from "@/components/portal/company-image";
+import { CompanyLogo } from "@/components/portal/company-image";
+import { ImageGallery } from "@/components/portal/image-gallery";
+import { ListingDetail } from "@/components/portal/listing-detail";
+import { energieheld } from "@/config/energieheld";
+import type { Listing } from "@/types/portal";
 import type { SignedMedia } from "@/lib/company-media";
-import styles from "./auth.module.css";
 
-export function CompanyMediaForm({ media }: { media: SignedMedia }) {
+export function CompanyProfileDesigner({
+  listing,
+  media,
+}: {
+  listing: Listing;
+  media: SignedMedia;
+}) {
   const [state, action, pending] = useActionState<MediaState, FormData>(
     async (_previous, form) => {
       const intent = form.get("intent");
@@ -57,129 +66,160 @@ export function CompanyMediaForm({ media }: { media: SignedMedia }) {
     },
     {},
   );
-  return (
-    <section aria-label="Profilmedien" style={{ marginTop: 32 }}>
-      <h2>Firmenlogo</h2>
-      <p>JPG, PNG oder WebP · maximal 5 MB</p>
-      {media.logo ? (
-        <CompanyImage key={media.logo.src} image={media.logo} />
-      ) : (
-        <p>Noch kein Firmenlogo vorhanden.</p>
-      )}
-      <form action={action} className={styles.form}>
-        <fieldset disabled={pending} style={{ border: 0, padding: 0 }}>
-          <label className={styles.field}>
-            Logo auswählen
-            <input
-              type="file"
-              name="file"
-              accept="image/jpeg,image/png,image/webp"
-              required
+
+  const logoEditor = (
+    <div className="logo-editor">
+      <form action={action}>
+        <input type="hidden" name="intent" value="logo-upload" />
+        <label className="detail-logo logo-upload-target">
+          {media.logo ? (
+            <CompanyLogo
+              key={media.logo.src}
+              image={media.logo}
+              initials={listing.initials}
             />
-          </label>
-          <button
-            className="button button-primary"
-            name="intent"
-            value="logo-upload"
-          >
-            {pending
-              ? "Bitte warten …"
-              : media.logo
-                ? "Logo ersetzen"
-                : "Logo hochladen"}
-          </button>
-        </fieldset>
+          ) : (
+            <span>
+              <span aria-hidden="true">＋</span>
+              <br />
+              Firmenlogo hinzufügen
+            </span>
+          )}
+          <input
+            className="media-file-input"
+            type="file"
+            name="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={pending}
+            aria-label={media.logo ? "Logo ändern" : "Firmenlogo hinzufügen"}
+            onChange={(event) => event.currentTarget.form?.requestSubmit()}
+          />
+        </label>
+        {media.logo && (
+          <p className="small muted" style={{ margin: "8px 0 0" }}>
+            Zum Ändern auf das Logo klicken
+          </p>
+        )}
       </form>
       {media.logo && (
-        <form action={action}>
-          <button
-            className="button"
-            name="intent"
-            value="logo-remove"
-            disabled={pending}
-          >
+        <form action={action} className="media-actions">
+          <button name="intent" value="logo-remove" disabled={pending}>
             Logo entfernen
           </button>
         </form>
       )}
-      <h2>Unternehmensbilder</h2>
-      <p>Bis zu 8 Bilder · JPG, PNG oder WebP · maximal 5 MB pro Bild</p>
-      {!media.images.length && <p>Noch keine Unternehmensbilder vorhanden.</p>}
-      <ol style={{ paddingLeft: 24 }}>
-        {media.images.map((image, index) => (
-          <li key={image.id} style={{ marginBottom: 20 }}>
-            <CompanyImage key={image.src} image={image} />
-            <p>{image.alt}</p>
-            <form action={action}>
-              <input type="hidden" name="image_id" value={image.id} />
-              <button
-                className="button"
-                name="intent"
-                value="gallery-up"
-                disabled={pending || index === 0}
-              >
-                Nach oben
-              </button>{" "}
-              <button
-                className="button"
-                name="intent"
-                value="gallery-down"
-                disabled={pending || index === media.images.length - 1}
-              >
-                Nach unten
-              </button>{" "}
-              <button
-                className="button"
-                name="intent"
-                value="gallery-remove"
-                disabled={pending}
-              >
-                Bild löschen
-              </button>
-            </form>
-          </li>
-        ))}
-      </ol>
-      <form action={action} className={styles.form}>
-        <fieldset
+      <p className="small muted" style={{ fontSize: 11, margin: "8px 0 0" }}>
+        JPG, PNG oder WebP · max. 5 MB
+      </p>
+    </div>
+  );
+  const uploadBar = (
+    <form action={action} className="gallery-upload-bar">
+      <input type="hidden" name="intent" value="gallery-upload" />
+      <label>
+        Bildbeschreibung (optional)
+        <input
+          type="text"
+          name="alt_text"
+          maxLength={500}
           disabled={pending || media.images.length >= 8}
-          style={{ border: 0, padding: 0 }}
-        >
-          <label className={styles.field}>
-            Unternehmensbild auswählen
-            <input
-              type="file"
-              name="file"
-              accept="image/jpeg,image/png,image/webp"
-              required
-            />
-          </label>
-          <label className={styles.field}>
-            Bildbeschreibung (optional)
-            <input name="alt_text" maxLength={500} />
-          </label>
-          <button
-            className="button button-primary"
-            name="intent"
-            value="gallery-upload"
-          >
-            {pending ? "Bitte warten …" : "Bild hochladen"}
-          </button>
-        </fieldset>
-      </form>
+        />
+      </label>
+      <label className="media-upload-link">
+        ＋{" "}
+        {media.images.length ? "Weiteres Bild hinzufügen" : "Bilder auswählen"}
+        <input
+          className="media-file-input"
+          type="file"
+          name="file"
+          accept="image/jpeg,image/png,image/webp"
+          disabled={pending || media.images.length >= 8}
+          aria-label="Unternehmensbild hinzufügen"
+          onChange={(event) => event.currentTarget.form?.requestSubmit()}
+        />
+      </label>
+    </form>
+  );
+  const galleryEditor = (
+    <section
+      className="gallery-editor"
+      aria-label="Unternehmensbilder gestalten"
+    >
+      {media.images.length ? (
+        <>
+          <ImageGallery
+            key={media.images.map((image) => image.src).join("|")}
+            images={media.images}
+            isDemo={false}
+            controls={media.images.map((image, index) => (
+              <form key={image.id} action={action} className="media-actions">
+                <input type="hidden" name="image_id" value={image.id} />
+                <button
+                  name="intent"
+                  value="gallery-up"
+                  disabled={pending || index === 0}
+                  aria-label={"Bild " + (index + 1) + " nach links"}
+                >
+                  ← Nach links
+                </button>
+                <button
+                  name="intent"
+                  value="gallery-down"
+                  disabled={pending || index === media.images.length - 1}
+                  aria-label={"Bild " + (index + 1) + " nach rechts"}
+                >
+                  Nach rechts →
+                </button>
+                <button name="intent" value="gallery-remove" disabled={pending}>
+                  Bild löschen
+                </button>
+              </form>
+            ))}
+          />
+          {uploadBar}
+        </>
+      ) : (
+        <div className="gallery-empty">
+          <strong>Unternehmensbilder hinzufügen</strong>
+          <p>Zeigen Sie Referenzen, Projekte oder Ihr Unternehmen.</p>
+          {uploadBar}
+        </div>
+      )}
+      <p className="small muted" style={{ marginTop: 12 }}>
+        Bis zu 8 Bilder · JPG, PNG oder WebP · maximal 5 MB pro Bild
+      </p>
       {media.images.length >= 8 && (
-        <p>Die maximale Anzahl von 8 Bildern ist erreicht.</p>
+        <p className="small">
+          Alle 8 Bildplätze sind belegt. Zum Hinzufügen bitte zuerst ein Bild
+          löschen.
+        </p>
+      )}
+    </section>
+  );
+  return (
+    <>
+      {pending && (
+        <p className="profile-editor-feedback" role="status">
+          Bild wird gespeichert …
+        </p>
       )}
       {state.error && (
-        <p role="alert" className={styles.error}>
+        <p className="profile-editor-feedback" role="alert">
           {state.error}
         </p>
       )}
       {state.success && (
-        <p role="status" className={styles.success}>
+        <p className="profile-editor-feedback" role="status">
           {state.success}
         </p>
       )}
-    </section>
+      <ListingDetail
+        listing={listing}
+        categories={energieheld.categories}
+        presentation="company"
+        logoEditor={logoEditor}
+        galleryEditor={galleryEditor}
+      />
+    </>
   );
 }

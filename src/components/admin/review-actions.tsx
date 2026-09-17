@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import {
   approveProfile,
   rejectProfile,
+  saveCategories,
 } from "@/app/(energieheld)/admin/actions";
 import {
   canReviewProfile,
@@ -27,7 +28,9 @@ export function ReviewActions({
     {},
   );
   const disabled =
-    pending || !canReviewProfile(status) || Boolean(message.success);
+    pending ||
+    (!canReviewProfile(status) && status !== "approved") ||
+    Boolean(message.success);
   function run(action: () => ReturnType<typeof rejectProfile>) {
     setMessage({});
     startTransition(async () => {
@@ -47,8 +50,8 @@ export function ReviewActions({
       <fieldset className={styles.categories} disabled={disabled}>
         <legend>Öffentliche Gewerke</legend>
         <p>
-          Wählen Sie für die Freigabe mindestens ein Gewerk aus. Diese Zuordnung
-          wird ausschließlich durch Energieheld festgelegt.
+          Wählen Sie mindestens ein offizielles Gewerk aus. Diese Zuordnung wird
+          ausschließlich durch Energieheld festgelegt.
         </p>
         {energieheld.categories.map((category) => (
           <label key={category.id}>
@@ -74,18 +77,28 @@ export function ReviewActions({
           type="button"
           className="button button-primary"
           disabled={disabled}
-          onClick={() => run(() => approveProfile(profileId, categoryIds))}
+          onClick={() =>
+            run(() =>
+              status === "approved"
+                ? saveCategories(profileId, categoryIds)
+                : approveProfile(profileId, categoryIds),
+            )
+          }
         >
-          Profil freigeben
+          {status === "approved"
+            ? "Gewerke speichern"
+            : "Firma erstmalig freischalten"}
         </button>
-        <button
-          type="button"
-          className="button"
-          disabled={disabled}
-          onClick={() => run(() => rejectProfile(profileId))}
-        >
-          Änderungen erforderlich
-        </button>
+        {status !== "approved" && (
+          <button
+            type="button"
+            className="button"
+            disabled={disabled}
+            onClick={() => run(() => rejectProfile(profileId))}
+          >
+            Rückfrage erforderlich
+          </button>
+        )}
       </div>
       {pending && <p role="status">Entscheidung wird gespeichert …</p>}
       {message.error && (

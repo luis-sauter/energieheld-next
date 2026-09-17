@@ -90,7 +90,7 @@ export function CompanyProfileForm({
             <small id="business-areas-help">
               Beschreiben Sie, in welchen Branchen und Tätigkeitsbereichen Ihr
               Unternehmen arbeitet. Die öffentliche Zuordnung zu den
-              Energieheld-Gewerken erfolgt anschließend bei der Prüfung.
+              Energieheld-Gewerken erfolgt durch Energieheld.
             </small>
           )}
         </label>
@@ -113,16 +113,7 @@ export function CompanyProfileForm({
           type="submit"
           disabled={pending}
         >
-          Änderungen speichern
-        </button>
-        <button
-          className="button"
-          name="intent"
-          value="submit"
-          type="submit"
-          disabled={pending}
-        >
-          Zur Prüfung einreichen
+          Speichern & Profil gestalten
         </button>
       </div>
       {pending && <p role="status">Ihr Profil wird gespeichert …</p>}

@@ -10,7 +10,7 @@ import { ReviewActions } from "@/components/admin/review-actions";
 import styles from "@/components/admin/admin.module.css";
 
 export const metadata = {
-  title: "Firmenprofil prüfen",
+  title: "Firma & Gewerke",
   robots: { index: false, follow: false },
 };
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ export default async function ReviewPage({
     try {
       media = await signCompanyMedia(client, profile);
     } catch {
-      /* Approval is disabled until media can be reviewed. */
+      /* Media availability does not block category management. */
     }
   }
   const fields = profile
@@ -78,8 +78,8 @@ export default async function ReviewPage({
               <h2>Firmenlogo und Unternehmensbilder</h2>
               {!media ? (
                 <p role="alert">
-                  Die Medien konnten nicht geladen werden. Bitte laden Sie die
-                  Seite vor der Freigabe neu.
+                  Die Medien konnten nicht geladen werden. Die Gewerke können
+                  unabhängig davon bearbeitet werden.
                 </p>
               ) : (
                 <>
@@ -101,16 +101,14 @@ export default async function ReviewPage({
                 </>
               )}
             </section>
-            {media && (
-              <ReviewActions
-                key={profile.id}
-                profileId={profile.id}
-                status={profile.status}
-                initialCategoryIds={profile.company_profile_categories.map(
-                  (category) => category.category_id,
-                )}
-              />
-            )}
+            <ReviewActions
+              key={profile.id}
+              profileId={profile.id}
+              status={profile.status}
+              initialCategoryIds={profile.company_profile_categories.map(
+                (category) => category.category_id,
+              )}
+            />
           </div>
         )
       )}

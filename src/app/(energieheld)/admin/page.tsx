@@ -10,14 +10,27 @@ export const metadata = {
 };
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
-  const result = await loadReviewOverview(await createClient());
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ansicht?: string }>;
+}) {
+  const published = (await searchParams).ansicht === "veroeffentlicht";
+  const result = await loadReviewOverview(await createClient(), published);
   requireAdminAccess(result.access);
   return (
     <main id="hauptinhalt" className={`container ${styles.page}`}>
-      <p className="eyebrow">Firmenprüfung</p>
+      <p className="eyebrow">Firmen & offizielle Gewerke</p>
       <h1>Adminbereich</h1>
-      <p className="lead">Eingereichte Firmenprofile</p>
+      <p>Erstfreischaltung und Zuordnung zu offiziellen Gewerken.</p>
+      <nav className={styles.actions} aria-label="Firmenansicht">
+        <Link className="button" href="/admin">
+          Erstfreischaltungen
+        </Link>
+        <Link className="button" href="/admin?ansicht=veroeffentlicht">
+          Veröffentlichte Firmen
+        </Link>
+      </nav>
       {result.error ? (
         <p role="alert">{result.error}</p>
       ) : (
@@ -36,9 +49,13 @@ export default async function AdminPage() {
               <dd>{result.counts?.rejected}</dd>
             </div>
           </dl>
-          <h2>Zur Prüfung</h2>
+          <h2>
+            {published
+              ? "Veröffentlichte Firmen"
+              : "Zur erstmaligen Freischaltung"}
+          </h2>
           {!result.profiles?.length ? (
-            <p>Derzeit warten keine Firmenprofile auf Prüfung.</p>
+            <p>Keine Firmenprofile in dieser Ansicht.</p>
           ) : (
             <ul className={styles.queue}>
               {result.profiles.map((profile) => (
@@ -55,7 +72,7 @@ export default async function AdminPage() {
                     className="button button-primary"
                     href={`/admin/firmen/${profile.id}`}
                   >
-                    Profil prüfen
+                    {published ? "Gewerke bearbeiten" : "Firma freischalten"}
                   </Link>
                 </li>
               ))}

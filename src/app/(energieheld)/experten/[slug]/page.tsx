@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { loadPortalCompanyBySlug } from "@/lib/portal-companies";
 import { energieheld } from "@/config/energieheld";
 import { ListingDetail } from "@/components/portal/listing-detail";
-import { Icon } from "@/components/portal/icon";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
@@ -45,21 +44,7 @@ export default async function ExpertDetail({
       <ListingDetail
         listing={listing}
         categories={energieheld.categories}
-        qualityArea={
-          <section className="quality-area">
-            <Icon name="shield" size={38} />
-            <div>
-              <p className="eyebrow">Für besondere Qualität</p>
-              <h2>Der Energieheld-Qualitätsstempel</h2>
-              <p>
-                Hier kann künftig ein separat geprüfter Qualitätsstempel
-                erscheinen. Ein Unternehmensprofil allein bedeutet keine
-                Zertifizierung. Dieser Bereich ist ein Platzhalter, keine
-                Auszeichnung.
-              </p>
-            </div>
-          </section>
-        }
+        presentation="company"
       />
       <Link className="text-link back-link" href="/experten">
         ← Zurück zur Expertenübersicht

@@ -7,9 +7,11 @@ import type { PortalImage } from "@/types/portal";
 export function ImageGallery({
   images,
   isDemo = true,
+  controls,
 }: {
   images: PortalImage[];
   isDemo?: boolean;
+  controls?: React.ReactNode[];
 }) {
   const [selected, setSelected] = useState(0);
   const [failed, setFailed] = useState<Record<string, boolean>>({});
@@ -38,6 +40,9 @@ export function ImageGallery({
           {images.length}
         </span>
       </div>
+      {controls?.[selected] && (
+        <div className="gallery-edit-actions">{controls[selected]}</div>
+      )}
       <div className="gallery-thumbs" aria-label="Bilderauswahl">
         {images.map((image, index) => (
           <button

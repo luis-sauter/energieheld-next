@@ -19,10 +19,12 @@ export function PortalHeader({ brand }: { brand: BrandConfig }) {
   );
   return (
     <>
-      <div className="preview-strip">
-        Designvorschau{" "}
-        <span>· Alle Anbieter und Angebote sind Beispieldaten</span>
-      </div>
+      {brand.id === "reiseportal" && (
+        <div className="preview-strip">
+          Designvorschau{" "}
+          <span>· Alle Anbieter und Angebote sind Beispieldaten</span>
+        </div>
+      )}
       <header className="site-header">
         <div className="container header-inner">
           <Link
@@ -89,7 +91,9 @@ export function PortalFooter({ brand }: { brand: BrandConfig }) {
           © {new Date().getFullYear()} {brand.name}
         </span>
         <span>
-          Frontend-Vorschau · Fiktive Profile · Keine Kontaktvermittlung
+          {brand.id === "reiseportal"
+            ? "Frontend-Vorschau · Fiktive Profile · Keine Kontaktvermittlung"
+            : "Unternehmensverzeichnis · Beispielprofile sind gekennzeichnet"}
         </span>
       </div>
     </footer>

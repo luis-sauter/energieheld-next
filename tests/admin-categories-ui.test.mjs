@@ -12,7 +12,7 @@ registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier.endsWith("/admin/actions"))
       return {
-        url: "data:text/javascript,export async function approveProfile(){};export async function rejectProfile(){}",
+        url: "data:text/javascript,export async function approveProfile(){};export async function rejectProfile(){};export async function saveCategories(){}",
         shortCircuit: true,
       };
     if (specifier.endsWith(".module.css"))
@@ -70,7 +70,6 @@ test("admin UI renders every canonical category and preselects previous assignme
 
 test("reviewed and draft profiles show specific messages and disable category changes", () => {
   for (const [status, message] of [
-    ["approved", "Dieses Profil wurde freigegeben."],
     ["rejected", "Für dieses Profil wurden Änderungen angefordert."],
     ["draft", "Dieses Profil wurde noch nicht zur Prüfung eingereicht."],
   ]) {
@@ -80,4 +79,11 @@ test("reviewed and draft profiles show specific messages and disable category ch
     for (const button of html.match(/<button[^>]+>/g))
       assert.ok(button.includes('disabled=""'));
   }
+});
+
+test("published company categories remain editable without another publication review", () => {
+  const html = render("approved", ["dach"]);
+  assert.match(html, /Gewerke speichern/);
+  assert.doesNotMatch(html, /<fieldset[^>]*disabled/);
+  assert.doesNotMatch(html, /Rückfrage erforderlich/);
 });

@@ -89,30 +89,38 @@ export function ListingDetail({
   categories,
   qualityArea,
   headingLevel = 1,
+  presentation,
+  logoEditor,
+  galleryEditor,
 }: {
   listing: Listing;
   categories: Category[];
   qualityArea?: React.ReactNode;
   headingLevel?: 1 | 2;
+  presentation?: "company";
+  logoEditor?: React.ReactNode;
+  galleryEditor?: React.ReactNode;
 }) {
   const Heading = headingLevel === 1 ? "h1" : "h2";
-  return (
+  const content = (
     <>
       <div className="detail-heading">
-        <div
-          className="detail-logo"
-          aria-label={
-            listing.logo
-              ? `Logo von ${listing.name}`
-              : `Initialen ${listing.name}`
-          }
-        >
-          <CompanyLogo
-            key={listing.logo?.src ?? listing.initials}
-            image={listing.logo}
-            initials={listing.initials}
-          />
-        </div>
+        {logoEditor ?? (
+          <div
+            className="detail-logo"
+            aria-label={
+              listing.logo
+                ? `Logo von ${listing.name}`
+                : `Initialen ${listing.name}`
+            }
+          >
+            <CompanyLogo
+              key={listing.logo?.src ?? listing.initials}
+              image={listing.logo}
+              initials={listing.initials}
+            />
+          </div>
+        )}
         <div>
           <div className="inline-tags">
             {listing.isDemo && <Badge>Beispielprofil</Badge>}
@@ -134,16 +142,19 @@ export function ListingDetail({
       </div>
       <div className="detail-grid">
         <div>
-          {listing.images.length > 0 && (
-            <ImageGallery
-              key={listing.images.map((image) => image.src).join("|")}
-              images={listing.images}
-              isDemo={listing.isDemo}
-            />
-          )}
+          {galleryEditor ??
+            (listing.images.length > 0 && (
+              <ImageGallery
+                key={listing.images.map((image) => image.src).join("|")}
+                images={listing.images}
+                isDemo={listing.isDemo}
+              />
+            ))}
           {listing.description && (
             <section className="detail-section">
-              <p className="eyebrow">Ein guter erster Eindruck</p>
+              {!presentation && (
+                <p className="eyebrow">Ein guter erster Eindruck</p>
+              )}
               <h2>Über {listing.name}</h2>
               <p>{listing.description}</p>
             </section>
@@ -174,5 +185,10 @@ export function ListingDetail({
         </aside>
       </div>
     </>
+  );
+  return presentation === "company" ? (
+    <div className="company-profile">{content}</div>
+  ) : (
+    content
   );
 }

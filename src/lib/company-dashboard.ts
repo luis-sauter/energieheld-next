@@ -25,7 +25,7 @@ export async function loadCompanyDashboard(supabase: SupabaseClient) {
   const { data: profile, error: profileError } = await supabase
     .from("company_profiles")
     .select(
-      "id, logo_path, company_profile_images(id,storage_path,alt_text,sort_order), display_name, business_areas, tagline, description, phone, public_email, website, street, postal_code, city, region, status, company_profile_categories(category_id)",
+      "id, slug, country, logo_path, company_profile_images(id,storage_path,alt_text,sort_order), display_name, business_areas, tagline, description, phone, public_email, website, street, postal_code, city, region, status, company_profile_categories(category_id)",
     )
     .eq("company_id", company.id)
     .maybeSingle();
