@@ -77,6 +77,9 @@ export default async function CompanyPage() {
           Profil bearbeiten
         </Link>
         <LogoutButton />
+        <Link className="button" href="/firma/anfragen">
+          Anfragen
+        </Link>
       </div>
     </main>
   );
