@@ -6,8 +6,7 @@ import { HeroSearch } from "@/components/portal/search";
 import { ListingGrid } from "@/components/portal/listings";
 import { TradeTiles } from "@/components/portal/trades";
 import { trades } from "@/config/trades";
-import { AdSlot } from "@/components/portal/ads";
-import { energyAds } from "@/data/energy-ads";
+import { CampaignSlot } from "@/components/advertising/campaign-view";
 import { Icon } from "@/components/portal/icon";
 
 export default function Home() {
@@ -50,7 +49,7 @@ export default function Home() {
         </div>
       </section>
       <div className="container homepage-ad">
-        <AdSlot placement="trade_top" ad={energyAds[0]} />
+        <CampaignSlot placement="top_banner" />
       </div>
       <div className="trust-row container">
         <span>

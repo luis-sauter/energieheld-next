@@ -93,12 +93,36 @@ const originalFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = originalFetch;
 });
-function api(rows = [row], failure = false) {
+function api(rows = [row], failure = false, ads = []) {
   const requests = [];
   globalThis.fetch = async (input, init) => {
     const url = new URL(input),
       headers = new Headers(init?.headers);
     requests.push({ url, headers });
+    if (url.pathname === "/rest/v1/rpc/get_active_ad_campaigns") {
+      assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
+      assert.equal(headers.get("cookie"), null);
+      requests.at(-1).body = JSON.parse(init.body);
+      return new Response(JSON.stringify(ads), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+    if (url.pathname === "/storage/v1/object/sign/ad-media") {
+      assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
+      assert.equal(headers.get("cookie"), null);
+      const body = JSON.parse(init.body);
+      assert.equal(body.expiresIn, 300);
+      return new Response(
+        JSON.stringify(
+          body.paths.map((path) => ({
+            path,
+            error: null,
+            signedURL: "/object/sign/ad-media/" + path + "?token=temporary",
+          })),
+        ),
+        { headers: { "content-type": "application/json" } },
+      );
+    }
     if (url.pathname === "/auth/v1/user")
       return new Response(
         JSON.stringify({
@@ -153,6 +177,61 @@ const filters = {
   service: "",
   sort: "",
 };
+test("public ads use one anonymous RPC and one signing batch; real cards are labelled without demo ads", async () => {
+  const { loadPublicAds } = await import("../src/lib/public-ads.ts");
+  const ads = [
+    "top_banner",
+    "sidebar_top",
+    "sidebar_middle",
+    "sidebar_bottom",
+  ].map((placement, i) => ({
+    id: `ad-${i}`,
+    placement,
+    headline: `Aktive Anzeige ${i}`,
+    body_text: "Angebot",
+    target_url: "https://advertiser.example.org",
+    image_path: `campaigns/ad-${i}/creative/test.png`,
+  }));
+  const requests = api([row], false, ads);
+  const loaded = await loadPublicAds("solar");
+  assert.equal(loaded.length, 4);
+  assert.equal(requests.length, 2);
+  assert.deepEqual(requests[0].body, {
+    p_scope_type: "trade",
+    p_category_id: "solar",
+  });
+  for (const request of requests) {
+    assert.equal(request.headers.get("cookie"), null);
+    assert.equal(
+      request.headers.get("authorization"),
+      "Bearer sb_publishable_test",
+    );
+  }
+  const directoryRequests = api([row], false, ads);
+  const html = renderToStaticMarkup(
+    await DirectoryPage({ searchParams: Promise.resolve({}) }),
+  );
+  assert.equal(
+    directoryRequests.filter((r) =>
+      r.url.pathname.endsWith("get_active_ad_campaigns"),
+    ).length,
+    1,
+  );
+  assert.match(html, /Aktive Anzeige 0/);
+  assert.match(html, /Aktive Anzeige 3/);
+  assert.match(html, /rel="sponsored noopener noreferrer"/);
+  assert.doesNotMatch(html, /Demobanner|Demo ansehen/);
+  assert.deepEqual(directoryRequests.find((r) => r.body)?.body, {
+    p_scope_type: "experts_directory",
+    p_category_id: null,
+  });
+  api([row]);
+  const empty = renderToStaticMarkup(
+    await DirectoryPage({ searchParams: Promise.resolve({}) }),
+  );
+  assert.match(empty, /Freier Werbeplatz/);
+  assert.doesNotMatch(empty, /Demobanner/);
+});
 for (const status of ["approved", "draft", "pending", "rejected"])
   test(`public list and detail visibility: ${status}`, async () => {
     api([{ ...row, status }]);

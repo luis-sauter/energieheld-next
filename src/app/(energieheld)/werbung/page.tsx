@@ -1,5 +1,5 @@
 import Link from "next/link";
-export const metadata = { title: "Werbeplätze – Vorschau" };
+export const metadata = { title: "Werbung auf Energieheld" };
 export default function AdvertisingPage() {
   return (
     <main id="hauptinhalt" className="container provider-page">
@@ -7,21 +7,22 @@ export default function AdvertisingPage() {
       <h1>Sichtbar, wo Projekte beginnen.</h1>
       <p className="lead">
         Ein großer Banner oberhalb der Inhalte und drei eigenständige
-        Anzeigenplätze in der rechten Spalte bieten künftig Raum für
-        Werbepartner.
+        Anzeigenplätze in der rechten Spalte bieten Raum für Werbepartner.
       </p>
       <div className="notice">
         <div>
-          <h2>Diese Anzeigen sind Demonstrationen.</h2>
+          <h2>Ihre Werbekampagne planen</h2>
           <p>
-            Alle Werbekunden und Angebote in der Vorschau sind fiktiv. Es ist
-            keine Buchung oder Zahlung möglich. Anzeigen bleiben unabhängig von
-            Unternehmensprofilen und vom Qualitätsstempel.
+            Wählen Sie im Firmenbereich Ihren Werbeplatz, den
+            Ausspielungsbereich und den gewünschten Zeitraum. Nach der Prüfung
+            bestätigt das Energieheld-Team den verfügbaren Zeitraum. Werbung
+            bleibt unabhängig von Profilranking und Qualitätssiegel. Eine
+            Zahlung ist in diesem Schritt nicht vorgesehen.
           </p>
         </div>
       </div>
-      <Link className="button button-primary" href="/gewerke">
-        Zurück zu den Gewerken →
+      <Link className="button button-primary" href="/firma/werbung">
+        Werbekampagne planen →
       </Link>
     </main>
   );

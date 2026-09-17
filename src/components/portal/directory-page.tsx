@@ -9,6 +9,7 @@ import { EmptyState } from "./listings";
 import { CompanyLogo } from "./company-image";
 import { Icon } from "./icon";
 import { QualitySeal } from "@/components/quality/quality-seal";
+import { loadPublicAds } from "@/lib/public-ads";
 
 export async function DirectoryPage({
   searchParams,
@@ -27,7 +28,10 @@ export async function DirectoryPage({
     service: "",
     sort: read("sort"),
   };
-  const loaded = await loadPortalCompanies();
+  const [loaded, ads] = await Promise.all([
+    loadPortalCompanies(),
+    loadPublicAds(trade?.id),
+  ]);
   const results = loaded.data ? filterListings(loaded.data, filters) : [];
   const action = trade ? `/gewerke/${trade.id}` : "/experten";
   return (
@@ -68,7 +72,7 @@ export async function DirectoryPage({
           />
         </div>
       </section>
-      <AdvertisingLayout>
+      <AdvertisingLayout ads={ads}>
         <form
           action={action}
           method="get"
