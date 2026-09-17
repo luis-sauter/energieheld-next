@@ -24,6 +24,9 @@ export default async function AdminPage({
     <main id="hauptinhalt" className={`container ${styles.page}`}>
       <p className="eyebrow">Firmen & offizielle Gewerke</p>
       <h1>Adminbereich</h1>
+      <Link className="button" href="/admin/werbung">
+        Werbekampagnen prüfen
+      </Link>
       <p>Erstfreischaltung und Zuordnung zu offiziellen Gewerken.</p>
       <section>
         <h2>Offene Verifizierungsanfragen</h2>

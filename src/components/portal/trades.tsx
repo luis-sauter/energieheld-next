@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Trade } from "@/config/trades";
-import { energyAds } from "@/data/energy-ads";
-import { AdSlot } from "./ads";
+import { CampaignSlot } from "@/components/advertising/campaign-view";
+import type { ActiveAd, AdPlacementId } from "@/lib/ad-values";
 import { Icon } from "./icon";
 
 export function TradeTiles({ items }: { items: Trade[] }) {
@@ -33,16 +33,35 @@ export function TradeTiles({ items }: { items: Trade[] }) {
   );
 }
 
-export function AdvertisingLayout({ children }: { children: ReactNode }) {
+export function AdvertisingLayout({
+  children,
+  ads = [],
+}: {
+  children: ReactNode;
+  ads?: ActiveAd[];
+}) {
   return (
     <div className="commercial-layout">
-      <AdSlot placement="trade_top" ad={energyAds[0]} />
+      <CampaignSlot
+        placement="top_banner"
+        ad={ads.find((ad) => ad.placement === "top_banner")}
+      />
       <div className="commercial-columns">
         <div className="commercial-content">{children}</div>
         <aside className="commercial-sidebar" aria-label="Werbeanzeigen">
           <p className="sidebar-title">Partner für Ihr Vorhaben</p>
-          {energyAds.slice(1).map((ad) => (
-            <AdSlot key={ad.id} placement={ad.placement} ad={ad} />
+          {(
+            [
+              "sidebar_top",
+              "sidebar_middle",
+              "sidebar_bottom",
+            ] as AdPlacementId[]
+          ).map((placement) => (
+            <CampaignSlot
+              key={placement}
+              placement={placement}
+              ad={ads.find((ad) => ad.placement === placement)}
+            />
           ))}
           <Link className="advertise-link" href="/werbung">
             Hier könnte Ihre Anzeige stehen <Icon name="arrow" size={16} />
