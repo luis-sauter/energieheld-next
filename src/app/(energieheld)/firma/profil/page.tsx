@@ -1,5 +1,3 @@
-import { signCompanyMedia } from "@/lib/company-media";
-import { CompanyMediaForm } from "@/components/auth/company-media-form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -20,14 +18,6 @@ export default async function CompanyProfilePage() {
   const dashboard = await loadCompanyDashboard(client);
   if (!dashboard.authenticated) redirect("/login");
   const { profile, error } = dashboard;
-  let media;
-  if (profile && !error) {
-    try {
-      media = await signCompanyMedia(client, profile);
-    } catch {
-      /* Show a neutral retry hint below. */
-    }
-  }
   const values = profile
     ? (Object.fromEntries(
         profileFields.map((field) => [field, profile[field] ?? ""]),
@@ -49,19 +39,11 @@ export default async function CompanyProfilePage() {
               Profilstatus: <strong>{profileStatus(profile.status)}</strong>
             </p>
             <p>
-              Änderungen an freigegebenen oder abgelehnten Profilen werden beim
-              Speichern als Entwurf übernommen. Reichen Sie das Profil
-              anschließend erneut zur Prüfung ein.
+              Schritt 1 von 2: Pflegen Sie Ihre Angaben. Im nächsten Schritt
+              gestalten Sie Ihr Profil mit Logo und Bildern. Änderungen an
+              veröffentlichten Profilen sind direkt sichtbar.
             </p>
             <CompanyProfileForm initialValues={values} />
-            {media ? (
-              <CompanyMediaForm media={media} />
-            ) : (
-              <p role="alert">
-                Die Medien konnten gerade nicht geladen werden. Bitte laden Sie
-                die Seite neu.
-              </p>
-            )}
           </>
         )}
         <div className={styles.links}>

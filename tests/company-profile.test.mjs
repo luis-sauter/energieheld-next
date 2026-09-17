@@ -89,7 +89,7 @@ test("company can save business areas as text without assigning categories", asy
   assert.ok(result.success);
   const write = db.queries.find((q) => q.payload);
   assert.equal(write.payload.business_areas, "Dämmung und Fassade");
-  assert.equal(write.payload.status, "draft");
+  assert.equal(write.payload.status, "approved");
   assert.equal("category_ids" in write.payload, false);
   assert.equal("company_profile_categories" in write.payload, false);
   assert.equal(
@@ -216,14 +216,11 @@ test("forged company IDs, slug, approved status and timestamps are ignored", asy
   assert.equal(write.payload.submitted_at, null);
 });
 
-test("normal save preserves draft and pending; reviewed changes return to draft", async () => {
+test("normal save preserves every stored status including approved", async () => {
   for (const status of ["draft", "pending", "approved", "rejected"]) {
     const db = client({ status });
     await updateOwnCompanyProfile(db, form());
-    assert.equal(
-      db.queries[2].payload.status,
-      status === "pending" ? "pending" : "draft",
-    );
+    assert.equal(db.queries[2].payload.status, status);
     if (status === "pending")
       assert.equal("submitted_at" in db.queries[2].payload, false);
   }
@@ -236,7 +233,10 @@ test("submission atomically saves fields, sets pending and a server timestamp", 
     db,
     form({ intent: "submit", status: "approved", submitted_at: "2000-01-01" }),
   );
-  assert.equal(result.success, "Ihr Profil wurde zur Prüfung eingereicht.");
+  assert.equal(
+    result.success,
+    "Ihr Profil wurde zur erstmaligen Freischaltung eingereicht.",
+  );
   const writes = db.queries.filter((q) => q.payload);
   assert.equal(writes.length, 1);
   assert.equal(writes[0].payload.status, "pending");

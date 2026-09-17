@@ -21,6 +21,7 @@ export async function saveCompanyMedia(
   if (result.success) {
     revalidatePath("/firma");
     revalidatePath("/firma/profil");
+    revalidatePath("/firma/profil/gestalten");
     revalidatePath("/admin", "layout");
     revalidatePath("/experten", "layout");
     revalidatePath("/gewerke", "layout");

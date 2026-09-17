@@ -255,8 +255,7 @@ export async function changeOwnCompanyMedia(
     }
     if (intent === "logo-upload") await cleanup(profile.logo_path);
     return {
-      success:
-        "Das Bild wurde gespeichert. Reichen Sie Ihr Profil anschließend zur Prüfung ein.",
+      success: "Das Bild wurde gespeichert.",
     };
   }
   if (intent === "logo-remove") {

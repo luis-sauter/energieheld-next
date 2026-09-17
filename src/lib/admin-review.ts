@@ -47,7 +47,10 @@ export function isProfileId(value: unknown): value is string {
   );
 }
 
-export async function loadReviewOverview(supabase: SupabaseClient) {
+export async function loadReviewOverview(
+  supabase: SupabaseClient,
+  published = false,
+) {
   const access = await checkAdmin(supabase);
   if (access !== "admin") return { access };
   const [pending, approved, rejected, queue] = await Promise.all([
@@ -68,7 +71,7 @@ export async function loadReviewOverview(supabase: SupabaseClient) {
       .select(
         "id, display_name, city, region, submitted_at, companies!inner(legal_name)",
       )
-      .eq("status", "pending")
+      .eq("status", published ? "approved" : "pending")
       .order("submitted_at", { ascending: true, nullsFirst: false })
       .order("id", { ascending: true }),
   ]);
@@ -176,4 +179,37 @@ export function rejectPendingProfile(
   profileId: string,
 ) {
   return reviewProfile(supabase, profileId, "rejected");
+}
+
+export async function updatePublishedCategories(
+  supabase: SupabaseClient,
+  profileId: string,
+  categoryIds: unknown,
+): Promise<ReviewResult> {
+  const access = await checkAdmin(supabase);
+  if (access !== "admin") return { access };
+  const categories = validateCategoryIds(categoryIds);
+  if (!isProfileId(profileId) || categories.error)
+    return {
+      access,
+      error: categories.error ?? "Das Firmenprofil wurde nicht gefunden.",
+    };
+  try {
+    const { error } = await supabase.rpc("set_company_profile_categories", {
+      p_profile_id: profileId,
+      p_category_ids: categories.ids,
+    });
+    if (error)
+      return {
+        access,
+        error:
+          "Die Gewerke konnten nicht gespeichert werden. Bitte laden Sie die Seite neu.",
+      };
+    return { access, success: "Die offiziellen Gewerke wurden gespeichert." };
+  } catch {
+    return {
+      access,
+      error: "Die Gewerke konnten gerade nicht gespeichert werden.",
+    };
+  }
 }

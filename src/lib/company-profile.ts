@@ -106,13 +106,15 @@ export async function updateOwnCompanyProfile(
 
   // Never accept ownership, slug, status or timestamps from form data.
   const status =
-    intent === "submit" || profile.status === "pending" ? "pending" : "draft";
+    intent === "submit" && profile.status !== "approved"
+      ? "pending"
+      : profile.status;
   const update = {
     ...Object.fromEntries(
       profileFields.map((key) => [key, values[key] || null]),
     ),
     status,
-    ...(intent === "submit"
+    ...(intent === "submit" && profile.status !== "approved"
       ? { submitted_at: new Date().toISOString() }
       : status === "draft"
         ? { submitted_at: null }
@@ -139,8 +141,8 @@ export async function updateOwnCompanyProfile(
     };
   return {
     success:
-      intent === "submit"
-        ? "Ihr Profil wurde zur Prüfung eingereicht."
+      intent === "submit" && profile.status !== "approved"
+        ? "Ihr Profil wurde zur erstmaligen Freischaltung eingereicht."
         : "Ihre Änderungen wurden gespeichert.",
   };
 }

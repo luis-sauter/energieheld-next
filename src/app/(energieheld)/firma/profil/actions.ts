@@ -25,6 +25,9 @@ export async function saveProfile(
   if (result.success) {
     revalidatePath("/firma");
     revalidatePath("/firma/profil");
+    revalidatePath("/firma/profil/gestalten");
+    revalidatePath("/experten", "layout");
+    redirect("/firma/profil/gestalten");
   }
   return result;
 }

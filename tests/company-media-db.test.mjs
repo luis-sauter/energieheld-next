@@ -1,8 +1,6 @@
 import test, { before, after, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import { PGlite } from "@electric-sql/pglite";
-const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+import { createMediaTestDatabase } from "./helpers/media-database.mjs";
 const owner = "11111111-1111-4111-8111-111111111111",
   other = "22222222-2222-4222-8222-222222222222",
   admin = "33333333-3333-4333-8333-333333333333";
@@ -12,25 +10,7 @@ const path = (kind = "gallery", n = 0, id = profile) =>
   `profiles/${id}/${kind}/00000000-0000-4000-8000-${String(n).padStart(12, "0")}.png`;
 let db;
 before(async () => {
-  db = new PGlite();
-  await db.exec(await read("./fixtures/company-schema.sql"));
-  await db.exec(`create schema storage;
- create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
- create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text references storage.buckets(id),name text,unique(bucket_id,name));
- alter table storage.objects enable row level security;
- grant usage on schema storage to anon,authenticated;
- grant select on storage.objects to anon,authenticated;
- grant insert,update,delete on storage.objects to authenticated;
- create function storage.foldername(name text) returns text[] language sql immutable as $$ select (string_to_array(name,'/'))[1:array_length(string_to_array(name,'/'),1)-1] $$;
- alter table company_profiles add column slug text, add column tagline text, add column description text,
- add column phone text, add column public_email text, add column website text, add column postal_code text,
- add column city text, add column region text, add column country text, add column logo_url text;`);
-  for (const name of [
-    "20260916145904_add_company_categories_and_admin_assignment.sql",
-    "20260916195841_grant_public_company_profile_read.sql",
-    "20260916202508_company_profile_media.sql",
-  ])
-    await db.exec(await read("../supabase/migrations/" + name));
+  db = await createMediaTestDatabase();
   await db.query("insert into portal_admins values ($1)", [admin]);
   await db.query("insert into companies values ($1,$1,'Own'),($2,$2,'Other')", [
     owner,

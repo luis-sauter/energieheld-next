@@ -1,4 +1,5 @@
 import "server-only";
+import { companyProfileListing } from "./company-presentation";
 import { signCompanyMedia, type MediaRow } from "./company-media";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Listing } from "@/types/portal";
@@ -34,39 +35,7 @@ async function toListing(
   row: PublicProfile,
 ): Promise<Listing> {
   const media = await signCompanyMedia(client, row);
-  return {
-    id: row.id,
-    slug: row.slug,
-    name: row.display_name,
-    initials: row.display_name
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((word) => word[0])
-      .join("")
-      .toLocaleUpperCase("de"),
-    tagline: row.tagline ?? "",
-    description: row.description ?? "",
-    categoryIds: row.company_profile_categories.map(
-      (category) => category.category_id,
-    ),
-    location: {
-      postalCode: row.postal_code ?? "",
-      city: row.city ?? "",
-      region: row.region ?? "",
-      country: row.country ?? "",
-    },
-    businessAreas: row.business_areas ?? "",
-    services: [],
-    images: media.images,
-    logo: media.logo,
-    contact: {
-      email: row.public_email ?? "",
-      phone: row.phone ?? "",
-      website: row.website ?? "",
-    },
-    isDemo: false,
-  };
+  return companyProfileListing(row, media);
 }
 
 type Result<T> = { data: T; error: null } | { data: null; error: string };
