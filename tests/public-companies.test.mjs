@@ -635,3 +635,42 @@ test("quality seal is embedded in list query without extra per-card reads and ne
   );
   assert.doesNotMatch(demoHtml, /Persönlich verifiziert/);
 });
+
+test("private pending/rejected requests never produce public badges or request details", async () => {
+  for (const status of ["pending", "rejected", "approved"]) {
+    const requests = api([
+      {
+        ...row,
+        company_quality_reviews: null,
+        company_quality_requests: {
+          status,
+          requested_at: "2026-09-17T12:00:00Z",
+        },
+      },
+    ]);
+    const html = renderToStaticMarkup(
+      await DirectoryPage({
+        searchParams: Promise.resolve({ q: "Test Firma" }),
+      }),
+    );
+    assert.doesNotMatch(
+      html,
+      /Persönlich verifiziert|Verifizierung angefragt|Verifizierungsanfrage/,
+    );
+    assert.ok(
+      requests.every(
+        (r) =>
+          !r.url.searchParams
+            .get("select")
+            ?.includes("company_quality_requests"),
+      ),
+    );
+    const detail = renderToStaticMarkup(
+      await Detail({ params: Promise.resolve({ slug: row.slug }) }),
+    );
+    assert.doesNotMatch(
+      detail,
+      /Persönlich verifiziert|Verifizierung angefragt|Verifizierungsanfrage/,
+    );
+  }
+});

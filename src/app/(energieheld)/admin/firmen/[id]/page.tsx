@@ -113,6 +113,7 @@ export default async function ReviewPage({
             <QualityReviewForm
               profileId={profile.id}
               review={profile.company_quality_reviews}
+              request={profile.company_quality_requests}
             />
           </div>
         )

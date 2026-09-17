@@ -367,8 +367,22 @@ test("quality admin UI exposes separate verification controls; company dashboard
   const absent = renderToStaticMarkup(
     createElement(QualityReviewForm, { profileId: "test" }),
   );
-  assert.match(absent, /Als persönlich verifiziert markieren/);
+  assert.match(absent, /Keine Verifizierung angefragt/);
+  assert.doesNotMatch(absent, /value="verify"/);
   assert.doesNotMatch(absent, /Verifizierung entfernen/);
+  const pending = renderToStaticMarkup(
+    createElement(QualityReviewForm, {
+      profileId: "test",
+      request: {
+        status: "pending",
+        requested_at: "2026-09-17T12:00:00Z",
+        decided_at: null,
+      },
+    }),
+  );
+  assert.match(pending, /Verifizierung angefragt am/);
+  assert.match(pending, /Persönlich verifizieren/);
+  assert.match(pending, /Anfrage ablehnen/);
   const present = renderToStaticMarkup(
     createElement(QualityReviewForm, { profileId: "test", review }),
   );
@@ -387,4 +401,47 @@ test("quality admin UI exposes separate verification controls; company dashboard
   } finally {
     delete profile.company_quality_reviews;
   }
+});
+
+test("company quality request form shows request states without granting decision controls", async () => {
+  const { QualityRequestForm } =
+    await import("../src/components/quality/quality-request-form.tsx");
+  const request = {
+    status: "pending",
+    requested_at: "2026-09-17T12:00:00Z",
+    decided_at: null,
+  };
+  const empty = renderToStaticMarkup(createElement(QualityRequestForm));
+  assert.match(empty, /Verifizierung anfragen/);
+  assert.match(empty, /Voraussetzungen und Unterlagen/);
+  const pending = renderToStaticMarkup(
+    createElement(QualityRequestForm, { request }),
+  );
+  assert.match(pending, /Verifizierung angefragt/);
+  assert.match(pending, /2026/);
+  assert.doesNotMatch(pending, /<button/);
+  const rejected = renderToStaticMarkup(
+    createElement(QualityRequestForm, {
+      request: { ...request, status: "rejected" },
+    }),
+  );
+  assert.match(rejected, /Verifizierung derzeit nicht bestätigt/);
+  assert.match(rejected, /Erneut anfragen/);
+  const verified = renderToStaticMarkup(
+    createElement(QualityRequestForm, {
+      request,
+      review: {
+        status: "verified",
+        verified_at: request.requested_at,
+        public_note: null,
+      },
+    }),
+  );
+  assert.match(verified, /Persönlich verifiziert/);
+  assert.doesNotMatch(verified, /<button|Verifizierung angefragt/);
+  for (const html of [empty, pending, rejected, verified])
+    assert.doesNotMatch(
+      html,
+      /name="profile_id"|value="verify"|Anfrage ablehnen/,
+    );
 });

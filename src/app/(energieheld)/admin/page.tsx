@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { loadQualityRequestQueue } from "@/lib/company-quality";
 import { createClient } from "@/lib/supabase/server";
 import { loadReviewOverview } from "@/lib/admin-review";
 import { requireAdminAccess, formatSubmission, legalName } from "@/lib/admin";
@@ -18,11 +19,43 @@ export default async function AdminPage({
   const published = (await searchParams).ansicht === "veroeffentlicht";
   const result = await loadReviewOverview(await createClient(), published);
   requireAdminAccess(result.access);
+  const qualityQueue = await loadQualityRequestQueue(await createClient());
   return (
     <main id="hauptinhalt" className={`container ${styles.page}`}>
       <p className="eyebrow">Firmen & offizielle Gewerke</p>
       <h1>Adminbereich</h1>
       <p>Erstfreischaltung und Zuordnung zu offiziellen Gewerken.</p>
+      <section>
+        <h2>Offene Verifizierungsanfragen</h2>
+        {qualityQueue.error ? (
+          <p role="alert">{qualityQueue.error}</p>
+        ) : !qualityQueue.requests.length ? (
+          <p>Keine offenen Verifizierungsanfragen.</p>
+        ) : (
+          <ul className={styles.queue}>
+            {qualityQueue.requests.map((request) => {
+              const profile = Array.isArray(request.company_profiles)
+                ? request.company_profiles[0]
+                : request.company_profiles;
+              return (
+                <li key={request.profile_id} className={styles.card}>
+                  <h3>{profile?.display_name}</h3>
+                  <p>
+                    Verifizierung angefragt am{" "}
+                    {formatSubmission(request.requested_at)}
+                  </p>
+                  <Link
+                    className="button"
+                    href={`/admin/firmen/${request.profile_id}`}
+                  >
+                    Verifizierungsanfrage prüfen
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
       <nav className={styles.actions} aria-label="Firmenansicht">
         <Link className="button" href="/admin">
           Erstfreischaltungen

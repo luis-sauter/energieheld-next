@@ -10,6 +10,7 @@ export async function saveQualityReview(
   const result = await changeQualityReview(await createClient(), form);
   requireAdminAccess(result.access);
   if (result.success) {
+    revalidatePath("/admin");
     revalidatePath("/admin/firmen/[id]", "page");
     revalidatePath("/experten", "layout");
     revalidatePath("/gewerke", "layout");

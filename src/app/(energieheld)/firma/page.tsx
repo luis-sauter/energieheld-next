@@ -1,3 +1,4 @@
+import { QualityRequestForm } from "@/components/quality/quality-request-form";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { energieheld } from "@/config/energieheld";
@@ -76,10 +77,11 @@ export default async function CompanyPage() {
         <Link className="button" href="/firma/profil">
           Profil bearbeiten
         </Link>
-        {profile?.company_quality_reviews?.status === "verified" && (
-          <p style={{ color: "#285a3b" }}>
-            Ihr Unternehmen ist persönlich verifiziert.
-          </p>
+        {profile && (
+          <QualityRequestForm
+            review={profile.company_quality_reviews}
+            request={profile.company_quality_requests}
+          />
         )}
         <LogoutButton />
         <Link className="button" href="/firma/anfragen">

@@ -298,6 +298,19 @@ test("RPC and queue errors never expose raw backend messages", async () => {
 });
 
 const { changeQualityReview } = await import("../src/lib/company-quality.ts");
+test("quality request queue is admin-only, selects pending and orders by request date", async () => {
+  const { loadQualityRequestQueue } =
+    await import("../src/lib/company-quality.ts");
+  const owner = client({ admin: false });
+  assert.deepEqual((await loadQualityRequestQueue(owner)).requests, []);
+  assert.ok(!owner.calls.some((c) => c.table === "company_quality_requests"));
+  const db = client();
+  await loadQualityRequestQueue(db);
+  const query = db.calls.find((c) => c.table === "company_quality_requests");
+  assert.deepEqual(query.filters, [["status", "pending"]]);
+  assert.deepEqual(query.orders, [["requested_at", { ascending: true }]]);
+  assert.match(query.columns, /company_profiles!inner\(display_name\)/);
+});
 test("quality mutation checks real admin membership and only sends fixed RPC arguments", async () => {
   const form = new FormData();
   form.set("profile_id", profileId);
@@ -324,6 +337,23 @@ test("quality mutation checks real admin membership and only sends fixed RPC arg
       params: { p_profile_id: profileId, p_public_note: "Hinweis" },
     },
   );
+  form.set("intent", "remove");
+  form.set("intent", "reject");
+  const rejection = client();
+  assert.ok((await changeQualityReview(rejection, form)).success);
+  assert.deepEqual(
+    rejection.calls.find((c) => c.rpc),
+    {
+      rpc: "reject_company_verification_request",
+      params: { p_profile_id: profileId },
+    },
+  );
+  const ownerReject = client({ admin: false });
+  assert.equal(
+    (await changeQualityReview(ownerReject, form)).access,
+    "forbidden",
+  );
+  assert.ok(!ownerReject.calls.some((c) => c.rpc));
   form.set("intent", "remove");
   const removal = client();
   assert.ok((await changeQualityReview(removal, form)).success);

@@ -30,10 +30,158 @@ before(async () => {
       "utf8",
     ),
   );
+  await db.exec(
+    await readFile(
+      new URL(
+        "../supabase/migrations/20260917150024_company_quality_requests.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
 });
 after(async () => db?.close());
 beforeEach(async () => db.exec("begin"));
 afterEach(async () => db.exec("rollback"));
+test("quality requests: owner isolation, no public reads and no direct writes, even for admins", async () => {
+  await actor(other);
+  await denied(() =>
+    db.query("select request_company_verification($1)", [profile]),
+  );
+  await actor(owner);
+  await db.query("select request_company_verification($1)", [profile]);
+  assert.equal(
+    (await db.query("select * from company_quality_requests")).rows.length,
+    1,
+  );
+  assert.equal(
+    (await db.query("select status from company_quality_reviews")).rows.length,
+    0,
+  );
+  for (const id of [owner, other, admin]) {
+    await actor(id);
+    assert.equal(
+      (await db.query("select * from company_quality_requests")).rows.length,
+      id === other ? 0 : 1,
+    );
+    await denied(() =>
+      db.query(
+        "insert into company_quality_requests(profile_id,status) values($1,'approved')",
+        [profile],
+      ),
+    );
+    await denied(() =>
+      db.query("update company_quality_requests set status='approved'"),
+    );
+    await denied(() => db.query("delete from company_quality_requests"));
+  }
+  await actor("", "anon");
+  await denied(() => db.query("select * from company_quality_requests"));
+  await denied(() =>
+    db.query("select request_company_verification($1)", [profile]),
+  );
+});
+test("quality requests: only admin decides; rejection can be requested again; pending requests are idempotent", async () => {
+  await actor(owner);
+  await db.query("select request_company_verification($1)", [profile]);
+  const first = (await db.query("select * from company_quality_requests"))
+    .rows[0];
+  await db.query("select request_company_verification($1)", [profile]);
+  assert.deepEqual(
+    (await db.query("select * from company_quality_requests")).rows[0],
+    first,
+  );
+  for (const [id, role] of [
+    [owner, "authenticated"],
+    [other, "authenticated"],
+    ["", "anon"],
+  ]) {
+    await actor(id, role);
+    await denied(() =>
+      db.query("select reject_company_verification_request($1)", [profile]),
+    );
+    await denied(() =>
+      db.query("select verify_company_profile($1,null)", [profile]),
+    );
+  }
+  await actor(admin);
+  await db.query("select reject_company_verification_request($1)", [profile]);
+  const rejected = (await db.query("select * from company_quality_requests"))
+    .rows[0];
+  assert.equal(rejected.status, "rejected");
+  assert.ok(rejected.decided_at);
+  await denied(() =>
+    db.query("select verify_company_profile($1,null)", [profile]),
+  );
+  await actor(owner);
+  await db.query("select request_company_verification($1)", [profile]);
+  const next = (await db.query("select * from company_quality_requests"))
+    .rows[0];
+  assert.equal(next.status, "pending");
+  assert.equal(next.decided_at, null);
+  assert.ok(new Date(next.requested_at) >= new Date(first.requested_at));
+  assert.equal(
+    (await db.query("select status from company_quality_reviews")).rows.length,
+    0,
+  );
+});
+test("quality requests: new seals require pending; approval creates a real review atomically", async () => {
+  await actor(admin);
+  await denied(() =>
+    db.query("select verify_company_profile($1,null)", [profile]),
+  );
+  await verify();
+  const request = (await db.query("select * from company_quality_requests"))
+    .rows[0];
+  assert.equal(request.status, "approved");
+  assert.ok(request.decided_at);
+  assert.equal(
+    (await db.query("select status from company_quality_reviews")).rows[0]
+      .status,
+    "verified",
+  );
+  await denied(() =>
+    db.query("select reject_company_verification_request($1)", [profile]),
+  );
+  await actor(owner);
+  await denied(() =>
+    db.query("select request_company_verification($1)", [profile]),
+  );
+  await actor(admin);
+  await db.query("select remove_company_verification($1)", [profile]);
+  await denied(() =>
+    db.query("select verify_company_profile($1,null)", [profile]),
+  );
+  await actor(owner);
+  await db.query("select request_company_verification($1)", [profile]);
+  assert.equal(
+    (await db.query("select status from company_quality_requests")).rows[0]
+      .status,
+    "pending",
+  );
+});
+test("quality requests: legacy verification remains editable and removable without a request", async () => {
+  await db.query(
+    "insert into company_quality_reviews(profile_id,status,verified_at,verified_by) values($1,'verified',now(),$2)",
+    [profile, admin],
+  );
+  await actor(admin);
+  await db.query("select verify_company_profile($1,'Neue Notiz')", [profile]);
+  assert.equal(
+    (await db.query("select public_note from company_quality_reviews")).rows[0]
+      .public_note,
+    "Neue Notiz",
+  );
+  assert.equal(
+    (await db.query("select * from company_quality_requests")).rows.length,
+    0,
+  );
+  await db.query("select remove_company_verification($1)", [profile]);
+  assert.equal(
+    (await db.query("select status from company_quality_reviews")).rows.length,
+    0,
+  );
+});
 async function actor(id = "", role = "authenticated") {
   await db.exec("reset role");
   await db.query("select set_config('request.jwt.claim.sub',$1,true)", [id]);
@@ -45,6 +193,8 @@ async function denied(run) {
   await db.exec("rollback to savepoint denied;release savepoint denied");
 }
 async function verify() {
+  await actor(owner);
+  await db.query("select request_company_verification($1)", [profile]);
   await actor(admin);
   await db.query("select verify_company_profile($1,$2)", [
     profile,
@@ -178,8 +328,8 @@ test("RPC fixes status and actor, validates notes/profile, allows verifying pend
     db.query("update company_quality_reviews set status='fake'"),
   );
   await db.query("delete from auth.users where id=$1", [admin]);
-  assert.equal(
-    (await db.query("select * from company_quality_reviews")).rows.length,
-    0,
-  );
+  const preserved = (await db.query("select * from company_quality_reviews"))
+    .rows;
+  assert.equal(preserved.length, 1);
+  assert.equal(preserved[0].verified_by, null);
 });
