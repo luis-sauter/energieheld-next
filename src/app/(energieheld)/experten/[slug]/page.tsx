@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { loadPortalCompanyBySlug } from "@/lib/portal-companies";
 import { energieheld } from "@/config/energieheld";
 import { ListingDetail } from "@/components/portal/listing-detail";
+import { InquiryDialog } from "@/components/leads/inquiry-dialog";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
@@ -45,6 +46,11 @@ export default async function ExpertDetail({
         listing={listing}
         categories={energieheld.categories}
         presentation="company"
+        contactAction={
+          !listing.isDemo ? (
+            <InquiryDialog profileId={listing.id} companyName={listing.name} />
+          ) : undefined
+        }
       />
       <Link className="text-link back-link" href="/experten">
         ← Zurück zur Expertenübersicht

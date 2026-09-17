@@ -8,6 +8,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 const source = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
 registerHooks({
   resolve(s, c, next) {
+    if (s.endsWith(".module.css"))
+      return {
+        url: "data:text/javascript,export default {}",
+        shortCircuit: true,
+      };
     if (s === "server-only")
       return { url: "data:text/javascript,export {}", shortCircuit: true };
     if (s === "next/headers" || s.endsWith("/supabase/server"))
@@ -530,4 +535,21 @@ test("demo details keep local symbol galleries after media integration", async (
   assert.match(html, /src="\/images\//);
   assert.match(html, /Symbolbild/);
   assert.match(html, /Beispielprofil/);
+});
+
+test("real approved profile has an inquiry dialog even without public email; demos remain disabled", async () => {
+  api();
+  const real = renderToStaticMarkup(
+    await Detail({ params: Promise.resolve({ slug: row.slug }) }),
+  );
+  assert.match(real, /<dialog/);
+  assert.match(real, /name="consent"/);
+  assert.match(real, /name="website"/);
+  assert.match(real, /Anfrage senden/);
+  api([]);
+  const demo = renderToStaticMarkup(
+    await Detail({ params: Promise.resolve({ slug: demos[0].slug }) }),
+  );
+  assert.doesNotMatch(demo, /<dialog|Anfrage senden/);
+  assert.match(demo, /disabled=""/);
 });

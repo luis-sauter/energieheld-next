@@ -296,3 +296,55 @@ test("Energieheld has no global false demo claim; travel preview stays unchanged
     /Alle Anbieter und Angebote sind Beispieldaten/,
   );
 });
+
+test("inbox route redirects visitors and renders private inquiries and status controls", async () => {
+  const { default: Inbox } =
+    await import("../src/app/(energieheld)/firma/anfragen/page.tsx");
+  globalThis.__profileTestClient = client(false);
+  await assert.rejects(
+    Inbox({ searchParams: Promise.resolve({}) }),
+    /REDIRECT:\/login/,
+  );
+  globalThis.__profileTestClient = client();
+  const original = globalThis.__profileTestClient.from;
+  globalThis.__profileTestClient.from = (table) =>
+    table === "company_leads"
+      ? {
+          select() {
+            return this;
+          },
+          eq() {
+            return this;
+          },
+          order() {
+            return this;
+          },
+          async range() {
+            return {
+              data: [
+                {
+                  id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                  name: "Interessent",
+                  email: "kunde@example.org",
+                  phone: "089123",
+                  message: "Meine Anfrage\nWeitere Angaben",
+                  status: "new",
+                  created_at: "2026-09-17T12:00:00Z",
+                },
+              ],
+              error: null,
+              count: 1,
+            };
+          },
+        }
+      : original(table);
+  const html = renderToStaticMarkup(
+    await Inbox({ searchParams: Promise.resolve({}) }),
+  );
+  assert.match(html, /Interessent/);
+  assert.match(html, /kunde@example.org/);
+  assert.match(html, /Meine Anfrage/);
+  assert.match(html, /Neu/);
+  assert.match(html, /Gelesen/);
+  assert.match(html, /Erledigt/);
+});

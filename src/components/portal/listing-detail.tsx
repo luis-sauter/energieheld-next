@@ -14,7 +14,13 @@ function safeWebsite(value: string): string | null {
   }
 }
 
-export function ContactSection({ listing }: { listing: Listing }) {
+export function ContactSection({
+  listing,
+  contactAction,
+}: {
+  listing: Listing;
+  contactAction?: React.ReactNode;
+}) {
   const website = safeWebsite(listing.contact.website);
   const location = formatLocation(listing.location);
   return (
@@ -60,14 +66,15 @@ export function ContactSection({ listing }: { listing: Listing }) {
         </>
       ) : (
         <>
-          {listing.contact.email && (
-            <a
-              className="button button-primary"
-              href={`mailto:${listing.contact.email}`}
-            >
-              Kontakt aufnehmen
-            </a>
-          )}
+          {contactAction ??
+            (listing.contact.email && (
+              <a
+                className="button button-primary"
+                href={`mailto:${listing.contact.email}`}
+              >
+                Kontakt aufnehmen
+              </a>
+            ))}
           {website && (
             <a
               className="text-link"
@@ -92,6 +99,7 @@ export function ListingDetail({
   presentation,
   logoEditor,
   galleryEditor,
+  contactAction,
 }: {
   listing: Listing;
   categories: Category[];
@@ -100,6 +108,7 @@ export function ListingDetail({
   presentation?: "company";
   logoEditor?: React.ReactNode;
   galleryEditor?: React.ReactNode;
+  contactAction?: React.ReactNode;
 }) {
   const Heading = headingLevel === 1 ? "h1" : "h2";
   const content = (
@@ -185,7 +194,7 @@ export function ListingDetail({
           {qualityArea}
         </div>
         <aside>
-          <ContactSection listing={listing} />
+          <ContactSection listing={listing} contactAction={contactAction} />
         </aside>
       </div>
     </>
