@@ -3,8 +3,8 @@ CREATE TABLE public.company_quality_reviews (
  profile_id uuid PRIMARY KEY REFERENCES public.company_profiles(id) ON DELETE CASCADE,
  status text NOT NULL CHECK (status IN ('verified')),
  verified_at timestamptz NOT NULL,
- -- Deleting an auth account removes its attestations without blocking account deletion.
- verified_by uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+ -- Die Verifizierung bleibt erhalten, wenn der Prüfer-Account später gelöscht wird.
+ verified_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
  public_note text CHECK (public_note IS NULL OR char_length(public_note) <= 1000),
  created_at timestamptz NOT NULL DEFAULT now(),
  updated_at timestamptz NOT NULL DEFAULT now()
