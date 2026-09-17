@@ -553,3 +553,85 @@ test("real approved profile has an inquiry dialog even without public email; dem
   assert.doesNotMatch(demo, /<dialog|Anfrage senden/);
   assert.match(demo, /disabled=""/);
 });
+
+test("quality seal is embedded in list query without extra per-card reads and never affects sorting", async () => {
+  const verified = {
+    status: "verified",
+    verified_at: "2026-09-17T12:00:00Z",
+    public_note: "Persönlich bekannt",
+  };
+  const rows = [
+    {
+      ...row,
+      id: "b",
+      display_name: "Zulu",
+      company_quality_reviews: verified,
+    },
+    {
+      ...row,
+      id: "a",
+      slug: "alpha",
+      display_name: "Alpha",
+      company_quality_reviews: null,
+    },
+  ];
+  const requests = api(rows);
+  const loaded = await loadPublicCompanies();
+  assert.equal(requests.length, 1);
+  assert.match(
+    requests[0].url.searchParams.get("select"),
+    /company_quality_reviews\(status,verified_at,public_note\)/,
+  );
+  assert.doesNotMatch(
+    requests[0].url.searchParams.get("select"),
+    /verified_by/,
+  );
+  assert.equal(loaded.data[0].verification.status, "verified");
+  assert.equal(loaded.data[1].verification, undefined);
+  assert.deepEqual(
+    filterListings(loaded.data, { ...filters, sort: "name" }).map(
+      (x) => x.name,
+    ),
+    ["Alpha", "Zulu"],
+  );
+  api(rows);
+  const directory = renderToStaticMarkup(
+    await DirectoryPage({ searchParams: Promise.resolve({}) }),
+  );
+  assert.equal(
+    (directory.match(/Persönlich verifiziert – Bedeutung anzeigen/g) ?? [])
+      .length,
+    1,
+  );
+  api(rows);
+  const detail = renderToStaticMarkup(
+    await Detail({ params: Promise.resolve({ slug: row.slug }) }),
+  );
+  assert.match(detail, /Persönlich verifiziert/);
+  assert.match(detail, /keine Garantie/);
+  assert.match(detail, /Persönlich bekannt/);
+  api(rows);
+  const unverified = renderToStaticMarkup(
+    await Detail({ params: Promise.resolve({ slug: "alpha" }) }),
+  );
+  assert.doesNotMatch(unverified, /Persönlich verifiziert/);
+  api(rows);
+  const tradePage = await TradePage({
+    params: Promise.resolve({ slug: "daemmung" }),
+    searchParams: Promise.resolve({}),
+  });
+  const trade = renderToStaticMarkup(await DirectoryPage(tradePage.props));
+  assert.equal(
+    (trade.match(/Persönlich verifiziert – Bedeutung anzeigen/g) ?? []).length,
+    1,
+  );
+  const demo = { ...demos[0], verification: verified };
+  const demoHtml = renderToStaticMarkup(
+    createElement(ListingDetail, {
+      listing: demo,
+      categories: energieheld.categories,
+      presentation: "company",
+    }),
+  );
+  assert.doesNotMatch(demoHtml, /Persönlich verifiziert/);
+});

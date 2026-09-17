@@ -7,6 +7,11 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 registerHooks({
   resolve(s, c, next) {
+    if (s === "next/headers")
+      return {
+        url: 'data:text/javascript,export async function headers(){throw Error("Headers not expected during render")}',
+        shortCircuit: true,
+      };
     if (s === "server-only" || s === "next/cache")
       return {
         url: "data:text/javascript,export function revalidatePath(){}",
@@ -347,4 +352,39 @@ test("inbox route redirects visitors and renders private inquiries and status co
   assert.match(html, /Neu/);
   assert.match(html, /Gelesen/);
   assert.match(html, /Erledigt/);
+});
+
+test("quality admin UI exposes separate verification controls; company dashboard is read-only", async () => {
+  const { QualityReviewForm } =
+    await import("../src/components/quality/quality-review-form.tsx");
+  const { default: CompanyPage } =
+    await import("../src/app/(energieheld)/firma/page.tsx");
+  const review = {
+    status: "verified",
+    verified_at: "2026-09-17T12:00:00Z",
+    public_note: "Persönlich bekannt",
+  };
+  const absent = renderToStaticMarkup(
+    createElement(QualityReviewForm, { profileId: "test" }),
+  );
+  assert.match(absent, /Als persönlich verifiziert markieren/);
+  assert.doesNotMatch(absent, /Verifizierung entfernen/);
+  const present = renderToStaticMarkup(
+    createElement(QualityReviewForm, { profileId: "test", review }),
+  );
+  assert.match(present, /Verifizierung entfernen/);
+  assert.match(present, /Persönlich bekannt/);
+  assert.match(present, /2026/);
+  globalThis.__profileTestClient = client();
+  profile.company_quality_reviews = review;
+  try {
+    const html = renderToStaticMarkup(await CompanyPage());
+    assert.match(html, /Ihr Unternehmen ist persönlich verifiziert/);
+    assert.doesNotMatch(
+      html,
+      /Als persönlich verifiziert markieren|Verifizierung entfernen|name="public_note"/,
+    );
+  } finally {
+    delete profile.company_quality_reviews;
+  }
 });

@@ -6,6 +6,11 @@ export type Location = {
   country: string;
 };
 export type PortalImage = { src: string; alt: string };
+export type CompanyVerification = {
+  status: "verified";
+  verified_at: string;
+  public_note: string | null;
+};
 
 export type Listing = {
   id: string;
@@ -22,6 +27,7 @@ export type Listing = {
   logo?: PortalImage;
   contact: { email: string; phone: string; website: string };
   isDemo: boolean;
+  verification?: CompanyVerification;
 };
 
 // A separate presentation object, never an implicit property of a normal listing.

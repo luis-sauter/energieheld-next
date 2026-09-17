@@ -4,6 +4,7 @@ import { Badge } from "./listings";
 import { CompanyLogo } from "./company-image";
 import { Icon } from "./icon";
 import { ImageGallery } from "./image-gallery";
+import { QualitySeal } from "@/components/quality/quality-seal";
 
 function safeWebsite(value: string): string | null {
   try {
@@ -140,6 +141,11 @@ export function ListingDetail({
               ))}
           </div>
           <Heading className="detail-title">{listing.name}</Heading>
+          {presentation === "company" &&
+            !listing.isDemo &&
+            listing.verification?.status === "verified" && (
+              <QualitySeal note={listing.verification.public_note} />
+            )}
           <p className="detail-tagline">{listing.tagline}</p>
           {formatLocation(listing.location) && (
             <p className="location">

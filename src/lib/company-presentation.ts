@@ -1,5 +1,6 @@
-import type { Listing } from "@/types/portal";
+import type { Listing, CompanyVerification } from "@/types/portal";
 import type { SignedMedia } from "./company-media";
+import { readVerification } from "./company-verification";
 
 export type CompanyPresentation = {
   id: string;
@@ -16,6 +17,7 @@ export type CompanyPresentation = {
   public_email?: string | null;
   website?: string | null;
   company_profile_categories: { category_id: string }[];
+  company_quality_reviews?: CompanyVerification | CompanyVerification[] | null;
 };
 export function companyProfileListing(
   profile: CompanyPresentation,
@@ -53,5 +55,6 @@ export function companyProfileListing(
     logo: media.logo,
     services: [],
     isDemo: false,
+    verification: readVerification(profile.company_quality_reviews),
   };
 }

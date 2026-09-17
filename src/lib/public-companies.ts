@@ -2,14 +2,14 @@ import "server-only";
 import { companyProfileListing } from "./company-presentation";
 import { signCompanyMedia, type MediaRow } from "./company-media";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Listing } from "@/types/portal";
+import type { Listing, CompanyVerification } from "@/types/portal";
 import { createPublicClient } from "./supabase/public";
 
 export const PUBLIC_COMPANIES_ERROR =
   "Die Unternehmensprofile konnten gerade nicht geladen werden.";
 
 const publicFields =
-  "id,status,slug,display_name,tagline,description,phone,public_email,website,postal_code,city,region,country,logo_path,company_profile_images(id,storage_path,alt_text,sort_order),business_areas,company_profile_categories(category_id)";
+  "id,status,slug,display_name,tagline,description,phone,public_email,website,postal_code,city,region,country,logo_path,company_profile_images(id,storage_path,alt_text,sort_order),business_areas,company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note)";
 
 type PublicProfile = {
   id: string;
@@ -29,6 +29,7 @@ type PublicProfile = {
   company_profile_images: MediaRow[];
   business_areas: string | null;
   company_profile_categories: { category_id: string }[];
+  company_quality_reviews?: CompanyVerification | CompanyVerification[] | null;
 };
 async function toListing(
   client: SupabaseClient,

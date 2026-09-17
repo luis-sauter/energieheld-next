@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { energieheld } from "../config/energieheld";
+import { readVerification } from "./company-verification";
 
 export function validateCategoryIds(value: unknown) {
   if (!Array.isArray(value) || value.length === 0) {
@@ -103,13 +104,20 @@ export async function loadReviewProfile(
   const { data, error } = await supabase
     .from("company_profiles")
     .select(
-      "id, logo_path, company_profile_images(id,storage_path,alt_text,sort_order), display_name, business_areas, status, submitted_at, tagline, description, phone, public_email, website, street, postal_code, city, region, companies!inner(legal_name), company_profile_categories(category_id)",
+      "id, logo_path, company_profile_images(id,storage_path,alt_text,sort_order), display_name, business_areas, status, submitted_at, tagline, description, phone, public_email, website, street, postal_code, city, region, companies!inner(legal_name), company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note)",
     )
     .eq("id", profileId)
     .maybeSingle();
   return {
     access,
-    profile: data,
+    profile: data
+      ? {
+          ...data,
+          company_quality_reviews: readVerification(
+            data.company_quality_reviews,
+          ),
+        }
+      : data,
     error: error
       ? "Das Firmenprofil konnte gerade nicht geladen werden. Bitte versuchen Sie es erneut."
       : undefined,
