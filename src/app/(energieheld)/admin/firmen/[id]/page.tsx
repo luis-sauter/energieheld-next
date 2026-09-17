@@ -7,6 +7,7 @@ import { loadReviewProfile } from "@/lib/admin-review";
 import { requireAdminAccess, formatSubmission, legalName } from "@/lib/admin";
 import { profileStatus } from "@/lib/auth";
 import { ReviewActions } from "@/components/admin/review-actions";
+import { QualityReviewForm } from "@/components/quality/quality-review-form";
 import styles from "@/components/admin/admin.module.css";
 
 export const metadata = {
@@ -108,6 +109,10 @@ export default async function ReviewPage({
               initialCategoryIds={profile.company_profile_categories.map(
                 (category) => category.category_id,
               )}
+            />
+            <QualityReviewForm
+              profileId={profile.id}
+              review={profile.company_quality_reviews}
             />
           </div>
         )

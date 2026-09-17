@@ -296,3 +296,53 @@ test("RPC and queue errors never expose raw backend messages", async () => {
   assert.ok(result.error);
   assert.equal(result.profiles, undefined);
 });
+
+const { changeQualityReview } = await import("../src/lib/company-quality.ts");
+test("quality mutation checks real admin membership and only sends fixed RPC arguments", async () => {
+  const form = new FormData();
+  form.set("profile_id", profileId);
+  form.set("intent", "verify");
+  form.set("public_note", " Hinweis ");
+  form.set("verified_by", "forged");
+  form.set("status", "approved");
+  for (const options of [
+    { authenticated: false },
+    { admin: false },
+    { adminError: { message: "denied" } },
+  ]) {
+    const db = client(options);
+    const result = await changeQualityReview(db, form);
+    assert.notEqual(result.access, "admin");
+    assert.ok(!db.calls.some((c) => c.rpc));
+  }
+  const db = client();
+  assert.ok((await changeQualityReview(db, form)).success);
+  assert.deepEqual(
+    db.calls.find((c) => c.rpc),
+    {
+      rpc: "verify_company_profile",
+      params: { p_profile_id: profileId, p_public_note: "Hinweis" },
+    },
+  );
+  form.set("intent", "remove");
+  const removal = client();
+  assert.ok((await changeQualityReview(removal, form)).success);
+  assert.deepEqual(
+    removal.calls.find((c) => c.rpc),
+    { rpc: "remove_company_verification", params: { p_profile_id: profileId } },
+  );
+  for (const options of [
+    { rpcError: { message: "private error" } },
+    { rpcThrows: true },
+  ]) {
+    const result = await changeQualityReview(client(options), form);
+    assert.ok(result.error);
+    assert.equal(result.success, undefined);
+    assert.doesNotMatch(result.error, /private/);
+  }
+  form.set("intent", "verify");
+  form.set("public_note", "x".repeat(1001));
+  const invalid = client();
+  assert.ok((await changeQualityReview(invalid, form)).error);
+  assert.ok(!invalid.calls.some((c) => c.rpc));
+});

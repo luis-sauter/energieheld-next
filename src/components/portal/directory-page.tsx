@@ -8,6 +8,7 @@ import { AdvertisingLayout } from "./trades";
 import { EmptyState } from "./listings";
 import { CompanyLogo } from "./company-image";
 import { Icon } from "./icon";
+import { QualitySeal } from "@/components/quality/quality-seal";
 
 export async function DirectoryPage({
   searchParams,
@@ -153,6 +154,10 @@ export async function DirectoryPage({
                   />
                 </div>
                 <div className="row-content">
+                  {!listing.isDemo &&
+                    listing.verification?.status === "verified" && (
+                      <QualitySeal note={listing.verification.public_note} />
+                    )}
                   <span className="row-category">
                     {energieheld.categories
                       .filter((c) => listing.categoryIds.includes(c.id))

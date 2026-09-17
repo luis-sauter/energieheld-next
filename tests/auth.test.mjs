@@ -1,11 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import "./helpers/load-ts.mjs";
 import {
   validateCredentials,
   authErrorMessage,
   profileStatus,
 } from "../src/lib/auth.ts";
-import { loadCompanyDashboard } from "../src/lib/company-dashboard.ts";
+const { loadCompanyDashboard } =
+  await import("../src/lib/company-dashboard.ts");
 
 function registration(overrides = {}) {
   const data = new FormData();

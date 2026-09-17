@@ -76,6 +76,11 @@ export default async function CompanyPage() {
         <Link className="button" href="/firma/profil">
           Profil bearbeiten
         </Link>
+        {profile?.company_quality_reviews?.status === "verified" && (
+          <p style={{ color: "#285a3b" }}>
+            Ihr Unternehmen ist persönlich verifiziert.
+          </p>
+        )}
         <LogoutButton />
         <Link className="button" href="/firma/anfragen">
           Anfragen
