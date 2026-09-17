@@ -156,7 +156,16 @@ test("designer is server protected and renders shared profile with in-place medi
   assert.match(html, /Unternehmensbilder hinzufügen/);
   assert.match(html, /Bauwerk &amp; Energie/);
   assert.match(html, /Kontakt &amp; Standort/);
-  assert.match(html, /Ihr Profil ist veröffentlicht/);
+  assert.match(html, /data-status="approved">Veröffentlicht/);
+  assert.ok(
+    html.indexOf('data-status="approved"') <
+      html.indexOf('class="company-profile"'),
+  );
+  assert.match(html, /Öffentliches Profil ansehen/);
+  assert.doesNotMatch(
+    html,
+    /Ihr Profil ist veröffentlicht|profile-publication/,
+  );
   assert.doesNotMatch(html, /Profil zur erstmaligen Freischaltung einreichen/);
 });
 test("editor gallery shares the public position and preserves contain logo and all media controls", () => {
@@ -176,11 +185,19 @@ test("editor gallery shares the public position and preserves contain logo and a
   );
   assert.match(html, /object-fit:contain/);
   assert.match(html, /class="gallery-main"/);
-  assert.match(html, /Nach links/);
-  assert.match(html, /Nach rechts/);
+  assert.match(html, /nach links verschieben/);
+  assert.match(html, /nach rechts verschieben/);
   assert.match(html, /Bild löschen/);
   assert.match(html, /Logo entfernen/);
-  assert.match(html, /Weiteres Bild hinzufügen/);
+  assert.match(html, /Bild hinzufügen/);
+  assert.match(html, /class="gallery-thumbs"[\s\S]*class="gallery-add-tile"/);
+  assert.doesNotMatch(
+    html.split("<dialog")[0],
+    /type="file"|type="text"|5 MB|Zum Ändern auf/,
+  );
+  assert.match(html, /<dialog[^>]*aria-labelledby="profile-upload-title"/);
+  assert.doesNotMatch(html, /<dialog[^>]*\sopen/);
+  assert.match(html, /Bildbeschreibung \(optional\)/);
   assert.ok(html.indexOf("gallery-main") < html.indexOf("Über Bauwerk"));
   const publicHtml = renderToStaticMarkup(
     createElement(ListingDetail, {
@@ -190,7 +207,11 @@ test("editor gallery shares the public position and preserves contain logo and a
     }),
   );
   assert.match(publicHtml, /class="gallery-main"/);
-  assert.doesNotMatch(publicHtml, /Bild löschen|type="file"/);
+  assert.doesNotMatch(
+    publicHtml,
+    /Bild löschen|type="file"|gallery-add-tile|profile-editor-toolbar|thumbnail-edit-actions/,
+  );
+  assert.match(publicHtml, /Tätigkeitsbereiche/);
   if (process.env.PROFILE_PREVIEW_FILE) {
     const css =
       readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8") +
@@ -210,13 +231,60 @@ test("editor gallery shares the public position and preserves contain logo and a
 test("only new or rejected profiles can request initial publication; pending and approved do not repeat review", () => {
   for (const status of ["draft", "rejected", "pending", "approved"]) {
     const html = renderToStaticMarkup(
-      createElement(CompanyPublication, { status, slug: "firma" }),
+      createElement(CompanyPublication, { status }),
     );
     assert.equal(
       html.includes("Profil zur erstmaligen Freischaltung einreichen"),
       ["draft", "rejected"].includes(status),
     );
+    if (status === "approved" || status === "pending") assert.equal(html, "");
   }
+});
+
+test("editor toolbar reflects all publication states without exposing draft public links", async () => {
+  globalThis.__profileTestClient = client();
+  const labels = {
+    draft: "Entwurf",
+    pending: "Wartet auf Freischaltung",
+    rejected: "Änderungen erforderlich",
+    approved: "Veröffentlicht",
+  };
+  try {
+    for (const [status, label] of Object.entries(labels)) {
+      profile.status = status;
+      const html = renderToStaticMarkup(await DesignPage());
+      const toolbar = html.slice(0, html.indexOf('class="company-profile"'));
+      assert.ok(toolbar.includes(label));
+      assert.equal(
+        toolbar.includes("Öffentliches Profil ansehen"),
+        status === "approved",
+      );
+    }
+  } finally {
+    profile.status = "approved";
+  }
+});
+
+test("full gallery disables the add tile and keeps all sorting controls in the gallery", () => {
+  const media = {
+    images: Array.from({ length: 8 }, (_, i) => ({
+      id: String(i),
+      src: `/images/test-${i}.jpg`,
+      alt: `Bild ${i + 1}`,
+    })),
+  };
+  const html = renderToStaticMarkup(
+    createElement(CompanyProfileDesigner, {
+      listing: companyProfileListing(profile, media),
+      media,
+    }),
+  );
+  assert.match(
+    html,
+    /class="gallery-add-tile" disabled="" aria-label="Alle 8 Bildplätze sind belegt"/,
+  );
+  assert.equal((html.match(/class="thumbnail-edit-actions"/g) ?? []).length, 8);
+  assert.match(html, /Firmenlogo hinzufügen/);
 });
 test("Energieheld has no global false demo claim; travel preview stays unchanged", () => {
   assert.doesNotMatch(
