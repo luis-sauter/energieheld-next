@@ -8,6 +8,12 @@ import { CompanyProfileDesigner } from "@/components/auth/company-media-form";
 import { CompanyPublication } from "@/components/auth/company-publication";
 
 export const dynamic = "force-dynamic";
+const statusLabels: Record<string, string> = {
+  approved: "Veröffentlicht",
+  pending: "Wartet auf Freischaltung",
+  draft: "Entwurf",
+  rejected: "Änderungen erforderlich",
+};
 export const metadata = {
   title: "Firmenprofil gestalten",
   robots: { index: false, follow: false },
@@ -30,12 +36,21 @@ export default async function CompanyDesignPage() {
       <div className="profile-editor-toolbar">
         <div>
           <h1>Profil gestalten</h1>
-          <p>
-            Schritt 2 von 2 · So erscheint Ihr Firmenprofil. Logo und Bilder
-            bearbeiten Sie direkt an ihrer späteren Position.
-          </p>
+          <p>Bearbeiten Sie Logo und Unternehmensbilder direkt im Profil.</p>
         </div>
-        <Link href="/firma/profil">Stammdaten bearbeiten</Link>
+        <div className="profile-toolbar-actions">
+          {profile && (
+            <span className="profile-status" data-status={profile.status}>
+              {statusLabels[profile.status] ?? "Entwurf"}
+            </span>
+          )}
+          <Link href="/firma/profil">Stammdaten bearbeiten</Link>
+          {profile?.status === "approved" && (
+            <Link href={`/experten/${profile.slug}`}>
+              Öffentliches Profil ansehen ↗
+            </Link>
+          )}
+        </div>
       </div>
       {dashboard.error || !profile || !media ? (
         <p role="alert">
@@ -48,7 +63,7 @@ export default async function CompanyDesignPage() {
             listing={companyProfileListing(profile, media)}
             media={media}
           />
-          <CompanyPublication status={profile.status} slug={profile.slug} />
+          <CompanyPublication status={profile.status} />
         </>
       )}
       <Link className="text-link back-link" href="/firma">

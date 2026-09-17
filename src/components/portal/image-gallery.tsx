@@ -8,10 +8,14 @@ export function ImageGallery({
   images,
   isDemo = true,
   controls,
+  thumbnailControls,
+  addControl,
 }: {
   images: PortalImage[];
   isDemo?: boolean;
   controls?: React.ReactNode[];
+  thumbnailControls?: React.ReactNode[];
+  addControl?: React.ReactNode;
 }) {
   const [selected, setSelected] = useState(0);
   const [failed, setFailed] = useState<Record<string, boolean>>({});
@@ -44,30 +48,46 @@ export function ImageGallery({
         <div className="gallery-edit-actions">{controls[selected]}</div>
       )}
       <div className="gallery-thumbs" aria-label="Bilderauswahl">
-        {images.map((image, index) => (
-          <button
-            key={image.src}
-            type="button"
-            aria-label={`Bild ${index + 1}: ${image.alt}`}
-            aria-pressed={selected === index}
-            onClick={() => setSelected(index)}
-          >
-            {failed[image.src] ? (
-              <span>Bild {index + 1}</span>
-            ) : (
-              <Image
-                src={image.src}
-                alt=""
-                width={150}
-                height={90}
-                unoptimized={!isDemo}
-                onError={() =>
-                  setFailed((previous) => ({ ...previous, [image.src]: true }))
-                }
-              />
-            )}
-          </button>
-        ))}
+        {images.map((image, index) => {
+          const thumbnail = (
+            <button
+              key={image.src}
+              type="button"
+              aria-label={`Bild ${index + 1}: ${image.alt}`}
+              aria-pressed={selected === index}
+              onClick={() => setSelected(index)}
+            >
+              {failed[image.src] ? (
+                <span>Bild {index + 1}</span>
+              ) : (
+                <Image
+                  src={image.src}
+                  alt=""
+                  width={150}
+                  height={90}
+                  unoptimized={!isDemo}
+                  onError={() =>
+                    setFailed((previous) => ({
+                      ...previous,
+                      [image.src]: true,
+                    }))
+                  }
+                />
+              )}
+            </button>
+          );
+          return thumbnailControls ? (
+            <div className="gallery-thumbnail" key={image.src}>
+              {thumbnail}
+              <div className="thumbnail-edit-actions">
+                {thumbnailControls[index]}
+              </div>
+            </div>
+          ) : (
+            thumbnail
+          );
+        })}
+        {addControl}
       </div>
     </div>
   );

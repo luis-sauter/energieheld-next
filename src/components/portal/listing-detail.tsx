@@ -161,7 +161,11 @@ export function ListingDetail({
           )}
           {listing.businessAreas && (
             <section className="detail-section">
-              <h2>Branchen & Tätigkeitsbereiche</h2>
+              <h2>
+                {presentation === "company"
+                  ? "Tätigkeitsbereiche"
+                  : "Branchen & Tätigkeitsbereiche"}
+              </h2>
               <p style={{ whiteSpace: "pre-wrap" }}>{listing.businessAreas}</p>
             </section>
           )}
