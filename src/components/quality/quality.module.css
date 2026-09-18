@@ -6,12 +6,7 @@
   align-items: center;
   gap: 7px;
   max-width: 100%;
-  padding: 7px 10px;
   min-height: 36px;
-  border: 1px solid #aec6b5;
-  border-radius: 5px;
-  background: #f2f7f3;
-  color: #285a3b;
   font:
     600 12px/1.4 Arial,
     sans-serif;
@@ -43,11 +38,11 @@
 .dialog {
   width: min(520px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
-  border: 1px solid #d8e2db;
-  border-radius: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   padding: 26px;
   background: white;
-  color: #303b34;
+  color: var(--text);
   text-align: left;
 }
 .dialog::backdrop {
@@ -91,7 +86,7 @@
   overflow-wrap: anywhere;
 }
 .dialog .disclaimer {
-  color: #68756c;
+  color: var(--muted);
   font-size: 13px;
   border-top: 1px solid #e1e8e3;
   padding-top: 16px;
@@ -99,10 +94,7 @@
 .admin {
   margin: 28px 0 0;
   padding-top: 24px;
-  border-top: 1px solid #dce3de;
-}
-.admin h2 {
-  font-size: 22px;
+  border-top: 1px solid var(--line);
 }
 .verified {
   color: #285a3b;
@@ -116,7 +108,7 @@
   display: block;
   width: 100%;
   max-width: 650px;
-  border: 1px solid #cdd7d0;
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 10px;
   margin: 8px 0 14px;
@@ -137,4 +129,37 @@
   .seal {
     min-height: 44px;
   }
+}
+/* The seal is distinct from workflow status labels. */
+.seal {
+  border: 3px double #6d927b;
+  background: #f1f6ef;
+  color: #28573e;
+  padding: 8px 12px;
+  border-radius: 4px;
+  letter-spacing: 0.015em;
+}
+.seal > svg {
+  padding: 5px;
+  width: 29px;
+  height: 29px;
+  border: 1px solid #6d927b;
+  border-radius: 50%;
+}
+:global(.detail-heading) .seal {
+  padding: 10px 16px;
+  font-size: 14px;
+}
+:global(.detail-heading) .seal > svg {
+  width: 36px;
+  height: 36px;
+}
+.admin {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.admin h2 {
+  font-size: 23px;
 }

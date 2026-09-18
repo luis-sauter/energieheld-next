@@ -33,6 +33,7 @@ export function ContactSection({
           {location}
         </p>
       )}
+      <p className="contact-company-name">{listing.name}</p>
       <hr />
       <dl>
         {listing.contact.phone && (
@@ -147,6 +148,9 @@ export function ListingDetail({
               <QualitySeal note={listing.verification.public_note} />
             )}
           <p className="detail-tagline">{listing.tagline}</p>
+          <a className="text-link profile-contact-link" href="#contact-title">
+            Kontakt & Standort ansehen ↓
+          </a>
           {formatLocation(listing.location) && (
             <p className="location">
               <Icon name="pin" size={18} />
@@ -155,16 +159,49 @@ export function ListingDetail({
           )}
         </div>
       </div>
+      <div className="profile-information">
+        <ContactSection listing={listing} contactAction={contactAction} />
+        <section className="location-module" aria-label="Standort">
+          <div className="location-illustration" aria-hidden="true">
+            <Icon name="pin" size={44} />
+          </div>
+          <div>
+            <p className="eyebrow">Standort</p>
+            <h2>
+              {formatLocation(listing.location) ||
+                "Standort noch nicht angegeben"}
+            </h2>
+            <p>
+              {listing.isDemo
+                ? "Beispielstandort · keine genaue Firmenposition"
+                : "Die angegebene Region des Unternehmens. Eine genaue Kartenposition ist hier nicht hinterlegt."}
+            </p>
+            {!listing.isDemo && listing.location.city && (
+              <a
+                className="text-link"
+                target="_blank"
+                rel="noopener noreferrer"
+                href={
+                  "https://www.google.com/maps/search/?api=1&query=" +
+                  encodeURIComponent(
+                    [
+                      listing.location.postalCode,
+                      listing.location.city,
+                      listing.location.country,
+                    ]
+                      .filter(Boolean)
+                      .join(" "),
+                  )
+                }
+              >
+                Ort auf Google Maps ansehen ↗
+              </a>
+            )}
+          </div>
+        </section>
+      </div>
       <div className="detail-grid">
         <div>
-          {galleryEditor ??
-            (listing.images.length > 0 && (
-              <ImageGallery
-                key={listing.images.map((image) => image.src).join("|")}
-                images={listing.images}
-                isDemo={listing.isDemo}
-              />
-            ))}
           {listing.description && (
             <section className="detail-section">
               {!presentation && (
@@ -174,6 +211,14 @@ export function ListingDetail({
               <p>{listing.description}</p>
             </section>
           )}
+          {galleryEditor ??
+            (listing.images.length > 0 && (
+              <ImageGallery
+                key={listing.images.map((image) => image.src).join("|")}
+                images={listing.images}
+                isDemo={listing.isDemo}
+              />
+            ))}
           {listing.businessAreas && (
             <section className="detail-section">
               <h2>
@@ -199,9 +244,6 @@ export function ListingDetail({
           )}
           {qualityArea}
         </div>
-        <aside>
-          <ContactSection listing={listing} contactAction={contactAction} />
-        </aside>
       </div>
     </>
   );

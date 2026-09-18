@@ -1,6 +1,4 @@
 .page {
-  max-width: 1040px;
-  padding-top: 48px;
   padding-bottom: 80px;
   min-height: 60vh;
 }
@@ -10,8 +8,6 @@
 .metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin: 32px 0 48px;
 }
 .metrics > div,
 .card {
@@ -29,7 +25,6 @@
   list-style: none;
   padding: 0;
   display: grid;
-  gap: 20px;
 }
 .queue p {
   margin-bottom: 8px;
@@ -54,7 +49,6 @@
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
   margin: 24px 0;
 }
 .error {
@@ -88,4 +82,46 @@
   .metrics {
     grid-template-columns: 1fr;
   }
+}
+/* Compact work queues, matching the company workspace. */
+.page {
+  max-width: 1160px;
+  padding-top: 36px;
+}
+.queue {
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+.queue .card {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: white;
+  padding: 24px 0;
+}
+.card h2 {
+  font-size: 22px;
+}
+.metrics {
+  gap: 0;
+  margin: 24px 0 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.metrics > div {
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--surface);
+}
+.categories {
+  background: var(--surface);
+}
+.categories label {
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+.actions {
+  gap: 10px;
 }

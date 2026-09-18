@@ -4,20 +4,18 @@
 }
 .intro {
   max-width: 700px;
-  color: #586771;
+  color: var(--muted);
   line-height: 1.7;
 }
 .card {
   background: white;
-  border: 1px solid #dce3e7;
-  border-radius: 12px;
+  border: 1px solid var(--line);
   padding: 24px;
   margin: 20px 0;
   min-width: 0;
 }
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 .form {
@@ -35,12 +33,12 @@
 .form textarea {
   width: 100%;
   min-width: 0;
-  border: 1px solid #b8c6cf;
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 11px;
   font: inherit;
   background: white;
-  color: #243d4b;
+  color: var(--text);
 }
 .form fieldset {
   border: 0;
@@ -58,14 +56,14 @@
   gap: 12px;
 }
 .placement {
-  border: 1px solid #dce3e7;
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
   cursor: pointer;
 }
 .placement:has(input:checked) {
-  border: 2px solid #187497;
-  background: #f2f9fb;
+  border: 2px solid var(--trust);
+  background: var(--surface);
   padding: 11px;
 }
 .placement input {
@@ -108,8 +106,6 @@
 .status {
   display: inline-block;
   padding: 5px 10px;
-  background: #eef5f7;
-  color: #244e64;
   border-radius: 5px;
   font-size: 13px;
   font-weight: 700;
@@ -121,7 +117,7 @@
   font-size: 14px;
 }
 .details dt {
-  color: #596873;
+  color: var(--muted);
 }
 .details dd {
   margin: 0;
@@ -142,16 +138,15 @@
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #71818a;
+  color: var(--muted);
   margin-bottom: 6px;
 }
 .creative {
   display: block;
-  border: 1px solid #d9e2e7;
-  background: #f5f8fa;
+  border: 1px solid var(--line);
   border-radius: 8px;
   overflow: hidden;
-  color: #163e56;
+  color: var(--text);
   text-decoration: none;
 }
 .creative img {
@@ -165,7 +160,6 @@
 }
 .creative strong {
   display: block;
-  font-size: 22px;
   line-height: 1.25;
   overflow-wrap: anywhere;
 }
@@ -184,20 +178,12 @@
 }
 .banner .creative {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  min-height: 220px;
 }
 .banner .creative img {
   height: 100%;
-  min-height: 220px;
-  max-height: 300px;
 }
 .empty {
-  border: 1px dashed #becdd5;
-  background: #f6f8fa;
-  padding: 32px 18px;
-  text-align: center;
-  color: #6b7b84;
+  color: var(--muted);
   border-radius: 8px;
 }
 .error {
@@ -208,7 +194,7 @@
 }
 .form :focus-visible,
 .creative:focus-visible {
-  outline: 3px solid #197b9e;
+  outline: 3px solid var(--trust);
   outline-offset: 3px;
 }
 @media (max-width: 700px) {
@@ -237,5 +223,87 @@
   }
   .page h1 {
     font-size: 30px;
+  }
+}
+/* One creative surface for public slots and both previews. */
+.empty {
+  border: 1px solid var(--line);
+  border-left: 3px solid #c4ad80;
+  background: var(--surface);
+  text-align: left;
+  padding: 24px;
+}
+.empty > span {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+.empty strong {
+  display: block;
+  color: var(--text);
+  font-size: 21px;
+  line-height: 1.35;
+  max-width: 430px;
+}
+.empty p {
+  font-size: 13px;
+  margin: 10px 0 16px;
+}
+.empty a {
+  font-size: 12px;
+}
+.banner .empty {
+  padding: 22px 32px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 24px;
+}
+.banner .empty > span,
+.banner .empty strong,
+.banner .empty p {
+  grid-column: 1;
+}
+.banner .empty a {
+  grid-column: 2;
+  grid-row: 2/4;
+  align-self: center;
+}
+.banner .creative {
+  min-height: 160px;
+  grid-template-columns: 1fr 1.7fr;
+}
+.banner .creative img {
+  min-height: 160px;
+  max-height: 220px;
+}
+.creative {
+  background: var(--surface);
+}
+.creative strong {
+  font-size: 21px;
+}
+.status {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.grid {
+  grid-template-columns: 1fr;
+}
+.card {
+  border-radius: var(--radius);
+}
+.card h2 {
+  font-size: 24px;
+}
+@media (max-width: 700px) {
+  .banner .empty {
+    display: block;
+    padding: 22px;
+  }
+  .banner .creative {
+    grid-template-columns: 1fr;
   }
 }
