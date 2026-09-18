@@ -58,6 +58,58 @@ registerHooks({
     return next(url, c);
   },
 });
+
+test("dashboard cards and campaign statistics render real zeros, empty state and zero CTR", async () => {
+  const { TrafficCards, CampaignStatistics, PeriodPicker } =
+    await import("../src/components/dashboard/metrics.tsx");
+  const traffic = {
+    profile_views: 0,
+    contact_clicks: 0,
+    website_clicks: 0,
+    has_data: false,
+  };
+  const cards = renderToStaticMarkup(
+    createElement(TrafficCards, { traffic, leads: 2 }),
+  );
+  assert.match(cards, /Noch keine Daten/);
+  assert.match(cards, /Erhaltene Kontaktanfragen/);
+  assert.match(cards, />2<\/dd>/);
+  assert.equal((cards.match(/>0<\/dd>/g) ?? []).length, 3);
+  const data = {
+    today: "2026-09-18",
+    campaigns: [
+      {
+        id: "test",
+        internal_name: "Eigene Kampagne",
+        status: "approved",
+        approved_start_date: "2026-09-19",
+        approved_end_date: "2026-10-01",
+        impressions: 0,
+        clicks: 0,
+      },
+    ],
+  };
+  const table = renderToStaticMarkup(
+    createElement(CampaignStatistics, { data }),
+  );
+  assert.match(table, /Geplant/);
+  assert.match(table, /0 %/);
+  assert.doesNotMatch(table, /NaN|Infinity/);
+  const empty = renderToStaticMarkup(
+    createElement(CampaignStatistics, { data: { ...data, campaigns: [] } }),
+  );
+  assert.match(empty, /Noch keine Werbekampagnen/);
+  const picker = renderToStaticMarkup(
+    createElement(PeriodPicker, {
+      period: "7",
+      base: "/admin",
+      view: "veroeffentlicht",
+    }),
+  );
+  assert.match(picker, /zeitraum=7/);
+  assert.match(picker, /ansicht=veroeffentlicht/);
+  assert.equal((picker.match(/aria-current="page"/g) ?? []).length, 1);
+});
 const { default: DetailsPage } =
   await import("../src/app/(energieheld)/firma/profil/page.tsx");
 const { default: DesignPage } =
