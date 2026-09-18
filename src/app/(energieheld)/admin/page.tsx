@@ -4,6 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { loadReviewOverview } from "@/lib/admin-review";
 import { requireAdminAccess, formatSubmission, legalName } from "@/lib/admin";
 import styles from "@/components/admin/admin.module.css";
+import { analyticsPeriod, loadAdminMetrics } from "@/lib/dashboard-analytics";
+import {
+  PeriodPicker,
+  AdminOverviewMetrics,
+} from "@/components/dashboard/metrics";
 
 export const metadata = {
   title: "Adminbereich",
@@ -14,16 +19,33 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ansicht?: string }>;
+  searchParams: Promise<{ ansicht?: string; zeitraum?: string }>;
 }) {
-  const published = (await searchParams).ansicht === "veroeffentlicht";
+  const params = await searchParams;
+  const published = params.ansicht === "veroeffentlicht";
+  const period = analyticsPeriod(params.zeitraum);
   const result = await loadReviewOverview(await createClient(), published);
   requireAdminAccess(result.access);
-  const qualityQueue = await loadQualityRequestQueue(await createClient());
+  const client = await createClient();
+  const [qualityQueue, metrics] = await Promise.all([
+    loadQualityRequestQueue(client),
+    loadAdminMetrics(client, period),
+  ]);
   return (
     <main id="hauptinhalt" className={`container ${styles.page}`}>
       <p className="eyebrow">Firmen & offizielle Gewerke</p>
       <h1>Adminbereich</h1>
+      <PeriodPicker
+        period={period}
+        base="/admin"
+        view={published ? "veroeffentlicht" : undefined}
+      />
+      <p>
+        Statistikzeitraum in Europe/Berlin, einschließlich heute. Das Besucher-
+        und Klick-Tracking ist noch nicht aktiviert.
+      </p>
+      {metrics.error && <p role="alert">{metrics.error}</p>}
+      {metrics.data && <AdminOverviewMetrics data={metrics.data} />}
       <Link className="button" href="/admin/werbung">
         Werbekampagnen prüfen
       </Link>
@@ -60,10 +82,13 @@ export default async function AdminPage({
         )}
       </section>
       <nav className={styles.actions} aria-label="Firmenansicht">
-        <Link className="button" href="/admin">
+        <Link className="button" href={`/admin?zeitraum=${period}`}>
           Erstfreischaltungen
         </Link>
-        <Link className="button" href="/admin?ansicht=veroeffentlicht">
+        <Link
+          className="button"
+          href={`/admin?ansicht=veroeffentlicht&zeitraum=${period}`}
+        >
           Veröffentlichte Firmen
         </Link>
       </nav>

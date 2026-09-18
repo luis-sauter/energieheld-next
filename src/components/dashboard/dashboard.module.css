@@ -1,0 +1,102 @@
+.page {
+  max-width: 1100px;
+}
+.section {
+  margin: 28px 0;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--brand-surface);
+}
+.section h2 {
+  margin-top: 0;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+.card {
+  padding: 16px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-width: 0;
+}
+.card dt {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.card dd {
+  margin: 8px 0 0;
+  font-size: 26px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0;
+}
+.nav a {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  text-decoration: none;
+}
+.nav a[aria-current="page"] {
+  background: var(--brand-primary);
+  color: white;
+  border-color: var(--brand-primary);
+}
+.hint {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.tableWrap {
+  overflow-x: auto;
+  margin-top: 18px;
+}
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 620px;
+  font-size: 14px;
+}
+.table th,
+.table td {
+  text-align: left;
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.table th {
+  font-weight: 650;
+}
+.table td:first-child {
+  max-width: 260px;
+  overflow-wrap: anywhere;
+}
+.nav a:focus-visible,
+.tableWrap:focus-visible {
+  outline: 3px solid #197b9e;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .section {
+    padding: 18px;
+  }
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .card {
+    padding: 12px;
+  }
+  .card dd {
+    font-size: 23px;
+  }
+}
