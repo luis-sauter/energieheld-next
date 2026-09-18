@@ -255,7 +255,9 @@ test("editor gallery shares the public position and preserves contain logo and a
   assert.match(html, /<dialog[^>]*aria-labelledby="profile-upload-title"/);
   assert.doesNotMatch(html, /<dialog[^>]*\sopen/);
   assert.match(html, /Bildbeschreibung \(optional\)/);
-  assert.ok(html.indexOf("gallery-main") < html.indexOf("Über Bauwerk"));
+  assert.ok(html.indexOf("profile-information") < html.indexOf("Über Bauwerk"));
+  assert.ok(html.indexOf("Über Bauwerk") < html.indexOf("gallery-main"));
+  assert.match(html, /aria-label="Standort"/);
   const publicHtml = renderToStaticMarkup(
     createElement(ListingDetail, {
       listing,
@@ -496,4 +498,71 @@ test("company quality request form shows request states without granting decisio
       html,
       /name="profile_id"|value="verify"|Anfrage ablehnen/,
     );
+});
+
+test("portal home follows the editorial section order and keeps travel clearly marked as demo", async () => {
+  const { default: Home } = await import("../src/app/(energieheld)/page.tsx");
+  const html = renderToStaticMarkup(createElement(Home));
+  const ordered = [
+    "portal-intro",
+    'data-placement="top_banner"',
+    'id="gewerke"',
+    'id="aktuelles"',
+    'id="empfehlungen"',
+    'id="so-funktionierts"',
+    'class="provider-cta"',
+  ];
+  let last = -1;
+  for (const marker of ordered) {
+    const current = html.indexOf(marker);
+    assert.ok(current > last, `${marker} must follow the previous section`);
+    last = current;
+  }
+  assert.equal((html.match(/class="topic-world"/g) ?? []).length, 8);
+  assert.match(html, /Reise-Inspiration · Demo/);
+  assert.match(html, /aria-label="Expertensuche"/);
+  assert.match(html, /Sie möchten Ihr Unternehmen präsentieren/);
+  assert.doesNotMatch(html, /Gutes Handwerk verdient/);
+});
+
+test("profile contact and location precede description; no invented precise map or demo directions", () => {
+  const listing = companyProfileListing(profile, { images: [] });
+  const render = (data) =>
+    renderToStaticMarkup(
+      createElement(ListingDetail, {
+        listing: data,
+        categories: energieheld.categories,
+        presentation: "company",
+      }),
+    );
+  const real = render({
+    ...listing,
+    location: {
+      city: "München",
+      postalCode: "80331",
+      region: "Bayern",
+      country: "Deutschland",
+    },
+  });
+  assert.ok(
+    real.indexOf('class="contact-card"') <
+      real.indexOf('class="location-module"'),
+  );
+  assert.ok(
+    real.indexOf('class="location-module"') < real.indexOf("Über Bauwerk"),
+  );
+  assert.match(real, /google.com\/maps\/search/);
+  assert.match(
+    real,
+    /keine genaue Kartenposition|genaue Kartenposition ist hier nicht hinterlegt/,
+  );
+  assert.doesNotMatch(real, /<iframe/);
+  const demo = render({ ...listing, isDemo: true });
+  assert.doesNotMatch(demo, /google.com\/maps/);
+  const empty = render({
+    ...listing,
+    location: { city: "", postalCode: "", region: "", country: "" },
+  });
+  assert.match(empty, /Standort noch nicht angegeben/);
+  assert.doesNotMatch(empty, /google.com\/maps/);
 });

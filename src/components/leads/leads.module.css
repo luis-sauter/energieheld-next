@@ -2,10 +2,10 @@
   width: min(540px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
   padding: 26px;
-  border: 1px solid #dce1e5;
-  border-radius: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   background: white;
-  color: #303941;
+  color: var(--text);
 }
 .dialog::backdrop {
   background: #17232f66;
@@ -44,7 +44,7 @@
   display: block;
   width: 100%;
   min-width: 0;
-  border: 1px solid #cfd6dc;
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 10px;
   margin-top: 6px;
@@ -88,7 +88,6 @@
   background: #f2f8ef;
 }
 .inbox {
-  max-width: 960px;
   padding-top: 36px;
   padding-bottom: 48px;
 }
@@ -97,8 +96,7 @@
   margin: 20px 0 8px;
 }
 .lead {
-  border: 1px solid #dfe3e6;
-  border-radius: 10px;
+  border: 1px solid var(--line);
   padding: 24px;
   margin: 20px 0;
   background: white;
@@ -116,11 +114,11 @@
 }
 .lead time {
   margin-left: auto;
-  color: #6c7780;
+  color: var(--muted);
   font-size: 13px;
 }
 .badge {
-  background: #f1f4f5;
+  background: var(--surface);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -133,7 +131,7 @@
   margin: 20px 0;
 }
 .lead dt {
-  color: #6c7780;
+  color: var(--muted);
 }
 .lead dd {
   margin: 0;
@@ -157,7 +155,7 @@
 .statusForm select {
   font: inherit;
   padding: 8px;
-  border: 1px solid #cfd6dc;
+  border: 1px solid var(--line);
   border-radius: 6px;
 }
 .statusForm button {
@@ -175,12 +173,11 @@
   justify-content: center;
 }
 .empty {
-  padding: 30px 0;
-  color: #6c7780;
+  color: var(--muted);
 }
 .dialog :is(input, textarea, button):focus-visible,
 .statusForm :is(button, select):focus-visible {
-  outline: 2px solid #244b72;
+  outline: 2px solid var(--trust);
   outline-offset: 3px;
 }
 @media (max-width: 600px) {
@@ -194,4 +191,31 @@
     margin-left: 0;
     flex-basis: 100%;
   }
+}
+/* Inbox presentation. */
+.inbox {
+  max-width: 1160px;
+}
+.lead {
+  border-radius: var(--radius);
+  border-left: 3px solid #c6d1c7;
+}
+.lead header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.message {
+  padding: 20px;
+  background: var(--surface);
+  border-radius: 5px;
+}
+.badge {
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.empty {
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
 }

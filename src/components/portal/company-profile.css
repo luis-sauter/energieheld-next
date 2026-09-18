@@ -7,7 +7,7 @@
   color: #2c333a;
   font-size: 16px;
   line-height: 1.65;
-  --profile-border: #e0e3e5;
+  --profile-border: var(--line);
 }
 .company-profile .detail-heading {
   display: flex;
@@ -40,7 +40,7 @@
 }
 .company-profile .detail-title {
   color: #252c33;
-  font-size: clamp(32px, 3vw, 42px);
+  font-size: clamp(30px, 3vw, 40px);
   font-weight: 700;
   line-height: 1.18;
   letter-spacing: -0.025em;
@@ -78,7 +78,7 @@
 }
 .company-profile .detail-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 44px;
   align-items: start;
 }
@@ -168,8 +168,7 @@
   margin: 0;
 }
 .company-profile .contact-card {
-  position: sticky;
-  top: 24px;
+  position: static;
   border: 1px solid var(--profile-border);
   box-shadow: none;
   background: white;
@@ -228,7 +227,7 @@
   gap: 16px;
   padding: 14px 0 18px;
   margin: 0 0 22px;
-  border-bottom: 1px solid #e0e3e5;
+  border-bottom: 1px solid var(--line);
 }
 .profile-editor-toolbar h1 {
   font-size: 20px;
@@ -259,9 +258,9 @@
   align-items: center;
   gap: 6px;
   padding: 5px 9px;
-  border: 1px solid #e0e3e5;
+  border: 1px solid var(--line);
   border-radius: 5px;
-  background: #f8f9f9;
+  background: var(--surface);
   color: #606a74;
   font-size: 12px;
   line-height: 1.4;
@@ -394,7 +393,7 @@
   flex: 0 0 104px;
   width: 104px;
   height: 72px;
-  border: 1px dashed #c6cdd2;
+  border: 1px solid #c6cdd2;
   background: #fafbfb;
   border-radius: 6px;
   color: #65717b;
@@ -420,14 +419,14 @@
 .company-profile :is(button, a):focus-visible,
 .profile-editor-toolbar a:focus-visible,
 .profile-upload-dialog :is(button, input):focus-visible {
-  outline: 2px solid #244b72;
+  outline: 2px solid var(--trust);
   outline-offset: 3px;
 }
 .company-profile .gallery-empty {
   min-height: 280px;
-  border: 1px dashed #cbd2d7;
+  border: 1px solid #cbd2d7;
   border-radius: 10px;
-  background: #f8f9f9;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -467,7 +466,7 @@
 .profile-publication {
   padding: 20px 0;
   margin-top: 12px;
-  border-top: 1px solid #e0e3e5;
+  border-top: 1px solid var(--line);
   max-width: 740px;
 }
 .profile-publication h2 {
@@ -553,7 +552,7 @@
 }
 @media (max-width: 1000px) {
   .company-profile .detail-grid {
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr);
     gap: 28px;
   }
   .profile-editor-toolbar {

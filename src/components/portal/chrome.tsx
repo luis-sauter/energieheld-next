@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { BrandConfig } from "@/types/portal";
 import { Icon } from "./icon";
+import { MobileNavigation } from "./mobile-navigation";
 
 export function PortalHeader({ brand }: { brand: BrandConfig }) {
   const navigation = (
@@ -49,12 +50,7 @@ export function PortalHeader({ brand }: { brand: BrandConfig }) {
           <nav className="desktop-nav" aria-label="Hauptnavigation">
             {navigation}
           </nav>
-          <details className="mobile-menu">
-            <summary aria-label="Menü öffnen">
-              <Icon name="menu" /> Menü
-            </summary>
-            <nav aria-label="Mobile Hauptnavigation">{navigation}</nav>
-          </details>
+          <MobileNavigation>{navigation}</MobileNavigation>
         </div>
       </header>
     </>

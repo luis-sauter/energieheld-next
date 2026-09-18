@@ -1,163 +1,256 @@
 import Image from "next/image";
 import Link from "next/link";
 import { energieheld } from "@/config/energieheld";
-import { listings, qualityBadges } from "@/data/listings";
+import { reiseportal } from "@/config/reiseportal";
+import { listings, travelListing } from "@/data/listings";
 import { HeroSearch } from "@/components/portal/search";
-import { ListingGrid } from "@/components/portal/listings";
-import { TradeTiles } from "@/components/portal/trades";
-import { trades } from "@/config/trades";
+import { ListingCard } from "@/components/portal/listings";
 import { CampaignSlot } from "@/components/advertising/campaign-view";
 import { Icon } from "@/components/portal/icon";
 
+const topics = [
+  [
+    "Photovoltaik",
+    "Energie vom eigenen Dach",
+    "/gewerke/solar",
+    "/images/trades/photovoltaik.jpg",
+  ],
+  [
+    "Heizung",
+    "Wärme mit Perspektive",
+    "/gewerke/heizung",
+    "/images/trades/heizung.jpg",
+  ],
+  [
+    "Dämmung",
+    "Ein gutes Gefühl zu Hause",
+    "/gewerke/daemmung",
+    "/images/trades/daemmung.jpg",
+  ],
+  [
+    "Fachbetriebe",
+    "Menschen für Ihr Vorhaben",
+    "/experten",
+    "/images/trades/gewerke.jpg",
+  ],
+  ["Bauen & Wohnen", "Raum für neue Ideen", "/gewerke", "/images/house.jpg"],
+  [
+    "Wellness & Auszeit",
+    "Zeit für sich entdecken",
+    "/portal-vorschau#hotelprofil",
+    "/images/mountains.svg",
+  ],
+  [
+    "Familie & Aktivurlaub",
+    "Gemeinsam draußen sein",
+    "/portal-vorschau#reiseziele",
+    "/images/mountains.svg",
+  ],
+  [
+    "Hotels & Unterkünfte",
+    "Besondere Orte zum Bleiben",
+    "/portal-vorschau#unterkuenfte",
+    "/images/mountains.svg",
+  ],
+];
+const stories = [
+  [
+    "Bauen & Energie",
+    "Ein guter Plan ist der erste Schritt.",
+    "Von der Gebäudehülle bis zur Heizung: Entdecken Sie die Themen für Ihr Sanierungsvorhaben.",
+    "/gewerke",
+    "/images/house.jpg",
+  ],
+  [
+    "Reisen & Entdecken",
+    "Eine Auszeit beginnt mit einer Idee.",
+    "Berge, Natur und besondere Gastgeber: ein Einblick in unsere Reiseportal-Vorschau.",
+    "/portal-vorschau",
+    "/images/mountains.svg",
+  ],
+  [
+    "Menschen & Handwerk",
+    "Wer passt zu Ihrem Projekt?",
+    "Lernen Sie Betriebe und ihre Tätigkeitsbereiche im Verzeichnis kennen.",
+    "/experten",
+    "/images/trades/gewerke.jpg",
+  ],
+];
 export default function Home() {
   return (
-    <main id="hauptinhalt">
-      <section className="hero">
-        <div className="container hero-inner">
-          <div className="hero-copy">
-            <p className="eyebrow">
-              <span className="orange-line" /> Ihr Zuhause. Ihre Zukunft.
-            </p>
-            <h1>Sanieren mit Grips in München und Bayern.</h1>
-            <p className="hero-description">
-              Sie planen eine energetische Sanierung oder einen Neubau?
-              Entdecken Sie Gewerke, lernen Sie Fachbetriebe kennen und finden
-              Sie die passenden Menschen für Ihr Vorhaben.
-            </p>
-            <div className="hero-note">
-              <Icon name="pin" size={18} />
-              <span>In Ihrer Region. Für Ihr Projekt.</span>
-            </div>
+    <main id="hauptinhalt" className="editorial-home">
+      <section className="portal-intro container">
+        <div>
+          <p className="eyebrow">Energieheld · Zuhause & unterwegs</p>
+          <h1>
+            Gute Ideen.
+            <br />
+            Die richtigen Menschen.
+          </h1>
+          <p>
+            Entdecken Sie Fachbetriebe für Ihr Zuhause und Inspiration für die
+            nächste Auszeit. Regional verwurzelt. Persönlich verbunden.
+          </p>
+          <div className="intro-topics">
+            <span>Bauen & Energie</span>
+            <span>Reisen & Inspiration</span>
           </div>
-          <div className="hero-visual">
-            <Image
-              src="/images/house.jpg"
-              alt="Modernes Wohnhaus mit Garten als Inspiration für ein Sanierungsprojekt"
-              fill
-              sizes="(max-width: 760px) 100vw, 50vw"
-              priority
-            />
-            <div className="hero-image-label">
-              <Icon name="home" />
-              <div>
-                <strong>Zukunft beginnt zu Hause.</strong>
-                <span>Gemeinsam den nächsten Schritt gehen.</span>
-              </div>
-            </div>
-          </div>
-          <HeroSearch />
         </div>
+        <div className="intro-picture">
+          <Image
+            src="/images/house.jpg"
+            alt="Modernes Haus mit Garten"
+            fill
+            sizes="(max-width: 700px) 100vw, 50vw"
+            priority
+          />
+          <span>Lebensräume mit Zukunft</span>
+        </div>
+        <HeroSearch />
       </section>
-      <div className="container homepage-ad">
+      <div className="container premium-space">
         <CampaignSlot placement="top_banner" />
-      </div>
-      <div className="trust-row container">
-        <span>
-          <Icon name="home" /> Bauen & Sanieren
-        </span>
-        <span>
-          <Icon name="sun" /> Energie neu denken
-        </span>
-        <span>
-          <Icon name="pin" /> Fachbetriebe aus Bayern
-        </span>
-        <span className="trust-signature">Sanieren mit Grips.</span>
       </div>
       <section className="section container" id="gewerke">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Hier beginnt Ihr Projekt</p>
-            <h2>Gewerke für Ihr Vorhaben</h2>
-            <p>Entdecken Sie die passenden Fachbetriebe für Ihr Vorhaben.</p>
+            <p className="eyebrow">Entdecken</p>
+            <h2>Unsere Themenwelten</h2>
           </div>
           <Link className="text-link" href="/gewerke">
-            Alle 14 Gewerke ansehen <Icon name="arrow" size={19} />
+            Alle Gewerke <Icon name="arrow" size={18} />
           </Link>
         </div>
-        <TradeTiles items={trades.slice(0, 8)} />
+        <div className="topic-worlds">
+          {topics.map(([title, text, href, image], i) => (
+            <Link className="topic-world" href={href} key={title}>
+              <div>
+                <Image
+                  src={image}
+                  alt=""
+                  fill
+                  sizes="(max-width: 600px) 50vw, 25vw"
+                />
+              </div>
+              <span className="eyebrow">
+                {i < 5 ? "Energie & Handwerk" : "Reise-Inspiration · Demo"}
+              </span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </Link>
+          ))}
+        </div>
       </section>
-      <section className="section soft-section">
+      <section className="section editorial-band" id="aktuelles">
         <div className="container">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Menschen, die anpacken</p>
-              <h2>Gute Adressen für Ihre Ideen.</h2>
-              <p>Ein erster Einblick in die zukünftigen Unternehmensprofile.</p>
+              <p className="eyebrow">Das Portal-Magazin</p>
+              <h2>Aktuelles & Impulse</h2>
             </div>
-            <Link className="text-link" href="/experten">
-              Alle {listings.length} Beispielbetriebe{" "}
-              <Icon name="arrow" size={19} />
-            </Link>
+            <span className="small muted">Redaktionelle Themenvorschau</span>
           </div>
-          <ListingGrid
-            listings={listings.slice(0, 3)}
-            categories={energieheld.categories}
-            badges={qualityBadges}
-          />
+          <div className="story-grid">
+            {stories.map(([category, title, text, href, image]) => (
+              <article key={title}>
+                <Link href={href}>
+                  <div className="story-image">
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="(max-width: 700px) 100vw, 33vw"
+                    />
+                  </div>
+                  <p className="eyebrow">{category}</p>
+                  <h3>{title}</h3>
+                </Link>
+                <p>{text}</p>
+                <Link className="text-link" href={href}>
+                  Thema entdecken →
+                </Link>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
-      <section className="section container how-section" id="so-funktionierts">
-        <div>
-          <p className="eyebrow">Einfach zum passenden Fachbetrieb</p>
-          <h2>
-            Ihr Vorhaben.
-            <br />
-            Ein klarer nächster Schritt.
-          </h2>
-          <p>
-            Ein Ort für Ihre Suche. Damit aus einer Idee ein konkretes Projekt
-            werden kann.
-          </p>
+      <section className="section container" id="empfehlungen">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Menschen & Möglichkeiten</p>
+            <h2>Top-Empfehlungen</h2>
+            <p>
+              Einblicke in unsere Anbieterprofile · gekennzeichnete
+              Beispieldaten.
+            </p>
+          </div>
           <Link className="text-link" href="/experten">
-            Jetzt umsehen <Icon name="arrow" size={19} />
+            Zum Verzeichnis →
           </Link>
         </div>
-        <ol className="steps">
-          <li>
-            <span>01</span>
-            <div>
-              <h3>Vorhaben auswählen</h3>
-              <p>
-                Was steht an? Finden Sie Ihr Gewerk und grenzen Sie Ihre Region
-                ein.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span>02</span>
-            <div>
-              <h3>Fachbetriebe kennenlernen</h3>
-              <p>
-                Vergleichen Sie Profile, Leistungen und Schwerpunkte in Ruhe.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span>03</span>
-            <div>
-              <h3>Gemeinsam weiterdenken</h3>
-              <p>
-                Später nehmen Sie direkt Kontakt auf. In dieser Vorschau
-                erkunden Sie zunächst Beispielprofile.
-              </p>
-            </div>
-          </li>
-        </ol>
+        <div className="commercial-columns">
+          <div className="editorial-recommendations">
+            {listings.slice(0, 2).map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                categories={energieheld.categories}
+                href={"/experten/" + listing.slug}
+              />
+            ))}
+            <ListingCard
+              listing={travelListing}
+              categories={reiseportal.categories}
+              href="/portal-vorschau#hotelprofil"
+            />
+          </div>
+          <aside className="commercial-sidebar" aria-label="Werbung">
+            <CampaignSlot placement="sidebar_top" />
+            <CampaignSlot placement="sidebar_middle" />
+            <CampaignSlot placement="sidebar_bottom" />
+          </aside>
+        </div>
+      </section>
+      <section
+        className="section container knowledge-section"
+        id="so-funktionierts"
+      >
+        <div>
+          <p className="eyebrow">Wissen & Inspiration</p>
+          <h2>
+            Gut informiert.
+            <br />
+            Bewusst entscheiden.
+          </h2>
+          <p>Orientierung für große Vorhaben und kleine Auszeiten.</p>
+        </div>
+        <div className="knowledge-links">
+          <Link href="/gewerke">
+            <span>01 · Zuhause</span>
+            <h3>Welche Gewerke gehören zu Ihrem Projekt?</h3>
+            <Icon name="arrow" />
+          </Link>
+          <Link href="/experten">
+            <span>02 · Menschen</span>
+            <h3>Fachbetriebe und Leistungen kennenlernen</h3>
+            <Icon name="arrow" />
+          </Link>
+          <Link href="/portal-vorschau">
+            <span>03 · Unterwegs</span>
+            <h3>Neue Lieblingsorte entdecken</h3>
+            <Icon name="arrow" />
+          </Link>
+        </div>
       </section>
       <section className="container cta-wrap">
         <div className="provider-cta">
           <div>
-            <p className="eyebrow">Für die Macher von morgen</p>
-            <h2>
-              Gutes Handwerk verdient
-              <br />
-              eine gute Bühne.
-            </h2>
-            <p>Zeigen Sie künftig, was Ihren Betrieb besonders macht.</p>
+            <p className="eyebrow">Für Unternehmen</p>
+            <h2>Sie möchten Ihr Unternehmen präsentieren?</h2>
+            <p>Zeigen Sie, wer Sie sind und was Sie besonders macht.</p>
           </div>
-          <Link className="button button-primary" href={energieheld.cta.href}>
-            {energieheld.cta.label}
-            <Icon name="arrow" />
+          <Link className="button button-primary" href="/fuer-unternehmen">
+            Unternehmen eintragen <Icon name="arrow" />
           </Link>
         </div>
       </section>

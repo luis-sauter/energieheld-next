@@ -80,8 +80,14 @@ export default async function CompanyPage({
         />
       )}
       <section className={dashboardStyles.section}>
-        <h2>Statistiken</h2>
+        <h2>Leistungsüberblick</h2>
         <PeriodPicker period={period} base="/firma" />
+        <Link
+          className="text-link"
+          href={`/firma/statistiken?zeitraum=${period}`}
+        >
+          Zur ausführlichen Auswertung →
+        </Link>
         <p className={dashboardStyles.hint}>
           7 und 30 Tage schließen heute ein. Zeitzone: Europe/Berlin.
           Kontaktanfragen stammen aus den tatsächlich eingegangenen Anfragen.

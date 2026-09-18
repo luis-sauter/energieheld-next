@@ -58,7 +58,14 @@ export function CampaignSlot({
           </a>
         )
       ) : (
-        <div className={styles.empty}>Freier Werbeplatz</div>
+        <div className={styles.empty}>
+          <span>Freier Werbeplatz</span>
+          <strong>Hier wird Ihr Unternehmen sichtbar.</strong>
+          <p>Im passenden Umfeld. Nah an Ihren Kunden.</p>
+          <Link className="text-link" href="/werbung">
+            Werbemöglichkeiten entdecken →
+          </Link>
+        </div>
       )}
     </section>
   );
