@@ -1,5 +1,6 @@
 export type Category = { id: string; name: string; icon: string };
 export type Location = {
+  street?: string;
   city: string;
   postalCode: string;
   region: string;
@@ -25,7 +26,7 @@ export type Listing = {
   services: string[];
   images: PortalImage[];
   logo?: PortalImage;
-  contact: { email: string; phone: string; website: string };
+  contact: { person?: string; email: string; phone: string; website: string };
   isDemo: boolean;
   verification?: CompanyVerification;
 };

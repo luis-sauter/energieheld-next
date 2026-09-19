@@ -3,9 +3,9 @@ import { useActionState, useEffect, useState } from "react";
 import { energieheld } from "@/config/energieheld";
 import {
   adPlacements,
-  adScopes,
   type AdCampaign,
   type AdPlacementId,
+  type AdTarget,
 } from "@/lib/ad-values";
 import {
   saveCampaign,
@@ -16,7 +16,13 @@ import type { AdFormState } from "@/lib/ad-values";
 import { reviewCampaign } from "@/app/(energieheld)/admin/werbung/actions";
 import { CampaignSlot } from "./campaign-view";
 import styles from "./advertising.module.css";
-export function CampaignForm({ campaign }: { campaign: AdCampaign }) {
+export function CampaignForm({
+  campaign,
+  categoryIds,
+}: {
+  campaign: AdCampaign;
+  categoryIds: string[];
+}) {
   const [state, action, busy] = useActionState<AdFormState, FormData>(
     async (_previous, form) => {
       const file = form.get("image");
@@ -62,6 +68,18 @@ export function CampaignForm({ campaign }: { campaign: AdCampaign }) {
   );
   const set = (name: string, value: string) =>
     setValues((v) => ({ ...v, [name]: value }));
+  const setTarget = (target: AdTarget, checked: boolean) =>
+    setValues((current) => {
+      const remaining = current.targets.filter(
+        (item) =>
+          item.target_type !== target.target_type ||
+          item.category_id !== target.category_id,
+      );
+      return {
+        ...current,
+        targets: checked ? [...remaining, target] : remaining,
+      };
+    });
   return (
     <form action={action} className={styles.form}>
       <input type="hidden" name="campaign_id" value={campaign.id} />
@@ -104,40 +122,67 @@ export function CampaignForm({ campaign }: { campaign: AdCampaign }) {
           ))}
         </div>
       </fieldset>
-      <div className={styles.grid}>
-        <label>
-          Ausspielungsbereich
-          <select
-            name="scope_type"
-            value={values.scope_type}
-            onChange={(e) => set("scope_type", e.target.value)}
-          >
-            {Object.entries(adScopes).map(([id, label]) => (
-              <option key={id} value={id}>
-                {label}
-              </option>
-            ))}
-          </select>
+      <fieldset>
+        <legend>Werbung anzeigen auf:</legend>
+        <label className={styles.target}>
+          <input
+            type="checkbox"
+            name="targets"
+            value="experts_directory"
+            checked={values.targets.some(
+              (t) => t.target_type === "experts_directory",
+            )}
+            onChange={(event) =>
+              setTarget(
+                { target_type: "experts_directory", category_id: null },
+                event.target.checked,
+              )
+            }
+          />
+          Experten A–Z
         </label>
-        {values.scope_type === "trade" && (
-          <label>
-            Gewerk
-            <select
-              name="category_id"
-              required
-              value={values.category_id ?? ""}
-              onChange={(e) => set("category_id", e.target.value)}
-            >
-              <option value="">Bitte wählen</option>
-              {energieheld.categories.map((c) => (
-                <option value={c.id} key={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
+        <p>Ihre Gewerke:</p>
+        {energieheld.categories
+          .filter((c) => categoryIds.includes(c.id))
+          .map((c) => (
+            <label className={styles.target} key={c.id}>
+              <input
+                type="checkbox"
+                name="targets"
+                value={"trade:" + c.id}
+                checked={values.targets.some(
+                  (t) => t.target_type === "trade" && t.category_id === c.id,
+                )}
+                onChange={(event) =>
+                  setTarget(
+                    { target_type: "trade", category_id: c.id },
+                    event.target.checked,
+                  )
+                }
+              />
+              {c.name}
+            </label>
+          ))}
+        {!categoryIds.length && (
+          <p>
+            Ihrer Firma sind noch keine offiziellen Gewerke zugeordnet. Experten
+            A–Z ist immer auswählbar.
+          </p>
         )}
-      </div>
+        {campaign.targets.some(
+          (t) =>
+            t.target_type === "trade" && !categoryIds.includes(t.category_id!),
+        ) && (
+          <p role="status">
+            Bisherige Zielgewerke ohne aktuelle Firmenzuordnung können nicht
+            erneut gespeichert werden. Wählen Sie die gewünschten verfügbaren
+            Zielseiten.
+          </p>
+        )}
+        <p className="small muted">
+          Mehrfachauswahl möglich. Wählen Sie mindestens eine Zielseite.
+        </p>
+      </fieldset>
       <div className={styles.grid}>
         {(
           [

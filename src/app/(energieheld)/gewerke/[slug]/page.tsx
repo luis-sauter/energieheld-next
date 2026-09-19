@@ -1,7 +1,26 @@
 export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { trades } from "@/config/trades";
+import { energieheld } from "@/config/energieheld";
 import { DirectoryPage } from "@/components/portal/directory-page";
+
+// Energieberatung is already an official profile category and advertising target,
+// but is not one of the fourteen construction trades shown in the tile overview.
+function findTrade(slug: string) {
+  const trade = trades.find((item) => item.id === slug);
+  if (trade) return trade;
+  const advice = energieheld.categories.find(
+    (category) => category.id === slug && slug === "energieberatung",
+  );
+  return advice
+    ? {
+        ...advice,
+        image: "gewerke",
+        description:
+          "Energieberatung für Ihr Gebäude und Ihr Sanierungsvorhaben.",
+      }
+    : undefined;
+}
 
 export async function generateMetadata({
   params,
@@ -10,7 +29,7 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   return {
-    title: trades.find((t) => t.id === slug)?.name ?? "Gewerk nicht gefunden",
+    title: findTrade(slug)?.name ?? "Gewerk nicht gefunden",
   };
 }
 export default async function TradePage({
@@ -21,7 +40,7 @@ export default async function TradePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
-  const trade = trades.find((t) => t.id === slug);
+  const trade = findTrade(slug);
   if (!trade) notFound();
   return <DirectoryPage trade={trade} searchParams={searchParams} />;
 }

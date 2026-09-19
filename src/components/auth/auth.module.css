@@ -22,7 +22,7 @@
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: white;
+  background: var(--white);
   color: var(--text);
   font: inherit;
 }
@@ -30,15 +30,15 @@
   resize: vertical;
 }
 .field textarea:focus-visible {
-  outline: 3px solid var(--trust);
+  outline: 3px solid var(--brand-primary);
   outline-offset: 4px;
 }
 .error {
-  color: #9b2525;
+  color: var(--brand-primary);
   margin: 0;
 }
 .success {
-  color: #245b39;
+  color: var(--brand-primary);
   margin: 0;
 }
 .links {
@@ -70,7 +70,7 @@
   padding-bottom: 64px;
 }
 .card {
-  background: white;
+  background: var(--white);
 }
 .field {
   font-size: 14px;

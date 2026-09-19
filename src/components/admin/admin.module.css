@@ -52,7 +52,7 @@
   margin: 24px 0;
 }
 .error {
-  color: #9b2525;
+  color: var(--brand-primary);
 }
 .categories {
   border: 1px solid var(--line);
@@ -76,7 +76,7 @@
   accent-color: var(--brand-primary);
 }
 .success {
-  color: #245b39;
+  color: var(--brand-primary);
 }
 @media (max-width: 640px) {
   .metrics {
@@ -96,7 +96,7 @@
   border: 0;
   border-bottom: 1px solid var(--line);
   border-radius: 0;
-  background: white;
+  background: var(--white);
   padding: 24px 0;
 }
 .card h2 {

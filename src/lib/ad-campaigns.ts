@@ -26,12 +26,17 @@ export async function ownAdProfile(client: SupabaseClient) {
     return { error: "Zu Ihrem Konto wurde keine Firma gefunden." };
   const { data: profile, error: profileError } = await client
     .from("company_profiles")
-    .select("id")
+    .select("id,company_profile_categories(category_id)")
     .eq("company_id", company.id)
     .maybeSingle();
   return profileError || !profile
     ? { error: "Ihr Firmenprofil konnte nicht geladen werden." }
-    : { profileId: profile.id as string };
+    : {
+        profileId: profile.id as string,
+        categoryIds: (profile.company_profile_categories ?? []).map(
+          (c: { category_id: string }) => c.category_id,
+        ),
+      };
 }
 export async function signAdImages<T extends ActiveAd>(
   client: SupabaseClient,
@@ -69,6 +74,7 @@ export async function loadAdCampaigns(
   id?: string,
 ) {
   let profileId: string | undefined;
+  let categoryIds: string[] = [];
   if (admin) {
     const access = await checkAdmin(client);
     if (access !== "admin") return { access };
@@ -76,10 +82,14 @@ export async function loadAdCampaigns(
     const own = await ownAdProfile(client);
     if (!own.profileId) return own;
     profileId = own.profileId;
+    categoryIds = own.categoryIds ?? [];
   }
   let query = client
     .from("company_ad_campaigns")
-    .select("*,company_profiles!inner(display_name)", { count: "exact" });
+    .select(
+      "*,targets:company_ad_campaign_targets(target_type,category_id),company_profiles!inner(display_name,company_profile_categories(category_id))",
+      { count: "exact" },
+    );
   if (profileId) query = query.eq("profile_id", profileId);
   if (id) {
     if (!isProfileId(id)) return { campaigns: [] as AdCampaign[], count: 0 };
@@ -92,6 +102,19 @@ export async function loadAdCampaigns(
   if (error)
     return { error: "Werbekampagnen konnten gerade nicht geladen werden." };
   const rows = (data ?? []).map((row) => ({
+    unavailableTargets: (row.targets ?? [])
+      .filter((t: { target_type: string; category_id: string | null }) => {
+        const profile = Array.isArray(row.company_profiles)
+          ? row.company_profiles[0]
+          : row.company_profiles;
+        return (
+          t.target_type === "trade" &&
+          !profile?.company_profile_categories?.some(
+            (c: { category_id: string }) => c.category_id === t.category_id,
+          )
+        );
+      })
+      .map((t: { category_id: string }) => t.category_id),
     ...row,
     companyName: (Array.isArray(row.company_profiles)
       ? row.company_profiles[0]
@@ -99,10 +122,15 @@ export async function loadAdCampaigns(
     )?.display_name,
   })) as AdCampaign[];
   try {
-    return { campaigns: await signAdImages(client, rows), count: count ?? 0 };
+    return {
+      campaigns: await signAdImages(client, rows),
+      count: count ?? 0,
+      categoryIds,
+    };
   } catch {
     return {
       campaigns: rows,
+      categoryIds,
       count: count ?? 0,
       error: "Die Bildvorschau ist gerade nicht verfügbar.",
     };
@@ -151,6 +179,16 @@ export async function saveOwnAd(
   if (!isProfileId(id)) return { error: failed };
   const values = validateAdValues(form);
   if (!values.data) return { error: values.error };
+  if (
+    values.data.targets.some(
+      (t) =>
+        t.target_type === "trade" && !own.categoryIds?.includes(t.category_id!),
+    )
+  )
+    return {
+      error:
+        "Sie können nur in Ihren offiziell zugeordneten Gewerken werben. Bitte laden Sie die Seite neu.",
+    };
   const { data: campaign, error } = await client
     .from("company_ad_campaigns")
     .select("id,status,image_path")
@@ -219,7 +257,11 @@ export async function saveOwnAd(
   });
   if (saved.error) {
     if (uploaded) await client.storage.from(AD_BUCKET).remove([uploaded]);
-    return { error: failed };
+    return {
+      error: saved.error.message?.includes("ad_target_not_assigned")
+        ? "Ein ausgewähltes Gewerk ist Ihrer Firma nicht mehr zugeordnet. Bitte laden Sie die Seite neu."
+        : failed,
+    };
   }
   // Old media is unreferenced now. It can be removed while the campaign is still editable.
   if (uploaded && campaign.image_path && !submit)
@@ -270,7 +312,9 @@ export async function decideAd(
       access,
       error: error.message?.includes("ad_booking_conflict")
         ? "Dieser Werbeplatz ist im gewählten Zeitraum bereits belegt. Bitte wählen Sie einen anderen Zeitraum; bei Reaktivierung muss der bestätigte Zeitraum frei sein."
-        : "Die Entscheidung konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und prüfen Sie den Kampagnenstatus.",
+        : error.message?.includes("ad_target_not_assigned")
+          ? "Mindestens ein Zielgewerk ist der Firma nicht mehr zugeordnet. Bitte lehnen Sie die Einreichung zur Korrektur ab; eine pausierte Kampagne kann erst nach Klärung der Zuordnung reaktiviert werden."
+          : "Die Entscheidung konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und prüfen Sie den Kampagnenstatus.",
     };
   return { access, success: "Die Entscheidung wurde gespeichert." };
 }

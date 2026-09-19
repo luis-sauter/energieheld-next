@@ -10,6 +10,7 @@ import {
   type AdPlacementId,
 } from "@/lib/ad-values";
 import styles from "./advertising.module.css";
+import { energieheld } from "@/config/energieheld";
 export function CampaignSlot({
   placement,
   ad,
@@ -92,6 +93,21 @@ export function CampaignFacts({ campaign: c }: { campaign: AdCampaign }) {
           </>
         )}
       </dl>
+      {!!c.unavailableTargets?.length && (
+        <p className={styles.note}>
+          Diese Zielgewerke sind der Firma aktuell nicht zugeordnet und werden
+          dort nicht ausgespielt:{" "}
+          {c.unavailableTargets
+            .map(
+              (id) =>
+                energieheld.categories.find((category) => category.id === id)
+                  ?.name ?? id,
+            )
+            .join(" · ")}
+          . Eine Freigabe oder Reaktivierung ist erst nach Korrektur der Auswahl
+          oder Klärung der offiziellen Zuordnung möglich.
+        </p>
+      )}
       {c.admin_note && (
         <p className={styles.note}>Hinweis von Energieheld: {c.admin_note}</p>
       )}

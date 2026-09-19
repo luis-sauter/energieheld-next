@@ -18,15 +18,38 @@ function safeWebsite(value: string): string | null {
 export function ContactSection({
   listing,
   contactAction,
+  logoEditor,
 }: {
   listing: Listing;
   contactAction?: React.ReactNode;
+  logoEditor?: React.ReactNode;
 }) {
   const website = safeWebsite(listing.contact.website);
   const location = formatLocation(listing.location);
+  const phone = listing.contact.phone.replace(/[^+0-9]/g, "");
   return (
     <section className="contact-card" aria-labelledby="contact-title">
       <h2 id="contact-title">Kontakt & Standort</h2>
+      {logoEditor ?? (
+        <div
+          className="contact-logo"
+          aria-label={
+            listing.logo
+              ? `Logo von ${listing.name}`
+              : `Initialen ${listing.name}`
+          }
+        >
+          <CompanyLogo
+            key={listing.logo?.src ?? listing.initials}
+            image={listing.logo}
+            initials={listing.initials}
+          />
+        </div>
+      )}
+      {listing.contact.person && (
+        <p>Ansprechpartner: {listing.contact.person}</p>
+      )}
+      {listing.location.street && <p>{listing.location.street}</p>}
       {location && (
         <p className="location">
           <Icon name="pin" />
@@ -39,19 +62,41 @@ export function ContactSection({
         {listing.contact.phone && (
           <>
             <dt>Telefon</dt>
-            <dd>{listing.contact.phone}</dd>
+            <dd>
+              {listing.isDemo || !/\d{3,}/.test(phone) ? (
+                listing.contact.phone
+              ) : (
+                <a href={`tel:${phone}`}>{listing.contact.phone}</a>
+              )}
+            </dd>
           </>
         )}
         {listing.contact.email && (
           <>
             <dt>E-Mail</dt>
-            <dd>{listing.contact.email}</dd>
+            <dd>
+              {listing.isDemo ? (
+                listing.contact.email
+              ) : (
+                <a href={`mailto:${listing.contact.email}`}>
+                  {listing.contact.email}
+                </a>
+              )}
+            </dd>
           </>
         )}
         {website && (
           <>
             <dt>Website</dt>
-            <dd>{website}</dd>
+            <dd>
+              {listing.isDemo ? (
+                website
+              ) : (
+                <a href={website} target="_blank" rel="noopener noreferrer">
+                  {website}
+                </a>
+              )}
+            </dd>
           </>
         )}
       </dl>
@@ -116,23 +161,8 @@ export function ListingDetail({
   const content = (
     <>
       <div className="detail-heading">
-        {logoEditor ?? (
-          <div
-            className="detail-logo"
-            aria-label={
-              listing.logo
-                ? `Logo von ${listing.name}`
-                : `Initialen ${listing.name}`
-            }
-          >
-            <CompanyLogo
-              key={listing.logo?.src ?? listing.initials}
-              image={listing.logo}
-              initials={listing.initials}
-            />
-          </div>
-        )}
         <div>
+          <Heading className="detail-title">{listing.name}</Heading>
           <div className="inline-tags">
             {listing.isDemo && <Badge>Beispielprofil</Badge>}
             {categories
@@ -141,12 +171,6 @@ export function ListingDetail({
                 <span key={c.id}>{c.name}</span>
               ))}
           </div>
-          <Heading className="detail-title">{listing.name}</Heading>
-          {presentation === "company" &&
-            !listing.isDemo &&
-            listing.verification?.status === "verified" && (
-              <QualitySeal note={listing.verification.public_note} />
-            )}
           <p className="detail-tagline">{listing.tagline}</p>
           <a className="text-link profile-contact-link" href="#contact-title">
             Kontakt & Standort ansehen ↓
@@ -158,9 +182,18 @@ export function ListingDetail({
             </p>
           )}
         </div>
+        {presentation === "company" &&
+          !listing.isDemo &&
+          listing.verification?.status === "verified" && (
+            <QualitySeal note={listing.verification.public_note} prominent />
+          )}
       </div>
       <div className="profile-information">
-        <ContactSection listing={listing} contactAction={contactAction} />
+        <ContactSection
+          listing={listing}
+          contactAction={contactAction}
+          logoEditor={logoEditor}
+        />
         <section className="location-module" aria-label="Standort">
           <div className="location-illustration" aria-hidden="true">
             <Icon name="pin" size={44} />

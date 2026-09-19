@@ -3,12 +3,11 @@ import Link from "next/link";
 import type { Trade } from "@/config/trades";
 import { energieheld } from "@/config/energieheld";
 import { loadPortalCompanies } from "@/lib/portal-companies";
-import { filterListings, formatLocation } from "@/lib/listings";
+import { filterListings } from "@/lib/listings";
 import { AdvertisingLayout } from "./trades";
 import { EmptyState } from "./listings";
-import { CompanyLogo } from "./company-image";
+import { ListingRow } from "./listing-row";
 import { Icon } from "./icon";
-import { QualitySeal } from "@/components/quality/quality-seal";
 import { loadPublicAds } from "@/lib/public-ads";
 
 export async function DirectoryPage({
@@ -142,58 +141,12 @@ export async function DirectoryPage({
         ) : results.length ? (
           <div className="listing-rows">
             {results.map((listing) => (
-              <article className="listing-row" key={listing.id}>
-                <div
-                  className="row-logo"
-                  aria-label={
-                    listing.logo
-                      ? `Logo von ${listing.name}`
-                      : `Initialen ${listing.name}`
-                  }
-                >
-                  <CompanyLogo
-                    key={listing.logo?.src ?? listing.initials}
-                    image={listing.logo}
-                    initials={listing.initials}
-                  />
-                </div>
-                <div className="row-content">
-                  {!listing.isDemo &&
-                    listing.verification?.status === "verified" && (
-                      <QualitySeal note={listing.verification.public_note} />
-                    )}
-                  <span className="row-category">
-                    {energieheld.categories
-                      .filter((c) => listing.categoryIds.includes(c.id))
-                      .map((c) => c.name)
-                      .join(" · ")}
-                  </span>
-                  <h3>
-                    <Link href={`/experten/${listing.slug}`}>
-                      {listing.name}
-                    </Link>
-                  </h3>
-                  {formatLocation(listing.location) && (
-                    <p className="location">
-                      <Icon name="pin" size={16} />
-                      {formatLocation(listing.location)}
-                    </p>
-                  )}
-                  <p>{listing.tagline}</p>
-                  {listing.businessAreas && <p>{listing.businessAreas}</p>}
-                  <div className="row-bottom">
-                    {listing.isDemo && (
-                      <span className="badge">Beispielprofil</span>
-                    )}
-                    <Link
-                      className="button button-primary"
-                      href={`/experten/${listing.slug}`}
-                    >
-                      Unternehmensprofil <Icon name="arrow" size={16} />
-                    </Link>
-                  </div>
-                </div>
-              </article>
+              <ListingRow
+                key={listing.id}
+                listing={listing}
+                categories={energieheld.categories}
+                href={`/experten/${listing.slug}`}
+              />
             ))}
           </div>
         ) : (
