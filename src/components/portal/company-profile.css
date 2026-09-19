@@ -207,7 +207,7 @@
 }
 .company-profile .button-primary {
   background: var(--brand-accent);
-  color: var(--brand-primary);
+  color: var(--white);
 }
 .company-profile .contact-card .button {
   width: 100%;

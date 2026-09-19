@@ -2,6 +2,7 @@
   color-scheme: light;
   --brand-primary: #13237f;
   --brand-accent: #ef970c;
+  --brand-accent-hover: #d8860b;
   --brand-accent-light: #f2a835;
   --category-blue: #769efc;
   --white: #ffffff;
@@ -147,10 +148,10 @@ button {
 }
 .button-primary {
   background: var(--brand-accent);
-  color: var(--brand-primary);
+  color: var(--white);
 }
 .button-primary:hover:not(:disabled) {
-  background: var(--brand-accent-light);
+  background: var(--brand-accent-hover);
   transform: translateY(-1px);
 }
 .button-outline {
@@ -2664,11 +2665,11 @@ h6 {
 }
 .button-primary,
 .header-cta {
-  color: var(--brand-primary);
+  color: var(--white);
   border-color: var(--brand-accent);
 }
 .header-cta:hover {
-  background: var(--brand-accent-light);
+  background: var(--brand-accent-hover);
 }
 .category-icon {
   background: var(--category-blue);
