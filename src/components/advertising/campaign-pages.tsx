@@ -114,7 +114,13 @@ export async function CampaignDetail({
               <AdminCampaignForm campaign={campaign} />
             </>
           ) : ["draft", "rejected"].includes(campaign.status) ? (
-            <CampaignForm campaign={campaign} />
+            <CampaignForm
+              key={campaign.id}
+              campaign={campaign}
+              categoryIds={
+                "categoryIds" in result ? (result.categoryIds ?? []) : []
+              }
+            />
           ) : (
             <>
               <CampaignSlot

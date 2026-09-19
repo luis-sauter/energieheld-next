@@ -10,8 +10,6 @@ import styles from "@/components/auth/auth.module.css";
 import { analyticsPeriod, loadCompanyMetrics } from "@/lib/dashboard-analytics";
 import {
   MetricCards,
-  PeriodPicker,
-  TrafficCards,
   CompanyOverviewMetrics,
 } from "@/components/dashboard/metrics";
 import dashboardStyles from "@/components/dashboard/dashboard.module.css";
@@ -81,7 +79,6 @@ export default async function CompanyPage({
       )}
       <section className={dashboardStyles.section}>
         <h2>Leistungsüberblick</h2>
-        <PeriodPicker period={period} base="/firma" />
         <Link
           className="text-link"
           href={`/firma/statistiken?zeitraum=${period}`}
@@ -89,14 +86,14 @@ export default async function CompanyPage({
           Zur ausführlichen Auswertung →
         </Link>
         <p className={dashboardStyles.hint}>
-          7 und 30 Tage schließen heute ein. Zeitzone: Europe/Berlin.
-          Kontaktanfragen stammen aus den tatsächlich eingegangenen Anfragen.
+          Die ausführliche Auswertung mit Zeitraumwahl finden Sie unter
+          Statistiken. Die Erfassung von Aufrufen und Klicks ist noch nicht
+          aktiviert.
         </p>
         {metrics.error && <p role="alert">{metrics.error}</p>}
         {metrics.data && (
-          <TrafficCards
-            traffic={metrics.data.traffic}
-            leads={metrics.data.leads.received}
+          <MetricCards
+            items={[["Profilaufrufe", metrics.data.traffic.profile_views]]}
           />
         )}
       </section>

@@ -4,11 +4,11 @@
   padding: 26px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: white;
+  background: var(--white);
   color: var(--text);
 }
 .dialog::backdrop {
-  background: #17232f66;
+  background: color-mix(in srgb, var(--brand-primary) 40%, transparent);
 }
 .heading {
   display: flex;
@@ -80,12 +80,12 @@
   font-size: 14px;
 }
 .error {
-  color: #8c3931;
-  background: #fff5f3;
+  color: var(--brand-primary);
+  background: var(--surface);
 }
 .success {
-  color: #42613c;
-  background: #f2f8ef;
+  color: var(--brand-primary);
+  background: var(--surface);
 }
 .inbox {
   padding-top: 36px;
@@ -99,7 +99,7 @@
   border: 1px solid var(--line);
   padding: 24px;
   margin: 20px 0;
-  background: white;
+  background: var(--white);
 }
 .lead header {
   display: flex;
@@ -148,7 +148,7 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  border-top: 1px solid #edf0f1;
+  border-top: 1px solid var(--line);
   padding-top: 16px;
   font-size: 14px;
 }
@@ -177,7 +177,7 @@
 }
 .dialog :is(input, textarea, button):focus-visible,
 .statusForm :is(button, select):focus-visible {
-  outline: 2px solid var(--trust);
+  outline: 2px solid var(--brand-primary);
   outline-offset: 3px;
 }
 @media (max-width: 600px) {
@@ -198,7 +198,7 @@
 }
 .lead {
   border-radius: var(--radius);
-  border-left: 3px solid #c6d1c7;
+  border-left: 3px solid var(--line);
 }
 .lead header {
   padding-bottom: 16px;

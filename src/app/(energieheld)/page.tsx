@@ -250,7 +250,7 @@ export default function Home() {
             <p>Zeigen Sie, wer Sie sind und was Sie besonders macht.</p>
           </div>
           <Link className="button button-primary" href="/fuer-unternehmen">
-            Unternehmen eintragen <Icon name="arrow" />
+            Als Experte eintragen <Icon name="arrow" />
           </Link>
         </div>
       </section>

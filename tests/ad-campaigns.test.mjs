@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import "./helpers/load-ts.mjs";
-const { validateAdValues, adTargetUrl, adStatus, berlinToday } =
-  await import("../src/lib/ad-values.ts");
+const { validateAdValues, adTargetUrl, adStatus, berlinToday } = await import(
+  "../src/lib/ad-values.ts"
+);
 const { saveOwnAd, decideAd, signAdImages, loadAdCampaigns, prepareAdUpload } =
   await import("../src/lib/ad-campaigns.ts");
 const id = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -12,7 +13,7 @@ const values = {
   internal_name: "Test",
   headline: "Regionale Fachleute",
   placement: "top_banner",
-  scope_type: "experts_directory",
+  targets: ["experts_directory"],
   requested_start_date: "2026-09-18",
   requested_end_date: "2026-10-01",
   body_text: "Qualität",
@@ -20,7 +21,10 @@ const values = {
 };
 const form = (overrides = {}) => {
   const f = new FormData();
-  for (const [k, v] of Object.entries({ ...values, ...overrides })) f.set(k, v);
+  for (const [k, v] of Object.entries({ ...values, ...overrides })) {
+    if (Array.isArray(v)) for (const item of v) f.append(k, item);
+    else f.set(k, v);
+  }
   return f;
 };
 const png = new File(
@@ -75,7 +79,13 @@ function client({
               table === "companies"
                 ? { id: "own-company" }
                 : table === "company_profiles"
-                  ? { id: "own-profile" }
+                  ? {
+                      id: "own-profile",
+                      company_profile_categories: [
+                        { category_id: "solar" },
+                        { category_id: "elektro" },
+                      ],
+                    }
                   : table === "portal_admins"
                     ? admin
                       ? { user_id: "owner" }
@@ -141,20 +151,23 @@ test("ad validation rejects invalid URL, date, category and placement; derives s
     { headline: "" },
     { body_text: "x".repeat(401) },
     { placement: "fake" },
-    { scope_type: "fake" },
-    { scope_type: "trade", category_id: "fake" },
+    { targets: ["fake"] },
+    { targets: ["trade:fake"] },
     { requested_start_date: "2026-02-30" },
     { requested_end_date: "2026-01-01" },
   ])
     assert.ok(validateAdValues(form(data)).error);
-  assert.equal(
-    validateAdValues(form({ scope_type: "trade", category_id: "solar" })).data
-      .category_id,
-    "solar",
+  assert.deepEqual(
+    validateAdValues(form({ targets: ["experts_directory", "trade:solar"] }))
+      .data.targets,
+    [
+      { target_type: "experts_directory", category_id: null },
+      { target_type: "trade", category_id: "solar" },
+    ],
   );
-  assert.equal(
-    validateAdValues(form({ category_id: "solar" })).data.category_id,
-    null,
+  assert.ok(validateAdValues(form({ targets: [] })).error);
+  assert.ok(
+    validateAdValues(form({ targets: ["trade:solar", "trade:solar"] })).error,
   );
   assert.equal(berlinToday(new Date("2026-09-17T22:30:00Z")), "2026-09-18");
   const c = {
@@ -354,4 +367,27 @@ test("ad reads explicitly restrict own profile, admin queue checks membership, i
   assert.equal(db.calls.filter((c) => c.sign).length, 1);
   assert.equal(signed.length, 4);
   assert.ok(signed.every((c) => c.imageUrl));
+});
+
+test("server action rejects a canonical but unassigned trade before media or RPC mutation", async () => {
+  const db = client();
+  const result = await saveOwnAd(
+    db,
+    form({ targets: ["experts_directory", "trade:dach"], image: png }),
+  );
+  assert.match(result.error, /zugeordneten Gewerken/);
+  assert.ok(!db.calls.some((c) => c.rpc || c.upload || c.download));
+  const allowed = client();
+  assert.ok(
+    (
+      await saveOwnAd(
+        allowed,
+        form({
+          targets: ["experts_directory", "trade:solar", "trade:elektro"],
+          image: png,
+        }),
+      )
+    ).success,
+  );
+  assert.equal(allowed.calls.find((c) => c.rpc).args.p_data.targets.length, 3);
 });

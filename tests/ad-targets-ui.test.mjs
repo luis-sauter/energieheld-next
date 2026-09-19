@@ -1,0 +1,232 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { registerHooks } from "node:module";
+import { readFileSync, existsSync, writeFileSync } from "node:fs";
+import { transpileModule, ModuleKind, JsxEmit } from "typescript";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+registerHooks({
+  resolve(s, c, next) {
+    if (s === "next/headers")
+      return {
+        url: 'data:text/javascript,export async function headers(){throw Error("Headers not expected during render")}',
+        shortCircuit: true,
+      };
+    if (s === "server-only" || s === "next/cache")
+      return {
+        url: "data:text/javascript,export function revalidatePath(){}",
+        shortCircuit: true,
+      };
+    if (s === "next/navigation")
+      return {
+        url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")}',
+        shortCircuit: true,
+      };
+    if (s.endsWith("/supabase/server"))
+      return {
+        url: "data:text/javascript,export async function createClient(){return globalThis.__profileTestClient}",
+        shortCircuit: true,
+      };
+    if (s.endsWith(".module.css"))
+      return {
+        url: "data:text/javascript,export default new Proxy({}, {get: (_, name) => String(name)})",
+        shortCircuit: true,
+      };
+    if (s === "next/link" || s === "next/image")
+      return {
+        url: `data:text/javascript,export default ${JSON.stringify(s === "next/link" ? "a" : "img")}`,
+        shortCircuit: true,
+      };
+    if (s.startsWith("@/") || s.startsWith(".")) {
+      const u = s.startsWith("@/")
+        ? new URL("../src/" + s.slice(2), import.meta.url)
+        : new URL(s, c.parentURL);
+      for (const ext of [".ts", ".tsx"])
+        if (existsSync(new URL(u.href + ext))) return next(u.href + ext, c);
+    }
+    return next(s, c);
+  },
+  load(url, c, next) {
+    if (url.endsWith(".tsx"))
+      return {
+        format: "module",
+        shortCircuit: true,
+        source: transpileModule(readFileSync(new URL(url), "utf8"), {
+          compilerOptions: { module: ModuleKind.ESNext, jsx: JsxEmit.ReactJSX },
+        }).outputText,
+      };
+    return next(url, c);
+  },
+});
+
+const { CampaignForm, AdminCampaignForm } = await import(
+  "../src/components/advertising/campaign-form.tsx"
+);
+const { CampaignFacts, CampaignSlot } = await import(
+  "../src/components/advertising/campaign-view.tsx"
+);
+const campaign = {
+  id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  profile_id: "own",
+  internal_name: "Herbstkampagne",
+  placement: "top_banner",
+  targets: [
+    { target_type: "experts_directory", category_id: null },
+    { target_type: "trade", category_id: "solar" },
+    { target_type: "trade", category_id: "elektro" },
+  ],
+  requested_start_date: "2030-10-01",
+  requested_end_date: "2030-10-15",
+  approved_start_date: null,
+  approved_end_date: null,
+  headline: "Energie vom eigenen Dach",
+  body_text: "Planung und Umsetzung in Ihrer Region",
+  target_url: "https://example.org",
+  image_path: null,
+  imageUrl: "/images/solar.jpg",
+  status: "draft",
+  admin_note: null,
+  companyName: "Beispielbetrieb",
+  created_at: "",
+  updated_at: "",
+  submitted_at: null,
+  reviewed_at: null,
+};
+const render = (Component, props) =>
+  renderToStaticMarkup(createElement(Component, props));
+test("campaign form offers simultaneous directory and official trade checkboxes only", () => {
+  const html = render(CampaignForm, {
+    campaign,
+    categoryIds: ["solar", "elektro", "dach"],
+  });
+  assert.match(html, /Werbung anzeigen auf:/);
+  assert.match(html, /Ihre Gewerke:/);
+  const inputs = html.match(/<input[^>]*type="checkbox"[^>]*>/g);
+  assert.equal(inputs.length, 4);
+  for (const target of ["experts_directory", "trade:solar", "trade:elektro"])
+    assert.ok(
+      inputs.some(
+        (input) =>
+          input.includes('value="' + target + '"') &&
+          input.includes('checked=""'),
+      ),
+    );
+  assert.ok(
+    inputs.some(
+      (input) =>
+        input.includes('value="trade:dach"') && !input.includes('checked=""'),
+    ),
+  );
+  assert.doesNotMatch(
+    html,
+    /value="trade:heizung"|name="scope_type"|name="category_id"|Alle Gewerkeseiten/,
+  );
+  const noTrades = render(CampaignForm, {
+    campaign: { ...campaign, targets: [campaign.targets[0]] },
+    categoryIds: [],
+  });
+  assert.equal((noTrades.match(/type="checkbox"/g) || []).length, 1);
+  assert.match(noTrades, /noch keine offiziellen Gewerke/);
+  const removed = render(CampaignForm, { campaign, categoryIds: ["solar"] });
+  assert.doesNotMatch(removed, /value="trade:elektro"/);
+  assert.match(removed, /ohne aktuelle Firmenzuordnung/);
+});
+test("admin review exposes every target and explains removed assignments", () => {
+  const html = render(CampaignFacts, {
+    campaign: {
+      ...campaign,
+      status: "pending",
+      unavailableTargets: ["elektro"],
+    },
+  });
+  for (const label of [
+    "Experten A–Z",
+    "Photovoltaik",
+    "Smart Home &amp; Elektro",
+    "Premium-Banner oben",
+    "2030-10-01",
+    "2030-10-15",
+  ])
+    assert.ok(html.includes(label), label);
+  assert.match(html, /nicht zugeordnet/);
+  const form = render(AdminCampaignForm, {
+    campaign: { ...campaign, status: "pending" },
+  });
+  assert.match(form, /value="approve"/);
+  assert.match(form, /value="reject"/);
+  assert.match(
+    render(AdminCampaignForm, { campaign: { ...campaign, status: "paused" } }),
+    /value="resume"/,
+  );
+});
+test("public creative and both previews share imagery and text without recording events", () => {
+  const preview = render(CampaignSlot, {
+    placement: "top_banner",
+    ad: campaign,
+    preview: true,
+  });
+  const publicAd = render(CampaignSlot, {
+    placement: "top_banner",
+    ad: campaign,
+  });
+  for (const html of [preview, publicAd]) {
+    assert.match(html, /Energie vom eigenen Dach/);
+    assert.match(html, /images\/solar.jpg/);
+    assert.match(html, /data-placement="top_banner"/);
+  }
+  assert.match(publicAd, /rel="sponsored noopener noreferrer"/);
+  assert.doesNotMatch(preview, /href="https:\/\/example.org"/);
+  assert.doesNotMatch(publicAd, /sendBeacon|trackEvent/);
+});
+// Optional local, static visual fixture. Never writes to the application or DB.
+if (process.env.AD_TARGET_PREVIEW_FILE) {
+  const css =
+    readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8") +
+    readFileSync(
+      new URL(
+        "../src/components/advertising/advertising.module.css",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+  const content = render(CampaignForm, {
+    campaign,
+    categoryIds: ["solar", "elektro", "dach"],
+  });
+  writeFileSync(
+    process.env.AD_TARGET_PREVIEW_FILE,
+    '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Werbung – lokale Testdaten</title><style>' +
+      css +
+      '</style></head><body><main class="container page"><h1>Werbekampagne bearbeiten</h1>' +
+      content +
+      "<hr><h2>Admin-Vorschau</h2>" +
+      render(CampaignFacts, { campaign }) +
+      render(CampaignSlot, {
+        placement: "top_banner",
+        ad: campaign,
+        preview: true,
+      }) +
+      "</main></body></html>",
+  );
+}
+
+test("every official category available as an ad target resolves to a directory page", async () => {
+  const { energieheld } = await import("../src/config/energieheld.ts");
+  const { default: TradePage, generateMetadata } = await import(
+    "../src/app/(energieheld)/gewerke/[slug]/page.tsx"
+  );
+  for (const category of energieheld.categories) {
+    const params = Promise.resolve({ slug: category.id });
+    const page = await TradePage({ params, searchParams: Promise.resolve({}) });
+    assert.equal(page.props.trade.id, category.id);
+    assert.equal((await generateMetadata({ params })).title, category.name);
+  }
+  await assert.rejects(
+    () =>
+      TradePage({
+        params: Promise.resolve({ slug: "invalid" }),
+        searchParams: Promise.resolve({}),
+      }),
+    /NOT_FOUND/,
+  );
+});

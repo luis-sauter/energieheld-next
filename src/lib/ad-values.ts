@@ -6,16 +6,14 @@ export const adPlacements = {
   sidebar_bottom: "Seitenanzeige unten",
 } as const;
 export type AdPlacementId = keyof typeof adPlacements;
-export const adScopes = {
-  experts_directory: "Expertenübersicht",
-  all_trades: "Alle Gewerkeseiten",
-  trade: "Ein bestimmtes Gewerk",
-} as const;
+export type AdTarget = {
+  target_type: "experts_directory" | "trade";
+  category_id: string | null;
+};
 export type AdValues = {
   internal_name: string;
   placement: AdPlacementId;
-  scope_type: keyof typeof adScopes;
-  category_id: string | null;
+  targets: AdTarget[];
   requested_start_date: string;
   requested_end_date: string;
   headline: string;
@@ -36,6 +34,7 @@ export type AdCampaign = AdValues & {
   updated_at: string;
   imageUrl?: string;
   companyName?: string;
+  unavailableTargets?: string[];
 };
 export type ActiveAd = Pick<
   AdCampaign,
@@ -73,11 +72,15 @@ export function adStatus(
     paused: "Pausiert",
   }[c.status];
 }
-export function adScopeLabel(c: Pick<AdValues, "scope_type" | "category_id">) {
-  return c.scope_type === "trade"
-    ? (energieheld.categories.find((x) => x.id === c.category_id)?.name ??
-        "Unbekanntes Gewerk")
-    : adScopes[c.scope_type];
+export function adScopeLabel(c: Pick<AdValues, "targets">) {
+  return c.targets
+    .map((t) =>
+      t.target_type === "experts_directory"
+        ? "Experten A–Z"
+        : (energieheld.categories.find((x) => x.id === t.category_id)?.name ??
+          "Unbekanntes Gewerk"),
+    )
+    .join(" · ");
 }
 export function validAdDate(value: string) {
   return (
@@ -110,9 +113,7 @@ export function validateAdValues(form: FormData): {
   const internal_name = get("internal_name"),
     headline = get("headline"),
     body_text = get("body_text"),
-    placement = get("placement"),
-    scope_type = get("scope_type"),
-    category_id = get("category_id");
+    placement = get("placement");
   if (
     !internal_name ||
     internal_name.length > 120 ||
@@ -124,19 +125,30 @@ export function validateAdValues(form: FormData): {
       error:
         "Bitte geben Sie einen Kampagnennamen (max. 120 Zeichen), eine Überschrift (max. 100) und höchstens 400 Zeichen Beschreibung ein.",
     };
+  if (!Object.hasOwn(adPlacements, placement))
+    return { error: "Bitte wählen Sie einen gültigen Werbeplatz." };
+  const selected = form.getAll("targets");
   if (
-    !Object.hasOwn(adPlacements, placement) ||
-    !Object.hasOwn(adScopes, scope_type)
+    !selected.length ||
+    selected.length > 16 ||
+    new Set(selected).size !== selected.length
   )
     return {
       error:
-        "Bitte wählen Sie einen gültigen Werbeplatz und Ausspielungsbereich.",
+        "Bitte wählen Sie mindestens eine Zielseite ohne doppelte Auswahl.",
     };
-  if (
-    scope_type === "trade" &&
-    !energieheld.categories.some((c) => c.id === category_id)
-  )
-    return { error: "Bitte wählen Sie ein gültiges Gewerk." };
+  const targets: AdTarget[] = [];
+  for (const value of selected) {
+    if (value === "experts_directory")
+      targets.push({ target_type: "experts_directory", category_id: null });
+    else if (
+      typeof value === "string" &&
+      value.startsWith("trade:") &&
+      energieheld.categories.some((c) => c.id === value.slice(6))
+    )
+      targets.push({ target_type: "trade", category_id: value.slice(6) });
+    else return { error: "Bitte wählen Sie gültige Zielseiten." };
+  }
   const requested_start_date = get("requested_start_date"),
     requested_end_date = get("requested_end_date");
   if (
@@ -160,8 +172,7 @@ export function validateAdValues(form: FormData): {
       headline,
       body_text: body_text || null,
       placement: placement as AdPlacementId,
-      scope_type: scope_type as keyof typeof adScopes,
-      category_id: scope_type === "trade" ? category_id : null,
+      targets,
       requested_start_date,
       requested_end_date,
       target_url,

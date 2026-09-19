@@ -1,24 +1,31 @@
 "use client";
 import { useId, useRef } from "react";
-import { Icon } from "@/components/portal/icon";
+import Image from "next/image";
 import styles from "./quality.module.css";
-export function QualitySeal({ note }: { note?: string | null }) {
+export function QualitySeal({
+  note,
+  prominent = false,
+}: {
+  note?: string | null;
+  prominent?: boolean;
+}) {
   const dialog = useRef<HTMLDialogElement>(null),
     title = useId();
   return (
     <div className={styles.sealWrap}>
       <button
         type="button"
-        className={styles.seal}
+        className={`${styles.seal} ${prominent ? styles.prominent : ""}`}
         onClick={() => dialog.current?.showModal()}
         aria-haspopup="dialog"
         aria-label="Persönlich verifiziert – Bedeutung anzeigen"
       >
-        <Icon name="check" size={17} />
-        Persönlich verifiziert
-        <span aria-hidden="true" className={styles.info}>
-          i
-        </span>
+        <Image
+          src="/images/energieheld-verifiziert.png"
+          alt="Persönlich verifiziert"
+          width={305}
+          height={203}
+        />
       </button>
       <dialog ref={dialog} className={styles.dialog} aria-labelledby={title}>
         <div className={styles.heading}>
