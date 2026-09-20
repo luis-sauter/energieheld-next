@@ -686,6 +686,32 @@ button {
   font-size: 0.62rem;
   color: var(--muted);
 }
+.footer-demo {
+  padding-bottom: 24px;
+  font-size: 0.72rem;
+  line-height: 1.6;
+}
+.footer-demo p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.footer-demo ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  max-width: 720px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.footer-demo a {
+  color: var(--brand-primary);
+}
+.footer-demo a:hover,
+.footer-demo a:focus-visible {
+  text-decoration: underline;
+}
 .breadcrumbs {
   display: flex;
   gap: 10px;
