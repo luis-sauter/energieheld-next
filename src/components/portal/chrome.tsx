@@ -4,6 +4,19 @@ import type { BrandConfig } from "@/types/portal";
 import { Icon } from "./icon";
 import { MobileNavigation } from "./mobile-navigation";
 
+const demoQuickLinks = [
+  { label: "Firmen-Dashboard", href: "/firma" },
+  { label: "Firmenprofil", href: "/firma/profil" },
+  { label: "Profil gestalten", href: "/firma/profil/gestalten" },
+  { label: "Anfragen", href: "/firma/anfragen" },
+  { label: "Werbung verwalten", href: "/firma/werbung" },
+  { label: "Statistiken", href: "/firma/statistiken" },
+  { label: "Admin-Dashboard", href: "/admin" },
+  { label: "Admin Werbung", href: "/admin/werbung" },
+  { label: "Werbung / Vermarktung", href: "/werbung" },
+  { label: "Reiseportal-Vorschau", href: "/portal-vorschau" },
+];
+
 export function PortalHeader({ brand }: { brand: BrandConfig }) {
   const navigation = (
     <>
@@ -92,6 +105,23 @@ export function PortalFooter({ brand }: { brand: BrandConfig }) {
             : "Unternehmensverzeichnis · Beispielprofile sind gekennzeichnet"}
         </span>
       </div>
+      {brand.id === "energieheld" && (
+        <nav
+          className="container footer-demo"
+          aria-labelledby="footer-demo-title"
+        >
+          <p id="footer-demo-title">Demo-Schnellzugriff</p>
+          <ul>
+            {demoQuickLinks.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} prefetch={false}>
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </footer>
   );
 }
