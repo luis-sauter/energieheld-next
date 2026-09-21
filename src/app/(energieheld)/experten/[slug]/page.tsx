@@ -46,6 +46,7 @@ export default async function ExpertDetail({
         listing={listing}
         categories={energieheld.categories}
         presentation="company"
+        showMap
         contactAction={
           !listing.isDemo ? (
             <InquiryDialog profileId={listing.id} companyName={listing.name} />
