@@ -1,0 +1,127 @@
+.page {
+  padding-bottom: 80px;
+  min-height: 60vh;
+}
+.page h1 {
+  margin-top: 24px;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+.metrics > div,
+.card {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--brand-surface);
+}
+.metrics dd {
+  margin: 8px 0 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+.queue {
+  list-style: none;
+  padding: 0;
+  display: grid;
+}
+.queue p {
+  margin-bottom: 8px;
+}
+.queue a {
+  margin-top: 12px;
+}
+.details {
+  margin: 0 0 32px;
+  display: grid;
+  gap: 20px;
+}
+.details dt {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.details dd {
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+.error {
+  color: var(--brand-primary);
+}
+.categories {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin: 24px 0;
+  padding: 20px;
+}
+.categories legend {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.categories label {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+}
+.categories input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand-primary);
+}
+.success {
+  color: var(--brand-primary);
+}
+@media (max-width: 640px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+}
+/* Compact work queues, matching the company workspace. */
+.page {
+  max-width: 1160px;
+  padding-top: 36px;
+}
+.queue {
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+.queue .card {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--white);
+  padding: 24px 0;
+}
+.card h2 {
+  font-size: 22px;
+}
+.metrics {
+  gap: 0;
+  margin: 24px 0 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.metrics > div {
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--surface);
+}
+.categories {
+  background: var(--surface);
+}
+.categories label {
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+.actions {
+  gap: 10px;
+}
