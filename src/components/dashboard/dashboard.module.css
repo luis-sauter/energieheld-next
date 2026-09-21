@@ -1,0 +1,145 @@
+.section {
+  margin: 28px 0;
+}
+.section h2 {
+  margin-top: 0;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  margin: 18px 0;
+}
+.card {
+  min-width: 0;
+}
+.card dt {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.card dd {
+  margin: 8px 0 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+.nav a {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  text-decoration: none;
+}
+.hint {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.tableWrap {
+  overflow-x: auto;
+  margin-top: 18px;
+}
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 620px;
+  font-size: 14px;
+}
+.table th,
+.table td {
+  text-align: left;
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.table th {
+  font-weight: 650;
+}
+.table td:first-child {
+  max-width: 260px;
+  overflow-wrap: anywhere;
+}
+.nav a:focus-visible,
+.tableWrap:focus-visible {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .section {
+    padding: 18px;
+  }
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .card {
+    padding: 12px;
+  }
+  .card dd {
+    font-size: 23px;
+  }
+}
+/* Overview and analytical tables share one restrained workspace system. */
+.page {
+  max-width: 1160px;
+}
+.section {
+  padding: 24px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--white);
+}
+.section h2 {
+  font-size: 23px;
+}
+.cards {
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.card {
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--surface);
+  padding: 20px;
+}
+.card dd {
+  font-size: 24px;
+  line-height: 1.35;
+}
+.nav {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  gap: 8px;
+}
+.nav a {
+  background: var(--white);
+  font-size: 14px;
+  min-height: 42px;
+}
+.nav a[aria-current="page"] {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--text);
+}
+.table th {
+  background: var(--surface);
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .card {
+    padding: 14px;
+  }
+  .card dd {
+    font-size: 21px;
+  }
+  .section {
+    padding: 20px 0;
+  }
+}

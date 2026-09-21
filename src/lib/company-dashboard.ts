@@ -1,0 +1,55 @@
+import { readQualityRequest } from "./company-quality-request";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { readVerification } from "./company-verification";
+
+export async function loadCompanyDashboard(supabase: SupabaseClient) {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) return { authenticated: false as const };
+
+  // Ownership comes only from the verified user, never from URL parameters or metadata.
+  const { data: company, error: companyError } = await supabase
+    .from("companies")
+    .select("id, legal_name")
+    .eq("owner_user_id", user.id)
+    .maybeSingle();
+  if (companyError || !company) {
+    return {
+      authenticated: true as const,
+      email: user.email,
+      error: companyError
+        ? "Ihre Firmendaten konnten gerade nicht geladen werden. Bitte versuchen Sie es später erneut."
+        : "Zu Ihrem Konto wurde noch keine Firma gefunden. Bitte wenden Sie sich an den Support.",
+    };
+  }
+  const { data: profile, error: profileError } = await supabase
+    .from("company_profiles")
+    .select(
+      "id, slug, country, logo_path, company_profile_images(id,storage_path,alt_text,sort_order), display_name, business_areas, tagline, description, phone, public_email, website, street, postal_code, city, region, status, company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note),company_quality_requests(status,requested_at,decided_at)",
+    )
+    .eq("company_id", company.id)
+    .maybeSingle();
+  return {
+    authenticated: true as const,
+    email: user.email,
+    company,
+    profile: profile
+      ? {
+          ...profile,
+          company_quality_requests: readQualityRequest(
+            profile.company_quality_requests,
+          ),
+          company_quality_reviews: readVerification(
+            profile.company_quality_reviews,
+          ),
+        }
+      : profile,
+    error: profileError
+      ? "Ihr Firmenprofil konnte gerade nicht geladen werden. Bitte versuchen Sie es später erneut."
+      : !profile
+        ? "Ihr Firmenprofil ist noch nicht verfügbar. Bitte versuchen Sie es später erneut."
+        : undefined,
+  };
+}
