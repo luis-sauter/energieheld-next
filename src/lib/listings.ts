@@ -57,3 +57,30 @@ export function formatLocation(location: Listing["location"]): string {
     .filter(Boolean)
     .join(", ");
 }
+
+export function googleMapsLocation(location: Listing["location"]) {
+  const city = location.city.trim();
+  const postalCode = location.postalCode.trim();
+  const region = location.region.trim();
+  const country = location.country.trim();
+  const street = location.street?.trim() ?? "";
+  // A country/region alone is not a useful company location.
+  if (!(city && (postalCode || region || country)) && !(postalCode && country))
+    return null;
+  const precise = Boolean(street && /\d/.test(street) && postalCode && city);
+  const query = [
+    precise ? street : "",
+    [postalCode, city].filter(Boolean).join(" "),
+    region,
+    country,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const encoded = encodeURIComponent(query);
+  return {
+    query,
+    precise,
+    embedUrl: `https://www.google.com/maps?q=${encoded}&z=${precise ? 16 : 12}&output=embed`,
+    searchUrl: `https://www.google.com/maps/search/?api=1&query=${encoded}`,
+  };
+}

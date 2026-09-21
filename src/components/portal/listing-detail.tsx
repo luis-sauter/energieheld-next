@@ -1,5 +1,5 @@
 import type { Category, Listing } from "@/types/portal";
-import { formatLocation } from "@/lib/listings";
+import { formatLocation, googleMapsLocation } from "@/lib/listings";
 import { Badge } from "./listings";
 import { CompanyLogo } from "./company-image";
 import { Icon } from "./icon";
@@ -147,9 +147,11 @@ export function ListingDetail({
   logoEditor,
   galleryEditor,
   contactAction,
+  showMap = false,
 }: {
   listing: Listing;
   categories: Category[];
+  showMap?: boolean;
   qualityArea?: React.ReactNode;
   headingLevel?: 1 | 2;
   presentation?: "company";
@@ -158,6 +160,8 @@ export function ListingDetail({
   contactAction?: React.ReactNode;
 }) {
   const Heading = headingLevel === 1 ? "h1" : "h2";
+  const map =
+    showMap && !listing.isDemo ? googleMapsLocation(listing.location) : null;
   const content = (
     <>
       <div className="detail-heading">
@@ -195,40 +199,68 @@ export function ListingDetail({
           logoEditor={logoEditor}
         />
         <section className="location-module" aria-label="Standort">
-          <div className="location-illustration" aria-hidden="true">
-            <Icon name="pin" size={44} />
-          </div>
+          {map ? (
+            <iframe
+              className="location-map"
+              title={`Google Maps – ${map.precise ? "Adresse" : "Ortsübersicht"}: ${map.query}`}
+              src={map.embedUrl}
+              loading="eager"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          ) : (
+            <div className="location-illustration" aria-hidden="true">
+              <Icon name="pin" size={44} />
+            </div>
+          )}
           <div>
             <p className="eyebrow">Standort</p>
             <h2>
-              {formatLocation(listing.location) ||
+              {map?.query ||
+                formatLocation(listing.location) ||
                 "Standort noch nicht angegeben"}
             </h2>
             <p>
-              {listing.isDemo
-                ? "Beispielstandort · keine genaue Firmenposition"
-                : "Die angegebene Region des Unternehmens. Eine genaue Kartenposition ist hier nicht hinterlegt."}
+              {map
+                ? map.precise
+                  ? "Kartenansicht zur angegebenen Unternehmensadresse."
+                  : "Ortsübersicht · keine genaue Firmenposition."
+                : listing.isDemo
+                  ? "Beispielstandort · keine genaue Firmenposition"
+                  : "Die angegebene Region des Unternehmens. Eine genaue Kartenposition ist hier nicht hinterlegt."}
             </p>
-            {!listing.isDemo && listing.location.city && (
+            {map ? (
               <a
                 className="text-link"
+                href={map.searchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                href={
-                  "https://www.google.com/maps/search/?api=1&query=" +
-                  encodeURIComponent(
-                    [
-                      listing.location.postalCode,
-                      listing.location.city,
-                      listing.location.country,
-                    ]
-                      .filter(Boolean)
-                      .join(" "),
-                  )
-                }
               >
-                Ort auf Google Maps ansehen ↗
+                In Google Maps öffnen ↗
               </a>
+            ) : (
+              !listing.isDemo &&
+              listing.location.city && (
+                <a
+                  className="text-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={
+                    "https://www.google.com/maps/search/?api=1&query=" +
+                    encodeURIComponent(
+                      [
+                        listing.location.postalCode,
+                        listing.location.city,
+                        listing.location.country,
+                      ]
+                        .filter(Boolean)
+                        .join(" "),
+                    )
+                  }
+                >
+                  Ort auf Google Maps ansehen ↗
+                </a>
+              )
             )}
           </div>
         </section>

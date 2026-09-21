@@ -1,9 +1,49 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { filterListings } from "../src/lib/listings.ts";
+import { filterListings, googleMapsLocation } from "../src/lib/listings.ts";
 import { listings, travelListing } from "../src/data/listings.ts";
 
 const empty = { query: "", category: "", location: "", service: "", sort: "" };
+
+test("maps use only available addresses and distinguish locality from complete addresses", () => {
+  const location = {
+    city: " München ",
+    postalCode: "80331",
+    region: "Bayern",
+    country: "Deutschland",
+  };
+  const coarse = googleMapsLocation(location);
+  assert.equal(coarse.precise, false);
+  assert.equal(new URL(coarse.embedUrl).searchParams.get("z"), "12");
+  assert.equal(
+    new URL(coarse.embedUrl).searchParams.get("q"),
+    "80331 München, Bayern, Deutschland",
+  );
+  const address = googleMapsLocation({
+    ...location,
+    street: "Teststraße 12 & Hof",
+  });
+  assert.equal(address.precise, true);
+  assert.equal(
+    new URL(address.embedUrl).searchParams.get("q"),
+    "Teststraße 12 & Hof, 80331 München, Bayern, Deutschland",
+  );
+  assert.equal(
+    new URL(address.searchUrl).searchParams.get("query"),
+    address.query,
+  );
+  assert.equal(new URL(address.embedUrl).searchParams.get("z"), "16");
+  assert.equal(
+    googleMapsLocation({ ...location, street: "Teststraße" }).precise,
+    false,
+  );
+  for (const partial of [
+    { city: "", postalCode: "", region: "", country: "" },
+    { city: " ", postalCode: " ", region: "Bayern", country: "Deutschland" },
+    { city: "Neustadt", postalCode: "", region: "", country: "" },
+  ])
+    assert.equal(googleMapsLocation(partial), null);
+});
 
 test("combines search, category, location and service", () => {
   const found = filterListings(listings, {

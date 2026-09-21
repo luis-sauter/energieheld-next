@@ -533,6 +533,7 @@ test("profile contact and location precede description; no invented precise map 
         listing: data,
         categories: energieheld.categories,
         presentation: "company",
+        showMap: true,
       }),
     );
   const real = render({
@@ -552,11 +553,10 @@ test("profile contact and location precede description; no invented precise map 
     real.indexOf('class="location-module"') < real.indexOf("Über Bauwerk"),
   );
   assert.match(real, /google.com\/maps\/search/);
-  assert.match(
-    real,
-    /keine genaue Kartenposition|genaue Kartenposition ist hier nicht hinterlegt/,
-  );
-  assert.doesNotMatch(real, /<iframe/);
+  assert.match(real, /Ortsübersicht · keine genaue Firmenposition/);
+  assert.match(real, /<iframe[^>]+title="Google Maps – Ortsübersicht:/);
+  assert.match(real, /loading="eager"/);
+  assert.match(real, /In Google Maps öffnen/);
   const demo = render({ ...listing, isDemo: true });
   assert.doesNotMatch(demo, /google.com\/maps/);
   const empty = render({
@@ -565,4 +565,16 @@ test("profile contact and location precede description; no invented precise map 
   });
   assert.match(empty, /Standort noch nicht angegeben/);
   assert.doesNotMatch(empty, /google.com\/maps/);
+  const address = render({
+    ...listing,
+    location: {
+      street: "Teststraße 12",
+      postalCode: "80331",
+      city: "München",
+      region: "Bayern",
+      country: "Deutschland",
+    },
+  });
+  assert.match(address, /Google Maps – Adresse: Teststraße 12/);
+  assert.match(address, /Kartenansicht zur angegebenen Unternehmensadresse/);
 });
