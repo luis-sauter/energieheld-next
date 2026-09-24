@@ -79,15 +79,15 @@ export function InlineImageGridEditor({ block, saveAction }: {
     data.set("aspect_ratio", String(ratio));
     if (!await run(data)) resetPreview();
   }
-  function adjustSize(widthChange: number, ratioChange: number) {
-    const width = Math.max(35, Math.min(100, sizeRef.current.width + widthChange));
+  function adjustSize(ratioChange: number) {
+    const width = sizeRef.current.width;
     const ratio = Math.max(0.6, Math.min(3, Math.round((sizeRef.current.ratio + ratioChange) * 100) / 100));
     preview(width, ratio);
     void saveSize(width, ratio);
   }
   function startResize(event: ReactPointerEvent<HTMLButtonElement>) {
     if (busyRef.current || event.pointerType === "mouse" && event.button !== 0) return;
-    const parentWidth = frameRef.current?.parentElement?.getBoundingClientRect().width ?? 0;
+    const parentWidth = frameRef.current?.closest(".profile-content-canvas")?.getBoundingClientRect().width ?? 0;
     const tileWidth = gridRef.current?.firstElementChild?.getBoundingClientRect().width ?? 0;
     if (!parentWidth || !tileWidth) return;
     event.preventDefault();
@@ -101,8 +101,8 @@ export function InlineImageGridEditor({ block, saveAction }: {
   function moveResize(event: ReactPointerEvent<HTMLButtonElement>) {
     const drag = resizeDrag.current;
     if (!drag || event.pointerId !== drag.pointerId) return;
-    const next = resizeImageGridFromPointer(drag, event.clientX - drag.x, event.clientY - drag.y);
-    preview(next.width, next.ratio);
+    const next = resizeImageGridFromPointer(drag, 0, event.clientY - drag.y);
+    preview(drag.width, next.ratio);
   }
   function finishResize(event: ReactPointerEvent<HTMLButtonElement>, cancel = false) {
     const drag = resizeDrag.current;
@@ -165,8 +165,7 @@ export function InlineImageGridEditor({ block, saveAction }: {
         {count} {count === 1 ? "Bild" : "Bilder"}
       </button>)}
     </div>
-    <div ref={frameRef} className={`${gridStyles.frame} ${styles.resizableImageFrame}`}
-      style={{ width: `${size.width}%` }}>
+    <div ref={frameRef} className={`${gridStyles.frame} ${styles.resizableImageFrame}`}>
     <div ref={gridRef} className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={columns}>
       {imageGridSlots(columns, images).map((image, index) => image ? <div key={image.id} className={styles.imageTile}
         draggable={!busy && images.length > 1}
@@ -211,19 +210,15 @@ export function InlineImageGridEditor({ block, saveAction }: {
       </label>)}
     </div>
     {resizeAvailable && <div className={styles.resizeFooter}>
-      <div className={styles.resizeButtons} role="group" aria-label="Bildblockgröße">
-        <button type="button" className="button" aria-label="Bildblock schmaler" disabled={busy || size.width <= 35}
-          onClick={() => adjustSize(-5, 0)}>Breite −</button>
-        <button type="button" className="button" aria-label="Bildblock breiter" disabled={busy || size.width >= 100}
-          onClick={() => adjustSize(5, 0)}>Breite +</button>
+      <div className={styles.resizeButtons} role="group" aria-label="Bildhöhe">
         <button type="button" className="button" aria-label="Bildblock flacher" disabled={busy || size.ratio >= 3}
-          onClick={() => adjustSize(0, 0.1)}>Höhe −</button>
+          onClick={() => adjustSize(0.1)}>Höhe −</button>
         <button type="button" className="button" aria-label="Bildblock höher" disabled={busy || size.ratio <= 0.6}
-          onClick={() => adjustSize(0, -0.1)}>Höhe +</button>
+          onClick={() => adjustSize(-0.1)}>Höhe +</button>
       </div>
-      <small role="status">Breite: {size.width} %</small>
-      <button type="button" className={styles.resizeGrip} aria-label="Bildblockgröße durch Ziehen ändern"
-        title="Bildblock an dieser Ecke größer oder kleiner ziehen" disabled={busy}
+      <small role="status">Bildhöhe anpassen</small>
+      <button type="button" className={styles.resizeGrip} aria-label="Bildhöhe durch Ziehen ändern"
+        title="Bildhöhe ändern" disabled={busy}
         onPointerDown={startResize} onPointerMove={moveResize}
         onPointerUp={(event) => { moveResize(event); finishResize(event); }}
         onPointerCancel={(event) => finishResize(event, true)}>↘</button>

@@ -169,7 +169,7 @@ test("resize accepts bounded values and rebuilds config with unchanged columns",
 });
 
 test("invalid resize, foreign target and non-admin never write size", async () => {
-  for (const [width, ratio] of [["34", "1.5"], ["101", "1.5"], ["75", "0.59"],
+  for (const [width, ratio] of [["24", "1.5"], ["101", "1.5"], ["75", "0.59"],
     ["75", "3.01"], ["75", "1.234"], ["nan", "1.5"]]) {
     const db = client({ size: { width_percent: 100, aspect_ratio: 1.5 } });
     assert.ok((await changeAdminBlockImages(db, profile, "sichtbar", form({
@@ -204,4 +204,21 @@ test("layout preserves stored size and a pre-migration grid retains its old layo
     intent: "resize", block_id: block, width_percent: "75", aspect_ratio: "1.2",
   }))).error, /Datenbankmigration/);
   assert.ok(!legacy.calls.some((call) => call.operation === "update"));
+});
+
+test("image columns and height retain shared position and spacing after the universal migration", async () => {
+  const size = { width_percent: 75, offset_percent: 12.5, aspect_ratio: 1.5,
+    spacing_top: "small", spacing_bottom: "large" };
+  const columns = client({ size });
+  assert.ok((await changeAdminBlockImages(columns, profile, "sichtbar", form({
+    intent: "layout", block_id: block, columns: "3",
+  }))).success);
+  assert.deepEqual(columns.calls.find((call) => call.operation === "update").payload.config,
+    { ...size, columns: 3 });
+  const resized = client({ size });
+  assert.ok((await changeAdminBlockImages(resized, profile, "sichtbar", form({
+    intent: "resize", block_id: block, width_percent: "90", aspect_ratio: "1.2",
+  }))).success);
+  assert.deepEqual(resized.calls.find((call) => call.operation === "update").payload.config,
+    { ...size, columns: 2, width_percent: 90, offset_percent: 10, aspect_ratio: 1.2 });
 });

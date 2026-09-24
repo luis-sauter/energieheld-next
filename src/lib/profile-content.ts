@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ImageGridConfig } from "./image-grid-layout";
+import type { TextBlockLayout } from "./content-block-layout";
 
 export type ContentBlockType = "heading" | "text" | "image_grid";
 export type TextBlockType = Exclude<ContentBlockType, "image_grid">;
@@ -18,7 +19,7 @@ export type ProfileContentBlock = {
   slot: HeadingSlot | null;
   sort_order: number;
   content: { text: string };
-  config?: Partial<ImageGridConfig>;
+  config?: Partial<ImageGridConfig & TextBlockLayout>;
   images?: ProfileBlockImage[];
 };
 

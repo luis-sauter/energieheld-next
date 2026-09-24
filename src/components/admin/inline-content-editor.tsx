@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProfileContentBlocks } from "@/components/portal/profile-content-blocks";
 import { InlineImageGridEditor } from "./inline-image-grid-editor";
+import { InlineBlockLayout } from "./inline-block-layout";
 import type { MediaState } from "@/lib/company-media";
 import type { ContentBlockType, HeadingSlot, ProfileContentBlock } from "@/lib/profile-content";
 import styles from "./inline-profile.module.css";
@@ -73,7 +74,7 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
   if (!available) return <p role="status" className={styles.contentUnavailable}>Inhaltsblöcke werden verfügbar, sobald die neue Datenbankmigration angewendet ist.</p>;
 
   async function run(form: FormData, onSuccess?: () => void) {
-    if (busyRef.current) return;
+    if (busyRef.current) return false;
     busyRef.current = true;
     setBusy(true);
     setFeedback({});
@@ -84,8 +85,10 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
         onSuccess?.();
         router.refresh();
       }
+      return Boolean(result.success);
     } catch {
       setFeedback({ error: "Der Inhalt konnte nicht gespeichert werden. Bitte versuchen Sie es erneut." });
+      return false;
     } finally {
       busyRef.current = false;
       setBusy(false);
@@ -96,6 +99,11 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
     form.set("intent", intent);
     if (blockId) form.set("block_id", blockId);
     return form;
+  }
+  function saveBlock(intent: string, blockId: string, values: Record<string, string> = {}) {
+    const form = formFor(intent, blockId);
+    for (const [key, value] of Object.entries(values)) form.set(key, value);
+    return run(form);
   }
   function addControl(before: string | null) {
     const selected = pickerBefore === before;
@@ -140,19 +148,10 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
     {feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
     {blocks.map((block, index) => <div key={block.id}>
       {addControl(block.id)}
-      <section className={`detail-section ${styles.editableBlock}`}>
-        {block.type === "image_grid" ? <>
-          <InlineImageGridEditor block={block} saveAction={saveImage} />
-          <div className={styles.blockActions}>
-            <button type="button" className="button" disabled={busy || index === 0} aria-label="Block nach oben verschieben"
-              onClick={() => { const form = formFor("move", block.id); form.set("direction", "up"); void run(form); }}>↑</button>
-            <button type="button" className="button" disabled={busy || index === blocks.length - 1} aria-label="Block nach unten verschieben"
-              onClick={() => { const form = formFor("move", block.id); form.set("direction", "down"); void run(form); }}>↓</button>
-            <button type="button" className="button" disabled={busy} onClick={() => {
-              if (window.confirm("Diesen Bildblock samt Bildern wirklich löschen?")) void run(formFor("delete", block.id));
-            }}>Block löschen</button>
-          </div>
-        </> : <form key={`${block.id}-${block.content.text}`} className={styles.blockForm} onSubmit={(event) => {
+      <InlineBlockLayout block={block} busy={busy} first={index === 0} last={index === blocks.length - 1}
+        save={saveBlock}>
+        {block.type === "image_grid" ? <InlineImageGridEditor block={block} saveAction={saveImage} />
+          : <form key={`${block.id}-${block.content.text}`} className={styles.blockForm} onSubmit={(event) => {
           event.preventDefault();
           const form = formFor("update", block.id);
           form.set("text", String(new FormData(event.currentTarget).get("text") ?? ""));
@@ -165,16 +164,9 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
           </label>
           <div className={styles.blockActions}>
             <button className="button" disabled={busy}>{busy ? "Wird gespeichert …" : "Block speichern"}</button>
-            <button type="button" className="button" disabled={busy || index === 0} aria-label="Block nach oben verschieben"
-              onClick={() => { const form = formFor("move", block.id); form.set("direction", "up"); void run(form); }}>↑</button>
-            <button type="button" className="button" disabled={busy || index === blocks.length - 1} aria-label="Block nach unten verschieben"
-              onClick={() => { const form = formFor("move", block.id); form.set("direction", "down"); void run(form); }}>↓</button>
-            <button type="button" className="button" disabled={busy} onClick={() => {
-              if (window.confirm("Diesen Inhaltsblock wirklich löschen?")) void run(formFor("delete", block.id));
-            }}>Block löschen</button>
           </div>
         </form>}
-      </section>
+      </InlineBlockLayout>
     </div>)}
     {addControl(null)}
   </div>;

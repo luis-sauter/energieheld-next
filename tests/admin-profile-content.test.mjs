@@ -59,7 +59,7 @@ function client({ authenticated = true, admin = true, blocks = [
       if (name === "insert_profile_content_block" && args.p_before_block_id &&
         !blocks.some((block) => block.id === args.p_before_block_id && block.profile_id === args.p_profile_id))
         return { data: null, error: { message: "foreign block" } };
-      return name === "insert_profile_content_block"
+      return name === "insert_profile_content_block" || name === "duplicate_profile_content_block"
         ? { data: first, error: null } : { data: null, error: null };
     },
   };
@@ -72,6 +72,51 @@ test("signed-out and non-admin callers cannot read or mutate editorial blocks", 
     assert.notEqual(result.access, "admin");
     assert.ok(db.calls.every((call) => call.table === "portal_admins"));
   }
+});
+
+test("layout updates only the displayed free block and preserves image shape and content", async () => {
+  const config = { columns: 3, width_percent: 75, offset_percent: 12.5,
+    aspect_ratio: 1.25, spacing_top: "small", spacing_bottom: "large" };
+  const blocks = [
+    { id: first, profile_id: profileId, type: "image_grid", slot: null, config, content: {} },
+    { id: foreignBlock, profile_id: foreignProfile, type: "text", slot: null,
+      config: { width_percent: 100, offset_percent: 0, text_align: "left", spacing_top: "normal", spacing_bottom: "normal" },
+      content: { text: "Fremd" } },
+  ];
+  const db = client({ blocks });
+  const result = await changeAdminProfileContent(db, profileId, slug, form({
+    intent: "layout", block_id: first, width_percent: "50", offset_percent: "25",
+    profile_id: foreignProfile, columns: "4", aspect_ratio: "3", text: "Manipuliert",
+  }));
+  assert.ok(result.success);
+  const write = db.calls.find((call) => call.operation === "update");
+  assert.deepEqual(write.payload, { config: { ...config, width_percent: 50, offset_percent: 25 } });
+  assert.ok(write.filters.some(([key, value]) => key === "profile_id" && value === profileId));
+  assert.ok(!db.calls.some((call) => call.operation === "update" && call.payload?.content));
+  for (const values of [
+    { width_percent: "24" }, { width_percent: "101" }, { offset_percent: "30" },
+    { spacing_top: "huge" }, { text_align: "center" },
+  ]) assert.ok((await changeAdminProfileContent(client({ blocks }), profileId, slug,
+    form({ intent: "layout", block_id: first, ...values }))).error);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "layout", block_id: foreignBlock, width_percent: "50" }))).error);
+});
+
+test("text alignment and spacing update independently; duplicate uses scoped invoker RPC", async () => {
+  const original = { id: first, profile_id: profileId, type: "text", slot: null,
+    config: { width_percent: 60, offset_percent: 20, text_align: "left", spacing_top: "normal", spacing_bottom: "normal" },
+    content: { text: "Bestehender Text" } };
+  const db = client({ blocks: [original] });
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "layout", block_id: first, text_align: "center", spacing_top: "large" }))).success);
+  assert.deepEqual(db.calls.find((call) => call.operation === "update").payload.config,
+    { ...original.config, text_align: "center", spacing_top: "large" });
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "duplicate", block_id: first, profile_id: foreignProfile }))).success);
+  assert.deepEqual(db.calls.find((call) => call.rpc === "duplicate_profile_content_block").args,
+    { p_profile_id: profileId, p_block_id: first });
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "duplicate", block_id: foreignBlock }))).error);
 });
 
 test("heading and text are inserted at a server-scoped position without trusting submitted profile ID", async () => {

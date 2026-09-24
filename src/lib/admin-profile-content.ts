@@ -3,6 +3,9 @@ import { isProfileId, type AdminAccess } from "./admin-review";
 import { checkInlineProfileTarget } from "./inline-admin-profile";
 import { contentText, type ContentBlockType, type HeadingSlot } from "./profile-content";
 import { MEDIA_BUCKET } from "./company-media";
+import { hasPersistedBlockLayout, normalizeBlockLayout, normalizeTextBlockLayout,
+  validOffset, validSpacing, validTextAlignment, validWidth } from "./content-block-layout";
+import { normalizeImageGridConfig } from "./image-grid-layout";
 
 export type ContentActionResult = { access: AdminAccess; error?: string; success?: string };
 const missing = "Der Inhaltsblock gehört nicht zu diesem Profil oder wurde bereits entfernt.";
@@ -78,6 +81,60 @@ export async function changeAdminProfileContent(
 
   const blockId = form.get("block_id");
   if (!isProfileId(blockId)) return { access: "admin", error: missing };
+  if (intent === "duplicate") {
+    const { data: source, error: sourceError } = await client.from("profile_content_blocks")
+      .select("id,type,slot").eq("profile_id", id).eq("id", blockId).is("slot", null).maybeSingle();
+    if (sourceError || !source || !["heading", "text", "image_grid"].includes(source.type))
+      return { access: "admin", error: missing };
+    const { data, error } = await client.rpc("duplicate_profile_content_block", {
+      p_profile_id: id, p_block_id: blockId,
+    });
+    return error || !isProfileId(data)
+      ? { access: "admin", error: failed }
+      : { access: "admin", success: source.type === "image_grid"
+        ? "Der Bildblock wurde dupliziert. Bilder können jetzt hinzugefügt werden."
+        : "Der Block wurde direkt darunter dupliziert." };
+  }
+  if (intent === "layout") {
+    const { data: block, error: readError } = await client.from("profile_content_blocks")
+      .select("id,type,slot,config").eq("profile_id", id).eq("id", blockId).is("slot", null).maybeSingle();
+    if (readError || !block || !["heading", "text", "image_grid"].includes(block.type))
+      return { access: "admin", error: missing };
+    if (!hasPersistedBlockLayout(block.config))
+      return { access: "admin", error: "Die Layoutsteuerung ist verfügbar, sobald die neue Datenbankmigration angewendet ist." };
+    const old = block.type === "image_grid"
+      ? normalizeImageGridConfig(block.config) : normalizeTextBlockLayout(block.config);
+    const widthRaw = form.get("width_percent");
+    const offsetRaw = form.get("offset_percent");
+    const alignRaw = form.get("text_align");
+    const topRaw = form.get("spacing_top");
+    const bottomRaw = form.get("spacing_bottom");
+    if (block.type === "image_grid" && alignRaw !== null)
+      return { access: "admin", error: "Textausrichtung gilt nur für Überschriften und Text." };
+    const width = widthRaw === null ? old.width_percent : Number(widthRaw);
+    const offset = offsetRaw === null
+      ? Math.min(old.offset_percent, 100 - width) : Number(offsetRaw);
+    if (!validWidth(width) || !validOffset(offset) || width + offset > 100 ||
+      topRaw !== null && !validSpacing(topRaw) || bottomRaw !== null && !validSpacing(bottomRaw) ||
+      alignRaw !== null && !validTextAlignment(alignRaw))
+      return { access: "admin", error: "Bitte wählen Sie eine gültige Breite, Position oder einen gültigen Abstand." };
+    const common = {
+      ...normalizeBlockLayout(old), width_percent: width, offset_percent: offset,
+      spacing_top: topRaw === null ? old.spacing_top : topRaw,
+      spacing_bottom: bottomRaw === null ? old.spacing_bottom : bottomRaw,
+    };
+    const nextConfig = block.type === "image_grid"
+      ? { ...common, columns: (old as ReturnType<typeof normalizeImageGridConfig>).columns,
+        aspect_ratio: (old as ReturnType<typeof normalizeImageGridConfig>).aspect_ratio }
+      : { ...common, text_align: alignRaw === null
+        ? (old as ReturnType<typeof normalizeTextBlockLayout>).text_align : alignRaw };
+    const { data, error } = await client.from("profile_content_blocks")
+      .update({ config: nextConfig }).eq("profile_id", id).eq("id", blockId).is("slot", null)
+      .eq("type", block.type).select("id").maybeSingle();
+    return error || data?.id !== blockId
+      ? { access: "admin", error: failed }
+      : { access: "admin", success: "Das Layout wurde gespeichert." };
+  }
   if (intent === "move") {
     const direction = form.get("direction");
     if (direction !== "up" && direction !== "down")
