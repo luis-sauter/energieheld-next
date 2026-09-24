@@ -9,6 +9,10 @@ const profile = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const block = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const image = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const path = `profiles/${profile}/blocks/${block}/33333333-3333-4333-8333-333333333333.jpg`;
+const pendingProfile = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+const pendingBlock = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+const pendingImage = "ffffffff-ffff-4fff-8fff-ffffffffffff";
+const pendingPath = `profiles/${pendingProfile}/blocks/${pendingBlock}/55555555-5555-4555-8555-555555555555.jpg`;
 let db;
 
 before(async () => {
@@ -25,6 +29,9 @@ before(async () => {
   await db.query("update company_profiles set status='approved' where id=$1", [profile]);
   await db.query("insert into profile_content_blocks(id,profile_id,type,content,config) values ($1,$2,'image_grid','{}','{\"columns\":2}')", [block, profile]);
   await db.query("insert into profile_content_block_images(id,block_id,storage_path,alt_text,sort_order) values ($1,$2,$3,'Ansicht',0)", [image, block, path]);
+  await db.query("insert into company_profiles(id,company_id,display_name,status,description,business_areas) values ($1,$2,'Entwurf','pending','Beschreibung','Bereich')", [pendingProfile, owner]);
+  await db.query("insert into profile_content_blocks(id,profile_id,type,content,config) values ($1,$2,'image_grid','{}','{\"columns\":1}')", [pendingBlock, pendingProfile]);
+  await db.query("insert into profile_content_block_images(id,block_id,storage_path,alt_text,sort_order) values ($1,$2,$3,'Nicht freigegeben',0)", [pendingImage, pendingBlock, pendingPath]);
   for (const file of ["20260924210916_profile_image_grid_resizing.sql",
     "20260924214027_universal_content_block_layout.sql",
     "20260924220748_image_crop_focus_zoom.sql"])
@@ -48,6 +55,48 @@ test("migration gives existing images safe defaults without changing identity, p
   const row = (await db.query("select id,block_id,storage_path,alt_text,sort_order,focus_x,focus_y,zoom from profile_content_block_images where id=$1", [image])).rows[0];
   assert.deepEqual(row, { id: image, block_id: block, storage_path: path,
     alt_text: "Ansicht", sort_order: 0, focus_x: "50", focus_y: "50", zoom: "1" });
+});
+
+test("crop columns explicitly grant SELECT to anon and authenticated, but UPDATE only to authenticated", async () => {
+  const columns = ["focus_x", "focus_y", "zoom"];
+  const { rows } = await db.query(`
+    select a.attname as column_name, pg_get_userbyid(acl.grantee) as role_name,
+      acl.privilege_type
+    from pg_attribute a cross join lateral aclexplode(a.attacl) acl
+    where a.attrelid = 'public.profile_content_block_images'::regclass
+      and a.attname = any($1::text[])
+  `, [columns]);
+  for (const column of columns) {
+    for (const role of ["anon", "authenticated"]) {
+      assert.equal((await db.query(
+        "select has_column_privilege($1, 'public.profile_content_block_images', $2, 'SELECT') as allowed",
+        [role, column])).rows[0].allowed, true);
+      assert.ok(rows.some((row) => row.column_name === column && row.role_name === role && row.privilege_type === "SELECT"),
+        `${role} needs an explicit SELECT grant on ${column}`);
+    }
+    for (const [role, allowed] of [["anon", false], ["authenticated", true]]) {
+      assert.equal((await db.query(
+        "select has_column_privilege($1, 'public.profile_content_block_images', $2, 'UPDATE') as allowed",
+        [role, column])).rows[0].allowed, allowed);
+      assert.equal(rows.some((row) => row.column_name === column && row.role_name === role && row.privilege_type === "UPDATE"), allowed);
+    }
+  }
+});
+
+test("SELECT * reads approved images for visitors and admins while public RLS hides pending images", async () => {
+  for (const [id, role] of [["", "anon"], [owner, "authenticated"]]) {
+    await actor(id, role);
+    const { rows } = await db.query("select * from profile_content_block_images order by id");
+    assert.deepEqual(rows.map((row) => row.id), [image]);
+    assert.equal(rows[0].focus_x, "50");
+    assert.equal(rows[0].focus_y, "50");
+    assert.equal(rows[0].zoom, "1");
+    assert.equal((await db.query("select * from profile_content_block_images where id=$1", [pendingImage])).rows.length, 0);
+  }
+  await actor(admin);
+  const { rows } = await db.query("select * from profile_content_block_images order by id");
+  assert.deepEqual(rows.map((row) => row.id), [image, pendingImage]);
+  assert.deepEqual(rows.map((row) => [row.focus_x, row.focus_y, row.zoom]), [["50", "50", "1"], ["50", "50", "1"]]);
 });
 
 test("crop constraints accept bounds and one/two decimal precision, rejecting invalid values", async () => {

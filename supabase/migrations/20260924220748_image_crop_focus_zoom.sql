@@ -13,6 +13,9 @@ ALTER TABLE public.profile_content_block_images
   ADD CONSTRAINT profile_block_image_zoom CHECK (
     zoom BETWEEN 1 AND 3 AND zoom * 100 = trunc(zoom * 100));
 
--- Existing SELECT grants and admin UPDATE RLS remain in force.
+-- Make the new presentation columns explicitly readable by public and signed-in clients.
+-- Existing row-level SELECT policies and admin UPDATE RLS remain in force.
+GRANT SELECT (focus_x, focus_y, zoom)
+  ON public.profile_content_block_images TO anon, authenticated;
 GRANT UPDATE (focus_x, focus_y, zoom)
   ON public.profile_content_block_images TO authenticated;
