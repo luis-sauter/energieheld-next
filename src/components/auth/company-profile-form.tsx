@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { saveProfile } from "@/app/(energieheld)/firma/profil/actions";
-import type { ProfileValues } from "@/lib/company-profile";
+import type { ProfileFormState, ProfileValues } from "@/lib/company-profile";
 import styles from "./auth.module.css";
 
 const fields: {
@@ -38,13 +38,24 @@ const fields: {
   { name: "region", label: "Region", autoComplete: "address-level1" },
 ];
 
-export function CompanyProfileForm({
+type SaveAction = (
+  previous: ProfileFormState,
+  form: FormData,
+) => Promise<ProfileFormState>;
+
+export function ProfileForm({
   initialValues,
+  saveAction,
+  submitLabel,
+  businessAreasHelp,
 }: {
   initialValues: ProfileValues;
+  saveAction: SaveAction;
+  submitLabel: string;
+  businessAreasHelp: string;
 }) {
   const [values, setValues] = useState(initialValues);
-  const [state, action, pending] = useActionState(saveProfile, {});
+  const [state, action, pending] = useActionState(saveAction, {});
   return (
     <form action={action} className={styles.form} aria-busy={pending}>
       {fields.map(({ name, label, type, multiline, autoComplete }) => (
@@ -88,9 +99,7 @@ export function CompanyProfileForm({
           )}
           {name === "business_areas" && (
             <small id="business-areas-help">
-              Beschreiben Sie, in welchen Branchen und Tätigkeitsbereichen Ihr
-              Unternehmen arbeitet. Die öffentliche Zuordnung zu den
-              Energieheld-Gewerken erfolgt durch Energieheld.
+              {businessAreasHelp}
             </small>
           )}
         </label>
@@ -113,10 +122,25 @@ export function CompanyProfileForm({
           type="submit"
           disabled={pending}
         >
-          Speichern & Profil gestalten
+          {pending ? "Speichert …" : submitLabel}
         </button>
       </div>
-      {pending && <p role="status">Ihr Profil wird gespeichert …</p>}
+      {pending && <p role="status">Das Profil wird gespeichert …</p>}
     </form>
+  );
+}
+
+export function CompanyProfileForm({
+  initialValues,
+}: {
+  initialValues: ProfileValues;
+}) {
+  return (
+    <ProfileForm
+      initialValues={initialValues}
+      saveAction={saveProfile}
+      submitLabel="Speichern & Profil gestalten"
+      businessAreasHelp="Beschreiben Sie, in welchen Branchen und Tätigkeitsbereichen Ihr Unternehmen arbeitet. Die öffentliche Zuordnung zu den Energieheld-Gewerken erfolgt durch Energieheld."
+    />
   );
 }

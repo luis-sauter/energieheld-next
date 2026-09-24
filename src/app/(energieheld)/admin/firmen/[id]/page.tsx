@@ -67,6 +67,14 @@ export default async function ReviewPage({
       ) : (
         profile && (
           <div className={styles.card}>
+            <div className={styles.actions}>
+              <Link
+                className="button button-primary"
+                href={`/admin/firmen/${profile.id}/bearbeiten`}
+              >
+                Profil bearbeiten
+              </Link>
+            </div>
             <dl className={styles.details}>
               {fields.map(([label, value]) => (
                 <div key={label}>
