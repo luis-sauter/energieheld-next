@@ -1,0 +1,175 @@
+.editor {
+  max-width: 960px;
+  display: grid;
+  gap: 24px;
+}
+.section {
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--white);
+}
+.section h2 {
+  margin: 0 0 14px;
+}
+.sectionHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.sectionHeading p {
+  margin: 0 0 18px;
+  color: var(--muted);
+}
+.logoRow,
+.actions,
+.cardTop,
+.altControls,
+.dialogHeading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.logoPreview {
+  width: 104px;
+  height: 104px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--surface);
+  font-weight: 700;
+}
+.cards {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0;
+  display: grid;
+  gap: 12px;
+}
+.card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+.card:has(.dragHandle:hover),
+.card:has(.dragHandle:active) {
+  border-color: var(--brand-primary);
+}
+.dragging {
+  opacity: 0.55;
+  transform: scale(0.98);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+.cardTop {
+  align-items: flex-start;
+}
+.dragHandle {
+  flex: 0 0 120px;
+  cursor: grab;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  padding: 4px;
+  background: var(--white);
+  user-select: none;
+}
+.dragHandle:active {
+  cursor: grabbing;
+  background: var(--brand-surface);
+}
+.dragHandle span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.cardActions {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.cardActions .button {
+  min-width: 42px;
+}
+.altForm {
+  margin-top: 14px;
+  display: grid;
+  gap: 7px;
+}
+.altForm label,
+.uploadField {
+  font-weight: 600;
+  font-size: 14px;
+}
+.altControls input,
+.uploadField input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--text);
+  font: inherit;
+}
+.altControls input {
+  flex: 1 1 260px;
+}
+.feedback,
+.error,
+.success {
+  margin: 0;
+  padding: 12px 16px;
+  border-left: 3px solid currentColor;
+  background: var(--surface);
+}
+.error { color: #a32525; }
+.success { color: #146b38; }
+.feedback { color: var(--brand-primary); display: flex; align-items: center; gap: 10px; }
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.dialog {
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: clamp(18px, 4vw, 26px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--text);
+  box-shadow: 0 20px 70px rgb(0 0 0 / 0.2);
+}
+.dialog::backdrop { background: rgb(0 0 0 / 0.45); }
+.dialogHeading { justify-content: space-between; }
+.dialogHeading h2 { margin: 0; font-size: 20px; }
+.dialogHeading button {
+  border: 0;
+  background: transparent;
+  font-size: 28px;
+  cursor: pointer;
+}
+.uploadField { display: grid; gap: 7px; margin: 20px 0; }
+.uploadButton:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+.uploadButton:active:not(:disabled) { filter: brightness(0.9); transform: translateY(1px); }
+.uploadButton { transition: filter 120ms ease, transform 120ms ease; }
+.dialog button:disabled, .editor button:disabled { cursor: not-allowed; opacity: 0.55; }
+.editor :is(button, input, .dragHandle):focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 3px; }
+@media (max-width: 640px) {
+  .sectionHeading > button, .altControls > button { width: 100%; }
+  .cardTop { align-items: center; }
+  .cardActions { flex: 1 1 150px; }
+  .actions { gap: 8px; }
+}

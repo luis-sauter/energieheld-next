@@ -35,6 +35,13 @@ export default async function AdminEditProfilePage({
       <p className="eyebrow">Redaktion</p>
       <h1>Firmenprofil bearbeiten</h1>
       <div className={styles.card}>
+        {profile && !result.error && (
+          <p>
+            <Link className="button" href={`/admin/firmen/${profile.id}/bearbeiten/medien`}>
+              Logo und Bilder bearbeiten
+            </Link>
+          </p>
+        )}
         {result.error && (
           <p className={styles.error} role="alert">
             {result.error}
