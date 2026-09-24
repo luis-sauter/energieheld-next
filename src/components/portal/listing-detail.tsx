@@ -6,6 +6,12 @@ import { Icon } from "./icon";
 import { ImageGallery } from "./image-gallery";
 import { QualitySeal } from "@/components/quality/quality-seal";
 
+export type InlineProfileFields = Partial<Record<
+  "display_name" | "tagline" | "description" | "business_areas" |
+  "phone" | "public_email" | "website" | "street" |
+  "postal_code" | "city" | "region", React.ReactNode
+>>;
+
 function safeWebsite(value: string): string | null {
   try {
     const url = new URL(value);
@@ -19,10 +25,12 @@ export function ContactSection({
   listing,
   contactAction,
   logoEditor,
+  inlineFields,
 }: {
   listing: Listing;
   contactAction?: React.ReactNode;
   logoEditor?: React.ReactNode;
+  inlineFields?: InlineProfileFields;
 }) {
   const website = safeWebsite(listing.contact.website);
   const location = formatLocation(listing.location);
@@ -49,8 +57,12 @@ export function ContactSection({
       {listing.contact.person && (
         <p>Ansprechpartner: {listing.contact.person}</p>
       )}
-      {listing.location.street && <p>{listing.location.street}</p>}
-      {location && (
+      {inlineFields?.street ?? (listing.location.street && <p>{listing.location.street}</p>)}
+      {inlineFields ? (
+        <div className="inline-location-fields">
+          {inlineFields.postal_code}{inlineFields.city}{inlineFields.region}
+        </div>
+      ) : location && (
         <p className="location">
           <Icon name="pin" />
           {location}
@@ -59,48 +71,48 @@ export function ContactSection({
       <p className="contact-company-name">{listing.name}</p>
       <hr />
       <dl>
-        {listing.contact.phone && (
+        {(inlineFields?.phone || listing.contact.phone) && (
           <>
             <dt>Telefon</dt>
             <dd>
-              {listing.isDemo || !/\d{3,}/.test(phone) ? (
+              {inlineFields?.phone ?? (listing.isDemo || !/\d{3,}/.test(phone) ? (
                 listing.contact.phone
               ) : (
                 <a href={`tel:${phone}`}>{listing.contact.phone}</a>
-              )}
+              ))}
             </dd>
           </>
         )}
-        {listing.contact.email && (
+        {(inlineFields?.public_email || listing.contact.email) && (
           <>
             <dt>E-Mail</dt>
             <dd>
-              {listing.isDemo ? (
+              {inlineFields?.public_email ?? (listing.isDemo ? (
                 listing.contact.email
               ) : (
                 <a href={`mailto:${listing.contact.email}`}>
                   {listing.contact.email}
                 </a>
-              )}
+              ))}
             </dd>
           </>
         )}
-        {website && (
+        {(inlineFields?.website || website) && (
           <>
             <dt>Website</dt>
             <dd>
-              {listing.isDemo ? (
+              {inlineFields?.website ?? (listing.isDemo ? (
                 website
               ) : (
-                <a href={website} target="_blank" rel="noopener noreferrer">
+                <a href={website ?? undefined} target="_blank" rel="noopener noreferrer">
                   {website}
                 </a>
-              )}
+              ))}
             </dd>
           </>
         )}
       </dl>
-      {listing.isDemo ? (
+      {inlineFields ? null : listing.isDemo ? (
         <>
           <button className="button button-primary" disabled>
             <Icon name="mail" size={18} />
@@ -146,6 +158,8 @@ export function ListingDetail({
   presentation,
   logoEditor,
   galleryEditor,
+  adminAction,
+  inlineFields,
   contactAction,
   showMap = false,
 }: {
@@ -157,6 +171,8 @@ export function ListingDetail({
   presentation?: "company";
   logoEditor?: React.ReactNode;
   galleryEditor?: React.ReactNode;
+  adminAction?: React.ReactNode;
+  inlineFields?: InlineProfileFields;
   contactAction?: React.ReactNode;
 }) {
   const Heading = headingLevel === 1 ? "h1" : "h2";
@@ -166,7 +182,7 @@ export function ListingDetail({
     <>
       <div className="detail-heading">
         <div>
-          <Heading className="detail-title">{listing.name}</Heading>
+          <Heading className="detail-title">{inlineFields?.display_name ?? listing.name}</Heading>
           <div className="inline-tags">
             {listing.isDemo && <Badge>Beispielprofil</Badge>}
             {categories
@@ -175,7 +191,7 @@ export function ListingDetail({
                 <span key={c.id}>{c.name}</span>
               ))}
           </div>
-          <p className="detail-tagline">{listing.tagline}</p>
+          {inlineFields?.tagline ? <div className="detail-tagline">{inlineFields.tagline}</div> : <p className="detail-tagline">{listing.tagline}</p>}
           <a className="text-link profile-contact-link" href="#contact-title">
             Kontakt & Standort ansehen ↓
           </a>
@@ -191,12 +207,14 @@ export function ListingDetail({
           listing.verification?.status === "verified" && (
             <QualitySeal note={listing.verification.public_note} prominent />
           )}
+        {adminAction}
       </div>
       <div className="profile-information">
         <ContactSection
           listing={listing}
           contactAction={contactAction}
           logoEditor={logoEditor}
+          inlineFields={inlineFields}
         />
         <section className="location-module" aria-label="Standort">
           {map ? (
@@ -267,13 +285,13 @@ export function ListingDetail({
       </div>
       <div className="detail-grid">
         <div>
-          {listing.description && (
+          {(listing.description || inlineFields?.description) && (
             <section className="detail-section">
               {!presentation && (
                 <p className="eyebrow">Ein guter erster Eindruck</p>
               )}
               <h2>Über {listing.name}</h2>
-              <p>{listing.description}</p>
+              {inlineFields?.description ?? <p>{listing.description}</p>}
             </section>
           )}
           {galleryEditor ??
@@ -284,14 +302,14 @@ export function ListingDetail({
                 isDemo={listing.isDemo}
               />
             ))}
-          {listing.businessAreas && (
+          {(listing.businessAreas || inlineFields?.business_areas) && (
             <section className="detail-section">
               <h2>
                 {presentation === "company"
                   ? "Tätigkeitsbereiche"
                   : "Branchen & Tätigkeitsbereiche"}
               </h2>
-              <p style={{ whiteSpace: "pre-wrap" }}>{listing.businessAreas}</p>
+              {inlineFields?.business_areas ?? <p style={{ whiteSpace: "pre-wrap" }}>{listing.businessAreas}</p>}
             </section>
           )}
           {listing.services.length > 0 && (

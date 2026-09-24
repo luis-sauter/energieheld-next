@@ -8,12 +8,14 @@ export function ImageGallery({
   images,
   isDemo = true,
   controls,
+  detailControls,
   thumbnailControls,
   addControl,
 }: {
   images: PortalImage[];
   isDemo?: boolean;
   controls?: React.ReactNode[];
+  detailControls?: React.ReactNode[];
   thumbnailControls?: React.ReactNode[];
   addControl?: React.ReactNode;
 }) {
@@ -46,6 +48,9 @@ export function ImageGallery({
       </div>
       {controls?.[selected] && (
         <div className="gallery-edit-actions">{controls[selected]}</div>
+      )}
+      {detailControls?.[selected] && (
+        <div className="gallery-detail-controls">{detailControls[selected]}</div>
       )}
       <div className="gallery-thumbs" aria-label="Bilderauswahl">
         {images.map((image, index) => {
