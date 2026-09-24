@@ -55,7 +55,7 @@ const publicProfile = {
   company_quality_requests: null, companies: { legal_name: "Redaktionelle Firma GmbH" },
 };
 
-function client({ authenticated = true, admin = true, slug = publicProfile.slug } = {}) {
+function client({ authenticated = true, admin = true, slug = publicProfile.slug, contentRows = [] } = {}) {
   const calls = [];
   return {
     calls,
@@ -67,6 +67,8 @@ function client({ authenticated = true, admin = true, slug = publicProfile.slug 
         select(columns) { call.columns = columns; return this; },
         update(payload) { call.payload = payload; return this; },
         eq(key, value) { call.filters.push([key, value]); return this; },
+        order() { return this; },
+        then(resolve) { return resolve({ data: table === "profile_content_blocks" ? contentRows : [], error: null }); },
         async maybeSingle() {
           if (table === "portal_admins") return { data: admin ? { user_id: "verified-user" } : null, error: null };
           if (call.payload) return { data: { id: profileId }, error: null };
@@ -80,8 +82,8 @@ function client({ authenticated = true, admin = true, slug = publicProfile.slug 
   };
 }
 
-async function renderPage(options) {
-  globalThis.__inlinePublicClient = client({ authenticated: false, admin: false });
+async function renderPage(options, contentRows = []) {
+  globalThis.__inlinePublicClient = client({ authenticated: false, admin: false, contentRows });
   globalThis.__inlineAdminClient = client(options);
   const element = await ExpertDetail({ params: Promise.resolve({ slug: publicProfile.slug }) });
   return renderToStaticMarkup(element);
@@ -95,6 +97,24 @@ test("visitors and signed-in non-admins see the original public profile without 
     assert.doesNotMatch(html, /Profil bearbeiten|Bearbeitungsmodus aktiv|Logo ändern|inline-admin-profile-form/);
     assert.ok(globalThis.__inlineAdminClient.calls.every((call) => call.table === "portal_admins"));
   }
+});
+
+test("published heading and text blocks render publicly without editorial controls or replacing existing content", async () => {
+  const contentRows = [
+    { id: "11111111-1111-4111-8111-111111111111", profile_id: profileId, type: "heading", slot: null, sort_order: 0, content: { text: "Unsere Leistungen" } },
+    { id: "22222222-2222-4222-8222-222222222222", profile_id: profileId, type: "text", slot: null, sort_order: 1, content: { text: "Persönliche Reiseplanung" } },
+    { id: "33333333-3333-4333-8333-333333333333", profile_id: profileId, type: "heading", slot: "about_heading", sort_order: 0, content: { text: "Über unser Team" } },
+    { id: "44444444-4444-4444-8444-444444444444", profile_id: profileId, type: "heading", slot: "business_areas_heading", sort_order: 0, content: { text: "Unsere Tätigkeiten" } },
+  ];
+  for (const options of [{ authenticated: false }, { authenticated: true, admin: false }]) {
+    const html = await renderPage(options, contentRows);
+    for (const text of ["Über unser Team", "Öffentliche Beschreibung", "Unsere Leistungen", "Persönliche Reiseplanung", "Unsere Tätigkeiten", "Reiseberatung"])
+      assert.match(html, new RegExp(text));
+    assert.doesNotMatch(html, /Inhalt hinzufügen|Block löschen|Überschrift speichern|Profil bearbeiten/);
+  }
+  const visitor = await renderPage({ authenticated: false }, contentRows);
+  const admin = await renderPage({ authenticated: true, admin: true }, contentRows);
+  assert.equal(admin.replace(/<button type="button"[^>]*>Profil bearbeiten<\/button>/, ""), visitor);
 });
 
 test("inline save ignores forged form IDs and updates only the displayed profile", async () => {
@@ -171,6 +191,8 @@ test("inline mode exposes normal fields and existing media actions in the public
     listing, categories: [], values, media,
     rows: [{ id: imageId, storage_path: `profiles/${profileId}/gallery/image.png`, alt_text: "Galeriebild", sort_order: 0 }],
     saveProfile: async () => ({ success: "Gespeichert" }), saveMedia: async () => ({ success: "Gespeichert" }),
+    contentBlocks: [{ id: imageId, profile_id: profileId, type: "heading", slot: null, sort_order: 0, content: { text: "Unsere Leistungen" } }],
+    contentAvailable: true, saveContent: async () => ({ success: "Gespeichert" }),
     initialEditing: true,
   }));
   assert.match(html, /Bearbeitungsmodus aktiv/);
@@ -182,5 +204,10 @@ test("inline mode exposes normal fields and existing media actions in the public
   assert.match(html, /Bild hinzufügen/);
   assert.match(html, /Bild löschen/);
   assert.match(html, /Alt-Text speichern/);
+  assert.match(html, /Überschrift speichern/);
+  assert.match(html, /fixed-about_heading/);
+  assert.match(html, /fixed-business_areas_heading/);
+  assert.match(html, /\+ Inhalt hinzufügen/);
+  assert.match(html, /Block löschen/);
   assert.doesNotMatch(html, /storage_path|profile_id|company_id|profiles\/aaaaaaaa/);
 });

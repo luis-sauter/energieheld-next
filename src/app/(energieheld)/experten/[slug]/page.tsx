@@ -10,6 +10,10 @@ import { signCompanyMedia, type MediaRow, type SignedMedia } from "@/lib/company
 import { profileFields, type ProfileValues } from "@/lib/company-profile";
 import { InlineProfileEditor } from "@/components/admin/inline-profile-editor";
 import { saveInlineProfile, saveInlineMedia } from "./inline-actions";
+import { saveInlineContent } from "./content-actions";
+import { createPublicClient } from "@/lib/supabase/public";
+import { loadPublicProfileContent, splitProfileContent } from "@/lib/profile-content";
+import { ProfileContentBlocks } from "@/components/portal/profile-content-blocks";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
@@ -39,6 +43,10 @@ export default async function ExpertDetail({
     );
   const listing = result.data;
   if (!listing) notFound();
+  const content = !listing.isDemo
+    ? await loadPublicProfileContent(createPublicClient(), listing.id)
+    : { blocks: [], available: false };
+  const presentedContent = splitProfileContent(content.blocks, listing.name);
   let editorData: { values: ProfileValues; media: SignedMedia; rows: MediaRow[] } | null = null;
   if (!listing.isDemo) {
     try {
@@ -76,11 +84,18 @@ export default async function ExpertDetail({
         contactAction={<InquiryDialog profileId={listing.id} companyName={listing.name} />}
         saveProfile={saveInlineProfile.bind(null, listing.id, slug)}
         saveMedia={saveInlineMedia.bind(null, listing.id, slug)}
+        contentBlocks={content.blocks}
+        contentAvailable={content.available}
+        saveContent={saveInlineContent.bind(null, listing.id, slug)}
       /> : <ListingDetail
         listing={listing}
         categories={energieheld.categories}
         presentation="company"
         showMap
+        aboutHeading={presentedContent.aboutHeading}
+        businessHeading={presentedContent.businessHeading}
+        contentBlocks={presentedContent.blocks.length
+          ? <ProfileContentBlocks blocks={presentedContent.blocks} /> : undefined}
         contactAction={
           !listing.isDemo ? (
             <InquiryDialog profileId={listing.id} companyName={listing.name} />
