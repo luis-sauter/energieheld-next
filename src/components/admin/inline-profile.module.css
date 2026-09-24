@@ -44,10 +44,30 @@
 .status p { display: flex; align-items: center; gap: 8px; margin: 0; }
 .error { color: #a32525; }
 .success { color: #146b38; }
+.headingForm, .blockForm { display: grid; gap: 10px; min-width: 0; }
+.headingForm { margin-bottom: 14px; }
+.headingForm label, .blockForm label { display: grid; gap: 5px; min-width: 0; font-size: 13px; font-weight: 600; }
+.headingForm input, .blockForm input, .blockForm textarea {
+  width: 100%; min-width: 0; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--white); color: var(--text); font: inherit;
+}
+.headingForm input, .blockForm input { font-size: 22px; font-weight: 650; color: var(--brand-primary); }
+.blockForm textarea { resize: vertical; line-height: 1.6; font-size: 16px; font-weight: 400; }
+.headingForm > button { justify-self: start; }
+.contentEditor { max-width: 750px; margin-bottom: 28px; }
+.contentUnavailable { max-width: 750px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; }
+.insertArea { margin: 10px 0 18px; }
+.addButton { width: 100%; border: 1px dashed var(--line); background: var(--surface); color: var(--brand-primary); }
+.blockPicker, .blockActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.editableBlock { padding: 16px !important; border: 1px solid var(--line) !important; border-radius: 8px; }
+.editableBlock .blockActions button { min-height: 42px; }
 @media (max-width: 640px) {
   .toolbar { position: static; align-items: stretch; }
   .toolbar form { width: 100%; }
   .toolbar form button { flex: 1 1 130px; }
   .editButton { align-self: flex-start; }
   .galleryControls form, .galleryControls button { width: 100%; }
+  .blockActions button { flex: 1 1 130px; }
+  .headingForm > button { width: 100%; }
 }

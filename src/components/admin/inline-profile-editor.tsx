@@ -8,10 +8,12 @@ import type { Category, Listing } from "@/types/portal";
 import type { ProfileValues, ProfileFormState } from "@/lib/company-profile";
 import type { MediaRow, MediaState, SignedMedia } from "@/lib/company-media";
 import styles from "./inline-profile.module.css";
+import { splitProfileContent, type ProfileContentBlock } from "@/lib/profile-content";
+import { FixedHeadingEditor, InlineContentEditor } from "./inline-content-editor";
 
 const formId = "inline-admin-profile-form";
 
-export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, initialEditing = false }: {
+export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, contentAvailable, saveContent, initialEditing = false }: {
   listing: Listing;
   categories: Category[];
   values: ProfileValues;
@@ -20,6 +22,9 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   contactAction?: React.ReactNode;
   saveProfile: (form: FormData) => Promise<ProfileFormState>;
   saveMedia: (form: FormData) => Promise<MediaState>;
+  contentBlocks: ProfileContentBlock[];
+  contentAvailable: boolean;
+  saveContent: (form: FormData) => Promise<{ error?: string; success?: string }>;
   initialEditing?: boolean;
 }) {
   const router = useRouter();
@@ -28,6 +33,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<ProfileFormState>({});
   const mediaEditor = useInlineAdminMedia({ saveAction: saveMedia, media, rows, profileName: listing.name, initials: listing.initials });
+  const content = splitProfileContent(contentBlocks, listing.name);
 
   function field(name: keyof ProfileValues, label: string, multiline = false) {
     const common = { id: `inline-${name}`, name, form: formId, defaultValue: values[name], disabled: busy, "aria-label": label, onChange: () => setFeedback({}) };
@@ -79,7 +85,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       {feedback.success && <span role="status" className={styles.success}>{feedback.success}</span>}
       {feedback.error && <span role="alert" className={styles.error}>{feedback.error}</span>}
       {mediaEditor.status}
-      <small>Bildänderungen werden sofort gespeichert.</small>
+      <small>Inhalts- und Bildänderungen werden sofort gespeichert.</small>
     </div>}
     <ListingDetail
       listing={listing}
@@ -89,6 +95,13 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       contactAction={editing ? undefined : contactAction}
       adminAction={editing ? undefined : <button type="button" className={`button ${styles.editButton}`} onClick={() => { setFeedback({}); setEditing(true); }}>Profil bearbeiten</button>}
       inlineFields={editing ? inlineFields : undefined}
+      aboutHeading={content.aboutHeading}
+      businessHeading={content.businessHeading}
+      aboutHeadingEditor={editing && contentAvailable
+        ? <FixedHeadingEditor key={content.aboutHeading} slot="about_heading" value={content.aboutHeading} defaultText={`Über ${listing.name}`} saveAction={saveContent} /> : undefined}
+      businessHeadingEditor={editing && contentAvailable
+        ? <FixedHeadingEditor key={content.businessHeading} slot="business_areas_heading" value={content.businessHeading} defaultText="Tätigkeitsbereiche" saveAction={saveContent} /> : undefined}
+      contentBlocks={<InlineContentEditor key={editing ? "edit" : "view"} blocks={content.blocks} editing={editing} available={contentAvailable} saveAction={saveContent} />}
       logoEditor={editing ? mediaEditor.logoEditor : undefined}
       galleryEditor={editing ? mediaEditor.galleryEditor : undefined}
     />

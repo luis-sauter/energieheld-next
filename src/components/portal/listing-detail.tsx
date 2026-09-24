@@ -160,6 +160,11 @@ export function ListingDetail({
   galleryEditor,
   adminAction,
   inlineFields,
+  aboutHeading,
+  businessHeading,
+  aboutHeadingEditor,
+  businessHeadingEditor,
+  contentBlocks,
   contactAction,
   showMap = false,
 }: {
@@ -173,6 +178,11 @@ export function ListingDetail({
   galleryEditor?: React.ReactNode;
   adminAction?: React.ReactNode;
   inlineFields?: InlineProfileFields;
+  aboutHeading?: string;
+  businessHeading?: string;
+  aboutHeadingEditor?: React.ReactNode;
+  businessHeadingEditor?: React.ReactNode;
+  contentBlocks?: React.ReactNode;
   contactAction?: React.ReactNode;
 }) {
   const Heading = headingLevel === 1 ? "h1" : "h2";
@@ -290,10 +300,11 @@ export function ListingDetail({
               {!presentation && (
                 <p className="eyebrow">Ein guter erster Eindruck</p>
               )}
-              <h2>Über {listing.name}</h2>
+              {aboutHeadingEditor ?? <h2>{aboutHeading ?? `Über ${listing.name}`}</h2>}
               {inlineFields?.description ?? <p>{listing.description}</p>}
             </section>
           )}
+          {contentBlocks}
           {galleryEditor ??
             (listing.images.length > 0 && (
               <ImageGallery
@@ -304,11 +315,11 @@ export function ListingDetail({
             ))}
           {(listing.businessAreas || inlineFields?.business_areas) && (
             <section className="detail-section">
-              <h2>
+              {businessHeadingEditor ?? <h2>
                 {presentation === "company"
-                  ? "Tätigkeitsbereiche"
+                  ? businessHeading ?? "Tätigkeitsbereiche"
                   : "Branchen & Tätigkeitsbereiche"}
-              </h2>
+              </h2>}
               {inlineFields?.business_areas ?? <p style={{ whiteSpace: "pre-wrap" }}>{listing.businessAreas}</p>}
             </section>
           )}

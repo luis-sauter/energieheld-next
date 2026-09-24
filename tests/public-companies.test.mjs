@@ -136,6 +136,11 @@ function api(rows = [row], failure = false, ads = []) {
         }),
         { headers: { "content-type": "application/json" } },
       );
+    if (url.pathname === "/rest/v1/profile_content_blocks") {
+      assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
+      assert.equal(headers.get("cookie"), null);
+      return new Response("[]", { headers: { "content-type": "application/json" } });
+    }
     if (url.pathname === "/storage/v1/object/sign/company-media") {
       assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
       assert.equal(headers.get("cookie"), null);
