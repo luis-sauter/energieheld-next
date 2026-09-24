@@ -3,6 +3,7 @@ import { isProfileId, type AdminAccess } from "./admin-review";
 import { checkInlineProfileTarget } from "./inline-admin-profile";
 import { MEDIA_BUCKET, MEDIA_MAX_BYTES, validateMediaFile, type MediaState } from "./company-media";
 import { hasPersistedImageGridSize, normalizeImageGridConfig, parseImageGridSize } from "./image-grid-layout";
+import { clampBlockOffset, hasPersistedBlockLayout } from "./content-block-layout";
 
 export type BlockImageResult = MediaState & { access: AdminAccess };
 const failed = "Der Bildblock konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.";
@@ -43,7 +44,9 @@ export async function changeAdminBlockImages(
       return { access: "admin", error: "Bitte wählen Sie ein Layout mit 1 bis 4 Bildern." };
     if (images.length > columns)
       return { access: "admin", error: "Entfernen Sie zuerst Bilder, bevor Sie das Layout verkleinern." };
-    const nextConfig = hasPersistedImageGridSize(block.config)
+    const nextConfig = hasPersistedBlockLayout(block.config)
+      ? { ...config, columns }
+      : hasPersistedImageGridSize(block.config)
       ? { columns, width_percent: config.width_percent, aspect_ratio: config.aspect_ratio }
       : { columns }; // Older environments still accept their original config shape.
     const result = await client.from("profile_content_blocks")
@@ -59,8 +62,11 @@ export async function changeAdminBlockImages(
       return { access: "admin", error: "Die Größenänderung ist verfügbar, sobald die neue Datenbankmigration angewendet ist." };
     const size = parseImageGridSize(form.get("width_percent"), form.get("aspect_ratio"));
     if (!size) return { access: "admin", error: "Bitte wählen Sie eine gültige Bildblockgröße." };
+    const nextConfig = hasPersistedBlockLayout(block.config)
+      ? { ...config, ...size, offset_percent: clampBlockOffset(size.width_percent, config.offset_percent) }
+      : { columns: config.columns, ...size };
     const result = await client.from("profile_content_blocks")
-      .update({ config: { columns: config.columns, ...size } })
+      .update({ config: nextConfig })
       .eq("id", blockId).eq("profile_id", id).eq("type", "image_grid").is("slot", null)
       .select("id").maybeSingle();
     return result.error || result.data?.id !== blockId

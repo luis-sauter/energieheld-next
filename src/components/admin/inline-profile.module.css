@@ -55,7 +55,7 @@
 .headingForm input, .blockForm input { font-size: 22px; font-weight: 650; color: var(--brand-primary); }
 .blockForm textarea { resize: vertical; line-height: 1.6; font-size: 16px; font-weight: 400; }
 .headingForm > button { justify-self: start; }
-.contentEditor { max-width: 750px; margin-bottom: 28px; }
+.contentEditor { width: 100%; min-width: 0; margin-bottom: 28px; }
 .contentUnavailable { max-width: 750px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; }
 .insertArea { margin: 10px 0 18px; }
 .addButton { width: 100%; border: 1px dashed var(--line); background: var(--surface); color: var(--brand-primary); }
@@ -88,6 +88,30 @@
 .resizeGrip { display: grid; place-items: center; width: 46px; height: 46px; margin-left: auto; border: 2px solid var(--brand-primary); border-radius: 8px; background: var(--surface); color: var(--brand-primary); font-size: 25px; font-weight: 700; cursor: nwse-resize; touch-action: none; user-select: none; }
 .resizeGrip:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
 .resizeGrip:disabled { opacity: .5; cursor: wait; }
+.layoutBlock { min-width: 0; }
+.blockToolbar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding: 10px; margin: 12px 0 4px; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--surface); font-size: 12px;
+}
+.controlGroup { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.controlGroup > span { margin-right: 3px; font-weight: 600; }
+.controlGroup button { min-height: 34px; padding: 5px 8px; font-size: 12px; }
+.controlGroup button[aria-pressed="true"] { border-color: var(--brand-primary); color: var(--brand-primary); background: var(--white); }
+.moveGrip, .blockResizeGrip {
+  display: grid; place-items: center; min-width: 38px; min-height: 38px;
+  border: 1px solid var(--brand-primary); border-radius: 6px;
+  background: var(--white); color: var(--brand-primary); cursor: ew-resize;
+  touch-action: none; user-select: none;
+}
+.moveGrip:disabled, .blockResizeGrip:disabled { opacity: .5; cursor: default; }
+.blockResizeGrip { margin: 8px 0 0 auto; }
+.spacingControls { position: relative; }
+.spacingControls summary { cursor: pointer; padding: 8px; border: 1px solid var(--line); border-radius: 6px; }
+.spacingControls[open] { display: grid; gap: 7px; flex-basis: 100%; }
+.spacingControls .controlGroup { padding: 3px 0; }
+.layoutBlock .editableBlock { max-width: 100%; min-width: 0; box-sizing: border-box; }
+.layoutBlock .blockForm input, .layoutBlock .blockForm textarea { width: 100%; min-width: 0; box-sizing: border-box; }
 @media (max-width: 640px) {
   .toolbar { position: static; align-items: stretch; }
   .toolbar form { width: 100%; }
@@ -96,4 +120,6 @@
   .galleryControls form, .galleryControls button { width: 100%; }
   .blockActions button { flex: 1 1 130px; }
   .headingForm > button { width: 100%; }
+  .blockToolbar { align-items: flex-start; }
+  .layoutBlock .editableBlock { width: 100% !important; margin-left: 0 !important; }
 }

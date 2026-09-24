@@ -1,6 +1,7 @@
-export type ImageGridConfig = {
+import { normalizeBlockLayout, type BlockLayout } from "./content-block-layout";
+
+export type ImageGridConfig = BlockLayout & {
   columns: number;
-  width_percent: number;
   aspect_ratio: number;
 };
 
@@ -10,7 +11,7 @@ export function hasPersistedImageGridSize(value: unknown): value is ImageGridCon
   if (!value || typeof value !== "object") return false;
   const config = value as Record<string, unknown>;
   return Number.isInteger(config.columns) && Number(config.columns) >= 1 && Number(config.columns) <= 4 &&
-    Number.isInteger(config.width_percent) && Number(config.width_percent) >= 35 && Number(config.width_percent) <= 100 &&
+    Number.isInteger(config.width_percent) && Number(config.width_percent) >= 25 && Number(config.width_percent) <= 100 &&
     typeof config.aspect_ratio === "number" && Number.isFinite(config.aspect_ratio) &&
     config.aspect_ratio >= 0.6 && config.aspect_ratio <= 3 &&
     Math.abs(config.aspect_ratio * 100 - Math.round(config.aspect_ratio * 100)) < 1e-8;
@@ -21,9 +22,8 @@ export function normalizeImageGridConfig(value: unknown): ImageGridConfig {
   const columns = Number.isInteger(config.columns) && Number(config.columns) >= 1 && Number(config.columns) <= 4
     ? Number(config.columns) : 1;
   return {
+    ...normalizeBlockLayout(config),
     columns,
-    width_percent: Number.isInteger(config.width_percent) && Number(config.width_percent) >= 35 && Number(config.width_percent) <= 100
-      ? Number(config.width_percent) : DEFAULT_IMAGE_GRID_SIZE.width_percent,
     aspect_ratio: typeof config.aspect_ratio === "number" && Number.isFinite(config.aspect_ratio) &&
       config.aspect_ratio >= 0.6 && config.aspect_ratio <= 3
       ? Math.round(config.aspect_ratio * 100) / 100 : DEFAULT_IMAGE_GRID_SIZE.aspect_ratio,
@@ -35,7 +35,7 @@ export function parseImageGridSize(width: unknown, ratio: unknown) {
     typeof ratio !== "string" || !/^[0-9](?:\.[0-9]{1,2})?$/.test(ratio)) return null;
   const width_percent = Number(width);
   const aspect_ratio = Number(ratio);
-  if (width_percent < 35 || width_percent > 100 || aspect_ratio < 0.6 || aspect_ratio > 3)
+  if (width_percent < 25 || width_percent > 100 || aspect_ratio < 0.6 || aspect_ratio > 3)
     return null;
   return { width_percent, aspect_ratio };
 }
@@ -52,7 +52,7 @@ export function publicImageGridColumns(columns: number, imageCount: number) {
 export function resizeImageGridFromPointer(start: {
   width: number; ratio: number; parentWidth: number; tileWidth: number;
 }, deltaX: number, deltaY: number) {
-  const width = Math.max(35, Math.min(100,
+  const width = Math.max(25, Math.min(100,
     Math.round(start.width + deltaX / start.parentWidth * 100)));
   const tileWidth = start.tileWidth * width / start.width;
   // Horizontal movement keeps the image shape; vertical movement changes it.

@@ -103,7 +103,9 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
         ? <FixedHeadingEditor key={content.aboutHeading} slot="about_heading" value={content.aboutHeading} defaultText={`Über ${listing.name}`} saveAction={saveContent} /> : undefined}
       businessHeadingEditor={editing && contentAvailable
         ? <FixedHeadingEditor key={content.businessHeading} slot="business_areas_heading" value={content.businessHeading} defaultText="Tätigkeitsbereiche" saveAction={saveContent} /> : undefined}
-      contentBlocks={<InlineContentEditor key={editing ? "edit" : "view"} blocks={content.blocks} editing={editing} available={contentAvailable} imagesAvailable={imagesAvailable} saveAction={saveContent} saveImage={saveBlockImage} />}
+      contentBlocks={editing || content.blocks.length
+        ? <InlineContentEditor key={editing ? "edit" : "view"} blocks={content.blocks} editing={editing} available={contentAvailable} imagesAvailable={imagesAvailable} saveAction={saveContent} saveImage={saveBlockImage} />
+        : undefined}
       logoEditor={editing ? mediaEditor.logoEditor : undefined}
       galleryEditor={editing ? mediaEditor.galleryEditor : undefined}
     />

@@ -304,7 +304,11 @@ export function ListingDetail({
               {inlineFields?.description ?? <p>{listing.description}</p>}
             </section>
           )}
-          {contentBlocks}
+        </div>
+      </div>
+      {contentBlocks && <div className="profile-content-canvas">{contentBlocks}</div>}
+      <div className="detail-grid">
+        <div>
           {galleryEditor ??
             (listing.images.length > 0 && (
               <ImageGallery

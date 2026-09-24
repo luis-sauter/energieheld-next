@@ -44,7 +44,7 @@ const { default: ExpertDetail } = await import("../src/app/(energieheld)/experte
 const { checkInlineProfileTarget } = await import("../src/lib/inline-admin-profile.ts");
 const { InlineProfileEditor } = await import("../src/components/admin/inline-profile-editor.tsx");
 const { InlineImageGridEditor } = await import("../src/components/admin/inline-image-grid-editor.tsx");
-const { BlockImageGrid, ProfileContentBlocks } = await import("../src/components/portal/profile-content-blocks.tsx");
+const { ProfileContentBlocks } = await import("../src/components/portal/profile-content-blocks.tsx");
 const { companyProfileListing } = await import("../src/lib/company-presentation.ts");
 const { saveInlineProfile, saveInlineMedia } = await import("../src/app/(energieheld)/experten/[slug]/inline-actions.ts");
 const profileId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -210,7 +210,8 @@ test("inline mode exposes normal fields and existing media actions in the public
   assert.match(html, /fixed-about_heading/);
   assert.match(html, /fixed-business_areas_heading/);
   assert.match(html, /\+ Inhalt hinzufügen/);
-  assert.match(html, /Block löschen/);
+  assert.match(html, /Duplizieren/);
+  assert.match(html, /Löschen/);
   assert.doesNotMatch(html, /storage_path|profile_id|company_id|profiles\/aaaaaaaa/);
 });
 
@@ -253,7 +254,7 @@ test("visitors see only occupied images stretched across the available grid", ()
       src: `https://example.org/${index}.jpg`, alt_text: `Bild ${index}`, sort_order: index,
     })),
   };
-  const html = renderToStaticMarkup(createElement(BlockImageGrid, { block }));
+  const html = renderToStaticMarkup(createElement(ProfileContentBlocks, { blocks: [block] }));
   assert.match(html, /data-columns="2"/);
   assert.match(html, /width:70%/);
   assert.equal((html.match(/<img/g) ?? []).length, 2);
@@ -271,7 +272,7 @@ test("legacy image config renders with defaults before the resize migration", ()
     images: [{ id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", block_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       src: "https://example.org/image.jpg", alt_text: "Ansicht", sort_order: 0 }],
   };
-  const publicHtml = renderToStaticMarkup(createElement(BlockImageGrid, { block }));
+  const publicHtml = renderToStaticMarkup(createElement(ProfileContentBlocks, { blocks: [block] }));
   assert.match(publicHtml, /width:100%/);
   assert.match(publicHtml, /data-columns="1"/);
   const editorHtml = renderToStaticMarkup(createElement(InlineImageGridEditor, {
@@ -279,4 +280,25 @@ test("legacy image config renders with defaults before the resize migration", ()
   }));
   assert.equal((editorHtml.match(/\+ Bild hinzufügen/g) ?? []).length, 1);
   assert.doesNotMatch(editorHtml, /Bildblockgröße durch Ziehen ändern/);
+});
+
+test("public blocks use the full canvas and keep block position separate from text alignment", async () => {
+  const rows = [{
+    id: "11111111-1111-4111-8111-111111111111", profile_id: profileId,
+    type: "heading", slot: null, sort_order: 0, content: { text: "Zentrierter Titel" },
+    config: { width_percent: 50, offset_percent: 25, text_align: "center", spacing_top: "large", spacing_bottom: "small" },
+  }, {
+    id: "22222222-2222-4222-8222-222222222222", profile_id: profileId,
+    type: "text", slot: null, sort_order: 1, content: { text: "Links im rechten Block" },
+    config: { width_percent: 50, offset_percent: 50, text_align: "left", spacing_top: "normal", spacing_bottom: "normal" },
+  }];
+  const html = await renderPage({ authenticated: false }, rows);
+  assert.match(html, /profile-content-canvas/);
+  assert.match(html, /style="width:50%;margin-left:25%;text-align:center"/);
+  assert.match(html, /style="width:50%;margin-left:50%;text-align:left"/);
+  assert.match(html, /data-spacing-top="large" data-spacing-bottom="small"/);
+  assert.ok(html.indexOf("profile-content-canvas") > html.indexOf("Öffentliche Beschreibung"));
+  assert.doesNotMatch(html, /Block horizontal ziehen|Duplizieren|Breite 50 %/);
+  const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+  assert.match(css, /\.company-profile \.profile-content-canvas \.profile-content-block \{[\s\S]*max-width: 100%/);
 });
