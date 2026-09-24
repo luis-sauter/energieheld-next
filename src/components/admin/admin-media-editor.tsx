@@ -2,10 +2,10 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { uploadAdminMedia } from "@/lib/admin-media-upload";
 import { CompanyImage, CompanyLogo } from "@/components/portal/company-image";
 import { ImageGallery } from "@/components/portal/image-gallery";
-import { MEDIA_BUCKET, MEDIA_MAX_BYTES, type MediaRow, type MediaState } from "@/lib/company-media";
+import { type MediaRow, type MediaState } from "@/lib/company-media";
 import { moveImageId } from "@/lib/media-order";
 import type { PortalImage } from "@/types/portal";
 import styles from "./admin-media.module.css";
@@ -112,52 +112,14 @@ export function AdminMediaEditor({ saveAction, profileName, logo, images, rows }
     event.preventDefault();
     if (!begin("Upload wird vorbereitet …")) return;
     const form = new FormData(event.currentTarget);
-    const file = form.get("file");
-    const kind = uploadKind;
-    let path: string | undefined;
     try {
-      if (!(file instanceof File) || !file.size || file.size > MEDIA_MAX_BYTES ||
-        !["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-        setFeedback({ error: "Bitte wählen Sie JPG, PNG oder WebP mit maximal 5 MB." });
-        return;
-      }
-      const prepare = new FormData();
-      prepare.set("intent", kind === "logo" ? "prepare-logo" : "prepare-gallery");
-      prepare.set("file_type", file.type);
-      prepare.set("file_size", String(file.size));
-      const prepared = await saveAction(prepare);
-      if (!prepared.uploadPath) {
-        setFeedback(prepared);
-        return;
-      }
-      path = prepared.uploadPath;
-      setBusy("Bild wird hochgeladen …");
-      const storage = createClient().storage.from(MEDIA_BUCKET);
-      const uploaded = await storage.upload(path, file, {
-        contentType: file.type,
-        upsert: false,
-      });
-      if (uploaded.error) throw new Error("Upload failed");
-      setBusy("Bild wird gespeichert …");
-      const finish = new FormData();
-      finish.set("intent", kind === "logo" ? "logo-upload" : "gallery-upload");
-      finish.set("uploaded_path", path);
-      finish.set("alt_text", String(form.get("alt_text") ?? ""));
-      const result = await saveAction(finish);
+      const result = await uploadAdminMedia(saveAction, uploadKind, form.get("file"), String(form.get("alt_text") ?? ""), setBusy);
       setFeedback(result);
-      if (result.error) await storage.remove([path]);
       if (result.success) {
         dialog.current?.close();
         router.refresh();
       }
     } catch {
-      if (path) {
-        try {
-          await createClient().storage.from(MEDIA_BUCKET).remove([path]);
-        } catch {
-          // An orphan remains private if cleanup also fails.
-        }
-      }
       setFeedback({ error: "Das Bild konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut." });
     } finally {
       end();

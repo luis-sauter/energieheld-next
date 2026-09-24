@@ -1,0 +1,53 @@
+.editButton { align-self: center; white-space: nowrap; }
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
+}
+.toolbar form, .mediaButtons { display: flex; flex-wrap: wrap; gap: 8px; }
+.toolbar .button { min-height: 42px; }
+.field { display: grid; gap: 4px; width: 100%; min-width: 0; font-weight: 500; font-size: 13px; }
+.field span { color: var(--muted); }
+.field input, .field textarea, .galleryControls input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--text);
+  font: inherit;
+}
+.field textarea { resize: vertical; line-height: 1.5; }
+.field input[name="display_name"] { font-size: clamp(26px, 3vw, 38px); font-weight: 700; color: var(--brand-primary); }
+.field textarea[name="tagline"] { font-size: 18px; }
+.field:focus-within input, .field:focus-within textarea { outline: 2px solid var(--brand-primary); outline-offset: 1px; }
+.logoEditor { display: grid; gap: 10px; margin-bottom: 12px; }
+.mediaButtons { align-items: center; }
+.galleryEditor { margin-bottom: 28px; }
+.galleryEditor :global(.gallery-detail-controls) { padding: 12px 0 4px; }
+.galleryControls { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin-bottom: 14px; }
+.galleryControls form { display: flex; flex: 1 1 340px; flex-wrap: wrap; align-items: end; gap: 8px; }
+.galleryControls label { flex: 1 1 220px; font-size: 13px; font-weight: 600; }
+.galleryControls input { display: block; margin-top: 4px; }
+.emptyGallery { padding: 24px; border: 1px dashed var(--line); border-radius: 10px; }
+.status p { display: flex; align-items: center; gap: 8px; margin: 0; }
+.error { color: #a32525; }
+.success { color: #146b38; }
+@media (max-width: 640px) {
+  .toolbar { position: static; align-items: stretch; }
+  .toolbar form { width: 100%; }
+  .toolbar form button { flex: 1 1 130px; }
+  .editButton { align-self: flex-start; }
+  .galleryControls form, .galleryControls button { width: 100%; }
+}

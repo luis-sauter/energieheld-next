@@ -15,11 +15,15 @@ registerHooks({
       };
     if (s === "server-only")
       return { url: "data:text/javascript,export {}", shortCircuit: true };
-    if (s === "next/headers" || s.endsWith("/supabase/server"))
-      throw Error("Public pages must never read session cookies");
+    if (s === "next/headers")
+      throw Error("The public data layer must never read session cookies");
+    if (s.endsWith("/supabase/server"))
+      return { url: 'data:text/javascript,export async function createClient(){return {auth:{getUser:async()=>({data:{user:null},error:null})}}}', shortCircuit: true };
+    if (s === "next/cache")
+      return { url: 'data:text/javascript,export function revalidatePath(){}', shortCircuit: true };
     if (s === "next/navigation")
       return {
-        url: 'data:text/javascript,export function notFound(){throw Error("NOT_FOUND")}',
+        url: 'data:text/javascript,export function notFound(){throw Error("NOT_FOUND")};export function redirect(path){throw Error("REDIRECT:"+path)};export function useRouter(){return {refresh(){}}}',
         shortCircuit: true,
       };
     if (s === "next/link" || s === "next/image")
