@@ -11,13 +11,26 @@ export async function uploadAdminMedia(
   alt: string,
   onProgress: (label: string) => void,
 ): Promise<MediaState> {
+  const prepare = new FormData();
+  prepare.set("intent", kind === "logo" ? "prepare-logo" : "prepare-gallery");
+  const finish = new FormData();
+  finish.set("intent", kind === "logo" ? "logo-upload" : "gallery-upload");
+  finish.set("alt_text", alt);
+  return uploadPreparedAdminMedia(saveAction, file, prepare, finish, onProgress);
+}
+
+export async function uploadPreparedAdminMedia(
+  saveAction: (form: FormData) => Promise<MediaState>,
+  file: FormDataEntryValue | null,
+  prepare: FormData,
+  finish: FormData,
+  onProgress: (label: string) => void,
+): Promise<MediaState> {
   if (!(file instanceof File) || !file.size || file.size > MEDIA_MAX_BYTES ||
     !["image/jpeg", "image/png", "image/webp"].includes(file.type))
     return { error: "Bitte wählen Sie JPG, PNG oder WebP mit maximal 5 MB." };
   let path: string | undefined;
   try {
-    const prepare = new FormData();
-    prepare.set("intent", kind === "logo" ? "prepare-logo" : "prepare-gallery");
     prepare.set("file_type", file.type);
     prepare.set("file_size", String(file.size));
     const prepared = await saveAction(prepare);
@@ -28,10 +41,7 @@ export async function uploadAdminMedia(
     const uploaded = await storage.upload(path, file, { contentType: file.type, upsert: false });
     if (uploaded.error) throw new Error("Upload failed");
     onProgress("Bild wird gespeichert …");
-    const finish = new FormData();
-    finish.set("intent", kind === "logo" ? "logo-upload" : "gallery-upload");
     finish.set("uploaded_path", path);
-    finish.set("alt_text", alt);
     const result = await saveAction(finish);
     if (result.error) await storage.remove([path]);
     return result;
