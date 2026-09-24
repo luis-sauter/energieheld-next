@@ -69,8 +69,8 @@
 .editImageGrid { align-items: start; }
 .imageTile { min-width: 0; display: grid; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); overflow-wrap: anywhere; }
 .imageTile button { min-width: 0; max-width: 100%; padding: 7px 8px; white-space: normal; overflow-wrap: anywhere; }
-.imageTile[draggable="true"] { cursor: grab; }
-.imageTile[draggable="true"]:active { cursor: grabbing; }
+.imageReorderHandle[draggable="true"] { cursor: grab; user-select: none; }
+.imageReorderHandle[draggable="true"]:active { cursor: grabbing; }
 .imageTileActions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 .imageTileActions button { min-width: min(40px, 100%); }
 .dragHint { flex: 1 1 100%; color: var(--muted); font-size: 12px; }
@@ -88,6 +88,16 @@
 .resizeGrip { display: grid; place-items: center; width: 46px; height: 46px; margin-left: auto; border: 2px solid var(--brand-primary); border-radius: 8px; background: var(--surface); color: var(--brand-primary); font-size: 25px; font-weight: 700; cursor: nwse-resize; touch-action: none; user-select: none; }
 .resizeGrip:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
 .resizeGrip:disabled { opacity: .5; cursor: wait; }
+.cropEditor { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
+.cropEditor h3, .cropEditor p { margin: 0; }
+.cropFrame { position: relative; width: min(100%, 720px); max-width: 100%; overflow: hidden; border-radius: 8px; background: var(--surface); cursor: grab; touch-action: none; user-select: none; }
+.cropFrame:active { cursor: grabbing; }
+.cropFrame img { pointer-events: none; user-select: none; }
+.cropControls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.cropArrows, .cropZoom { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+.cropZoom label { display: grid; gap: 3px; min-width: min(220px, 100%); font-size: 12px; }
+.cropZoom input { width: 100%; }
+.cropControls button { min-height: 38px; }
 .layoutBlock { min-width: 0; }
 .blockToolbar {
   display: flex; align-items: center; flex-wrap: wrap; gap: 8px;

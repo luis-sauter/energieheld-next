@@ -1,8 +1,15 @@
-import type { ProfileContentBlock } from "@/lib/profile-content";
+import type { ProfileContentBlock, ProfileBlockImage } from "@/lib/profile-content";
 import Image from "next/image";
 import { normalizeImageGridConfig, publicImageGridColumns } from "@/lib/image-grid-layout";
 import { normalizeBlockLayout, normalizeTextBlockLayout } from "@/lib/content-block-layout";
+import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";
 import styles from "./profile-content-blocks.module.css";
+
+export function ProfileBlockImage({ image, crop }: { image: ProfileBlockImage; crop?: ImageCrop }) {
+  return <Image src={image.src} alt={image.alt_text ?? ""} fill unoptimized
+    sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 25vw"
+    style={imageCropStyle(crop ?? image)} />;
+}
 
 export function BlockImageGrid({ block }: { block: ProfileContentBlock }) {
   const images = block.images ?? [];
@@ -11,8 +18,7 @@ export function BlockImageGrid({ block }: { block: ProfileContentBlock }) {
   return <div className={styles.frame}>
     <div className={styles.grid} data-columns={publicImageGridColumns(config.columns, images.length)}>
     {images.map((image) => <div key={image.id} className={styles.tile} style={{ aspectRatio: config.aspect_ratio }}>
-      <Image src={image.src} alt={image.alt_text ?? ""} fill unoptimized
-        sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 25vw" />
+      <ProfileBlockImage image={image} />
     </div>)}
     </div>
   </div>;

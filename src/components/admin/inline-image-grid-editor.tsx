@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { ProfileContentBlock } from "@/lib/profile-content";
+import { ProfileBlockImage } from "@/components/portal/profile-content-blocks";
+import { hasPersistedImageCrop, type ImageCrop } from "@/lib/image-crop";
+import { InlineImageCropEditor } from "./inline-image-crop-editor";
 import { uploadPreparedAdminMedia } from "@/lib/admin-media-upload";
 import { moveImageId } from "@/lib/media-order";
 import { hasPersistedImageGridSize, imageGridSlots, normalizeImageGridConfig, resizeImageGridFromPointer } from "@/lib/image-grid-layout";
@@ -27,7 +29,9 @@ export function InlineImageGridEditor({ block, saveAction }: {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [feedback, setFeedback] = useState<MediaState>({});
+  const [activeCropId, setActiveCropId] = useState<string | null>(null);
   const images = block.images ?? [];
+  const activeImage = images.find((image) => image.id === activeCropId);
   const config = normalizeImageGridConfig(block.config);
   const columns = config.columns;
   const resizeAvailable = hasPersistedImageGridSize(block.config);
@@ -79,6 +83,14 @@ export function InlineImageGridEditor({ block, saveAction }: {
     data.set("aspect_ratio", String(ratio));
     if (!await run(data)) resetPreview();
   }
+  async function saveCrop(imageId: string, crop: ImageCrop) {
+    const data = form("crop");
+    data.set("image_id", imageId);
+    data.set("focus_x", String(crop.focus_x));
+    data.set("focus_y", String(crop.focus_y));
+    data.set("zoom", String(crop.zoom));
+    return run(data);
+  }
   function adjustSize(ratioChange: number) {
     const width = sizeRef.current.width;
     const ratio = Math.max(0.6, Math.min(3, Math.round((sizeRef.current.ratio + ratioChange) * 100) / 100));
@@ -126,7 +138,10 @@ export function InlineImageGridEditor({ block, saveAction }: {
     try {
       const result = await uploadPreparedAdminMedia(saveAction, file, prepare, finish, setProgress);
       setFeedback(result);
-      if (result.success) router.refresh();
+      if (result.success) {
+        if (imageId === activeCropId) setActiveCropId(null);
+        router.refresh();
+      }
     } catch {
       setFeedback({ error: "Das Bild konnte nicht hochgeladen werden." });
     } finally {
@@ -168,20 +183,23 @@ export function InlineImageGridEditor({ block, saveAction }: {
     <div ref={frameRef} className={`${gridStyles.frame} ${styles.resizableImageFrame}`}>
     <div ref={gridRef} className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={columns}>
       {imageGridSlots(columns, images).map((image, index) => image ? <div key={image.id} className={styles.imageTile}
-        draggable={!busy && images.length > 1}
-        onDragStart={(event) => { dragId.current = image.id; event.dataTransfer.effectAllowed = "move"; }}
         onDragOver={(event) => { if (dragId.current && dragId.current !== image.id) event.preventDefault(); }}
-        onDrop={(event) => { event.preventDefault(); dropOn(image.id); }}
-        onDragEnd={() => { dragId.current = null; }}>
-        <div className={gridStyles.tile} style={{ aspectRatio: size.ratio }}><Image src={image.src} alt={image.alt_text ?? ""} fill unoptimized
-          sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 25vw" /></div>
+        onDrop={(event) => { event.preventDefault(); dropOn(image.id); }}>
+        <div className={gridStyles.tile} style={{ aspectRatio: size.ratio }}><ProfileBlockImage image={image} /></div>
         <div className={styles.imageTileActions}>
-          <span className={styles.dragHint}>Ziehen zum Sortieren</span>
+          <span className={`${styles.dragHint} ${styles.imageReorderHandle}`}
+            draggable={!busy && images.length > 1}
+            onDragStart={(event) => { dragId.current = image.id; event.dataTransfer.effectAllowed = "move"; }}
+            onDragEnd={() => { dragId.current = null; }}>↔ Zum Sortieren ziehen</span>
           <button type="button" className="button" aria-label={`Bild ${index + 1} nach links`} disabled={busy || index === 0}
             onClick={() => shift(image.id, -1)}>←</button>
           <button type="button" className="button" aria-label={`Bild ${index + 1} nach rechts`} disabled={busy || index === images.length - 1}
             onClick={() => shift(image.id, 1)}>→</button>
         </div>
+        <button type="button" className="button" disabled={busy || !hasPersistedImageCrop(image)}
+          title={!hasPersistedImageCrop(image) ? "Nach Datenbankaktualisierung verfügbar" : undefined}
+          onClick={() => setActiveCropId(image.id)}>Ausschnitt bearbeiten</button>
+        {!hasPersistedImageCrop(image) && <small role="status">Ausschnitt nach Datenbankaktualisierung verfügbar.</small>}
         <label className={styles.imageUpload}>Bild ersetzen
           <input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
             onChange={(event) => { void upload(event.target.files?.[0], image.id); event.target.value = ""; }} />
@@ -201,6 +219,7 @@ export function InlineImageGridEditor({ block, saveAction }: {
         </form>
         <button type="button" className="button" disabled={busy} onClick={() => {
           if (!window.confirm("Dieses Bild wirklich löschen?")) return;
+          if (activeCropId === image.id) setActiveCropId(null);
           const data = form("remove"); data.set("image_id", image.id); void run(data);
         }}>Bild löschen</button>
       </div> : <label key={`empty-${index}`} className={styles.emptyImageTile} style={{ aspectRatio: size.ratio }}>
@@ -224,6 +243,8 @@ export function InlineImageGridEditor({ block, saveAction }: {
         onPointerCancel={(event) => finishResize(event, true)}>↘</button>
     </div>}
     </div>
+    {activeImage && hasPersistedImageCrop(activeImage) && <InlineImageCropEditor key={activeImage.id}
+      image={activeImage} ratio={size.ratio} save={saveCrop} cancel={() => setActiveCropId(null)} />}
     {progress && <p role="status">{progress}</p>}
     {busy && !progress && <p role="status">Änderung wird gespeichert …</p>}
     {feedback.error && <p role="alert" className={styles.error}>{feedback.error}</p>}
