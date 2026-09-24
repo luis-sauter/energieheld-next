@@ -127,6 +127,75 @@ test("replacement preserves the image row, detaches old path and then cleans it"
   assert.ok(!rejected.calls.some((call) => call.operation === "download"));
 });
 
+test("admin crop saves only validated per-image presentation values", async () => {
+  const rows = [{ id: imageId, block_id: block, storage_path: oldPath, sort_order: 0,
+    focus_x: 50, focus_y: 50, zoom: 1 }];
+  const db = client({ rows, size: { width_percent: 75, aspect_ratio: 1.5 } });
+  const result = await changeAdminBlockImages(db, profile, "sichtbar", form({
+    intent: "crop", block_id: block, image_id: imageId,
+    focus_x: "20", focus_y: "70", zoom: "1.8",
+    profile_id: foreignProfile, slug: "fremd", storage_path: newPath,
+    sort_order: "99", columns: "4", aspect_ratio: "3", alt_text: "Manipuliert",
+  }));
+  assert.ok(result.success);
+  const write = db.calls.find((call) => call.operation === "update");
+  assert.deepEqual(write.payload, { focus_x: 20, focus_y: 70, zoom: 1.8 });
+  assert.deepEqual(write.filters, [["id", imageId], ["block_id", block]]);
+  assert.ok(!db.calls.some((call) => ["rpc", "insert", "download", "remove"].includes(call.operation)));
+});
+
+test("crop rejects outsiders, foreign images and invalid focus or zoom without writing", async () => {
+  const row = { id: imageId, block_id: block, storage_path: oldPath, sort_order: 0,
+    focus_x: 50, focus_y: 50, zoom: 1 };
+  for (const options of [{ admin: false }, { authenticated: false }]) {
+    const db = client({ ...options, rows: [row] });
+    assert.notEqual((await changeAdminBlockImages(db, profile, "sichtbar", form({
+      intent: "crop", block_id: block, image_id: imageId, focus_x: "20", focus_y: "70", zoom: "1.5",
+    }))).access, "admin");
+    assert.ok(!db.calls.some((call) => call.operation === "update"));
+  }
+  for (const [target, slug, blockId, image] of [
+    [foreignProfile, "sichtbar", block, imageId], [profile, "fremd", block, imageId],
+    [profile, "sichtbar", foreignBlock, imageId], [profile, "sichtbar", block, foreignImage],
+  ]) {
+    const db = client({ rows: [row] });
+    assert.ok((await changeAdminBlockImages(db, target, slug, form({
+      intent: "crop", block_id: blockId, image_id: image, focus_x: "20", focus_y: "70", zoom: "1.5",
+    }))).error);
+    assert.ok(!db.calls.some((call) => call.operation === "update"));
+  }
+  const otherBlock = client({ rows: [{ ...row, block_id: foreignBlock }] });
+  assert.ok((await changeAdminBlockImages(otherBlock, profile, "sichtbar", form({
+    intent: "crop", block_id: block, image_id: imageId, focus_x: "20", focus_y: "70", zoom: "1.5",
+  }))).error);
+  for (const [x, y, zoom] of [
+    ["-0.1", "50", "1"], ["100.1", "50", "1"], ["12.34", "50", "1"],
+    ["50", "-1", "1"], ["50", "101", "1"], ["50", "50", "0.9"],
+    ["50", "50", "3.01"], ["50", "50", "1.234"],
+  ]) {
+    const db = client({ rows: [row] });
+    assert.ok((await changeAdminBlockImages(db, profile, "sichtbar", form({
+      intent: "crop", block_id: block, image_id: imageId, focus_x: x, focus_y: y, zoom,
+    }))).error);
+    assert.ok(!db.calls.some((call) => call.operation === "update"));
+  }
+  const legacy = client();
+  assert.match((await changeAdminBlockImages(legacy, profile, "sichtbar", form({
+    intent: "crop", block_id: block, image_id: imageId, focus_x: "50", focus_y: "50", zoom: "1",
+  }))).error, /Datenbankaktualisierung/);
+});
+
+test("replacing a cropped image resets crop but keeps the same image row and alt text", async () => {
+  const db = client({ rows: [{ id: imageId, block_id: block, storage_path: oldPath,
+    alt_text: "Alte Beschreibung", sort_order: 0, focus_x: 30, focus_y: 60, zoom: 1.5 }] });
+  assert.ok((await changeAdminBlockImages(db, profile, "sichtbar", form({
+    intent: "upload", block_id: block, image_id: imageId, uploaded_path: newPath,
+    alt_text: "Alte Beschreibung",
+  }))).success);
+  assert.deepEqual(db.calls.find((call) => call.operation === "update").payload,
+    { storage_path: newPath, alt_text: "Alte Beschreibung", focus_x: 50, focus_y: 50, zoom: 1 });
+});
+
 test("layout, alt, delete and exact reorder stay scoped to the block", async () => {
   const db = client();
   assert.ok((await changeAdminBlockImages(db, profile, "sichtbar", form({ intent: "layout", block_id: block, columns: "1" }))).success);

@@ -1,0 +1,98 @@
+import test, { before, after, beforeEach, afterEach } from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { createMediaTestDatabase } from "./helpers/media-database.mjs";
+
+const admin = "33333333-3333-4333-8333-333333333333";
+const owner = "11111111-1111-4111-8111-111111111111";
+const profile = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const block = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+const image = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const path = `profiles/${profile}/blocks/${block}/33333333-3333-4333-8333-333333333333.jpg`;
+let db;
+
+before(async () => {
+  db = await createMediaTestDatabase(true);
+  await db.exec("create policy profiles_admin_update on company_profiles for update to authenticated using (exists(select 1 from portal_admins where user_id=auth.uid())) with check (exists(select 1 from portal_admins where user_id=auth.uid()))");
+  for (const file of ["20260924155258_admin_company_media_editor.sql",
+    "20260924171344_profile_content_blocks.sql", "20260924202803_profile_image_grid_blocks.sql"])
+    await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), "utf8"));
+  await db.query("insert into portal_admins values ($1)", [admin]);
+  await db.query("insert into companies values ($1,$1,'Firma')", [owner]);
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [admin]);
+  await db.query("insert into company_profiles(id,company_id,display_name,status,description,business_areas) values ($1,$2,'Firma','pending','Beschreibung','Bereich')", [profile, owner]);
+  await db.query("insert into company_profile_categories(profile_id,category_id) values ($1,'heizung')", [profile]);
+  await db.query("update company_profiles set status='approved' where id=$1", [profile]);
+  await db.query("insert into profile_content_blocks(id,profile_id,type,content,config) values ($1,$2,'image_grid','{}','{\"columns\":2}')", [block, profile]);
+  await db.query("insert into profile_content_block_images(id,block_id,storage_path,alt_text,sort_order) values ($1,$2,$3,'Ansicht',0)", [image, block, path]);
+  for (const file of ["20260924210916_profile_image_grid_resizing.sql",
+    "20260924214027_universal_content_block_layout.sql",
+    "20260924220748_image_crop_focus_zoom.sql"])
+    await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), "utf8"));
+});
+after(async () => db?.close());
+beforeEach(async () => db.exec("begin"));
+afterEach(async () => db.exec("rollback"));
+async function actor(id, role = "authenticated") {
+  await db.exec("reset role");
+  await db.query("select set_config('request.jwt.claim.sub',$1,true)", [id]);
+  await db.exec(`set local role ${role}`);
+}
+async function blocked(sql, params = []) {
+  await db.exec("savepoint denied");
+  await assert.rejects(db.query(sql, params));
+  await db.exec("rollback to savepoint denied;release savepoint denied");
+}
+
+test("migration gives existing images safe defaults without changing identity, path, alt or order", async () => {
+  const row = (await db.query("select id,block_id,storage_path,alt_text,sort_order,focus_x,focus_y,zoom from profile_content_block_images where id=$1", [image])).rows[0];
+  assert.deepEqual(row, { id: image, block_id: block, storage_path: path,
+    alt_text: "Ansicht", sort_order: 0, focus_x: "50", focus_y: "50", zoom: "1" });
+});
+
+test("crop constraints accept bounds and one/two decimal precision, rejecting invalid values", async () => {
+  await actor(admin);
+  await db.query("update profile_content_block_images set focus_x=0,focus_y=100,zoom=3 where id=$1", [image]);
+  await db.query("update profile_content_block_images set focus_x=100,focus_y=0,zoom=1 where id=$1", [image]);
+  await db.query("update profile_content_block_images set focus_x=37.5,focus_y=62.5,zoom=1.25 where id=$1", [image]);
+  for (const [column, value] of [
+    ["focus_x", -0.1], ["focus_x", 100.1], ["focus_x", 12.34],
+    ["focus_y", -0.1], ["focus_y", 100.1], ["focus_y", 12.34],
+    ["zoom", 0.99], ["zoom", 3.01], ["zoom", 1.234],
+  ]) await blocked(`update profile_content_block_images set ${column}=$1 where id=$2`, [value, image]);
+  for (const value of ["NaN", "Infinity", "-Infinity"])
+    await blocked("update profile_content_block_images set zoom=$1::numeric where id=$2", [value, image]);
+});
+
+test("existing RLS and column grants permit only admin crop changes; public can read approved values", async () => {
+  for (const id of [owner, "22222222-2222-4222-8222-222222222222"]) {
+    await actor(id);
+    assert.equal((await db.query("update profile_content_block_images set focus_x=20 where id=$1 returning id", [image])).rows.length, 0);
+  }
+  await actor("", "anon");
+  assert.deepEqual((await db.query("select focus_x,focus_y,zoom from profile_content_block_images where id=$1", [image])).rows[0],
+    { focus_x: "50", focus_y: "50", zoom: "1" });
+  await blocked("update profile_content_block_images set focus_x=20 where id=$1", [image]);
+  await actor(admin);
+  await db.query("update profile_content_block_images set focus_x=20,focus_y=70,zoom=1.8 where id=$1", [image]);
+  await blocked("update profile_content_block_images set block_id=$1 where id=$2", [profile, image]);
+  assert.deepEqual((await db.query("select storage_path,alt_text,sort_order from profile_content_block_images where id=$1", [image])).rows[0],
+    { storage_path: path, alt_text: "Ansicht", sort_order: 0 });
+});
+
+test("reorder and block layout changes preserve per-image crop metadata", async () => {
+  await actor(admin);
+  const secondPath = `profiles/${profile}/blocks/${block}/44444444-4444-4444-8444-444444444444.jpg`;
+  const second = (await db.query("insert into profile_content_block_images(block_id,storage_path,sort_order) values ($1,$2,1) returning id", [block, secondPath])).rows[0].id;
+  assert.deepEqual((await db.query("select focus_x,focus_y,zoom from profile_content_block_images where id=$1", [second])).rows[0],
+    { focus_x: "50", focus_y: "50", zoom: "1" });
+  await db.query("update profile_content_block_images set focus_x=30,focus_y=60,zoom=1.5 where id=$1", [image]);
+  await db.query("select reorder_profile_block_images($1,$2,$3::uuid[])", [profile, block, [second, image]]);
+  await db.query("update profile_content_blocks set config=$1 where id=$2", [
+    { columns: 2, width_percent: 70, offset_percent: 15, aspect_ratio: 1.2,
+      spacing_top: "large", spacing_bottom: "small" }, block]);
+  assert.deepEqual((await db.query("select sort_order,focus_x,focus_y,zoom from profile_content_block_images where id=$1", [image])).rows[0],
+    { sort_order: 1, focus_x: "30", focus_y: "60", zoom: "1.5" });
+  assert.deepEqual((await db.query("select focus_x,focus_y,zoom from profile_content_block_images where id=$1", [second])).rows[0],
+    { focus_x: "50", focus_y: "50", zoom: "1" });
+});

@@ -7,7 +7,7 @@ const profile = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const block = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const image = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const path = `profiles/${profile}/blocks/${block}/${image}.jpg`;
-function client({ newTable = true, withImage = true } = {}) {
+function client({ newTable = true, withImage = true, crop = null } = {}) {
   const content = [
     { id: "heading", profile_id: profile, type: "heading", slot: null, sort_order: 0, content: { text: "Willkommen" }, config: {} },
     { id: "text", profile_id: profile, type: "text", slot: null, sort_order: 1, content: { text: "Bestehender Inhalt" }, config: {} },
@@ -20,7 +20,8 @@ function client({ newTable = true, withImage = true } = {}) {
         order() { return this; }, limit() { return this; },
         then(resolve) { return resolve(table === "profile_content_blocks"
           ? { data: content, error: null }
-          : newTable ? { data: [{ id: image, block_id: block, storage_path: path, alt_text: "Blick aufs Haus", sort_order: 0 }], error: null }
+          : newTable ? { data: [{ id: image, block_id: block, storage_path: path, alt_text: "Blick aufs Haus", sort_order: 0,
+            ...(crop ?? {}) }], error: null }
             : { data: null, error: { code: "42P01" } }); },
       };
     },
@@ -36,7 +37,17 @@ test("public loader attaches signed image URLs to image grids without exposing r
   assert.equal(grid.images[0].src, "https://signed.invalid/image");
   assert.equal(grid.images[0].alt_text, "Blick aufs Haus");
   assert.equal("storage_path" in grid.images[0], false);
+  assert.equal("focus_x" in grid.images[0], false);
   assert.deepEqual(result.blocks.slice(0, 2).map((item) => item.content.text), ["Willkommen", "Bestehender Inhalt"]);
+});
+
+test("loader forwards only safe crop metadata when present and preserves signed URLs", async () => {
+  const result = await loadPublicProfileContent(client({ crop: { focus_x: 20, focus_y: 70, zoom: 1.8 } }), profile);
+  const image = splitProfileContent(result.blocks, "Firma").blocks.find((item) => item.type === "image_grid").images[0];
+  assert.deepEqual({ focus_x: image.focus_x, focus_y: image.focus_y, zoom: image.zoom },
+    { focus_x: 20, focus_y: 70, zoom: 1.8 });
+  assert.equal(image.src, "https://signed.invalid/image");
+  assert.equal("storage_path" in image, false);
 });
 
 test("a missing image migration leaves existing heading and text blocks available", async () => {

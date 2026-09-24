@@ -44,6 +44,7 @@ const { default: ExpertDetail } = await import("../src/app/(energieheld)/experte
 const { checkInlineProfileTarget } = await import("../src/lib/inline-admin-profile.ts");
 const { InlineProfileEditor } = await import("../src/components/admin/inline-profile-editor.tsx");
 const { InlineImageGridEditor } = await import("../src/components/admin/inline-image-grid-editor.tsx");
+const { InlineImageCropEditor } = await import("../src/components/admin/inline-image-crop-editor.tsx");
 const { ProfileContentBlocks } = await import("../src/components/portal/profile-content-blocks.tsx");
 const { companyProfileListing } = await import("../src/lib/company-presentation.ts");
 const { saveInlineProfile, saveInlineMedia } = await import("../src/app/(energieheld)/experten/[slug]/inline-actions.ts");
@@ -301,4 +302,46 @@ test("public blocks use the full canvas and keep block position separate from te
   assert.doesNotMatch(html, /Block horizontal ziehen|Duplizieren|Breite 50 %/);
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   assert.match(css, /\.company-profile \.profile-content-canvas \.profile-content-block \{[\s\S]*max-width: 100%/);
+});
+
+test("public, inline grid and large crop preview share the same saved image framing", () => {
+  const image = { id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    block_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", src: "https://example.org/photo.jpg",
+    alt_text: "Person", sort_order: 0, focus_x: 20, focus_y: 70, zoom: 1.8 };
+  const block = { id: image.block_id, profile_id: profileId, type: "image_grid", slot: null,
+    sort_order: 0, content: {}, config: { columns: 1, width_percent: 100, aspect_ratio: 1.5 }, images: [image] };
+  const publicHtml = renderToStaticMarkup(createElement(ProfileContentBlocks, { blocks: [block] }));
+  const editHtml = renderToStaticMarkup(createElement(InlineImageGridEditor, {
+    block, saveAction: async () => ({ success: "Gespeichert" }),
+  }));
+  const cropHtml = renderToStaticMarkup(createElement(InlineImageCropEditor, {
+    image, ratio: 1.5, save: async () => true, cancel: () => {},
+  }));
+  for (const html of [publicHtml, editHtml, cropHtml]) {
+    assert.match(html, /object-position:20% 70%/);
+    assert.match(html, /transform:scale\(1\.8\)/);
+    assert.match(html, /transform-origin:20% 70%/);
+  }
+  assert.doesNotMatch(publicHtml, /Ausschnitt bearbeiten|Zoom|Übernehmen|Zurücksetzen/);
+  assert.match(editHtml, /Ausschnitt bearbeiten/);
+  assert.match(cropHtml, /Bildzoom|Zoom verringern|Zoom erhöhen|Zentrieren|Zurücksetzen|Übernehmen|Abbrechen/);
+  assert.match(cropHtml, /Bild nach links|Bild nach rechts|Bild nach oben|Bild nach unten/);
+  assert.match(cropHtml, /aspect-ratio:1\.5/);
+});
+
+test("old image rows keep public rendering and disable crop until migration is available", () => {
+  const image = { id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    block_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", src: "https://example.org/photo.jpg",
+    alt_text: "Ansicht", sort_order: 0 };
+  const block = { id: image.block_id, profile_id: profileId, type: "image_grid", slot: null,
+    sort_order: 0, content: {}, config: { columns: 1 }, images: [image] };
+  const publicHtml = renderToStaticMarkup(createElement(ProfileContentBlocks, { blocks: [block] }));
+  const editHtml = renderToStaticMarkup(createElement(InlineImageGridEditor, {
+    block, saveAction: async () => ({ success: "Gespeichert" }),
+  }));
+  assert.match(publicHtml, /object-position:50% 50%/);
+  assert.match(publicHtml, /transform:scale\(1\)/);
+  assert.match(editHtml, /title="Nach Datenbankaktualisierung verfügbar"/);
+  assert.match(editHtml, /Ausschnitt nach Datenbankaktualisierung verfügbar/);
+  assert.match(editHtml, /Ausschnitt bearbeiten/);
 });

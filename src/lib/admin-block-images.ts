@@ -4,11 +4,12 @@ import { checkInlineProfileTarget } from "./inline-admin-profile";
 import { MEDIA_BUCKET, MEDIA_MAX_BYTES, validateMediaFile, type MediaState } from "./company-media";
 import { hasPersistedImageGridSize, normalizeImageGridConfig, parseImageGridSize } from "./image-grid-layout";
 import { clampBlockOffset, hasPersistedBlockLayout } from "./content-block-layout";
+import { DEFAULT_IMAGE_CROP, hasPersistedImageCrop, parseImageCrop, type ImageCrop } from "./image-crop";
 
 export type BlockImageResult = MediaState & { access: AdminAccess };
 const failed = "Der Bildblock konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.";
 const missing = "Der Bildblock oder das Bild gehört nicht zu diesem Profil.";
-type ImageRow = { id: string; block_id: string; storage_path: string; sort_order: number };
+type ImageRow = Partial<ImageCrop> & { id: string; block_id: string; storage_path: string; sort_order: number };
 
 export async function changeAdminBlockImages(
   client: SupabaseClient, profileId: unknown, slug: unknown, form: FormData,
@@ -22,7 +23,7 @@ export async function changeAdminBlockImages(
     .select("id,type,config").eq("id", blockId).eq("profile_id", id).is("slot", null).maybeSingle();
   if (blockError || block?.type !== "image_grid") return { access: "admin", error: missing };
   const { data, error: imagesError } = await client.from("profile_content_block_images")
-    .select("id,block_id,storage_path,sort_order").eq("block_id", blockId)
+    .select("*").eq("block_id", blockId)
     .order("sort_order").order("id");
   if (imagesError) return { access: "admin", error: failed };
   const images = (data ?? []) as ImageRow[];
@@ -37,6 +38,19 @@ export async function changeAdminBlockImages(
   };
   const imageId = form.get("image_id");
   const image = images.find((row) => row.id === imageId);
+
+  if (intent === "crop") {
+    if (!image) return { access: "admin", error: missing };
+    if (!hasPersistedImageCrop(image))
+      return { access: "admin", error: "Die Ausschnittbearbeitung ist nach der Datenbankaktualisierung verfügbar." };
+    const crop = parseImageCrop(form.get("focus_x"), form.get("focus_y"), form.get("zoom"));
+    if (!crop) return { access: "admin", error: "Bitte wählen Sie einen gültigen Bildausschnitt und Zoom." };
+    const result = await client.from("profile_content_block_images")
+      .update(crop).eq("id", image.id).eq("block_id", blockId).select("id").maybeSingle();
+    return result.error || result.data?.id !== image.id
+      ? { access: "admin", error: failed }
+      : { access: "admin", success: "Der Bildausschnitt wurde gespeichert." };
+  }
 
   if (intent === "layout") {
     const columns = Number(form.get("columns"));
@@ -142,7 +156,8 @@ export async function changeAdminBlockImages(
   }
   if (image) {
     const result = await client.from("profile_content_block_images")
-      .update({ storage_path: path, alt_text: alt.trim() || null })
+      .update({ storage_path: path, alt_text: alt.trim() || null,
+        ...(hasPersistedImageCrop(image) ? DEFAULT_IMAGE_CROP : {}) })
       .eq("id", image.id).eq("block_id", blockId).eq("storage_path", image.storage_path)
       .select("id").maybeSingle();
     if (result.error || result.data?.id !== image.id) {

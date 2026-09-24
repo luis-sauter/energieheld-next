@@ -1,11 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ImageGridConfig } from "./image-grid-layout";
 import type { TextBlockLayout } from "./content-block-layout";
+import type { ImageCrop } from "./image-crop";
 
 export type ContentBlockType = "heading" | "text" | "image_grid";
 export type TextBlockType = Exclude<ContentBlockType, "image_grid">;
 export type HeadingSlot = "about_heading" | "business_areas_heading";
-export type ProfileBlockImage = {
+export type ProfileBlockImage = Partial<ImageCrop> & {
   id: string;
   block_id: string;
   alt_text: string | null;
@@ -59,8 +60,10 @@ export async function loadPublicProfileContent(client: SupabaseClient, profileId
     try {
       const imageBlocks = blocks.filter((block) => block.type === "image_grid");
       if (imageBlocks.length) {
+        // SELECT * stays compatible with databases that do not yet have crop columns.
+        // Only the safe presentation fields below are sent to the client.
         const { data: rows, error: imageError } = await client.from("profile_content_block_images")
-          .select("id,block_id,storage_path,alt_text,sort_order")
+          .select("*")
           .in("block_id", imageBlocks.map((block) => block.id))
           .order("sort_order").order("id");
         if (imageError) throw imageError;
@@ -79,6 +82,8 @@ export async function loadPublicProfileContent(client: SupabaseClient, profileId
           .map((row) => ({
             id: row.id, block_id: row.block_id, alt_text: row.alt_text,
             sort_order: row.sort_order, src: urls.get(row.storage_path)!,
+            ...(typeof row.focus_x === "number" && typeof row.focus_y === "number" && typeof row.zoom === "number"
+              ? { focus_x: row.focus_x, focus_y: row.focus_y, zoom: row.zoom } : {}),
           }));
       } else {
         // Probe independently: a pre-migration environment still renders text blocks.
