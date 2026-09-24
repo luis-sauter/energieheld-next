@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { ProfileContentBlock } from "@/lib/profile-content";
 import { uploadPreparedAdminMedia } from "@/lib/admin-media-upload";
 import { moveImageId } from "@/lib/media-order";
+import { hasPersistedImageGridSize, imageGridSlots, normalizeImageGridConfig, resizeImageGridFromPointer } from "@/lib/image-grid-layout";
 import type { MediaState } from "@/lib/company-media";
 import gridStyles from "@/components/portal/profile-content-blocks.module.css";
 import styles from "./inline-profile.module.css";
@@ -17,11 +18,34 @@ export function InlineImageGridEditor({ block, saveAction }: {
   const router = useRouter();
   const busyRef = useRef(false);
   const dragId = useRef<string | null>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const resizeDrag = useRef<{
+    pointerId: number; x: number; y: number; width: number; ratio: number;
+    parentWidth: number; tileWidth: number;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [feedback, setFeedback] = useState<MediaState>({});
   const images = block.images ?? [];
-  const columns = block.config?.columns ?? 1;
+  const config = normalizeImageGridConfig(block.config);
+  const columns = config.columns;
+  const resizeAvailable = hasPersistedImageGridSize(block.config);
+  const [size, setSize] = useState(() => ({ width: config.width_percent, ratio: config.aspect_ratio }));
+  const sizeRef = useRef(size);
+  useEffect(() => {
+    if (resizeDrag.current) return;
+    const next = { width: config.width_percent, ratio: config.aspect_ratio };
+    sizeRef.current = next;
+    setSize(next);
+  }, [config.width_percent, config.aspect_ratio]);
+
+  function preview(width: number, ratio: number) {
+    const next = { width, ratio };
+    sizeRef.current = next;
+    setSize(next);
+  }
+  function resetPreview() { preview(config.width_percent, config.aspect_ratio); }
 
   function form(intent: string) {
     const data = new FormData();
@@ -29,8 +53,8 @@ export function InlineImageGridEditor({ block, saveAction }: {
     data.set("block_id", block.id);
     return data;
   }
-  async function run(data: FormData) {
-    if (busyRef.current) return;
+  async function run(data: FormData): Promise<boolean> {
+    if (busyRef.current) return false;
     busyRef.current = true;
     setBusy(true);
     setFeedback({});
@@ -38,13 +62,56 @@ export function InlineImageGridEditor({ block, saveAction }: {
       const result = await saveAction(data);
       setFeedback(result);
       if (result.success) router.refresh();
+      return Boolean(result.success);
     } catch {
       setFeedback({ error: "Die Bildänderung konnte nicht gespeichert werden." });
+      return false;
     } finally {
       busyRef.current = false;
       setBusy(false);
       setProgress("");
     }
+  }
+  async function saveSize(width: number, ratio: number) {
+    if (width === config.width_percent && ratio === config.aspect_ratio) return;
+    const data = form("resize");
+    data.set("width_percent", String(width));
+    data.set("aspect_ratio", String(ratio));
+    if (!await run(data)) resetPreview();
+  }
+  function adjustSize(widthChange: number, ratioChange: number) {
+    const width = Math.max(35, Math.min(100, sizeRef.current.width + widthChange));
+    const ratio = Math.max(0.6, Math.min(3, Math.round((sizeRef.current.ratio + ratioChange) * 100) / 100));
+    preview(width, ratio);
+    void saveSize(width, ratio);
+  }
+  function startResize(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (busyRef.current || event.pointerType === "mouse" && event.button !== 0) return;
+    const parentWidth = frameRef.current?.parentElement?.getBoundingClientRect().width ?? 0;
+    const tileWidth = gridRef.current?.firstElementChild?.getBoundingClientRect().width ?? 0;
+    if (!parentWidth || !tileWidth) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    resizeDrag.current = {
+      pointerId: event.pointerId, x: event.clientX, y: event.clientY,
+      width: sizeRef.current.width, ratio: sizeRef.current.ratio,
+      parentWidth, tileWidth,
+    };
+  }
+  function moveResize(event: ReactPointerEvent<HTMLButtonElement>) {
+    const drag = resizeDrag.current;
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const next = resizeImageGridFromPointer(drag, event.clientX - drag.x, event.clientY - drag.y);
+    preview(next.width, next.ratio);
+  }
+  function finishResize(event: ReactPointerEvent<HTMLButtonElement>, cancel = false) {
+    const drag = resizeDrag.current;
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    resizeDrag.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    if (cancel) resetPreview();
+    else void saveSize(sizeRef.current.width, sizeRef.current.ratio);
   }
   async function upload(file: File | undefined, imageId?: string) {
     if (busyRef.current || !file) return;
@@ -98,14 +165,16 @@ export function InlineImageGridEditor({ block, saveAction }: {
         {count} {count === 1 ? "Bild" : "Bilder"}
       </button>)}
     </div>
-    <div className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={columns}>
-      {images.map((image, index) => <div key={image.id} className={styles.imageTile}
+    <div ref={frameRef} className={`${gridStyles.frame} ${styles.resizableImageFrame}`}
+      style={{ width: `${size.width}%` }}>
+    <div ref={gridRef} className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={columns}>
+      {imageGridSlots(columns, images).map((image, index) => image ? <div key={image.id} className={styles.imageTile}
         draggable={!busy && images.length > 1}
         onDragStart={(event) => { dragId.current = image.id; event.dataTransfer.effectAllowed = "move"; }}
         onDragOver={(event) => { if (dragId.current && dragId.current !== image.id) event.preventDefault(); }}
         onDrop={(event) => { event.preventDefault(); dropOn(image.id); }}
         onDragEnd={() => { dragId.current = null; }}>
-        <div className={gridStyles.tile}><Image src={image.src} alt={image.alt_text ?? ""} fill unoptimized
+        <div className={gridStyles.tile} style={{ aspectRatio: size.ratio }}><Image src={image.src} alt={image.alt_text ?? ""} fill unoptimized
           sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 25vw" /></div>
         <div className={styles.imageTileActions}>
           <span className={styles.dragHint}>Ziehen zum Sortieren</span>
@@ -135,12 +204,30 @@ export function InlineImageGridEditor({ block, saveAction }: {
           if (!window.confirm("Dieses Bild wirklich löschen?")) return;
           const data = form("remove"); data.set("image_id", image.id); void run(data);
         }}>Bild löschen</button>
-      </div>)}
-      {images.length < columns && images.length < 4 && <label className={styles.emptyImageTile}>
+      </div> : <label key={`empty-${index}`} className={styles.emptyImageTile} style={{ aspectRatio: size.ratio }}>
         <span>+ Bild hinzufügen</span>
         <input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
           onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} />
-      </label>}
+      </label>)}
+    </div>
+    {resizeAvailable && <div className={styles.resizeFooter}>
+      <div className={styles.resizeButtons} role="group" aria-label="Bildblockgröße">
+        <button type="button" className="button" aria-label="Bildblock schmaler" disabled={busy || size.width <= 35}
+          onClick={() => adjustSize(-5, 0)}>Breite −</button>
+        <button type="button" className="button" aria-label="Bildblock breiter" disabled={busy || size.width >= 100}
+          onClick={() => adjustSize(5, 0)}>Breite +</button>
+        <button type="button" className="button" aria-label="Bildblock flacher" disabled={busy || size.ratio >= 3}
+          onClick={() => adjustSize(0, 0.1)}>Höhe −</button>
+        <button type="button" className="button" aria-label="Bildblock höher" disabled={busy || size.ratio <= 0.6}
+          onClick={() => adjustSize(0, -0.1)}>Höhe +</button>
+      </div>
+      <small role="status">Breite: {size.width} %</small>
+      <button type="button" className={styles.resizeGrip} aria-label="Bildblockgröße durch Ziehen ändern"
+        title="Bildblock an dieser Ecke größer oder kleiner ziehen" disabled={busy}
+        onPointerDown={startResize} onPointerMove={moveResize}
+        onPointerUp={(event) => { moveResize(event); finishResize(event); }}
+        onPointerCancel={(event) => finishResize(event, true)}>↘</button>
+    </div>}
     </div>
     {progress && <p role="status">{progress}</p>}
     {busy && !progress && <p role="status">Änderung wird gespeichert …</p>}

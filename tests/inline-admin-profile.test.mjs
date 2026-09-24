@@ -43,6 +43,8 @@ registerHooks({
 const { default: ExpertDetail } = await import("../src/app/(energieheld)/experten/[slug]/page.tsx");
 const { checkInlineProfileTarget } = await import("../src/lib/inline-admin-profile.ts");
 const { InlineProfileEditor } = await import("../src/components/admin/inline-profile-editor.tsx");
+const { InlineImageGridEditor } = await import("../src/components/admin/inline-image-grid-editor.tsx");
+const { BlockImageGrid, ProfileContentBlocks } = await import("../src/components/portal/profile-content-blocks.tsx");
 const { companyProfileListing } = await import("../src/lib/company-presentation.ts");
 const { saveInlineProfile, saveInlineMedia } = await import("../src/app/(energieheld)/experten/[slug]/inline-actions.ts");
 const profileId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -210,4 +212,71 @@ test("inline mode exposes normal fields and existing media actions in the public
   assert.match(html, /\+ Inhalt hinzufügen/);
   assert.match(html, /Block löschen/);
   assert.doesNotMatch(html, /storage_path|profile_id|company_id|profiles\/aaaaaaaa/);
+});
+
+test("editor renders one visible slot per chosen column, including partially filled grids", () => {
+  const imageBlock = (columns, count) => ({
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", profile_id: profileId,
+    type: "image_grid", slot: null, sort_order: 0, content: {},
+    config: { columns, width_percent: 100, aspect_ratio: 1.5 },
+    images: Array.from({ length: count }, (_, index) => ({
+      id: `cccccccc-cccc-4ccc-8ccc-${String(index).padStart(12, "0")}`,
+      block_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      src: `https://example.org/${index}.jpg`, alt_text: `Bild ${index}`,
+      sort_order: index,
+    })),
+  });
+  for (const columns of [1, 2, 3, 4]) {
+    const html = renderToStaticMarkup(createElement(InlineImageGridEditor, {
+      block: imageBlock(columns, 0), saveAction: async () => ({ success: "Gespeichert" }),
+    }));
+    assert.equal((html.match(/\+ Bild hinzufügen/g) ?? []).length, columns);
+    assert.match(html, new RegExp(`data-columns="${columns}"`));
+  }
+  for (const [count, empty] of [[1, 3], [3, 1]]) {
+    const html = renderToStaticMarkup(createElement(InlineImageGridEditor, {
+      block: imageBlock(4, count), saveAction: async () => ({ success: "Gespeichert" }),
+    }));
+    assert.equal((html.match(/<img/g) ?? []).length, count);
+    assert.equal((html.match(/\+ Bild hinzufügen/g) ?? []).length, empty);
+  }
+});
+
+test("visitors see only occupied images stretched across the available grid", () => {
+  const block = {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", profile_id: profileId,
+    type: "image_grid", slot: null, sort_order: 0, content: {},
+    config: { columns: 4, width_percent: 70, aspect_ratio: 1.2 },
+    images: [0, 1].map((index) => ({
+      id: `cccccccc-cccc-4ccc-8ccc-${String(index).padStart(12, "0")}`,
+      block_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      src: `https://example.org/${index}.jpg`, alt_text: `Bild ${index}`, sort_order: index,
+    })),
+  };
+  const html = renderToStaticMarkup(createElement(BlockImageGrid, { block }));
+  assert.match(html, /data-columns="2"/);
+  assert.match(html, /width:70%/);
+  assert.equal((html.match(/<img/g) ?? []).length, 2);
+  assert.doesNotMatch(html, /Bild hinzufügen|Bild ersetzen|Bild löschen|Bildblockgröße/);
+  const empty = renderToStaticMarkup(createElement(ProfileContentBlocks, {
+    blocks: [{ ...block, images: [] }],
+  }));
+  assert.equal(empty, "");
+});
+
+test("legacy image config renders with defaults before the resize migration", () => {
+  const block = {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", profile_id: profileId,
+    type: "image_grid", slot: null, sort_order: 0, content: {}, config: { columns: 2 },
+    images: [{ id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", block_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      src: "https://example.org/image.jpg", alt_text: "Ansicht", sort_order: 0 }],
+  };
+  const publicHtml = renderToStaticMarkup(createElement(BlockImageGrid, { block }));
+  assert.match(publicHtml, /width:100%/);
+  assert.match(publicHtml, /data-columns="1"/);
+  const editorHtml = renderToStaticMarkup(createElement(InlineImageGridEditor, {
+    block, saveAction: async () => ({ success: "Gespeichert" }),
+  }));
+  assert.equal((editorHtml.match(/\+ Bild hinzufügen/g) ?? []).length, 1);
+  assert.doesNotMatch(editorHtml, /Bildblockgröße durch Ziehen ändern/);
 });

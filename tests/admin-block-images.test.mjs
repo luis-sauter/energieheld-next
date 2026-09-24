@@ -21,7 +21,7 @@ function form(values) {
   }
   return data;
 }
-function client({ admin = true, authenticated = true, columns = 2, rows = [
+function client({ admin = true, authenticated = true, columns = 2, size = null, rows = [
   { id: imageId, block_id: block, storage_path: oldPath, sort_order: 0 },
 ], download = png, writeError = false } = {}) {
   const calls = [];
@@ -49,7 +49,7 @@ function client({ admin = true, authenticated = true, columns = 2, rows = [
           if (table === "profile_content_blocks") {
             const valid = call.filters.some(([key, value]) => key === "id" && value === block) &&
               call.filters.some(([key, value]) => key === "profile_id" && value === profile);
-            return { data: valid ? { id: block, type: "image_grid", config: { columns } } : null, error: null };
+            return { data: valid ? { id: block, type: "image_grid", config: { columns, ...size } } : null, error: null };
           }
           return { data: null, error: null };
         },
@@ -152,4 +152,56 @@ test("drag and arrow controls share the same order operation", () => {
   assert.deepEqual(moveImageId(ids, "C", "A"), ["C", "A", "B"]);
   assert.deepEqual(moveImageId(ids, "C", "B"), ["A", "C", "B"]);
   assert.deepEqual(ids, ["A", "B", "C"]);
+});
+
+test("resize accepts bounded values and rebuilds config with unchanged columns", async () => {
+  const db = client({ size: { width_percent: 100, aspect_ratio: 1.5 } });
+  const result = await changeAdminBlockImages(db, profile, "sichtbar", form({
+    intent: "resize", block_id: block, width_percent: "75", aspect_ratio: "1.25",
+    columns: "4", profile_id: foreignProfile, slug: "fremd",
+  }));
+  assert.ok(result.success);
+  const write = db.calls.find((call) => call.operation === "update");
+  assert.deepEqual(write.payload, { config: { columns: 2, width_percent: 75, aspect_ratio: 1.25 } });
+  assert.deepEqual(write.filters, [["id", block], ["profile_id", profile], ["type", "image_grid"], ["slot", null]]);
+  assert.ok(!db.calls.some((call) => call.table === "profile_content_block_images" && call.operation));
+  assert.ok(!db.calls.some((call) => ["company_profile_images", "company_profiles"].includes(call.table) && call.operation));
+});
+
+test("invalid resize, foreign target and non-admin never write size", async () => {
+  for (const [width, ratio] of [["34", "1.5"], ["101", "1.5"], ["75", "0.59"],
+    ["75", "3.01"], ["75", "1.234"], ["nan", "1.5"]]) {
+    const db = client({ size: { width_percent: 100, aspect_ratio: 1.5 } });
+    assert.ok((await changeAdminBlockImages(db, profile, "sichtbar", form({
+      intent: "resize", block_id: block, width_percent: width, aspect_ratio: ratio,
+    }))).error);
+    assert.ok(!db.calls.some((call) => call.operation === "update"));
+  }
+  for (const [id, slug, blockId] of [[foreignProfile, "sichtbar", block],
+    [profile, "fremd", block], [profile, "sichtbar", foreignBlock]]) {
+    const db = client({ size: { width_percent: 100, aspect_ratio: 1.5 } });
+    assert.ok((await changeAdminBlockImages(db, id, slug, form({
+      intent: "resize", block_id: blockId, width_percent: "80", aspect_ratio: "1.5",
+    }))).error);
+    assert.ok(!db.calls.some((call) => call.operation === "update"));
+  }
+  const denied = client({ admin: false, size: { width_percent: 100, aspect_ratio: 1.5 } });
+  assert.notEqual((await changeAdminBlockImages(denied, profile, "sichtbar", form({
+    intent: "resize", block_id: block, width_percent: "80", aspect_ratio: "1.5",
+  }))).access, "admin");
+  assert.ok(!denied.calls.some((call) => call.operation === "update"));
+});
+
+test("layout preserves stored size and a pre-migration grid retains its old layout behavior", async () => {
+  const current = client({ size: { width_percent: 70, aspect_ratio: 1.2 } });
+  assert.ok((await changeAdminBlockImages(current, profile, "sichtbar", form({
+    intent: "layout", block_id: block, columns: "3",
+  }))).success);
+  assert.deepEqual(current.calls.find((call) => call.operation === "update").payload,
+    { config: { columns: 3, width_percent: 70, aspect_ratio: 1.2 } });
+  const legacy = client();
+  assert.match((await changeAdminBlockImages(legacy, profile, "sichtbar", form({
+    intent: "resize", block_id: block, width_percent: "75", aspect_ratio: "1.2",
+  }))).error, /Datenbankmigration/);
+  assert.ok(!legacy.calls.some((call) => call.operation === "update"));
 });

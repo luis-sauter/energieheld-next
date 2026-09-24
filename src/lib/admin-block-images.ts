@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { isProfileId, type AdminAccess } from "./admin-review";
 import { checkInlineProfileTarget } from "./inline-admin-profile";
 import { MEDIA_BUCKET, MEDIA_MAX_BYTES, validateMediaFile, type MediaState } from "./company-media";
+import { hasPersistedImageGridSize, normalizeImageGridConfig, parseImageGridSize } from "./image-grid-layout";
 
 export type BlockImageResult = MediaState & { access: AdminAccess };
 const failed = "Der Bildblock konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.";
@@ -25,6 +26,7 @@ export async function changeAdminBlockImages(
   if (imagesError) return { access: "admin", error: failed };
   const images = (data ?? []) as ImageRow[];
   const intent = form.get("intent");
+  const config = normalizeImageGridConfig(block.config);
   const storage = client.storage.from(MEDIA_BUCKET);
   const cleanup = async (path: string) => {
     try {
@@ -41,12 +43,29 @@ export async function changeAdminBlockImages(
       return { access: "admin", error: "Bitte wählen Sie ein Layout mit 1 bis 4 Bildern." };
     if (images.length > columns)
       return { access: "admin", error: "Entfernen Sie zuerst Bilder, bevor Sie das Layout verkleinern." };
+    const nextConfig = hasPersistedImageGridSize(block.config)
+      ? { columns, width_percent: config.width_percent, aspect_ratio: config.aspect_ratio }
+      : { columns }; // Older environments still accept their original config shape.
     const result = await client.from("profile_content_blocks")
-      .update({ config: { columns } }).eq("id", blockId).eq("profile_id", id)
-      .eq("type", "image_grid").select("id").maybeSingle();
+      .update({ config: nextConfig }).eq("id", blockId).eq("profile_id", id)
+      .eq("type", "image_grid").is("slot", null).select("id").maybeSingle();
     return result.error || result.data?.id !== blockId
       ? { access: "admin", error: failed }
       : { access: "admin", success: "Das Bildlayout wurde gespeichert." };
+  }
+
+  if (intent === "resize") {
+    if (!hasPersistedImageGridSize(block.config))
+      return { access: "admin", error: "Die Größenänderung ist verfügbar, sobald die neue Datenbankmigration angewendet ist." };
+    const size = parseImageGridSize(form.get("width_percent"), form.get("aspect_ratio"));
+    if (!size) return { access: "admin", error: "Bitte wählen Sie eine gültige Bildblockgröße." };
+    const result = await client.from("profile_content_blocks")
+      .update({ config: { columns: config.columns, ...size } })
+      .eq("id", blockId).eq("profile_id", id).eq("type", "image_grid").is("slot", null)
+      .select("id").maybeSingle();
+    return result.error || result.data?.id !== blockId
+      ? { access: "admin", error: failed }
+      : { access: "admin", success: "Die Bildblockgröße wurde gespeichert." };
   }
 
   if (intent === "reorder") {
