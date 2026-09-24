@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { isProfileId, type AdminAccess } from "./admin-review";
 import { checkInlineProfileTarget } from "./inline-admin-profile";
 import { contentText, type ContentBlockType, type HeadingSlot } from "./profile-content";
+import { MEDIA_BUCKET } from "./company-media";
 
 export type ContentActionResult = { access: AdminAccess; error?: string; success?: string };
 const missing = "Der Inhaltsblock gehört nicht zu diesem Profil oder wurde bereits entfernt.";
@@ -58,11 +59,11 @@ export async function changeAdminProfileContent(
 
   if (intent === "insert") {
     const type = form.get("type");
-    if (type !== "heading" && type !== "text")
-      return { access: "admin", error: "Bitte wählen Sie Überschrift oder Text." };
+    if (type !== "heading" && type !== "text" && type !== "image_grid")
+      return { access: "admin", error: "Bitte wählen Sie Überschrift, Text oder Bilder." };
     const blockType: ContentBlockType = type;
-    const value = contentText(form.get("text"), blockType);
-    if (!value) return { access: "admin", error: "Bitte geben Sie gültigen Inhalt ein." };
+    const value = blockType === "image_grid" ? "" : contentText(form.get("text"), blockType);
+    if (value === null) return { access: "admin", error: "Bitte geben Sie gültigen Inhalt ein." };
     const before = form.get("before_block_id");
     if (before !== null && before !== "" && !isProfileId(before))
       return { access: "admin", error: missing };
@@ -107,6 +108,33 @@ export async function changeAdminProfileContent(
   if (readError) return { access: "admin", error: failed };
   if (!block || block.slot !== null) return { access: "admin", error: missing };
   if (intent === "delete") {
+    if (block.type === "image_grid") {
+      const { data: images, error: imagesError } = await client.from("profile_content_block_images")
+        .select("id").eq("block_id", blockId);
+      if (imagesError) return { access: "admin", error: failed };
+      for (const image of images ?? []) {
+        const { error: removeError } = await client.rpc("remove_profile_block_image", {
+          p_profile_id: id, p_block_id: blockId, p_image_id: image.id,
+        });
+        if (removeError) return { access: "admin", error: failed };
+      }
+      // Include objects left by an interrupted upload or an earlier failed cleanup.
+      // Keep the block if Storage is unavailable, so the same scoped path can be retried.
+      const prefix = `profiles/${id}/blocks/${blockId}`;
+      const storage = client.storage.from(MEDIA_BUCKET);
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const listed = await storage.list(prefix, { limit: 100 });
+        if (listed.error || !listed.data) return { access: "admin", error: failed };
+        const paths = listed.data.filter((item) =>
+          /^[0-9a-f-]{36}\.(jpg|png|webp)$/.test(item.name)
+        ).map((item) => `${prefix}/${item.name}`);
+        if (paths.length !== listed.data.length) return { access: "admin", error: failed };
+        if (!paths.length) break;
+        const removed = await storage.remove(paths);
+        if (removed.error) return { access: "admin", error: failed };
+        if (attempt === 9) return { access: "admin", error: failed };
+      }
+    }
     const { data, error } = await client.from("profile_content_blocks")
       .delete().eq("profile_id", id).eq("id", blockId).is("slot", null)
       .select("id").maybeSingle();
@@ -114,6 +142,8 @@ export async function changeAdminProfileContent(
       ? { access: "admin", error: failed }
       : { access: "admin", success: "Der Block wurde gelöscht." };
   }
+  if (block.type === "image_grid")
+    return { access: "admin", error: "Dieser Bildblock wird über seine Bildsteuerung bearbeitet." };
   const value = contentText(form.get("text"), block.type);
   if (!value) return { access: "admin", error: "Bitte geben Sie gültigen Inhalt ein." };
   const { data, error } = await client.from("profile_content_blocks")

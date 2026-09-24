@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProfileContentBlocks } from "@/components/portal/profile-content-blocks";
+import { InlineImageGridEditor } from "./inline-image-grid-editor";
+import type { MediaState } from "@/lib/company-media";
 import type { ContentBlockType, HeadingSlot, ProfileContentBlock } from "@/lib/profile-content";
 import styles from "./inline-profile.module.css";
 
@@ -53,11 +55,13 @@ export function FixedHeadingEditor({ slot, value, defaultText, saveAction }: {
   </form>;
 }
 
-export function InlineContentEditor({ blocks, editing, available, saveAction }: {
+export function InlineContentEditor({ blocks, editing, available, imagesAvailable, saveAction, saveImage }: {
   blocks: ProfileContentBlock[];
   editing: boolean;
   available: boolean;
+  imagesAvailable: boolean;
   saveAction: SaveContent;
+  saveImage: (form: FormData) => Promise<MediaState>;
 }) {
   const router = useRouter();
   const busyRef = useRef(false);
@@ -104,6 +108,11 @@ export function InlineContentEditor({ blocks, editing, available, saveAction }: 
       {selected && !activeDraft && <div className={styles.blockPicker} aria-label="Inhaltstyp wählen">
         <button type="button" className="button" onClick={() => { setDraft({ type: "heading", before }); setPickerBefore(undefined); }}>Überschrift</button>
         <button type="button" className="button" onClick={() => { setDraft({ type: "text", before }); setPickerBefore(undefined); }}>Text</button>
+        {imagesAvailable && <button type="button" className="button" disabled={busy} onClick={() => {
+          const form = formFor("insert"); form.set("type", "image_grid");
+          if (before) form.set("before_block_id", before);
+          void run(form, () => setPickerBefore(undefined));
+        }}>Bilder</button>}
       </div>}
       {activeDraft && <form className={styles.blockForm} onSubmit={(event) => {
         event.preventDefault();
@@ -132,7 +141,18 @@ export function InlineContentEditor({ blocks, editing, available, saveAction }: 
     {blocks.map((block, index) => <div key={block.id}>
       {addControl(block.id)}
       <section className={`detail-section ${styles.editableBlock}`}>
-        <form key={`${block.id}-${block.content.text}`} className={styles.blockForm} onSubmit={(event) => {
+        {block.type === "image_grid" ? <>
+          <InlineImageGridEditor block={block} saveAction={saveImage} />
+          <div className={styles.blockActions}>
+            <button type="button" className="button" disabled={busy || index === 0} aria-label="Block nach oben verschieben"
+              onClick={() => { const form = formFor("move", block.id); form.set("direction", "up"); void run(form); }}>↑</button>
+            <button type="button" className="button" disabled={busy || index === blocks.length - 1} aria-label="Block nach unten verschieben"
+              onClick={() => { const form = formFor("move", block.id); form.set("direction", "down"); void run(form); }}>↓</button>
+            <button type="button" className="button" disabled={busy} onClick={() => {
+              if (window.confirm("Diesen Bildblock samt Bildern wirklich löschen?")) void run(formFor("delete", block.id));
+            }}>Block löschen</button>
+          </div>
+        </> : <form key={`${block.id}-${block.content.text}`} className={styles.blockForm} onSubmit={(event) => {
           event.preventDefault();
           const form = formFor("update", block.id);
           form.set("text", String(new FormData(event.currentTarget).get("text") ?? ""));
@@ -153,7 +173,7 @@ export function InlineContentEditor({ blocks, editing, available, saveAction }: 
               if (window.confirm("Diesen Inhaltsblock wirklich löschen?")) void run(formFor("delete", block.id));
             }}>Block löschen</button>
           </div>
-        </form>
+        </form>}
       </section>
     </div>)}
     {addControl(null)}

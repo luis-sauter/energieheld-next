@@ -11,6 +11,7 @@ import { profileFields, type ProfileValues } from "@/lib/company-profile";
 import { InlineProfileEditor } from "@/components/admin/inline-profile-editor";
 import { saveInlineProfile, saveInlineMedia } from "./inline-actions";
 import { saveInlineContent } from "./content-actions";
+import { saveInlineBlockImage } from "./block-image-actions";
 import { createPublicClient } from "@/lib/supabase/public";
 import { loadPublicProfileContent, splitProfileContent } from "@/lib/profile-content";
 import { ProfileContentBlocks } from "@/components/portal/profile-content-blocks";
@@ -45,7 +46,7 @@ export default async function ExpertDetail({
   if (!listing) notFound();
   const content = !listing.isDemo
     ? await loadPublicProfileContent(createPublicClient(), listing.id)
-    : { blocks: [], available: false };
+    : { blocks: [], available: false, imagesAvailable: false };
   const presentedContent = splitProfileContent(content.blocks, listing.name);
   let editorData: { values: ProfileValues; media: SignedMedia; rows: MediaRow[] } | null = null;
   if (!listing.isDemo) {
@@ -86,7 +87,9 @@ export default async function ExpertDetail({
         saveMedia={saveInlineMedia.bind(null, listing.id, slug)}
         contentBlocks={content.blocks}
         contentAvailable={content.available}
+        imagesAvailable={content.imagesAvailable}
         saveContent={saveInlineContent.bind(null, listing.id, slug)}
+        saveBlockImage={saveInlineBlockImage.bind(null, listing.id, slug)}
       /> : <ListingDetail
         listing={listing}
         categories={energieheld.categories}

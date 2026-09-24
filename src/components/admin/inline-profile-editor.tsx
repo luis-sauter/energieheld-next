@@ -13,7 +13,7 @@ import { FixedHeadingEditor, InlineContentEditor } from "./inline-content-editor
 
 const formId = "inline-admin-profile-form";
 
-export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, contentAvailable, saveContent, initialEditing = false }: {
+export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false }: {
   listing: Listing;
   categories: Category[];
   values: ProfileValues;
@@ -24,7 +24,9 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   saveMedia: (form: FormData) => Promise<MediaState>;
   contentBlocks: ProfileContentBlock[];
   contentAvailable: boolean;
+  imagesAvailable: boolean;
   saveContent: (form: FormData) => Promise<{ error?: string; success?: string }>;
+  saveBlockImage: (form: FormData) => Promise<MediaState>;
   initialEditing?: boolean;
 }) {
   const router = useRouter();
@@ -101,7 +103,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
         ? <FixedHeadingEditor key={content.aboutHeading} slot="about_heading" value={content.aboutHeading} defaultText={`Über ${listing.name}`} saveAction={saveContent} /> : undefined}
       businessHeadingEditor={editing && contentAvailable
         ? <FixedHeadingEditor key={content.businessHeading} slot="business_areas_heading" value={content.businessHeading} defaultText="Tätigkeitsbereiche" saveAction={saveContent} /> : undefined}
-      contentBlocks={<InlineContentEditor key={editing ? "edit" : "view"} blocks={content.blocks} editing={editing} available={contentAvailable} saveAction={saveContent} />}
+      contentBlocks={<InlineContentEditor key={editing ? "edit" : "view"} blocks={content.blocks} editing={editing} available={contentAvailable} imagesAvailable={imagesAvailable} saveAction={saveContent} saveImage={saveBlockImage} />}
       logoEditor={editing ? mediaEditor.logoEditor : undefined}
       galleryEditor={editing ? mediaEditor.galleryEditor : undefined}
     />
