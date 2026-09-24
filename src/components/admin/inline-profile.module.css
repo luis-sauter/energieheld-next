@@ -63,22 +63,31 @@
 .editableBlock { padding: 16px !important; border: 1px solid var(--line) !important; border-radius: 8px; }
 .editableBlock .blockActions button { min-height: 42px; }
 .imageBlock { display: grid; gap: 14px; }
+.resizableImageFrame { box-sizing: border-box; padding: 12px; border: 1px dashed var(--line); border-radius: 10px; }
 .layoutButtons { display: flex; flex-wrap: wrap; gap: 8px; }
 .layoutButtons button[aria-pressed="true"] { border-color: var(--brand-primary); color: var(--brand-primary); font-weight: 700; }
 .editImageGrid { align-items: start; }
-.imageTile { min-width: 0; display: grid; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
+.imageTile { min-width: 0; display: grid; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); overflow-wrap: anywhere; }
+.imageTile button { min-width: 0; max-width: 100%; padding: 7px 8px; white-space: normal; overflow-wrap: anywhere; }
 .imageTile[draggable="true"] { cursor: grab; }
 .imageTile[draggable="true"]:active { cursor: grabbing; }
 .imageTileActions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-.imageTileActions button { min-width: 40px; }
+.imageTileActions button { min-width: min(40px, 100%); }
 .dragHint { flex: 1 1 100%; color: var(--muted); font-size: 12px; }
 .imageUpload, .emptyImageTile { display: grid; place-items: center; padding: 10px; border: 1px dashed var(--line); border-radius: 6px; color: var(--brand-primary); font-weight: 600; cursor: pointer; text-align: center; }
 .imageUpload input, .emptyImageTile input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .imageUpload:focus-within, .emptyImageTile:focus-within { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
-.emptyImageTile { min-height: 160px; align-self: stretch; background: var(--surface); }
+.emptyImageTile { min-height: 0; align-self: start; background: var(--surface); overflow-wrap: anywhere; }
 .imageAlt { display: grid; gap: 6px; }
 .imageAlt label { display: grid; gap: 4px; font-size: 13px; }
 .imageAlt input { width: 100%; min-width: 0; padding: 9px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.resizeFooter { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.resizeButtons { display: flex; flex-wrap: wrap; gap: 6px; }
+.resizeButtons button { min-height: 38px; padding: 6px 10px; font-size: 12px; }
+.resizeFooter small { color: var(--muted); }
+.resizeGrip { display: grid; place-items: center; width: 46px; height: 46px; margin-left: auto; border: 2px solid var(--brand-primary); border-radius: 8px; background: var(--surface); color: var(--brand-primary); font-size: 25px; font-weight: 700; cursor: nwse-resize; touch-action: none; user-select: none; }
+.resizeGrip:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.resizeGrip:disabled { opacity: .5; cursor: wait; }
 @media (max-width: 640px) {
   .toolbar { position: static; align-items: stretch; }
   .toolbar form { width: 100%; }
