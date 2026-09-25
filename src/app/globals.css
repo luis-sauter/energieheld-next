@@ -2,21 +2,21 @@
   color-scheme: light;
 
   /* Realtime Colors test palette */
-  --text: #5d040a;
+  --text: #2c2c2c;
   --white: #fffdfc;
-  --brand-primary: #c3421c;
-  --brand-primary-hover: #a63616;
+  --brand-primary: #5d040a;
+  --brand-primary-hover: #430306;
   --brand-secondary: #29b6e0;
-  --brand-accent: #efd0bd;
+  --brand-accent: #c3421c;
 
   /* Derived UI tones from the selected palette */
-  --brand-accent-hover: #e3b79d;
-  --brand-accent-light: #f7e9e0;
+  --brand-accent-hover: #a63616;
+  --brand-accent-light: #f3dad2;
   --category-blue: var(--brand-secondary);
-  --surface: #fff7f2;
+  --surface: #f8f7f5;
   --brand-surface: var(--brand-accent-light);
-  --line: #ead8cf;
-  --muted: #7b5658;
+  --line: #e5deda;
+  --muted: #646464;
   --radius: 8px;
   --space-section: 56px;
 }
