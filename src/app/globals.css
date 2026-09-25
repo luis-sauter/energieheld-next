@@ -1,22 +1,22 @@
 :root {
   color-scheme: light;
 
-  /* Realtime Colors test palette */
-  --text: #2c2c2c;
+  /* Realtime Colors palette roles */
+  --text: #5d040a;
   --white: #fffdfc;
   --brand-primary: #5d040a;
-  --brand-primary-hover: #430306;
+  --brand-action: #c3421c;
+  --brand-action-hover: #a63616;
   --brand-secondary: #29b6e0;
-  --brand-accent: #c3421c;
+  --brand-accent: #efd0bd;
 
-  /* Derived UI tones from the selected palette */
-  --brand-accent-hover: #a63616;
-  --brand-accent-light: #f3dad2;
+  /* Derived UI tones so all five palette colors are visibly represented */
+  --brand-accent-light: color-mix(in srgb, var(--brand-accent) 38%, var(--white));
   --category-blue: var(--brand-secondary);
-  --surface: #f8f7f5;
-  --brand-surface: var(--brand-accent-light);
-  --line: #e5deda;
-  --muted: #646464;
+  --surface: color-mix(in srgb, var(--brand-accent) 26%, var(--white));
+  --brand-surface: color-mix(in srgb, var(--brand-secondary) 22%, var(--white));
+  --line: color-mix(in srgb, var(--brand-accent) 55%, #d8c8c0);
+  --muted: #765d5f;
   --radius: 8px;
   --space-section: 56px;
 }
@@ -133,7 +133,7 @@ button {
 .orange-line {
   width: 27px;
   height: 2px;
-  background: var(--brand-accent);
+  background: var(--brand-action);
 }
 .button {
   display: inline-flex;
@@ -153,11 +153,11 @@ button {
   line-height: 1.35;
 }
 .button-primary {
-  background: var(--brand-primary);
+  background: var(--brand-action);
   color: var(--white);
 }
 .button-primary:hover:not(:disabled) {
-  background: var(--brand-primary-hover);
+  background: var(--brand-action-hover);
   transform: translateY(-1px);
 }
 .button-outline {
@@ -262,7 +262,7 @@ button {
   height: 5px;
   width: 100%;
   left: 0;
-  background: var(--brand-accent);
+  background: var(--brand-action);
   border-radius: 50%;
   transform: rotate(-2deg);
 }
@@ -952,7 +952,7 @@ button {
   border-radius: 7px;
 }
 .gallery-thumbs button[aria-pressed="true"] {
-  border-color: var(--brand-accent);
+  border-color: var(--brand-action);
 }
 .gallery-thumbs img {
   display: block;
@@ -1086,7 +1086,7 @@ button {
   white-space: nowrap;
 }
 .travel-wordmark > span {
-  color: var(--brand-accent);
+  color: var(--brand-action);
   padding-inline: 4px;
 }
 .preview-intro {
@@ -2402,7 +2402,7 @@ button {
   font-weight: 600;
 }
 .header-cta {
-  background: var(--brand-primary);
+  background: var(--brand-action);
   border-color: transparent;
 }
 .site-footer {
@@ -2727,10 +2727,10 @@ h6 {
 .button-primary,
 .header-cta {
   color: var(--white);
-  border-color: var(--brand-primary);
+  border-color: var(--brand-action);
 }
 .header-cta:hover {
-  background: var(--brand-primary-hover);
+  background: var(--brand-action-hover);
 }
 .category-icon {
   background: var(--category-blue);
