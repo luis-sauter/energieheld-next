@@ -8,6 +8,8 @@ import { InlineBlockLayout } from "./inline-block-layout";
 import type { MediaState } from "@/lib/company-media";
 import type { ContentBlockType, HeadingSlot, ProfileContentBlock } from "@/lib/profile-content";
 import styles from "./inline-profile.module.css";
+import { normalizeBlockLayout, normalizeTextBlockLayout } from "@/lib/content-block-layout";
+import { useInlineEditorHistory } from "./inline-editor-history";
 
 type ContentState = { error?: string; success?: string };
 type SaveContent = (form: FormData) => Promise<ContentState>;
@@ -65,6 +67,7 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
   saveImage: (form: FormData) => Promise<MediaState>;
 }) {
   const router = useRouter();
+  const history = useInlineEditorHistory();
   const busyRef = useRef(false);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<ContentState>({});
@@ -74,7 +77,7 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
   if (!available) return <p role="status" className={styles.contentUnavailable}>Inhaltsblöcke werden verfügbar, sobald die neue Datenbankmigration angewendet ist.</p>;
 
   async function run(form: FormData, onSuccess?: () => void) {
-    if (busyRef.current) return false;
+    if (busyRef.current || history.busy) return false;
     busyRef.current = true;
     setBusy(true);
     setFeedback({});
@@ -82,6 +85,7 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
       const result = await saveAction(form);
       setFeedback(result);
       if (result.success) {
+        if (["insert", "duplicate", "delete"].includes(String(form.get("intent")))) history.clear();
         onSuccess?.();
         router.refresh();
       }
@@ -100,23 +104,50 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
     if (blockId) form.set("block_id", blockId);
     return form;
   }
-  function saveBlock(intent: string, blockId: string, values: Record<string, string> = {}) {
+  async function saveBlock(intent: string, blockId: string, values: Record<string, string> = {}) {
     const form = formFor(intent, blockId);
     for (const [key, value] of Object.entries(values)) form.set(key, value);
-    return run(form);
+    const block = blocks.find((item) => item.id === blockId);
+    const beforeOrder = blocks.map((item) => item.id);
+    const saved = await run(form);
+    if (!saved || !block) return saved;
+    if (intent === "layout") {
+      const before = block.type === "image_grid"
+        ? normalizeBlockLayout(block.config) : normalizeTextBlockLayout(block.config);
+      const width = values.width_percent === undefined ? before.width_percent : Number(values.width_percent);
+      const after = {
+        ...before,
+        width_percent: width,
+        offset_percent: values.offset_percent === undefined
+          ? Math.min(before.offset_percent, 100 - width) : Number(values.offset_percent),
+        spacing_top: values.spacing_top ?? before.spacing_top,
+        spacing_bottom: values.spacing_bottom ?? before.spacing_bottom,
+        ...(block.type !== "image_grid" ? { text_align: values.text_align ?? normalizeTextBlockLayout(block.config).text_align } : {}),
+      } as typeof before;
+      history.record({ kind: "layout", blockId, before, after }, saved);
+    } else if (intent === "move") {
+      const index = beforeOrder.indexOf(blockId);
+      const other = index + (values.direction === "up" ? -1 : 1);
+      if (index >= 0 && other >= 0 && other < beforeOrder.length) {
+        const after = [...beforeOrder];
+        [after[index], after[other]] = [after[other], after[index]];
+        history.record({ kind: "block-order", before: beforeOrder, after }, saved);
+      }
+    }
+    return saved;
   }
   function addControl(before: string | null) {
     const selected = pickerBefore === before;
     const activeDraft = draft?.before === before;
     return <div className={styles.insertArea} key={`add-${before ?? "end"}`}>
-      {!activeDraft && <button type="button" className={`button ${styles.addButton}`} disabled={busy}
+      {!activeDraft && <button type="button" className={`button ${styles.addButton}`} disabled={busy || history.busy}
         onClick={() => { setPickerBefore(selected ? undefined : before); setDraft(null); }}>
         + Inhalt hinzufügen
       </button>}
       {selected && !activeDraft && <div className={styles.blockPicker} aria-label="Inhaltstyp wählen">
-        <button type="button" className="button" onClick={() => { setDraft({ type: "heading", before }); setPickerBefore(undefined); }}>Überschrift</button>
-        <button type="button" className="button" onClick={() => { setDraft({ type: "text", before }); setPickerBefore(undefined); }}>Text</button>
-        {imagesAvailable && <button type="button" className="button" disabled={busy} onClick={() => {
+        <button type="button" className="button" disabled={history.busy} onClick={() => { setDraft({ type: "heading", before }); setPickerBefore(undefined); }}>Überschrift</button>
+        <button type="button" className="button" disabled={history.busy} onClick={() => { setDraft({ type: "text", before }); setPickerBefore(undefined); }}>Text</button>
+        {imagesAvailable && <button type="button" className="button" disabled={busy || history.busy} onClick={() => {
           const form = formFor("insert"); form.set("type", "image_grid");
           if (before) form.set("before_block_id", before);
           void run(form, () => setPickerBefore(undefined));
@@ -132,12 +163,12 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
       }}>
         <label>{draft.type === "heading" ? "Neue Überschrift" : "Neuer Text"}
           {draft.type === "heading"
-            ? <input name="text" required maxLength={200} disabled={busy} autoFocus />
-            : <textarea name="text" required maxLength={10000} rows={5} disabled={busy} autoFocus />}
+            ? <input name="text" required maxLength={200} disabled={busy || history.busy} autoFocus />
+            : <textarea name="text" required maxLength={10000} rows={5} disabled={busy || history.busy} autoFocus />}
         </label>
         <div className={styles.blockActions}>
-          <button className="button button-primary" disabled={busy}>{busy ? "Wird gespeichert …" : "Block speichern"}</button>
-          <button type="button" className="button" disabled={busy} onClick={() => setDraft(null)}>Abbrechen</button>
+          <button className="button button-primary" disabled={busy || history.busy}>{busy ? "Wird gespeichert …" : "Block speichern"}</button>
+          <button type="button" className="button" disabled={busy || history.busy} onClick={() => setDraft(null)}>Abbrechen</button>
         </div>
       </form>}
     </div>;
@@ -148,22 +179,26 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
     {feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
     {blocks.map((block, index) => <div key={block.id}>
       {addControl(block.id)}
-      <InlineBlockLayout block={block} busy={busy} first={index === 0} last={index === blocks.length - 1}
+      <InlineBlockLayout block={block} busy={busy || history.busy} first={index === 0} last={index === blocks.length - 1}
         save={saveBlock}>
         {block.type === "image_grid" ? <InlineImageGridEditor block={block} saveAction={saveImage} />
           : <form key={`${block.id}-${block.content.text}`} className={styles.blockForm} onSubmit={(event) => {
           event.preventDefault();
           const form = formFor("update", block.id);
           form.set("text", String(new FormData(event.currentTarget).get("text") ?? ""));
-          void run(form);
+          void (async () => {
+            const saved = await run(form);
+            history.record({ kind: "text", blockId: block.id,
+              before: block.content.text, after: String(form.get("text")).trim() }, saved);
+          })();
         }}>
           <label>{block.type === "heading" ? "Überschrift" : "Text"}
             {block.type === "heading"
-              ? <input name="text" defaultValue={block.content.text} required maxLength={200} disabled={busy} />
-              : <textarea name="text" defaultValue={block.content.text} required maxLength={10000} rows={5} disabled={busy} />}
+              ? <input name="text" defaultValue={block.content.text} required maxLength={200} disabled={busy || history.busy} />
+              : <textarea name="text" defaultValue={block.content.text} required maxLength={10000} rows={5} disabled={busy || history.busy} />}
           </label>
           <div className={styles.blockActions}>
-            <button className="button" disabled={busy}>{busy ? "Wird gespeichert …" : "Block speichern"}</button>
+            <button className="button" disabled={busy || history.busy}>{busy ? "Wird gespeichert …" : "Block speichern"}</button>
           </div>
         </form>}
       </InlineBlockLayout>

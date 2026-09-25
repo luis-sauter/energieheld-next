@@ -34,7 +34,8 @@ before(async () => {
   await db.query("insert into profile_content_block_images(id,block_id,storage_path,alt_text,sort_order) values ($1,$2,$3,'Nicht freigegeben',0)", [pendingImage, pendingBlock, pendingPath]);
   for (const file of ["20260924210916_profile_image_grid_resizing.sql",
     "20260924214027_universal_content_block_layout.sql",
-    "20260924220748_image_crop_focus_zoom.sql"])
+    "20260924220748_image_crop_focus_zoom.sql",
+    "20260925083617_profile_block_image_captions.sql"])
     await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), "utf8"));
 });
 after(async () => db?.close());
@@ -55,6 +56,50 @@ test("migration gives existing images safe defaults without changing identity, p
   const row = (await db.query("select id,block_id,storage_path,alt_text,sort_order,focus_x,focus_y,zoom from profile_content_block_images where id=$1", [image])).rows[0];
   assert.deepEqual(row, { id: image, block_id: block, storage_path: path,
     alt_text: "Ansicht", sort_order: 0, focus_x: "50", focus_y: "50", zoom: "1" });
+});
+
+test("caption migration backfills old alt text without changing path, order or crop", async () => {
+  const row = (await db.query("select caption,alt_text,storage_path,sort_order,focus_x,focus_y,zoom from profile_content_block_images where id=$1", [image])).rows[0];
+  assert.deepEqual(row, { caption: "Ansicht", alt_text: "Ansicht", storage_path: path,
+    sort_order: 0, focus_x: "50", focus_y: "50", zoom: "1" });
+  const { rows } = await db.query("select a.attname, pg_get_userbyid(acl.grantee) as role_name, acl.privilege_type from pg_attribute a cross join lateral aclexplode(a.attacl) acl where a.attrelid='public.profile_content_block_images'::regclass and a.attname='caption'");
+  for (const role of ["anon", "authenticated"])
+    assert.ok(rows.some((item) => item.role_name === role && item.privilege_type === "SELECT"));
+  assert.ok(rows.some((item) => item.role_name === "authenticated" && item.privilege_type === "UPDATE"));
+  assert.ok(!rows.some((item) => item.role_name === "anon" && item.privilege_type === "UPDATE"));
+});
+
+test("public reads approved captions but cannot edit; only an admin can update them", async () => {
+  await actor("", "anon");
+  assert.deepEqual((await db.query("select id,caption from profile_content_block_images order by id")).rows,
+    [{ id: image, caption: "Ansicht" }]);
+  await blocked("update profile_content_block_images set caption='Fremd' where id=$1", [image]);
+  await actor(owner);
+  assert.equal((await db.query("update profile_content_block_images set caption='Fremd' where id=$1 returning id", [image])).rows.length, 0);
+  await actor(admin);
+  await db.query("update profile_content_block_images set caption='Neue Wärmepumpe' where id=$1", [image]);
+  assert.equal((await db.query("select caption from profile_content_block_images where id=$1", [image])).rows[0].caption, "Neue Wärmepumpe");
+  await blocked("update profile_content_block_images set caption=$1 where id=$2", ["x".repeat(501), image]);
+});
+
+test("four captions stay with their images through reorder and crop", async () => {
+  await actor(admin);
+  await db.query("update profile_content_blocks set config=config || '{\"columns\":4}'::jsonb where id=$1", [block]);
+  const ids = [image];
+  const captions = ["Bild eins", "Bild zwei", "Bild drei", "Bild vier"];
+  await db.query("update profile_content_block_images set caption=$1 where id=$2", [captions[0], image]);
+  for (let n = 1; n < 4; n++) {
+    const added = (await db.query("insert into profile_content_block_images(block_id,storage_path,alt_text,sort_order) values ($1,$2,null,$3) returning id", [
+      block, `profiles/${profile}/blocks/${block}/0000000${n}-0000-4000-8000-000000000000.jpg`, n,
+    ])).rows[0];
+    await db.query("update profile_content_block_images set caption=$1 where id=$2", [captions[n], added.id]);
+    ids.push(added.id);
+  }
+  await db.query("select reorder_profile_block_images($1,$2,$3::uuid[])", [profile, block, [ids[3], ids[0], ids[1], ids[2]]]);
+  await db.query("update profile_content_block_images set focus_x=25,focus_y=70,zoom=1.5 where id=$1", [ids[2]]);
+  const rows = (await db.query("select id,caption from profile_content_block_images where block_id=$1 order by sort_order", [block])).rows;
+  assert.deepEqual(rows, [[ids[3], captions[3]], [ids[0], captions[0]], [ids[1], captions[1]], [ids[2], captions[2]]]
+    .map(([id, caption]) => ({ id, caption })));
 });
 
 test("crop columns explicitly grant SELECT to anon and authenticated, but UPDATE only to authenticated", async () => {

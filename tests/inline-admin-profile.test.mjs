@@ -44,11 +44,17 @@ const { default: ExpertDetail } = await import("../src/app/(energieheld)/experte
 const { checkInlineProfileTarget } = await import("../src/lib/inline-admin-profile.ts");
 const { InlineProfileEditor } = await import("../src/components/admin/inline-profile-editor.tsx");
 const { InlineImageGridEditor } = await import("../src/components/admin/inline-image-grid-editor.tsx");
+const { InlineEditorHistoryContext } = await import("../src/components/admin/inline-editor-history.tsx");
 const { InlineImageCropEditor } = await import("../src/components/admin/inline-image-crop-editor.tsx");
 const { ProfileContentBlocks } = await import("../src/components/portal/profile-content-blocks.tsx");
 const { companyProfileListing } = await import("../src/lib/company-presentation.ts");
 const { saveInlineProfile, saveInlineMedia } = await import("../src/app/(energieheld)/experten/[slug]/inline-actions.ts");
 const profileId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+function renderGrid(props) {
+  return renderToStaticMarkup(createElement(InlineEditorHistoryContext.Provider, {
+    value: { state: { past: [], future: [] }, busy: false, feedback: {}, record() {}, clear() {}, undo: async () => {}, redo: async () => {} },
+  }, createElement(InlineImageGridEditor, props)));
+}
 const publicProfile = {
   id: profileId, slug: "redaktionelle-firma", status: "approved", display_name: "Redaktionelle Firma",
   tagline: "Beratung vor Ort", description: "Öffentliche Beschreibung", business_areas: "Reiseberatung",
@@ -97,7 +103,7 @@ test("visitors and signed-in non-admins see the original public profile without 
     const html = await renderPage(options);
     assert.match(html, /Redaktionelle Firma/);
     assert.match(html, /Öffentliche Beschreibung/);
-    assert.doesNotMatch(html, /Profil bearbeiten|Bearbeitungsmodus aktiv|Logo ändern|inline-admin-profile-form/);
+    assert.doesNotMatch(html, /Profil bearbeiten|Bearbeitungsmodus aktiv|Rückgängig|Wiederholen|Logo ändern|inline-admin-profile-form/);
     assert.ok(globalThis.__inlineAdminClient.calls.every((call) => call.table === "portal_admins"));
   }
 });
@@ -199,6 +205,8 @@ test("inline mode exposes normal fields and existing media actions in the public
     initialEditing: true,
   }));
   assert.match(html, /Bearbeitungsmodus aktiv/);
+  assert.match(html, /↶ Rückgängig/);
+  assert.match(html, /↷ Wiederholen/);
   assert.match(html, /Speichern/);
   assert.match(html, /Abbrechen/);
   for (const field of Object.keys(values)) assert.match(html, new RegExp(`name="${field}"`));
@@ -229,16 +237,16 @@ test("editor renders one visible slot per chosen column, including partially fil
     })),
   });
   for (const columns of [1, 2, 3, 4]) {
-    const html = renderToStaticMarkup(createElement(InlineImageGridEditor, {
+    const html = renderGrid({
       block: imageBlock(columns, 0), saveAction: async () => ({ success: "Gespeichert" }),
-    }));
+    });
     assert.equal((html.match(/\+ Bild hinzufügen/g) ?? []).length, columns);
     assert.match(html, new RegExp(`data-columns="${columns}"`));
   }
   for (const [count, empty] of [[1, 3], [3, 1]]) {
-    const html = renderToStaticMarkup(createElement(InlineImageGridEditor, {
+    const html = renderGrid({
       block: imageBlock(4, count), saveAction: async () => ({ success: "Gespeichert" }),
-    }));
+    });
     assert.equal((html.match(/<img/g) ?? []).length, count);
     assert.equal((html.match(/\+ Bild hinzufügen/g) ?? []).length, empty);
   }
@@ -266,6 +274,33 @@ test("visitors see only occupied images stretched across the available grid", ()
   assert.equal(empty, "");
 });
 
+test("four visible captions stay directly under their own public image without duplicate alt text", () => {
+  const block = {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", profile_id: profileId,
+    type: "image_grid", slot: null, sort_order: 0, content: {}, config: { columns: 4, aspect_ratio: 1.5 },
+    images: [1, 2, 3, 4].map((n) => ({
+      id: `cccccccc-cccc-4ccc-8ccc-${String(n).padStart(12, "0")}`,
+      block_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", src: `https://example.org/${n}.jpg`,
+      alt_text: `Bild ${n}`, caption: `Text ${n}`, sort_order: n - 1,
+    })),
+  };
+  const html = renderToStaticMarkup(createElement(ProfileContentBlocks, { blocks: [block] }));
+  assert.equal((html.match(/<figure/g) ?? []).length, 4);
+  assert.equal((html.match(/<figcaption/g) ?? []).length, 4);
+  for (const n of [1, 2, 3, 4]) assert.match(html,
+    new RegExp(`<img[^>]+src="https://example.org/${n}\\.jpg"[^>]*alt=""[^>]*>.*?<figcaption[^>]*>Text ${n}</figcaption>`));
+  const without = renderToStaticMarkup(createElement(ProfileContentBlocks, { blocks: [{ ...block,
+    images: [{ ...block.images[0], caption: "" }, { ...block.images[1], caption: null }],
+  }] }));
+  assert.doesNotMatch(without, /<figcaption/);
+  assert.match(without, /alt="Bild 1"/);
+  assert.match(without, /alt="Bild 2"/);
+  const editor = renderGrid({ block, saveAction: async () => ({ success: "Gespeichert" }) });
+  assert.match(editor, /Text unter dem Bild/);
+  assert.match(editor, /Text speichern/);
+  assert.doesNotMatch(editor, /Bildbeschreibung \(Alt-Text\)/);
+});
+
 test("legacy image config renders with defaults before the resize migration", () => {
   const block = {
     id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", profile_id: profileId,
@@ -276,9 +311,9 @@ test("legacy image config renders with defaults before the resize migration", ()
   const publicHtml = renderToStaticMarkup(createElement(ProfileContentBlocks, { blocks: [block] }));
   assert.match(publicHtml, /width:100%/);
   assert.match(publicHtml, /data-columns="1"/);
-  const editorHtml = renderToStaticMarkup(createElement(InlineImageGridEditor, {
+  const editorHtml = renderGrid({
     block, saveAction: async () => ({ success: "Gespeichert" }),
-  }));
+  });
   assert.equal((editorHtml.match(/\+ Bild hinzufügen/g) ?? []).length, 1);
   assert.doesNotMatch(editorHtml, /Bildblockgröße durch Ziehen ändern/);
 });
@@ -311,9 +346,9 @@ test("public, inline grid and large crop preview share the same saved image fram
   const block = { id: image.block_id, profile_id: profileId, type: "image_grid", slot: null,
     sort_order: 0, content: {}, config: { columns: 1, width_percent: 100, aspect_ratio: 1.5 }, images: [image] };
   const publicHtml = renderToStaticMarkup(createElement(ProfileContentBlocks, { blocks: [block] }));
-  const editHtml = renderToStaticMarkup(createElement(InlineImageGridEditor, {
+  const editHtml = renderGrid({
     block, saveAction: async () => ({ success: "Gespeichert" }),
-  }));
+  });
   const cropHtml = renderToStaticMarkup(createElement(InlineImageCropEditor, {
     image, ratio: 1.5, save: async () => true, cancel: () => {},
   }));
@@ -336,9 +371,9 @@ test("old image rows keep public rendering and disable crop until migration is a
   const block = { id: image.block_id, profile_id: profileId, type: "image_grid", slot: null,
     sort_order: 0, content: {}, config: { columns: 1 }, images: [image] };
   const publicHtml = renderToStaticMarkup(createElement(ProfileContentBlocks, { blocks: [block] }));
-  const editHtml = renderToStaticMarkup(createElement(InlineImageGridEditor, {
+  const editHtml = renderGrid({
     block, saveAction: async () => ({ success: "Gespeichert" }),
-  }));
+  });
   assert.match(publicHtml, /object-position:50% 50%/);
   assert.match(publicHtml, /transform:scale\(1\)/);
   assert.match(editHtml, /title="Nach Datenbankaktualisierung verfügbar"/);

@@ -187,13 +187,53 @@ test("crop rejects outsiders, foreign images and invalid focus or zoom without w
 
 test("replacing a cropped image resets crop but keeps the same image row and alt text", async () => {
   const db = client({ rows: [{ id: imageId, block_id: block, storage_path: oldPath,
-    alt_text: "Alte Beschreibung", sort_order: 0, focus_x: 30, focus_y: 60, zoom: 1.5 }] });
+    alt_text: "Alte Beschreibung", caption: "Sichtbarer Text", sort_order: 0, focus_x: 30, focus_y: 60, zoom: 1.5 }] });
   assert.ok((await changeAdminBlockImages(db, profile, "sichtbar", form({
     intent: "upload", block_id: block, image_id: imageId, uploaded_path: newPath,
     alt_text: "Alte Beschreibung",
   }))).success);
   assert.deepEqual(db.calls.find((call) => call.operation === "update").payload,
     { storage_path: newPath, alt_text: "Alte Beschreibung", focus_x: 50, focus_y: 50, zoom: 1 });
+});
+
+test("caption writes only the matching image's plain text after profile, slug and admin checks", async () => {
+  const rows = [{ id: imageId, block_id: block, storage_path: oldPath, sort_order: 0,
+    alt_text: "Alte Beschreibung", caption: "Alte Heizung", focus_x: 30, focus_y: 60, zoom: 1.5 }];
+  const db = client({ rows });
+  const saved = await changeAdminBlockImages(db, profile, "sichtbar", form({
+    intent: "caption", block_id: block, image_id: imageId,
+    caption: "  Neue Wärmepumpe  ", profile_id: foreignProfile,
+    storage_path: newPath, focus_x: "0", sort_order: "99",
+  }));
+  assert.ok(saved.success);
+  assert.deepEqual(db.calls.find((call) => call.operation === "update")?.payload, { caption: "Neue Wärmepumpe" });
+  assert.deepEqual(db.calls.find((call) => call.operation === "update")?.filters, [["id", imageId], ["block_id", block]]);
+  const cleared = client({ rows });
+  assert.ok((await changeAdminBlockImages(cleared, profile, "sichtbar", form({
+    intent: "caption", block_id: block, image_id: imageId, caption: "  ",
+  }))).success);
+  assert.deepEqual(cleared.calls.find((call) => call.operation === "update")?.payload, { caption: null });
+  for (const options of [{ admin: false }, { authenticated: false }]) {
+    const denied = client({ ...options, rows });
+    assert.notEqual((await changeAdminBlockImages(denied, profile, "sichtbar", form({
+      intent: "caption", block_id: block, image_id: imageId, caption: "Fremd",
+    }))).access, "admin");
+    assert.ok(!denied.calls.some((call) => call.operation === "update"));
+  }
+  for (const [id, slug, blockId, targetImage, caption] of [
+    [foreignProfile, "sichtbar", block, imageId, "Text"],
+    [profile, "fremd", block, imageId, "Text"],
+    [profile, "sichtbar", foreignBlock, imageId, "Text"],
+    [profile, "sichtbar", block, foreignImage, "Text"],
+    [profile, "sichtbar", block, imageId, "x".repeat(501)],
+    [profile, "sichtbar", block, imageId, "<b>HTML</b>"],
+  ]) {
+    const denied = client({ rows });
+    assert.ok((await changeAdminBlockImages(denied, id, slug, form({
+      intent: "caption", block_id: blockId, image_id: targetImage, caption,
+    }))).error);
+    assert.ok(!denied.calls.some((call) => call.operation === "update"));
+  }
 });
 
 test("layout, alt, delete and exact reorder stay scoped to the block", async () => {

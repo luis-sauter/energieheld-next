@@ -5,11 +5,12 @@ import { MEDIA_BUCKET, MEDIA_MAX_BYTES, validateMediaFile, type MediaState } fro
 import { hasPersistedImageGridSize, normalizeImageGridConfig, parseImageGridSize } from "./image-grid-layout";
 import { clampBlockOffset, hasPersistedBlockLayout } from "./content-block-layout";
 import { DEFAULT_IMAGE_CROP, hasPersistedImageCrop, parseImageCrop, type ImageCrop } from "./image-crop";
+import { parseImageCaption } from "./image-caption";
 
 export type BlockImageResult = MediaState & { access: AdminAccess };
 const failed = "Der Bildblock konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.";
 const missing = "Der Bildblock oder das Bild gehört nicht zu diesem Profil.";
-type ImageRow = Partial<ImageCrop> & { id: string; block_id: string; storage_path: string; sort_order: number };
+type ImageRow = Partial<ImageCrop> & { id: string; block_id: string; storage_path: string; sort_order: number; caption?: string | null };
 
 export async function changeAdminBlockImages(
   client: SupabaseClient, profileId: unknown, slug: unknown, form: FormData,
@@ -38,6 +39,21 @@ export async function changeAdminBlockImages(
   };
   const imageId = form.get("image_id");
   const image = images.find((row) => row.id === imageId);
+
+  if (intent === "caption") {
+    if (!image) return { access: "admin", error: missing };
+    if (!("caption" in image))
+      return { access: "admin", error: "Der Text unter dem Bild ist nach der Datenbankaktualisierung verfügbar." };
+    const caption = parseImageCaption(form.get("caption"));
+    if (caption === undefined)
+      return { access: "admin", error: "Bitte geben Sie höchstens 500 Zeichen als einfachen Text ein." };
+    const result = await client.from("profile_content_block_images")
+      .update({ caption }).eq("id", image.id).eq("block_id", blockId)
+      .select("id").maybeSingle();
+    return result.error || result.data?.id !== image.id
+      ? { access: "admin", error: failed }
+      : { access: "admin", success: "Der Text unter dem Bild wurde gespeichert." };
+  }
 
   if (intent === "crop") {
     if (!image) return { access: "admin", error: missing };

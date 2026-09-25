@@ -10,6 +10,7 @@ import type { MediaRow, MediaState, SignedMedia } from "@/lib/company-media";
 import styles from "./inline-profile.module.css";
 import { splitProfileContent, type ProfileContentBlock } from "@/lib/profile-content";
 import { FixedHeadingEditor, InlineContentEditor } from "./inline-content-editor";
+import { InlineEditorHistoryContext, useInlineEditorHistoryController } from "./inline-editor-history";
 
 const formId = "inline-admin-profile-form";
 
@@ -34,11 +35,12 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   const [editing, setEditing] = useState(initialEditing);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<ProfileFormState>({});
+  const history = useInlineEditorHistoryController(saveContent, saveBlockImage, editing);
   const mediaEditor = useInlineAdminMedia({ saveAction: saveMedia, media, rows, profileName: listing.name, initials: listing.initials });
   const content = splitProfileContent(contentBlocks, listing.name);
 
   function field(name: keyof ProfileValues, label: string, multiline = false) {
-    const common = { id: `inline-${name}`, name, form: formId, defaultValue: values[name], disabled: busy, "aria-label": label, onChange: () => setFeedback({}) };
+    const common = { id: `inline-${name}`, name, form: formId, defaultValue: values[name], disabled: busy || history.busy, "aria-label": label, onChange: () => setFeedback({}) };
     return <label className={styles.field} htmlFor={common.id}>
       <span>{label}</span>
       {multiline ? <textarea {...common} rows={name === "description" ? 7 : 3} /> : <input {...common} type={name === "public_email" ? "email" : name === "website" ? "url" : name === "phone" ? "tel" : "text"} required={name === "display_name"} />}
@@ -60,7 +62,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
 
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busyRef.current || mediaEditor.busy) return;
+    if (busyRef.current || mediaEditor.busy || history.busy) return;
     busyRef.current = true;
     setBusy(true);
     setFeedback({});
@@ -76,14 +78,21 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
     }
   }
 
-  return <>
+  return <InlineEditorHistoryContext.Provider value={history}>
     {editing && <div className={styles.toolbar}>
       <strong>Bearbeitungsmodus aktiv</strong>
+      <button type="button" className="button" disabled={busy || mediaEditor.busy || history.busy || !history.state.past.length}
+        onClick={() => void history.undo()}>↶ Rückgängig</button>
+      <button type="button" className="button" disabled={busy || mediaEditor.busy || history.busy || !history.state.future.length}
+        onClick={() => void history.redo()}>↷ Wiederholen</button>
       <form id={formId} onSubmit={submit}>
-        <button className="button button-primary" disabled={busy || mediaEditor.busy}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
-        <button type="button" className="button" disabled={busy || mediaEditor.busy} onClick={() => { setEditing(false); setFeedback({}); }}>Abbrechen</button>
+        <button className="button button-primary" disabled={busy || mediaEditor.busy || history.busy}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
+        <button type="button" className="button" disabled={busy || mediaEditor.busy || history.busy} onClick={() => { setEditing(false); setFeedback({}); history.clear(); }}>Abbrechen</button>
       </form>
       {busy && <span role="status">Änderungen werden gespeichert …</span>}
+      {history.busy && <span role="status">Änderung wird wiederhergestellt …</span>}
+      {history.feedback.success && <span role="status" className={styles.success}>{history.feedback.success}</span>}
+      {history.feedback.error && <span role="alert" className={styles.error}>{history.feedback.error}</span>}
       {feedback.success && <span role="status" className={styles.success}>{feedback.success}</span>}
       {feedback.error && <span role="alert" className={styles.error}>{feedback.error}</span>}
       {mediaEditor.status}
@@ -110,5 +119,5 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       galleryEditor={editing ? mediaEditor.galleryEditor : undefined}
     />
     {editing && mediaEditor.uploadDialog}
-  </>;
+  </InlineEditorHistoryContext.Provider>;
 }

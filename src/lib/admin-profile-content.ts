@@ -79,6 +79,23 @@ export async function changeAdminProfileContent(
       : { access: "admin", success: "Der Inhaltsblock wurde hinzugefügt." };
   }
 
+  if (intent === "reorder") {
+    const ids = form.getAll("block_ids");
+    const { data, error } = await client.from("profile_content_blocks")
+      .select("id").eq("profile_id", id).is("slot", null);
+    if (error) return { access: "admin", error: failed };
+    const current = new Set((data ?? []).map((row) => row.id));
+    if (ids.length !== current.size || new Set(ids).size !== current.size ||
+      ids.some((item) => typeof item !== "string" || !current.has(item)))
+      return { access: "admin", error: "Die Blöcke haben sich geändert. Bitte laden Sie die Seite neu." };
+    const result = await client.rpc("reorder_profile_content_blocks", {
+      p_profile_id: id, p_block_ids: ids,
+    });
+    return result.error
+      ? { access: "admin", error: failed }
+      : { access: "admin", success: "Die Reihenfolge wurde gespeichert." };
+  }
+
   const blockId = form.get("block_id");
   if (!isProfileId(blockId)) return { access: "admin", error: missing };
   if (intent === "duplicate") {
