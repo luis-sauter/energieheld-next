@@ -40,7 +40,7 @@ registerHooks({
   },
 });
 
-const { default: ExpertDetail } = await import("../src/app/(energieheld)/experten/[slug]/page.tsx");
+const { default: ExpertDetail } = await import("../src/app/(energieheld)/unterkuenfte/[slug]/page.tsx");
 const { checkInlineProfileTarget } = await import("../src/lib/inline-admin-profile.ts");
 const { InlineProfileEditor } = await import("../src/components/admin/inline-profile-editor.tsx");
 const { InlineImageGridEditor } = await import("../src/components/admin/inline-image-grid-editor.tsx");

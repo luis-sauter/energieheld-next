@@ -30,6 +30,9 @@ export type Listing = {
   logo?: PortalImage;
   contact: { person?: string; email: string; phone: string; website: string };
   isDemo: boolean;
+  /** Static branch preview, not a Supabase profile or lead recipient. */
+  isPreview?: boolean;
+  demoLabel?: string;
   verification?: CompanyVerification;
 };
 

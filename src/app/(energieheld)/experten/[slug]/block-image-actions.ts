@@ -13,6 +13,9 @@ export async function saveInlineBlockImage(profileId: string, slug: string, form
     return { error: "Der Bildblock konnte gerade nicht gespeichert werden. Bitte versuchen Sie es erneut." };
   }
   requireAdminAccess(result.access);
-  if (result.success) revalidatePath(`/experten/${slug}`);
+  if (result.success) {
+    revalidatePath(`/experten/${slug}`);
+    revalidatePath(`/unterkuenfte/${slug}`);
+  }
   return { error: result.error, success: result.success, uploadPath: result.uploadPath };
 }

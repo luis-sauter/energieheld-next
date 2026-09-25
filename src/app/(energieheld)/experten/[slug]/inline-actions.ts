@@ -26,7 +26,10 @@ export async function saveInlineProfile(
   requireAdminAccess(target.access);
   if (target.error) return { error: target.error };
   requireAdminAccess(result!.access);
-  if (result!.success) revalidatePath(`/experten/${slug}`);
+  if (result!.success) {
+    revalidatePath(`/experten/${slug}`);
+    revalidatePath(`/unterkuenfte/${slug}`);
+  }
   return { error: result!.error, success: result!.success };
 }
 
@@ -47,6 +50,9 @@ export async function saveInlineMedia(
   requireAdminAccess(target.access);
   if (target.error) return { error: target.error };
   requireAdminAccess(result!.access);
-  if (result!.success) revalidatePath(`/experten/${slug}`);
+  if (result!.success) {
+    revalidatePath(`/experten/${slug}`);
+    revalidatePath(`/unterkuenfte/${slug}`);
+  }
   return { uploadPath: result!.uploadPath, error: result!.error, success: result!.success };
 }

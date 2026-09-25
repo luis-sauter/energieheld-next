@@ -7,10 +7,11 @@ export const reiseportal: BrandConfig = {
   colors: { primary: "#13237F", accent: "#EF970C", surface: "#F8F9FA" },
   providerLabel: "Unterkünfte",
   searchLabel: "Unterkunft entdecken",
-  cta: { label: "Zur Energieheld-Vorschau", href: "/" },
+  cta: { label: "Unterkünfte A–Z", href: "/unterkuenfte-a-z" },
   navigation: [
-    { label: "Reiseziele", href: "#reiseziele" },
-    { label: "Unterkünfte", href: "#unterkuenfte" },
+    { label: "Reiseziele", href: "/reiseziele" },
+    { label: "Mottoreisen", href: "/mottoreisen" },
+    { label: "Unterkünfte A–Z", href: "/unterkuenfte-a-z" },
   ],
   categories: [
     { id: "hotel", name: "Hotel", icon: "home" },

@@ -64,9 +64,11 @@ const { ListingDetail } =
 const { DirectoryPage } =
   await import("../src/components/portal/directory-page.tsx");
 const { default: Detail, generateMetadata: detailMetadata } =
-  await import("../src/app/(energieheld)/experten/[slug]/page.tsx");
+  await import("../src/app/(energieheld)/unterkuenfte/[slug]/page.tsx");
 const { default: TradePage } =
   await import("../src/app/(energieheld)/gewerke/[slug]/page.tsx");
+const { default: LegacyDetail } =
+  await import("../src/app/(energieheld)/experten/[slug]/page.tsx");
 const { default: HomePage } =
   await import("../src/app/(energieheld)/page.tsx");
 const { energieheld } = await import("../src/config/energieheld.ts");
@@ -94,6 +96,12 @@ const row = {
     { category_id: "daemmung" },
     { category_id: "fassade" },
   ],
+};
+const travelRow = {
+  ...row,
+  tagline: "Unterkunft in der Region",
+  business_areas: "Übernachtung",
+  company_profile_categories: [],
 };
 const originalFetch = globalThis.fetch;
 afterEach(() => {
@@ -257,12 +265,16 @@ test("real and demo profiles interleave after merge, while sidebar order applies
   const placements = [...html.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]);
   assert.deepEqual(placements.slice(0, 4), ["top_banner", "sidebar_bottom", "sidebar_top", "sidebar_middle"]);
   api([real], false, [], order, sidebar);
-  const tradePage = await TradePage({ params: Promise.resolve({ slug: "daemmung" }), searchParams: Promise.resolve({}) });
-  const trade = renderToStaticMarkup(await DirectoryPage(tradePage.props));
-  assert.deepEqual([...trade.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]).slice(0, 4), placements.slice(0, 4));
+  assert.throws(
+    () => TradePage({ params: Promise.resolve({ slug: "daemmung" }), searchParams: Promise.resolve({}) }),
+    /REDIRECT:\//,
+  );
+  api([real], false, [], order, sidebar);
+  const travel = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({}) }));
+  assert.deepEqual([...travel.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]).slice(0, 4), placements.slice(0, 4));
 });
 
-test("homepage keeps editorial company order beside the shared long rail and queries only homepage ads", async () => {
+test("homepage shows travel preview beside the shared long rail and queries only homepage ads", async () => {
   const basic = { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: "basic-home", display_name: "Basic Home", package_type: "basic" };
   const premium = { ...row, id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", slug: "premium-home", display_name: "Premium Home", package_type: "premium" };
   const requests = api([premium, basic], false, [], [
@@ -270,14 +282,27 @@ test("homepage keeps editorial company order beside the shared long rail and que
     { profile_id: premium.id, sort_order: 1 },
   ]);
   const html = renderToStaticMarkup(await HomePage());
-  assert.ok(html.indexOf("Basic Home") < html.indexOf("Premium Home"));
-  assert.match(html, /href="\/experten\/basic-home"/);
-  assert.match(html, /href="\/experten\/premium-home"/);
+  assert.match(html, /Bayerischer Wald/);
+  assert.match(html, /Demo GmbH/);
+  assert.match(html, /href="\/unterkuenfte\/bayerischer-wald"/);
+  assert.doesNotMatch(html, /Basic Home|Premium Home/);
   assert.equal((html.match(/data-placement="sidebar_/g) ?? []).length, 10);
   assert.equal((html.match(/>Anzeige<\/p>/g) ?? []).length, 1);
   const adRequest = requests.find(({ url }) => url.pathname === "/rest/v1/rpc/get_active_ad_campaigns");
   assert.ok(adRequest);
   assert.equal(adRequest.body.p_scope_type, "homepage");
+});
+
+test("public accommodations directory shows all six travel previews and the existing advertising rail", async () => {
+  api([row]);
+  const html = renderToStaticMarkup(
+    await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({}) }),
+  );
+  for (const name of ["Bayerischer Wald", "Höflehner", "Pension Sonnenhof", "Schafhuber", "Villner Hof", "Demo GmbH"])
+    assert.match(html, new RegExp(name));
+  assert.match(html, /Demo\/Testprofil/);
+  assert.match(html, /advertising-rail/);
+  assert.doesNotMatch(html, /Test Firma|Müller Haustechnik|Energieheld Demo GmbH|Gewerke|Fachbetriebe/);
 });
 
 test("admin sees both inline order entries and the compact sidebar rail", async () => {
@@ -373,18 +398,18 @@ for (const status of ["approved", "draft", "pending", "rejected"])
         /NOT_FOUND/,
       );
   });
-test("missing profile and unknown trade are not found", async () => {
+test("missing profile is not found and legacy trade routes redirect", async () => {
   api([]);
   await assert.rejects(
     Detail({ params: Promise.resolve({ slug: "missing" }) }),
     /NOT_FOUND/,
   );
-  await assert.rejects(
-    TradePage({
+  assert.throws(
+    () => TradePage({
       params: Promise.resolve({ slug: "unknown" }),
       searchParams: Promise.resolve({}),
     }),
-    /NOT_FOUND/,
+    /REDIRECT:\//,
   );
 });
 test("real mapping preserves free text, categories and absent fields without inventing services/images", async () => {
@@ -558,9 +583,8 @@ test("owner and admin sessions on other clients cannot enter anonymous requests"
 });
 test("public routes remain dynamic and Supabase data layer stays separate from presentation examples", () => {
   for (const path of [
-    "src/app/(energieheld)/experten/page.tsx",
-    "src/app/(energieheld)/gewerke/[slug]/page.tsx",
-    "src/app/(energieheld)/experten/[slug]/page.tsx",
+    "src/app/(energieheld)/unterkuenfte-a-z/page.tsx",
+    "src/app/(energieheld)/unterkuenfte/[slug]/page.tsx",
   ]) {
     const text = source(path);
     assert.doesNotMatch(
@@ -569,6 +593,8 @@ test("public routes remain dynamic and Supabase data layer stays separate from p
     );
     assert.match(text, /force-dynamic/);
   }
+  assert.match(source("src/app/(energieheld)/experten/page.tsx"), /redirect\("\/unterkuenfte-a-z"\)/);
+  assert.match(source("src/app/(energieheld)/gewerke/page.tsx"), /redirect\("\/"\)/);
   for (const path of [
     "src/components/portal/directory-page.tsx",
     "src/lib/public-companies.ts",
@@ -662,26 +688,26 @@ test("real profiles win ID and slug collisions without duplicate cards", async (
   const detail = await loadPortalCompanyBySlug(demos[0].slug);
   assert.equal(detail.data.name, row.display_name);
   assert.equal(detail.data.isDemo, false);
-  const html = renderToStaticMarkup(
-    await Detail({ params: Promise.resolve({ slug: demos[0].slug }) }),
+  await assert.rejects(
+    Detail({ params: Promise.resolve({ slug: demos[0].slug }) }),
+    /NOT_FOUND/,
   );
-  assert.doesNotMatch(html, /Beispielprofil/);
+  await assert.rejects(
+    LegacyDetail({ params: Promise.resolve({ slug: demos[0].slug }) }),
+    /REDIRECT:\/unterkuenfte\//,
+  );
 });
 
-test("all known demo slugs open labelled detail pages with disabled fictional contacts", async () => {
+test("old energy demo slugs cannot open on the public travel route", async () => {
   api([]);
   for (const demo of demos) {
     const result = await loadPortalCompanyBySlug(demo.slug);
     assert.equal(result.data, demo);
     assert.equal(result.data.isDemo, true);
-    const html = renderToStaticMarkup(
-      await Detail({ params: Promise.resolve({ slug: demo.slug }) }),
+    await assert.rejects(
+      Detail({ params: Promise.resolve({ slug: demo.slug }) }),
+      /NOT_FOUND/,
     );
-    assert.ok(html.includes(demo.name.replaceAll("&", "&amp;")));
-    assert.match(html, /Beispielprofil/);
-    assert.match(html, /Kontaktdaten sind fiktiv/);
-    assert.match(html, /<button[^>]*disabled/);
-    assert.doesNotMatch(html, /href="mailto:|Website besuchen/);
   }
 });
 
@@ -708,7 +734,7 @@ test("database errors never expose demos in directory, detail or metadata", asyn
 test("real Basic directory keeps signed logo off the row while detail displays sorted gallery", async () => {
   api([
     {
-      ...row,
+      ...travelRow,
       logo_path: "profiles/profile-1/logo/test.png",
       company_profile_images: [
         {
@@ -734,7 +760,7 @@ test("real Basic directory keeps signed logo off the row while detail displays s
   );
   assert.match(result.data.logo.src, /token=temporary/);
   const directory = renderToStaticMarkup(
-    await DirectoryPage({ searchParams: Promise.resolve({ q: "Test Firma" }) }),
+    await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({ q: "Test Firma" }) }),
   );
   assert.match(directory, /listing-row--basic/);
   assert.doesNotMatch(directory, /row-logo|alt="Logo von Test Firma"/);
@@ -755,18 +781,18 @@ test("real Basic directory uses a compact row without a logo block", async () =>
   assert.doesNotMatch(html, /row-logo/);
 });
 
-test("demo details keep local symbol galleries after media integration", async () => {
+test("the single neutral demo detail has a clear label and no invented imagery", async () => {
   api([]);
   const html = renderToStaticMarkup(
-    await Detail({ params: Promise.resolve({ slug: demos[0].slug }) }),
+    await Detail({ params: Promise.resolve({ slug: "demo-gmbh" }) }),
   );
-  assert.match(html, /src="\/images\//);
-  assert.match(html, /Symbolbild/);
-  assert.match(html, /Beispielprofil/);
+  assert.match(html, /Demo GmbH/);
+  assert.match(html, /Demo\/Testprofil/);
+  assert.doesNotMatch(html, /src="\/images\/|Symbolbild|Müller Haustechnik/);
 });
 
 test("real approved profile has an inquiry dialog even without public email; demos remain disabled", async () => {
-  api();
+  api([travelRow]);
   const real = renderToStaticMarkup(
     await Detail({ params: Promise.resolve({ slug: row.slug }) }),
   );
@@ -776,13 +802,13 @@ test("real approved profile has an inquiry dialog even without public email; dem
   assert.match(real, /Anfrage senden/);
   api([]);
   const demo = renderToStaticMarkup(
-    await Detail({ params: Promise.resolve({ slug: demos[0].slug }) }),
+    await Detail({ params: Promise.resolve({ slug: "demo-gmbh" }) }),
   );
   assert.doesNotMatch(demo, /<dialog|Anfrage senden/);
   assert.match(demo, /disabled=""/);
 });
 
-test("quality seal is embedded in list query without extra per-card reads and never affects sorting", async () => {
+test("quality data stays in the public query while travel UI avoids the energy-branded seal", async () => {
   const verified = {
     status: "verified",
     verified_at: "2026-09-17T12:00:00Z",
@@ -790,13 +816,14 @@ test("quality seal is embedded in list query without extra per-card reads and ne
   };
   const rows = [
     {
-      ...row,
+      ...travelRow,
       id: "b",
+      slug: "zulu",
       display_name: "Zulu",
       company_quality_reviews: verified,
     },
     {
-      ...row,
+      ...travelRow,
       id: "a",
       slug: "alpha",
       display_name: "Alpha",
@@ -824,34 +851,26 @@ test("quality seal is embedded in list query without extra per-card reads and ne
   );
   api(rows);
   const directory = renderToStaticMarkup(
-    await DirectoryPage({ searchParams: Promise.resolve({}) }),
+    await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({}) }),
   );
   assert.equal(
     (directory.match(/Persönlich verifiziert – Bedeutung anzeigen/g) ?? [])
       .length,
-    1,
+    0,
   );
   api(rows);
   const detail = renderToStaticMarkup(
-    await Detail({ params: Promise.resolve({ slug: row.slug }) }),
+    await Detail({ params: Promise.resolve({ slug: "zulu" }) }),
   );
-  assert.match(detail, /Persönlich verifiziert/);
-  assert.match(detail, /keine Garantie/);
-  assert.match(detail, /Persönlich bekannt/);
+  assert.doesNotMatch(detail, /Persönlich verifiziert|Energieheld/);
   api(rows);
   const unverified = renderToStaticMarkup(
     await Detail({ params: Promise.resolve({ slug: "alpha" }) }),
   );
   assert.doesNotMatch(unverified, /Persönlich verifiziert/);
-  api(rows);
-  const tradePage = await TradePage({
-    params: Promise.resolve({ slug: "daemmung" }),
-    searchParams: Promise.resolve({}),
-  });
-  const trade = renderToStaticMarkup(await DirectoryPage(tradePage.props));
-  assert.equal(
-    (trade.match(/Persönlich verifiziert – Bedeutung anzeigen/g) ?? []).length,
-    1,
+  assert.throws(
+    () => TradePage({ params: Promise.resolve({ slug: "daemmung" }), searchParams: Promise.resolve({}) }),
+    /REDIRECT:\//,
   );
   const demo = { ...demos[0], verification: verified };
   const demoHtml = renderToStaticMarkup(
@@ -868,7 +887,7 @@ test("private pending/rejected requests never produce public badges or request d
   for (const status of ["pending", "rejected", "approved"]) {
     const requests = api([
       {
-        ...row,
+        ...travelRow,
         company_quality_reviews: null,
         company_quality_requests: {
           status,
@@ -878,6 +897,7 @@ test("private pending/rejected requests never produce public badges or request d
     ]);
     const html = renderToStaticMarkup(
       await DirectoryPage({
+        mode: "travel",
         searchParams: Promise.resolve({ q: "Test Firma" }),
       }),
     );

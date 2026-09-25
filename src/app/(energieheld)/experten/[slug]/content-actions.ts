@@ -13,6 +13,9 @@ export async function saveInlineContent(profileId: string, slug: string, form: F
     return { error: "Der Inhalt konnte gerade nicht gespeichert werden. Bitte versuchen Sie es erneut." };
   }
   requireAdminAccess(result.access);
-  if (result.success) revalidatePath(`/experten/${slug}`);
+  if (result.success) {
+    revalidatePath(`/experten/${slug}`);
+    revalidatePath(`/unterkuenfte/${slug}`);
+  }
   return { error: result.error, success: result.success };
 }

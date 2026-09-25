@@ -14,7 +14,7 @@ import { InlineEditorHistoryContext, useInlineEditorHistoryController } from "./
 
 const formId = "inline-admin-profile-form";
 
-export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false }: {
+export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, showVerification = true }: {
   listing: Listing;
   categories: Category[];
   values: ProfileValues;
@@ -29,6 +29,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   saveContent: (form: FormData) => Promise<{ error?: string; success?: string }>;
   saveBlockImage: (form: FormData) => Promise<MediaState>;
   initialEditing?: boolean;
+  showVerification?: boolean;
 }) {
   const router = useRouter();
   const busyRef = useRef(false);
@@ -100,6 +101,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
     </div>}
     <ListingDetail
       listing={listing}
+      showVerification={showVerification}
       categories={categories}
       presentation="company"
       showMap

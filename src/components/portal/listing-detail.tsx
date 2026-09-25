@@ -119,8 +119,9 @@ export function ContactSection({
             Kontakt aufnehmen
           </button>
           <p className="small muted">
-            Beispielprofil: Kontaktdaten sind fiktiv. Kontaktaufnahme ist in
-            dieser Vorschau nicht verfügbar.
+            {listing.isPreview
+              ? "Für dieses Testprofil sind keine Kontaktdaten hinterlegt. Kontaktaufnahme ist nicht verfügbar."
+              : "Beispielprofil: Kontaktdaten sind fiktiv. Kontaktaufnahme ist in dieser Vorschau nicht verfügbar."}
           </p>
         </>
       ) : (
@@ -167,10 +168,12 @@ export function ListingDetail({
   contentBlocks,
   contactAction,
   showMap = false,
+  showVerification = true,
 }: {
   listing: Listing;
   categories: Category[];
   showMap?: boolean;
+  showVerification?: boolean;
   qualityArea?: React.ReactNode;
   headingLevel?: 1 | 2;
   presentation?: "company";
@@ -194,7 +197,7 @@ export function ListingDetail({
         <div>
           <Heading className="detail-title">{inlineFields?.display_name ?? listing.name}</Heading>
           <div className="inline-tags">
-            {listing.isDemo && <Badge>Beispielprofil</Badge>}
+            {listing.isDemo && <Badge>{listing.demoLabel ?? "Beispielprofil"}</Badge>}
             {categories
               .filter((c) => listing.categoryIds.includes(c.id))
               .map((c) => (
@@ -212,7 +215,7 @@ export function ListingDetail({
             </p>
           )}
         </div>
-        {presentation === "company" &&
+        {showVerification && presentation === "company" &&
           !listing.isDemo &&
           listing.verification?.status === "verified" && (
             <QualitySeal note={listing.verification.public_note} prominent />

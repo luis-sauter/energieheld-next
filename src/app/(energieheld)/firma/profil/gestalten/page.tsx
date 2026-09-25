@@ -46,7 +46,7 @@ export default async function CompanyDesignPage() {
           )}
           <Link href="/firma/profil">Stammdaten bearbeiten</Link>
           {profile?.status === "approved" && (
-            <Link href={`/experten/${profile.slug}`}>
+            <Link href={`/unterkuenfte/${profile.slug}`}>
               Öffentliches Profil ansehen ↗
             </Link>
           )}

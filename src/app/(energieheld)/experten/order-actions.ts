@@ -32,6 +32,8 @@ export async function saveCompanyDirectoryOrder(itemKeys: string[]) {
     }
     revalidatePath("/experten");
     revalidatePath("/gewerke", "layout");
+    revalidatePath("/unterkuenfte-a-z");
+    revalidatePath("/");
     return { success: "Die Reihenfolge wurde gespeichert." };
   } catch {
     return { error: "Speichern ist gerade nicht möglich. Bitte versuchen Sie es erneut." };
@@ -51,6 +53,7 @@ export async function saveSidebarOrder(slots: SidebarSlot[]) {
     };
     revalidatePath("/experten");
     revalidatePath("/gewerke", "layout");
+    revalidatePath("/unterkuenfte-a-z");
     revalidatePath("/");
     return { success: "Die Banner-Reihenfolge wurde gespeichert." };
   } catch {

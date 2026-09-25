@@ -4,13 +4,16 @@ import { useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { energieheld } from "@/config/energieheld";
 import { directoryItemKey, moveDirectoryId } from "@/lib/company-directory-order";
-import type { Listing } from "@/types/portal";
+import type { Category, Listing } from "@/types/portal";
 import { ListingRow } from "@/components/portal/listing-row";
 import { useDirectoryEditMode } from "./directory-edit-mode";
 import styles from "./directory-order-editor.module.css";
 
 export function DirectoryOrderRows({
   listings,
+  categories = energieheld.categories,
+  basePath = "/experten",
+  showVerification = true,
   editing,
   busy,
   dragged,
@@ -21,6 +24,9 @@ export function DirectoryOrderRows({
   onMove,
 }: {
   listings: Listing[];
+  categories?: Category[];
+  basePath?: string;
+  showVerification?: boolean;
   editing: boolean;
   busy: boolean;
   dragged: string | null;
@@ -47,10 +53,10 @@ export function DirectoryOrderRows({
               <button type="button" aria-label={`Firma ${listing.name} nach unten`} disabled={busy || index === listings.length - 1}
                 onClick={() => onMove(index, index + 1)}>↓</button>
             </div>
-            <ListingRow listing={listing} categories={energieheld.categories} href={`/experten/${listing.slug}`} />
+            <ListingRow listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} />
           </div>
         ) : (
-          <ListingRow key={directoryItemKey(listing)} listing={listing} categories={energieheld.categories} href={`/experten/${listing.slug}`} />
+          <ListingRow key={directoryItemKey(listing)} listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} />
         )
       ))}
     </div>
@@ -61,10 +67,16 @@ export function DirectoryOrderEditor({
   listings,
   hiddenDemoKeys = [],
   saveOrder,
+  categories = energieheld.categories,
+  basePath = "/experten",
+  showVerification = true,
 }: {
   listings: Listing[];
   hiddenDemoKeys?: string[];
   saveOrder: (ids: string[]) => Promise<{ success?: string; error?: string }>;
+  categories?: Category[];
+  basePath?: string;
+  showVerification?: boolean;
 }) {
   const router = useRouter();
   const { mode, setMode } = useDirectoryEditMode();
@@ -179,7 +191,8 @@ export function DirectoryOrderEditor({
       )}
       {message && !editing && <p className={styles.success} role="status">{message}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <DirectoryOrderRows listings={shown} editing={editing} busy={busy} dragged={dragged} target={target}
+      <DirectoryOrderRows listings={shown} categories={categories} basePath={basePath} showVerification={showVerification}
+        editing={editing} busy={busy} dragged={dragged} target={target}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
         onMove={(from, to) => setDraft((ids) => moveDirectoryId(ids, from, to))} />
     </div>

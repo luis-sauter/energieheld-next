@@ -70,7 +70,7 @@ export default async function ReviewPage({
             <div className={styles.actions}>
               <Link
                 className="button button-primary"
-                href={profile.status === "approved" ? `/experten/${profile.slug}` : `/admin/firmen/${profile.id}/bearbeiten`}
+                href={profile.status === "approved" ? `/unterkuenfte/${profile.slug}` : `/admin/firmen/${profile.id}/bearbeiten`}
               >
                 Profil bearbeiten
               </Link>

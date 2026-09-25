@@ -345,14 +345,18 @@ test("full gallery disables the add tile and keeps all sorting controls in the g
   assert.equal((html.match(/class="thumbnail-edit-actions"/g) ?? []).length, 8);
   assert.match(html, /Firmenlogo hinzufügen/);
 });
-test("Energieheld has no global false demo claim; travel preview stays unchanged", () => {
+test("public Reiseportal header uses the original logo without a false global demo claim", () => {
   assert.doesNotMatch(
     renderToStaticMarkup(createElement(PortalHeader, { brand: energieheld })),
     /Alle Anbieter und Angebote sind Beispieldaten/,
   );
   assert.match(
     renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal })),
-    /Alle Anbieter und Angebote sind Beispieldaten/,
+    /\/brand\/das-reiseportal-logo\.png/,
+  );
+  assert.doesNotMatch(
+    renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal })),
+    /Alle Anbieter und Angebote sind Beispieldaten|energieheld-logo/,
   );
 });
 
@@ -500,17 +504,16 @@ test("company quality request form shows request states without granting decisio
     );
 });
 
-test("portal home follows the editorial section order and keeps travel clearly marked as demo", async () => {
+test("portal home is a minimal Reiseportal entry page with the shared advertising rail", async () => {
   const { default: Home } = await import("../src/app/(energieheld)/page.tsx");
   const html = renderToStaticMarkup(await Home());
   const ordered = [
     "portal-intro",
     'data-placement="top_banner"',
-    'id="gewerke"',
-    'id="aktuelles"',
-    'id="empfehlungen"',
-    'id="so-funktionierts"',
-    'class="provider-cta"',
+    'href="/reiseziele"',
+    'href="/mottoreisen"',
+    'href="/unterkuenfte-a-z"',
+    'class="commercial-sidebar advertising-rail"',
   ];
   let last = -1;
   for (const marker of ordered) {
@@ -518,11 +521,9 @@ test("portal home follows the editorial section order and keeps travel clearly m
     assert.ok(current > last, `${marker} must follow the previous section`);
     last = current;
   }
-  assert.equal((html.match(/class="topic-world"/g) ?? []).length, 8);
-  assert.match(html, /Reise-Inspiration · Demo/);
-  assert.match(html, /aria-label="Expertensuche"/);
-  assert.match(html, /Sie möchten Ihr Unternehmen präsentieren/);
-  assert.doesNotMatch(html, /Gutes Handwerk verdient/);
+  assert.match(html, /DAS Reiseportal/);
+  assert.match(html, /Reiseziele, Mottoreisen und Unterkünfte im deutschsprachigen Raum entdecken/);
+  assert.doesNotMatch(html, /Expertensuche|Gewerke|Fachbetriebe|Photovoltaik|Sanieren mit Grips/);
 });
 
 test("profile contact and location precede description; no invented precise map or demo directions", () => {
