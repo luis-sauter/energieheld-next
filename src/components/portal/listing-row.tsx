@@ -19,16 +19,18 @@ export function ListingRow({
   listing,
   categories,
   href,
+  showVerification = true,
 }: {
   listing: Listing;
   categories: Category[];
   href: string;
+  showVerification?: boolean;
 }) {
   const premium = listing.directoryPackage === "premium";
   const address = [
     listing.location.street,
     [listing.location.postalCode, listing.location.city].filter(Boolean).join(" "),
-    listing.location.region,
+    listing.location.region || listing.location.country,
   ].filter(Boolean).join(", ");
   const website = websiteUrl(listing.contact.website);
   const phoneHref = listing.contact.phone.replace(/[^\d+]/g, "");
@@ -42,7 +44,7 @@ export function ListingRow({
       <div className="row-content">
         <div className="row-heading">
           <h3><Link href={href}>{listing.name}</Link></h3>
-          {!listing.isDemo && listing.verification?.status === "verified" && (
+          {showVerification && !listing.isDemo && listing.verification?.status === "verified" && (
             <QualitySeal note={listing.verification.public_note} />
           )}
         </div>
@@ -53,7 +55,7 @@ export function ListingRow({
         </div>
         {listing.tagline && <p className="row-tagline">{listing.tagline}</p>}
         {premium && listing.businessAreas && <p className="row-business-areas">{listing.businessAreas}</p>}
-        {listing.isDemo && <span className="badge row-demo">Beispielprofil</span>}
+        {listing.isDemo && <span className="badge row-demo">{listing.demoLabel ?? "Beispielprofil"}</span>}
       </div>
       <div className="row-contact">
         {address && <p><Icon name="pin" size={15} /><span>{address}</span></p>}

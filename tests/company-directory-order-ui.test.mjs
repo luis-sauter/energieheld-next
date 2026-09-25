@@ -29,7 +29,7 @@ registerHooks({
   },
 });
 
-const { default: ExpertsPage } = await import("../src/app/(energieheld)/experten/page.tsx");
+const { default: AccommodationsPage } = await import("../src/app/(energieheld)/unterkuenfte-a-z/page.tsx");
 const { saveCompanyDirectoryOrder, saveSidebarOrder } = await import("../src/app/(energieheld)/experten/order-actions.ts");
 const { DirectoryOrderEditor, DirectoryOrderRows } = await import("../src/components/admin/directory-order-editor.tsx");
 const { SidebarOrderEditor, SidebarOrderSlots } = await import("../src/components/admin/sidebar-order-editor.tsx");
@@ -85,23 +85,23 @@ function client({ signedIn = true, admin = false, rpcError = null } = {}) {
   };
 }
 
-test("visitors and signed-in non-admins have no reorder action; admin sees it only on unfiltered /experten", async () => {
+test("visitors and signed-in non-admins have no reorder action; admin sees it only on unfiltered accommodations", async () => {
   for (const options of [{ signedIn: false }, { signedIn: true, admin: false }]) {
     globalThis.__orderClient = client(options);
     globalThis.__orderClientReads = 0;
-    const page = await ExpertsPage({ searchParams: Promise.resolve({}) });
+    const page = await AccommodationsPage({ searchParams: Promise.resolve({}) });
     assert.equal(page.props.canReorder, false);
     assert.equal(page.props.saveOrder, undefined);
     assert.equal(page.props.saveSidebarOrder, undefined);
   }
   globalThis.__orderClient = client({ admin: true });
-  const page = await ExpertsPage({ searchParams: Promise.resolve({}) });
+  const page = await AccommodationsPage({ searchParams: Promise.resolve({}) });
   assert.equal(page.props.canReorder, true);
   assert.equal(page.props.saveOrder, saveCompanyDirectoryOrder);
   assert.equal(page.props.saveSidebarOrder, saveSidebarOrder);
-  for (const key of ["q", "kategorie", "ort", "sort"]) {
+  for (const key of ["q", "ort", "sort"]) {
     globalThis.__orderClientReads = 0;
-    const filtered = await ExpertsPage({ searchParams: Promise.resolve({ [key]: "value" }) });
+    const filtered = await AccommodationsPage({ searchParams: Promise.resolve({ [key]: "value" }) });
     assert.equal(filtered.props.canReorder, false);
     assert.equal(globalThis.__orderClientReads, 0);
   }
@@ -184,6 +184,7 @@ test("company action rechecks admin and sends one complete mixed payload to the 
   assert.deepEqual(globalThis.__orderClient.calls.filter((call) => call.name), [{ name: "reorder_company_directory_items", args: { p_item_keys: keys } }]);
   assert.ok(globalThis.__orderRevalidated.includes("/experten"));
   assert.ok(globalThis.__orderRevalidated.includes("/gewerke"));
+  assert.ok(globalThis.__orderRevalidated.includes("/unterkuenfte-a-z"));
   globalThis.__orderClient = client({ admin: true, rpcError: { message: "private database details" } });
   const failed = await saveCompanyDirectoryOrder(keys);
   assert.match(failed.error, /nicht gespeichert/);
@@ -203,6 +204,7 @@ test("sidebar action validates exact twelve slots, checks admin and sends one RP
   assert.deepEqual(globalThis.__orderClient.calls.filter((call) => call.name), [{ name: "reorder_ad_sidebar_slots", args: { p_slots: slots } }]);
   assert.ok(globalThis.__orderRevalidated.includes("/experten"));
   assert.ok(globalThis.__orderRevalidated.includes("/gewerke"));
+  assert.ok(globalThis.__orderRevalidated.includes("/unterkuenfte-a-z"));
   assert.ok(globalThis.__orderRevalidated.includes("/"));
   globalThis.__orderClient = client({ admin: true, rpcError: { message: "private database details" } });
   assert.doesNotMatch((await saveSidebarOrder(slots)).error, /private database details/);

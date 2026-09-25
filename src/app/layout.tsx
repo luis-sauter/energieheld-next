@@ -4,11 +4,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Energieheld Bayern – Fachbetriebe für Ihr Zuhause",
-    template: "%s | Energieheld Bayern",
+    default: "DAS Reiseportal",
+    template: "%s | DAS Reiseportal",
   },
   description:
-    "Die Frontend-Vorschau für das neue Energieheld-Portal. Fachbetriebe für Energie, Bauen und Sanieren entdecken.",
+    "Reiseziele, Mottoreisen und Unterkünfte im deutschsprachigen Raum entdecken.",
   robots: { index: false, follow: false },
 };
 

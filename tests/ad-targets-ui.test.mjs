@@ -246,12 +246,12 @@ test("admin reorder view renders twelve controls with dynamic first and last bou
   assert.equal((html.match(/Noch kein Banner/g) ?? []).length, 2);
 });
 
-test("homepage reuses ordered portal rows and the shared rail", () => {
+test("homepage reuses travel preview rows and the shared rail", () => {
   const source = readFileSync(new URL("../src/app/(energieheld)/page.tsx", import.meta.url), "utf8");
-  assert.match(source, /loadPortalCompanies\(\)/);
+  assert.match(source, /loadReiseportalDirectory\(\)/);
   assert.match(source, /loadPublicAds\(undefined, "homepage"\)/);
   assert.match(source, /loadPublicSidebarOrder\(\)/);
-  assert.match(source, /companies\.data\?\.map\(\(listing\)/);
+  assert.match(source, /directory\.preview\.map\(\(listing\)/);
   assert.match(source, /<ListingRow/);
   assert.match(source, /<AdvertisingRail slots=\{sidebarOrder\} ads=\{ads\}/);
   assert.doesNotMatch(source, /listings\.slice|directoryPackage === "premium"/);
@@ -288,23 +288,14 @@ if (process.env.AD_TARGET_PREVIEW_FILE) {
   );
 }
 
-test("every official category available as an ad target resolves to a directory page", async () => {
-  const { energieheld } = await import("../src/config/energieheld.ts");
-  const { default: TradePage, generateMetadata } = await import(
+test("legacy trade routes redirect without rendering their category pages", async () => {
+  const { default: TradePage } = await import(
     "../src/app/(energieheld)/gewerke/[slug]/page.tsx"
   );
-  for (const category of energieheld.categories) {
-    const params = Promise.resolve({ slug: category.id });
-    const page = await TradePage({ params, searchParams: Promise.resolve({}) });
-    assert.equal(page.props.trade.id, category.id);
-    assert.equal((await generateMetadata({ params })).title, category.name);
+  for (const slug of ["solar", "heizung", "invalid"]) {
+    assert.throws(
+      () => TradePage({ params: Promise.resolve({ slug }), searchParams: Promise.resolve({}) }),
+      /REDIRECT:\//,
+    );
   }
-  await assert.rejects(
-    () =>
-      TradePage({
-        params: Promise.resolve({ slug: "invalid" }),
-        searchParams: Promise.resolve({}),
-      }),
-    /NOT_FOUND/,
-  );
 });

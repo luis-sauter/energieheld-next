@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Trade } from "@/config/trades";
 import { energieheld } from "@/config/energieheld";
 import { loadPortalCompanies } from "@/lib/portal-companies";
+import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { filterListings } from "@/lib/listings";
 import { AdvertisingLayout } from "./trades";
 import { EmptyState } from "./listings";
@@ -15,12 +16,14 @@ import type { SidebarSlot } from "@/lib/sidebar-order";
 export async function DirectoryPage({
   searchParams,
   trade,
+  mode = "energy",
   canReorder = false,
   saveOrder,
   saveSidebarOrder,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
   trade?: Trade;
+  mode?: "energy" | "travel";
   canReorder?: boolean;
   saveOrder?: (ids: string[]) => Promise<{ success?: string; error?: string }>;
   saveSidebarOrder?: (slots: SidebarSlot[]) => Promise<{ success?: string; error?: string }>;
@@ -28,29 +31,39 @@ export async function DirectoryPage({
   const params = await searchParams;
   const read = (key: string) =>
     typeof params[key] === "string" ? (params[key] as string) : "";
+  const travel = mode === "travel";
   const filters = {
     query: read("q"),
-    category: trade?.id ?? read("kategorie"),
+    category: travel ? "" : trade?.id ?? read("kategorie"),
     location: read("ort"),
     service: "",
     sort: read("sort"),
   };
   const [loaded, ads, sidebarOrder] = await Promise.all([
-    loadPortalCompanies(),
+    travel ? loadReiseportalDirectory() : loadPortalCompanies(),
     loadPublicAds(trade?.id),
     loadPublicSidebarOrder(),
   ]);
-  const results = loaded.data ? filterListings(loaded.data, filters) : [];
+  const preview = "preview" in loaded ? loaded.preview : [];
+  const database = "database" in loaded ? loaded.database : loaded.data ?? [];
+  const previewResults = filterListings(preview, filters);
+  const databaseResults = filterListings(database, filters);
+  const sortedTravel = travel && Boolean(filters.sort);
+  const results = sortedTravel
+    ? filterListings([...preview, ...database], filters)
+    : [...previewResults, ...databaseResults];
   const showOrderEditor = Boolean(
     canReorder && !trade && !Object.values(filters).some(Boolean) && saveOrder && saveSidebarOrder,
   );
-  const OrderEditor = showOrderEditor
+  const OrderEditor = showOrderEditor && (!travel || databaseResults.length > 0)
     ? (await import("@/components/admin/directory-order-editor")).DirectoryOrderEditor
     : null;
   const SidebarEditor = showOrderEditor
     ? (await import("@/components/admin/sidebar-order-editor")).SidebarOrderEditor
     : null;
-  const action = trade ? `/gewerke/${trade.id}` : "/experten";
+  const action = travel ? "/unterkuenfte-a-z" : trade ? `/gewerke/${trade.id}` : "/experten";
+  const categories = travel ? [] : energieheld.categories;
+  const profilePath = travel ? "/unterkuenfte" : "/experten";
   return (
     <main id="hauptinhalt" className="container trade-page">
       <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
@@ -62,27 +75,27 @@ export async function DirectoryPage({
             <span>›</span>
           </>
         )}
-        <span>{trade?.name ?? "Experten A–Z"}</span>
+        <span>{travel ? "Unterkünfte A–Z" : trade?.name ?? "Experten A–Z"}</span>
       </nav>
       <section className="reference-intro directory-intro">
         <div>
-          <p className="eyebrow">Fachbetriebe in München und Bayern</p>
-          <h1>{trade?.name ?? "Experten A–Z"}</h1>
-          <p>
-            {trade?.description ??
-              "Finden Sie Handwerker und Fachbetriebe für Ihre Sanierung. Lernen Sie Leistungen, Schwerpunkte und Ansprechpartner in Ihrer Region kennen."}
-          </p>
-          <p>
-            Vom ersten Überblick zum passenden Unternehmensprofil: Vergleichen
-            Sie die Fachbetriebe und verfeinern Sie Ihre Auswahl.
-          </p>
+          {travel ? <>
+            <p className="eyebrow">Unterkünfte im deutschsprachigen Raum</p>
+            <h1>Unterkünfte A–Z</h1>
+            <p>Eine Übersicht über Unterkünfte im deutschsprachigen Raum.</p>
+          </> : <>
+            <p className="eyebrow">Fachbetriebe in München und Bayern</p>
+            <h1>{trade?.name ?? "Experten A–Z"}</h1>
+            <p>{trade?.description ?? "Finden Sie Handwerker und Fachbetriebe für Ihre Sanierung. Lernen Sie Leistungen, Schwerpunkte und Ansprechpartner in Ihrer Region kennen."}</p>
+            <p>Vom ersten Überblick zum passenden Unternehmensprofil: Vergleichen Sie die Fachbetriebe und verfeinern Sie Ihre Auswahl.</p>
+          </>}
         </div>
         <div className="reference-image">
           <Image
             src={
-              trade ? `/images/trades/${trade.image}.jpg` : "/images/home.jpg"
+              travel ? "/images/mountains.svg" : trade ? `/images/trades/${trade.image}.jpg` : "/images/home.jpg"
             }
-            alt={trade?.name ?? "Wohnhaus als Symbol für Bauen und Sanieren"}
+            alt={travel ? "Berglandschaft" : trade?.name ?? "Wohnhaus als Symbol für Bauen und Sanieren"}
             fill
             sizes="(max-width:700px) 100vw,55vw"
             priority
@@ -102,33 +115,31 @@ export async function DirectoryPage({
           method="get"
           className="directory-search"
           key={JSON.stringify(filters)}
-          aria-label="Experten filtern"
+          aria-label={travel ? "Unterkünfte filtern" : "Experten filtern"}
         >
           <label>
             Suchbegriff
             <input
               name="q"
               defaultValue={filters.query}
-              placeholder="Name oder Tätigkeitsbereich"
+              placeholder={travel ? "Name der Unterkunft" : "Name oder Tätigkeitsbereich"}
             />
           </label>
-          <label>
+          {!travel && <label>
             Gewerk / Kategorie
             <select name="kategorie" defaultValue={filters.category}>
               {!trade && <option value="">Alle Gewerke</option>}
               {(trade ? [trade] : energieheld.categories).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
+                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
-          </label>
+          </label>}
           <label>
             Ort oder Postleitzahl
             <input
               name="ort"
               defaultValue={filters.location}
-              placeholder="z. B. München"
+              placeholder={travel ? "Ort oder Postleitzahl" : "z. B. München"}
             />
           </label>
           <label>
@@ -149,36 +160,47 @@ export async function DirectoryPage({
         <div className="results-heading">
           <div>
             <h2>
-              {loaded.error ? "" : results.length}{" "}
-              {results.length === 1 ? "Fachbetrieb" : "Fachbetriebe"}
-              {trade ? ` für ${trade.name}` : ""}
+              {travel || !loaded.error ? results.length : ""}{" "}
+              {travel ? (results.length === 1 ? "Unterkunft" : "Unterkünfte") : results.length === 1 ? "Fachbetrieb" : "Fachbetriebe"}
+              {!travel && trade ? ` für ${trade.name}` : ""}
             </h2>
             <p>
-              Unternehmensprofile und gekennzeichnete Beispielprofile · Keine
-              bezahlte Reihenfolge
+              {travel ? "Ausgewählte Anbieter aus dem bestehenden Reiseportal · Demo/Testprofil gekennzeichnet" : "Unternehmensprofile und gekennzeichnete Beispielprofile · Keine bezahlte Reihenfolge"}
             </p>
           </div>
         </div>
-        {loaded.error ? (
+        {loaded.error && (
           <div className="empty-state" role="alert">
             <p>{loaded.error}</p>
           </div>
-        ) : OrderEditor && saveOrder ? (
-          <OrderEditor listings={results} hiddenDemoKeys={"hiddenDemoKeys" in loaded ? loaded.hiddenDemoKeys : []} saveOrder={saveOrder} />
-        ) : results.length ? (
+        )}
+        {travel && !sortedTravel && previewResults.length > 0 && <div className="listing-rows">
+          {previewResults.map((listing) => <ListingRow key={listing.id} listing={listing} categories={categories}
+            href={`${profilePath}/${listing.slug}`} showVerification={false} />)}
+        </div>}
+        {sortedTravel ? (
           <div className="listing-rows">
-            {results.map((listing) => (
+            {results.map((listing) => <ListingRow key={listing.id} listing={listing} categories={categories}
+              href={`${profilePath}/${listing.slug}`} showVerification={false} />)}
+          </div>
+        ) : !loaded.error && OrderEditor && saveOrder ? (
+          <OrderEditor listings={databaseResults} hiddenDemoKeys={"hiddenOrderKeys" in loaded ? loaded.hiddenOrderKeys : "hiddenDemoKeys" in loaded ? loaded.hiddenDemoKeys : []}
+            saveOrder={saveOrder} categories={categories} basePath={profilePath} showVerification={!travel} />
+        ) : databaseResults.length ? (
+          <div className="listing-rows">
+            {databaseResults.map((listing) => (
               <ListingRow
                 key={listing.id}
                 listing={listing}
-                categories={energieheld.categories}
-                href={`/experten/${listing.slug}`}
+                categories={categories}
+                href={`${profilePath}/${listing.slug}`}
+                showVerification={!travel}
               />
             ))}
           </div>
-        ) : (
-          <EmptyState isDemo={false} />
-        )}
+        ) : !loaded.error && !results.length ? (
+          <EmptyState isDemo={false} travel={travel} />
+        ) : null}
       </AdvertisingLayout>
     </main>
   );
