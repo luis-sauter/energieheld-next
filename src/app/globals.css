@@ -2864,3 +2864,39 @@ h6 {
     flex-direction: column;
   }
 }
+/* Compact legacy-style image rail; the creative keeps its intrinsic ratio. */
+.commercial-sidebar.advertising-rail {
+  display: block;
+  min-width: 0;
+}
+.advertising-rail-label {
+  margin: 0 0 9px;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.advertising-rail-creatives {
+  display: grid;
+  gap: 10px;
+}
+.advertising-rail-creatives [data-placement] {
+  margin: 0;
+}
+.advertising-rail-creatives img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+.advertising-rail .advertise-link {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  font-size: 12px;
+}
+.editorial-recommendations.listing-rows {
+  align-content: start;
+}

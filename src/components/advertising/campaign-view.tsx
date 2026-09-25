@@ -21,10 +21,12 @@ export function CampaignSlot({
   placement,
   ad,
   preview = false,
+  showLabel = true,
 }: {
   placement: AdPlacementId;
   ad?: ActiveAd;
   preview?: boolean;
+  showLabel?: boolean;
 }) {
   const content = ad && (
     ad.imageUrl ? (
@@ -46,7 +48,7 @@ export function CampaignSlot({
       data-placement={placement}
       aria-label={`Anzeige – ${adPlacements[placement]}`}
     >
-      <div className={styles.label}>Anzeige{preview ? " · Vorschau" : ""}</div>
+      {showLabel && <div className={styles.label}>Anzeige{preview ? " · Vorschau" : ""}</div>}
       {ad ? (
         preview ? (
           <div className={`${styles.creative} ${ad.imageUrl ? styles.imageCreative : ""}`}>{content}</div>

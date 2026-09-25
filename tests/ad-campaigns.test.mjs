@@ -27,6 +27,13 @@ const form = (overrides = {}) => {
   }
   return f;
 };
+test("homepage target and all twelve sidebar placements validate without a category", () => {
+  const homepage = validateAdValues(form({ targets: ["homepage"], placement: "sidebar_12" }));
+  assert.deepEqual(homepage.data?.targets, [{ target_type: "homepage", category_id: null }]);
+  assert.equal(homepage.data?.placement, "sidebar_12");
+  assert.equal(validateAdValues(form({ targets: ["homepage", "homepage"] })).data, undefined);
+  assert.equal(validateAdValues(form({ placement: "sidebar_13" })).data, undefined);
+});
 const png = new File(
   [new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 0])],
   "fake.svg",

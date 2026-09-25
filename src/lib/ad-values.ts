@@ -1,13 +1,22 @@
 import { energieheld } from "../config/energieheld";
 export const adPlacements = {
   top_banner: "Premium-Banner oben",
-  sidebar_top: "Seitenanzeige A",
-  sidebar_middle: "Seitenanzeige B",
-  sidebar_bottom: "Seitenanzeige C",
+  sidebar_top: "Banner A",
+  sidebar_middle: "Banner B",
+  sidebar_bottom: "Banner C",
+  sidebar_04: "Banner D",
+  sidebar_05: "Banner E",
+  sidebar_06: "Banner F",
+  sidebar_07: "Banner G",
+  sidebar_08: "Banner H",
+  sidebar_09: "Banner I",
+  sidebar_10: "Banner J",
+  sidebar_11: "Banner K",
+  sidebar_12: "Banner L",
 } as const;
 export type AdPlacementId = keyof typeof adPlacements;
 export type AdTarget = {
-  target_type: "experts_directory" | "trade";
+  target_type: "homepage" | "experts_directory" | "trade";
   category_id: string | null;
 };
 export type AdValues = {
@@ -75,8 +84,10 @@ export function adStatus(
 export function adScopeLabel(c: Pick<AdValues, "targets">) {
   return c.targets
     .map((t) =>
-      t.target_type === "experts_directory"
-        ? "Experten A–Z"
+      t.target_type === "homepage"
+        ? "Startseite"
+        : t.target_type === "experts_directory"
+          ? "Experten A–Z"
         : (energieheld.categories.find((x) => x.id === t.category_id)?.name ??
           "Unbekanntes Gewerk"),
     )
@@ -139,8 +150,8 @@ export function validateAdValues(form: FormData): {
     };
   const targets: AdTarget[] = [];
   for (const value of selected) {
-    if (value === "experts_directory")
-      targets.push({ target_type: "experts_directory", category_id: null });
+    if (value === "homepage" || value === "experts_directory")
+      targets.push({ target_type: value, category_id: null });
     else if (
       typeof value === "string" &&
       value.startsWith("trade:") &&

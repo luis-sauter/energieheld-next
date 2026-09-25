@@ -502,7 +502,7 @@ test("company quality request form shows request states without granting decisio
 
 test("portal home follows the editorial section order and keeps travel clearly marked as demo", async () => {
   const { default: Home } = await import("../src/app/(energieheld)/page.tsx");
-  const html = renderToStaticMarkup(createElement(Home));
+  const html = renderToStaticMarkup(await Home());
   const ordered = [
     "portal-intro",
     'data-placement="top_banner"',
