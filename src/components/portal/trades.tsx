@@ -3,7 +3,9 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Trade } from "@/config/trades";
 import { CampaignSlot } from "@/components/advertising/campaign-view";
-import type { ActiveAd, AdPlacementId } from "@/lib/ad-values";
+import type { ActiveAd } from "@/lib/ad-values";
+import { defaultSidebarOrder, type SidebarSlot } from "@/lib/sidebar-order";
+import { DirectoryEditModeProvider } from "@/components/admin/directory-edit-mode";
 import { Icon } from "./icon";
 
 export function TradeTiles({ items }: { items: Trade[] }) {
@@ -36,11 +38,17 @@ export function TradeTiles({ items }: { items: Trade[] }) {
 export function AdvertisingLayout({
   children,
   ads = [],
+  sidebarOrder = [...defaultSidebarOrder],
+  sidebarEditor,
+  editorEnabled = false,
 }: {
   children: ReactNode;
   ads?: ActiveAd[];
+  sidebarOrder?: SidebarSlot[];
+  sidebarEditor?: ReactNode;
+  editorEnabled?: boolean;
 }) {
-  return (
+  const layout = (
     <div className="commercial-layout">
       <CampaignSlot
         placement="top_banner"
@@ -50,13 +58,7 @@ export function AdvertisingLayout({
         <div className="commercial-content">{children}</div>
         <aside className="commercial-sidebar" aria-label="Werbeanzeigen">
           <p className="sidebar-title">Partner für Ihr Vorhaben</p>
-          {(
-            [
-              "sidebar_top",
-              "sidebar_middle",
-              "sidebar_bottom",
-            ] as AdPlacementId[]
-          ).map((placement) => (
+          {sidebarEditor ?? sidebarOrder.map((placement) => (
             <CampaignSlot
               key={placement}
               placement={placement}
@@ -70,4 +72,7 @@ export function AdvertisingLayout({
       </div>
     </div>
   );
+  return editorEnabled
+    ? <DirectoryEditModeProvider>{layout}</DirectoryEditModeProvider>
+    : layout;
 }

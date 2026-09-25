@@ -42,7 +42,7 @@ async function toListing(
 
 type Result<T> = { data: T; error: null } | { data: null; error: string };
 
-export async function loadPublicCompanies(): Promise<Result<Listing[]>> {
+export async function loadPublicCompanyDirectory(): Promise<Result<{ listings: Listing[]; orderRows: DirectoryOrderRow[] }>> {
   try {
     const client = createPublicClient();
     const profiles: PublicProfile[] = [];
@@ -61,29 +61,46 @@ export async function loadPublicCompanies(): Promise<Result<Listing[]>> {
       if (rows.length < pageSize) break;
     }
     const orderRows: DirectoryOrderRow[] = [];
+    let legacyOrder = false;
     for (let offset = 0; ; offset += pageSize) {
       const { data, error } = await client
         .from("company_directory_order")
-        .select("profile_id,sort_order")
-        .order("profile_id")
+        .select(legacyOrder ? "profile_id,sort_order" : "profile_id,demo_slug,item_key,sort_order")
+        .order(legacyOrder ? "profile_id" : "item_key")
         .range(offset, offset + pageSize - 1);
+      // The previous migration has no demo_slug/item_key yet.
+      if (!legacyOrder && (error?.code === "42703" || error?.code === "PGRST204")) {
+        legacyOrder = true;
+        offset = -pageSize;
+        orderRows.length = 0;
+        continue;
+      }
       // The public directory remains available until the repository migration is deployed.
       if (error?.code === "42P01" || error?.code === "PGRST205") break;
       if (error) throw error;
-      const rows = (data ?? []) as DirectoryOrderRow[];
+      const rows = (data ?? []) as unknown as DirectoryOrderRow[];
       orderRows.push(...rows);
       if (rows.length < pageSize) break;
     }
     return {
-      data: await Promise.all(
-        sortByDirectoryOrder(profiles, orderRows).map((row) => toListing(client, row)),
-      ),
+      data: {
+        listings: await Promise.all(
+          sortByDirectoryOrder(profiles, orderRows).map((row) => toListing(client, row)),
+        ),
+        orderRows,
+      },
       error: null,
     };
   } catch {
     console.error("Public company directory query failed.");
     return { data: null, error: PUBLIC_COMPANIES_ERROR };
   }
+}
+
+export async function loadPublicCompanies(): Promise<Result<Listing[]>> {
+  const result = await loadPublicCompanyDirectory();
+  if (result.error !== null) return { data: null, error: result.error };
+  return { data: result.data!.listings, error: null };
 }
 
 export async function loadPublicCompanyBySlug(

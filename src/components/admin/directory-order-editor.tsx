@@ -3,22 +3,72 @@
 import { useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { energieheld } from "@/config/energieheld";
-import { moveDirectoryId, realDirectoryIds } from "@/lib/company-directory-order";
+import { directoryItemKey, moveDirectoryId } from "@/lib/company-directory-order";
 import type { Listing } from "@/types/portal";
 import { ListingRow } from "@/components/portal/listing-row";
+import { useDirectoryEditMode } from "./directory-edit-mode";
 import styles from "./directory-order-editor.module.css";
+
+export function DirectoryOrderRows({
+  listings,
+  editing,
+  busy,
+  dragged,
+  target,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onMove,
+}: {
+  listings: Listing[];
+  editing: boolean;
+  busy: boolean;
+  dragged: string | null;
+  target: string | null;
+  onPointerDown: (event: PointerEvent<HTMLButtonElement>, key: string) => void;
+  onPointerMove: (event: PointerEvent<HTMLButtonElement>) => void;
+  onPointerUp: () => void;
+  onMove: (from: number, to: number) => void;
+}) {
+  return (
+    <div className="listing-rows">
+      {listings.map((listing, index) => (
+        editing ? (
+          <div key={directoryItemKey(listing)} data-directory-id={directoryItemKey(listing)}
+            className={`${styles.editRow} ${dragged === directoryItemKey(listing) ? styles.dragging : ""} ${target === directoryItemKey(listing) ? styles.dropTarget : ""}`}>
+            <div className={styles.controls}>
+              <button className={styles.handle} type="button" aria-label={`Firma ${listing.name} verschieben`}
+                title="Ziehen, um die Firma zu verschieben"
+                onPointerDown={(event) => onPointerDown(event, directoryItemKey(listing))}
+                onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
+                disabled={busy}>↕</button>
+              <button type="button" aria-label={`Firma ${listing.name} nach oben`} disabled={busy || index === 0}
+                onClick={() => onMove(index, index - 1)}>↑</button>
+              <button type="button" aria-label={`Firma ${listing.name} nach unten`} disabled={busy || index === listings.length - 1}
+                onClick={() => onMove(index, index + 1)}>↓</button>
+            </div>
+            <ListingRow listing={listing} categories={energieheld.categories} href={`/experten/${listing.slug}`} />
+          </div>
+        ) : (
+          <ListingRow key={directoryItemKey(listing)} listing={listing} categories={energieheld.categories} href={`/experten/${listing.slug}`} />
+        )
+      ))}
+    </div>
+  );
+}
 
 export function DirectoryOrderEditor({
   listings,
+  hiddenDemoKeys = [],
   saveOrder,
 }: {
   listings: Listing[];
+  hiddenDemoKeys?: string[];
   saveOrder: (ids: string[]) => Promise<{ success?: string; error?: string }>;
 }) {
   const router = useRouter();
-  const real = listings.filter((listing) => !listing.isDemo);
-  const demos = listings.filter((listing) => listing.isDemo);
-  const initialIds = realDirectoryIds(listings);
+  const { mode, setMode } = useDirectoryEditMode();
+  const initialIds = listings.map(directoryItemKey);
   const initialKey = initialIds.join("|");
   const [saved, setSaved] = useState({ key: initialKey, ids: initialIds });
   const savedIds = saved.key === initialKey ? saved.ids : initialIds;
@@ -32,16 +82,18 @@ export function DirectoryOrderEditor({
   const busyRef = useRef(false);
   const dragRef = useRef<string | null>(null);
 
-  const byId = new Map(real.map((listing) => [listing.id, listing]));
+  const byId = new Map(listings.map((listing) => [directoryItemKey(listing), listing]));
   const shown = (editing ? draft : savedIds)
     .map((id) => byId.get(id))
     .filter((listing): listing is Listing => Boolean(listing));
 
   function start() {
+    if (mode) return;
     setDraft(savedIds);
     setMessage("");
     setError("");
     setEditing(true);
+    setMode("companies");
   }
 
   function cancel() {
@@ -51,6 +103,7 @@ export function DirectoryOrderEditor({
     setTarget(null);
     dragRef.current = null;
     setEditing(false);
+    setMode(null);
   }
 
   async function save() {
@@ -59,7 +112,7 @@ export function DirectoryOrderEditor({
     setBusy(true);
     setError("");
     try {
-      const result = await saveOrder(draft);
+      const result = await saveOrder([...draft, ...hiddenDemoKeys]);
       if (!result.success) {
         setError(result.error ?? "Die Reihenfolge konnte nicht gespeichert werden.");
         return;
@@ -67,6 +120,7 @@ export function DirectoryOrderEditor({
       setSaved({ key: initialKey, ids: draft });
       setMessage(result.success);
       setEditing(false);
+      setMode(null);
       router.refresh();
     } catch {
       setError("Speichern ist gerade nicht möglich. Bitte versuchen Sie es erneut.");
@@ -104,7 +158,7 @@ export function DirectoryOrderEditor({
 
   return (
     <div>
-      {real.length > 0 && (
+      {listings.length > 0 && (
         <div className={styles.toolbar}>
           {editing ? (
             <>
@@ -117,52 +171,17 @@ export function DirectoryOrderEditor({
               </button>
             </>
           ) : (
-            <button className="button" type="button" onClick={start}>
-              Reihenfolge bearbeiten
+            <button className="button" type="button" onClick={start} disabled={mode === "sidebar"}>
+              Firmenreihenfolge bearbeiten
             </button>
           )}
         </div>
       )}
       {message && !editing && <p className={styles.success} role="status">{message}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <div className="listing-rows">
-        {shown.map((listing, index) => (
-          editing ? (
-            <div
-              key={listing.id}
-              data-directory-id={listing.id}
-              className={`${styles.editRow} ${dragged === listing.id ? styles.dragging : ""} ${target === listing.id ? styles.dropTarget : ""}`}
-            >
-              <div className={styles.controls}>
-                <button
-                  className={styles.handle}
-                  type="button"
-                  aria-label={`Firma ${listing.name} verschieben`}
-                  title="Ziehen, um die Firma zu verschieben"
-                  onPointerDown={(event) => onPointerDown(event, listing.id)}
-                  onPointerMove={onPointerMove}
-                  onPointerUp={onPointerUp}
-                  onPointerCancel={onPointerUp}
-                  disabled={busy}
-                >↕</button>
-                <button type="button" aria-label={`Firma ${listing.name} nach oben`} disabled={busy || index === 0}
-                  onClick={() => setDraft((ids) => moveDirectoryId(ids, index, index - 1))}>↑</button>
-                <button type="button" aria-label={`Firma ${listing.name} nach unten`} disabled={busy || index === shown.length - 1}
-                  onClick={() => setDraft((ids) => moveDirectoryId(ids, index, index + 1))}>↓</button>
-              </div>
-              <ListingRow listing={listing} categories={energieheld.categories} href={`/experten/${listing.slug}`} />
-            </div>
-          ) : (
-            <ListingRow key={listing.id} listing={listing} categories={energieheld.categories} href={`/experten/${listing.slug}`} />
-          )
-        ))}
-        {demos.map((listing) => (
-          <div key={listing.id}>
-            {editing && <p className={styles.demoNote}>Beispielprofil – nicht Teil der redaktionellen Reihenfolge</p>}
-            <ListingRow listing={listing} categories={energieheld.categories} href={`/experten/${listing.slug}`} />
-          </div>
-        ))}
-      </div>
+      <DirectoryOrderRows listings={shown} editing={editing} busy={busy} dragged={dragged} target={target}
+        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
+        onMove={(from, to) => setDraft((ids) => moveDirectoryId(ids, from, to))} />
     </div>
   );
 }

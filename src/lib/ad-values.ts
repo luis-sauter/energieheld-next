@@ -1,9 +1,9 @@
 import { energieheld } from "../config/energieheld";
 export const adPlacements = {
   top_banner: "Premium-Banner oben",
-  sidebar_top: "Seitenanzeige oben",
-  sidebar_middle: "Seitenanzeige Mitte",
-  sidebar_bottom: "Seitenanzeige unten",
+  sidebar_top: "Seitenanzeige A",
+  sidebar_middle: "Seitenanzeige B",
+  sidebar_bottom: "Seitenanzeige C",
 } as const;
 export type AdPlacementId = keyof typeof adPlacements;
 export type AdTarget = {

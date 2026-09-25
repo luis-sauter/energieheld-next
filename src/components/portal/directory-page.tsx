@@ -9,17 +9,21 @@ import { EmptyState } from "./listings";
 import { ListingRow } from "./listing-row";
 import { Icon } from "./icon";
 import { loadPublicAds } from "@/lib/public-ads";
+import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
+import type { SidebarSlot } from "@/lib/sidebar-order";
 
 export async function DirectoryPage({
   searchParams,
   trade,
   canReorder = false,
   saveOrder,
+  saveSidebarOrder,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
   trade?: Trade;
   canReorder?: boolean;
   saveOrder?: (ids: string[]) => Promise<{ success?: string; error?: string }>;
+  saveSidebarOrder?: (slots: SidebarSlot[]) => Promise<{ success?: string; error?: string }>;
 }) {
   const params = await searchParams;
   const read = (key: string) =>
@@ -31,16 +35,20 @@ export async function DirectoryPage({
     service: "",
     sort: read("sort"),
   };
-  const [loaded, ads] = await Promise.all([
+  const [loaded, ads, sidebarOrder] = await Promise.all([
     loadPortalCompanies(),
     loadPublicAds(trade?.id),
+    loadPublicSidebarOrder(),
   ]);
   const results = loaded.data ? filterListings(loaded.data, filters) : [];
   const showOrderEditor = Boolean(
-    canReorder && !trade && !Object.values(filters).some(Boolean) && saveOrder && results.length,
+    canReorder && !trade && !Object.values(filters).some(Boolean) && saveOrder && saveSidebarOrder,
   );
   const OrderEditor = showOrderEditor
     ? (await import("@/components/admin/directory-order-editor")).DirectoryOrderEditor
+    : null;
+  const SidebarEditor = showOrderEditor
+    ? (await import("@/components/admin/sidebar-order-editor")).SidebarOrderEditor
     : null;
   const action = trade ? `/gewerke/${trade.id}` : "/experten";
   return (
@@ -81,7 +89,14 @@ export async function DirectoryPage({
           />
         </div>
       </section>
-      <AdvertisingLayout ads={ads}>
+      <AdvertisingLayout
+        ads={ads}
+        sidebarOrder={sidebarOrder}
+        editorEnabled={showOrderEditor}
+        sidebarEditor={SidebarEditor && saveSidebarOrder
+          ? <SidebarEditor ads={ads} slots={sidebarOrder} saveOrder={saveSidebarOrder} />
+          : undefined}
+      >
         <form
           action={action}
           method="get"
@@ -149,7 +164,7 @@ export async function DirectoryPage({
             <p>{loaded.error}</p>
           </div>
         ) : OrderEditor && saveOrder ? (
-          <OrderEditor listings={results} saveOrder={saveOrder} />
+          <OrderEditor listings={results} hiddenDemoKeys={"hiddenDemoKeys" in loaded ? loaded.hiddenDemoKeys : []} saveOrder={saveOrder} />
         ) : results.length ? (
           <div className="listing-rows">
             {results.map((listing) => (
