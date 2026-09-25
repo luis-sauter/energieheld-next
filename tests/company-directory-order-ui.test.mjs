@@ -30,8 +30,10 @@ registerHooks({
 });
 
 const { default: ExpertsPage } = await import("../src/app/(energieheld)/experten/page.tsx");
-const { saveCompanyDirectoryOrder } = await import("../src/app/(energieheld)/experten/order-actions.ts");
-const { DirectoryOrderEditor } = await import("../src/components/admin/directory-order-editor.tsx");
+const { saveCompanyDirectoryOrder, saveSidebarOrder } = await import("../src/app/(energieheld)/experten/order-actions.ts");
+const { DirectoryOrderEditor, DirectoryOrderRows } = await import("../src/components/admin/directory-order-editor.tsx");
+const { SidebarOrderEditor, SidebarOrderSlots } = await import("../src/components/admin/sidebar-order-editor.tsx");
+const { DirectoryEditModeProvider } = await import("../src/components/admin/directory-edit-mode.tsx");
 const { listings } = await import("../src/data/listings.ts");
 const idA = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const idB = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
@@ -58,11 +60,13 @@ test("visitors and signed-in non-admins have no reorder action; admin sees it on
     const page = await ExpertsPage({ searchParams: Promise.resolve({}) });
     assert.equal(page.props.canReorder, false);
     assert.equal(page.props.saveOrder, undefined);
+    assert.equal(page.props.saveSidebarOrder, undefined);
   }
   globalThis.__orderClient = client({ admin: true });
   const page = await ExpertsPage({ searchParams: Promise.resolve({}) });
   assert.equal(page.props.canReorder, true);
   assert.equal(page.props.saveOrder, saveCompanyDirectoryOrder);
+  assert.equal(page.props.saveSidebarOrder, saveSidebarOrder);
   for (const key of ["q", "kategorie", "ort", "sort"]) {
     globalThis.__orderClientReads = 0;
     const filtered = await ExpertsPage({ searchParams: Promise.resolve({ [key]: "value" }) });
@@ -71,30 +75,98 @@ test("visitors and signed-in non-admins have no reorder action; admin sees it on
   }
 });
 
-test("editor initially renders ordinary listing rows and a single admin entry, without drag controls", () => {
-  const html = renderToStaticMarkup(createElement(DirectoryOrderEditor, { listings: [realA, realB, listings[2]], saveOrder: async () => ({ success: "ok" }) }));
-  assert.match(html, /Reihenfolge bearbeiten/);
+test("company editor initially renders real and demo listing rows without controls", () => {
+  const html = renderToStaticMarkup(createElement(DirectoryEditModeProvider, null,
+    createElement(DirectoryOrderEditor, { listings: [realA, listings[2], realB], saveOrder: async () => ({ success: "ok" }) })));
+  assert.match(html, /Firmenreihenfolge bearbeiten/);
   assert.match(html, /Firma A/);
   assert.match(html, /Firma B/);
+  assert.match(html, /Beispielprofil/);
   assert.doesNotMatch(html, /Reihenfolge speichern|Abbrechen|nach oben|nach unten|verschieben|Beispielprofil – nicht Teil/);
   assert.ok(html.indexOf("Firma A") < html.indexOf("Firma B"));
 });
 
-test("server action rechecks admin and validates complete UUID-shaped payload before one RPC", async () => {
+test("sidebar editor renders three empty slots and a separate admin entry", () => {
+  const html = renderToStaticMarkup(createElement(DirectoryEditModeProvider, null,
+    createElement(SidebarOrderEditor, { ads: [], slots: ["sidebar_middle", "sidebar_top", "sidebar_bottom"], saveOrder: async () => ({ success: "ok" }) })));
+  assert.match(html, /Banner-Reihenfolge bearbeiten/);
+  assert.equal((html.match(/Freier Werbeplatz/g) ?? []).length, 3);
+  assert.ok(html.indexOf('data-placement="sidebar_middle"') < html.indexOf('data-placement="sidebar_top"'));
+  assert.doesNotMatch(html, /top_banner|nach oben|nach unten|verschieben/);
+});
+
+test("active company editor gives demo rows the same drag and arrow controls as real rows", () => {
+  const demo = listings[0];
+  const html = renderToStaticMarkup(createElement(DirectoryOrderRows, {
+    listings: [demo, realA], editing: true, busy: false, dragged: null, target: null,
+    onPointerDown() {}, onPointerMove() {}, onPointerUp() {}, onMove() {},
+  }));
+  assert.match(html, new RegExp(`data-directory-id="demo:${demo.slug}"`));
+  assert.match(html, new RegExp(`Firma ${demo.name} verschieben`));
+  assert.match(html, new RegExp(`Firma ${demo.name} nach unten`));
+  assert.match(html, /Beispielprofil/);
+  assert.match(html, /Firma Firma A verschieben/);
+  assert.doesNotMatch(html, /nicht Teil der redaktionellen Reihenfolge/);
+});
+
+test("active sidebar editor gives all three empty slots drag and arrow controls", () => {
+  const html = renderToStaticMarkup(createElement(SidebarOrderSlots, {
+    ads: [], slots: ["sidebar_top", "sidebar_middle", "sidebar_bottom"], editing: true,
+    busy: false, dragged: null, target: null,
+    onPointerDown() {}, onPointerMove() {}, onPointerUp() {}, onMove() {},
+  }));
+  assert.equal((html.match(/Freier Werbeplatz/g) ?? []).length, 3);
+  for (const label of ["Banner A", "Banner B", "Banner C"])
+    for (const control of ["verschieben", "nach oben", "nach unten"])
+      assert.match(html, new RegExp(`${label} ${control}`));
+  assert.doesNotMatch(html, /top_banner/);
+});
+
+test("pointer previews and cancel paths cannot send a save request", () => {
+  for (const path of ["src/components/admin/directory-order-editor.tsx", "src/components/admin/sidebar-order-editor.tsx"]) {
+    const code = readFileSync(new URL("../" + path, import.meta.url), "utf8");
+    const pointer = code.split("function onPointerMove(")[1].split("function onPointerUp(")[0];
+    const cancel = code.split("function cancel(")[1].split("async function save(")[0];
+    assert.match(pointer, /setDraft/);
+    assert.doesNotMatch(pointer + cancel, /saveOrder\(|\.rpc\(|fetch\(/);
+    assert.equal((code.match(/await saveOrder\(/g) ?? []).length, 1);
+  }
+});
+
+test("company action rechecks admin and sends one complete mixed payload to the new RPC", async () => {
+  const keys = [`demo:${listings[0].slug}`, `profile:${idB}`, `profile:${idA}`];
   globalThis.__orderRevalidated = [];
   globalThis.__orderClient = client({ admin: false });
-  assert.match((await saveCompanyDirectoryOrder([idA, idB])).error, /nicht berechtigt/);
+  assert.match((await saveCompanyDirectoryOrder(keys)).error, /nicht berechtigt/);
   assert.equal(globalThis.__orderClient.calls.some((call) => call.name), false);
   globalThis.__orderClient = client({ admin: true });
-  for (const bad of [["not-an-id"], [idA, idA], "invalid"]) {
+  for (const bad of [["not-an-id"], [`profile:${idA}`, `profile:${idA}`], ["demo:unknown"], "invalid"]) {
     assert.match((await saveCompanyDirectoryOrder(bad)).error, /ungültig/);
   }
   assert.equal(globalThis.__orderClient.calls.some((call) => call.name), false);
-  assert.deepEqual(await saveCompanyDirectoryOrder([idB, idA]), { success: "Die Reihenfolge wurde gespeichert." });
-  assert.deepEqual(globalThis.__orderClient.calls.filter((call) => call.name), [{ name: "reorder_company_directory_profiles", args: { p_profile_ids: [idB, idA] } }]);
+  assert.deepEqual(await saveCompanyDirectoryOrder(keys), { success: "Die Reihenfolge wurde gespeichert." });
+  assert.deepEqual(globalThis.__orderClient.calls.filter((call) => call.name), [{ name: "reorder_company_directory_items", args: { p_item_keys: keys } }]);
   assert.ok(globalThis.__orderRevalidated.includes("/experten"));
+  assert.ok(globalThis.__orderRevalidated.includes("/gewerke"));
   globalThis.__orderClient = client({ admin: true, rpcError: { message: "private database details" } });
-  const failed = await saveCompanyDirectoryOrder([idA, idB]);
+  const failed = await saveCompanyDirectoryOrder(keys);
   assert.match(failed.error, /nicht gespeichert/);
   assert.doesNotMatch(failed.error, /private database details/);
+});
+
+test("sidebar action validates exact three slots, checks admin and sends one RPC", async () => {
+  const slots = ["sidebar_bottom", "sidebar_top", "sidebar_middle"];
+  globalThis.__orderRevalidated = [];
+  globalThis.__orderClient = client({ admin: false });
+  assert.match((await saveSidebarOrder(slots)).error, /nicht berechtigt/);
+  globalThis.__orderClient = client({ admin: true });
+  for (const bad of [null, slots.slice(1), [slots[0], slots[0], slots[2]], [slots[0], slots[1], "top_banner"]])
+    assert.match((await saveSidebarOrder(bad)).error, /ungültig/);
+  assert.equal(globalThis.__orderClient.calls.some((call) => call.name), false);
+  assert.deepEqual(await saveSidebarOrder(slots), { success: "Die Banner-Reihenfolge wurde gespeichert." });
+  assert.deepEqual(globalThis.__orderClient.calls.filter((call) => call.name), [{ name: "reorder_ad_sidebar_slots", args: { p_slots: slots } }]);
+  assert.ok(globalThis.__orderRevalidated.includes("/experten"));
+  assert.ok(globalThis.__orderRevalidated.includes("/gewerke"));
+  globalThis.__orderClient = client({ admin: true, rpcError: { message: "private database details" } });
+  assert.doesNotMatch((await saveSidebarOrder(slots)).error, /private database details/);
 });

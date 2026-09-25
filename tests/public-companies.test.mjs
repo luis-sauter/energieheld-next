@@ -97,7 +97,7 @@ const originalFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = originalFetch;
 });
-function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((item) => item.status === "approved").map((item, sort_order) => ({ profile_id: item.id, sort_order }))) {
+function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((item) => item.status === "approved").map((item, sort_order) => ({ profile_id: item.id, sort_order })), sidebarRows = null) {
   const requests = [];
   globalThis.fetch = async (input, init) => {
     const url = new URL(input),
@@ -161,6 +161,11 @@ function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((i
     if (url.pathname === "/rest/v1/company_directory_order") {
       assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
       assert.equal(headers.get("cookie"), null);
+      if (orderRows?.legacy && url.searchParams.get("select")?.includes("item_key"))
+        return new Response(JSON.stringify({ code: "42703", message: "column does not exist" }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        });
       if (orderRows === null)
         return new Response(JSON.stringify({ code: "PGRST205", message: "table not deployed" }), {
           status: 404,
@@ -168,7 +173,18 @@ function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((i
         });
       const offset = Number(url.searchParams.get("offset") || 0);
       const limit = Number(url.searchParams.get("limit") || 500);
-      return new Response(JSON.stringify(orderRows.slice(offset, offset + limit)), {
+      return new Response(JSON.stringify((orderRows?.legacy ? orderRows.rows : orderRows).slice(offset, offset + limit)), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+    if (url.pathname === "/rest/v1/ad_sidebar_slot_order") {
+      assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
+      assert.equal(headers.get("cookie"), null);
+      if (sidebarRows) return new Response(JSON.stringify(sidebarRows), {
+        headers: { "content-type": "application/json" },
+      });
+      return new Response(JSON.stringify({ code: "PGRST205", message: "table not deployed" }), {
+        status: 404,
         headers: { "content-type": "application/json" },
       });
     }
@@ -214,6 +230,56 @@ test("public loader applies manual order before demos and keeps the directory av
   assert.deepEqual(combined.slice(3).map((item) => item.id), demos.filter((item) => item.isDemo).map((item) => item.id));
   api(rows, false, [], null);
   assert.deepEqual((await loadPublicCompanies()).data.map((item) => item.name), ["Alpha", "Beta", "Charlie"]);
+  api(rows, false, [], { legacy: true, rows: [{ profile_id: rows[1].id, sort_order: 0 }, { profile_id: rows[0].id, sort_order: 1 }] });
+  assert.deepEqual((await loadPortalCompanies()).data.slice(0, 3).map((item) => item.name), ["Beta", "Alpha", "Charlie"]);
+});
+
+test("real and demo profiles interleave after merge, while sidebar order applies globally without moving top banner", async () => {
+  const real = { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: "actual", display_name: "Actual Firma" };
+  const order = [
+    { profile_id: null, demo_slug: demos[1].slug, item_key: `demo:${demos[1].slug}`, sort_order: 0 },
+    { profile_id: real.id, demo_slug: null, item_key: `profile:${real.id}`, sort_order: 1 },
+    ...demos.filter((demo) => demo.isDemo && demo.slug !== demos[1].slug).map((demo, i) => ({ profile_id: null, demo_slug: demo.slug, item_key: `demo:${demo.slug}`, sort_order: i + 2 })),
+  ];
+  const sidebar = [
+    { slot: "sidebar_bottom", sort_order: 0 },
+    { slot: "sidebar_top", sort_order: 1 },
+    { slot: "sidebar_middle", sort_order: 2 },
+  ];
+  api([real], false, [], order, sidebar);
+  assert.deepEqual((await loadPortalCompanies()).data.slice(0, 3).map((item) => item.slug), [demos[1].slug, real.slug, demos[0].slug]);
+  api([real], false, [], order, sidebar);
+  const html = renderToStaticMarkup(await DirectoryPage({ searchParams: Promise.resolve({}) }));
+  assert.ok(html.indexOf(demos[1].name) < html.indexOf("Actual Firma"));
+  const placements = [...html.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(placements.slice(0, 4), ["top_banner", "sidebar_bottom", "sidebar_top", "sidebar_middle"]);
+  api([real], false, [], order, sidebar);
+  const tradePage = await TradePage({ params: Promise.resolve({ slug: "daemmung" }), searchParams: Promise.resolve({}) });
+  const trade = renderToStaticMarkup(await DirectoryPage(tradePage.props));
+  assert.deepEqual([...trade.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]).slice(0, 4), placements.slice(0, 4));
+});
+
+test("admin sees both inline order entries over the actual list and three empty sidebar slots", async () => {
+  api([row]);
+  const html = renderToStaticMarkup(await DirectoryPage({
+    searchParams: Promise.resolve({}),
+    canReorder: true,
+    saveOrder: async () => ({ success: "ok" }),
+    saveSidebarOrder: async () => ({ success: "ok" }),
+  }));
+  assert.match(html, /Firmenreihenfolge bearbeiten/);
+  assert.match(html, /Banner-Reihenfolge bearbeiten/);
+  assert.equal((html.match(/Freier Werbeplatz/g) ?? []).length, 4);
+  assert.match(html, /Beispielprofil/);
+  assert.doesNotMatch(html, /Banner-Bearbeitung aktiv|Firma .* nach oben/);
+  api([row]);
+  const filtered = renderToStaticMarkup(await DirectoryPage({
+    searchParams: Promise.resolve({ q: "Test" }),
+    canReorder: true,
+    saveOrder: async () => ({ success: "ok" }),
+    saveSidebarOrder: async () => ({ success: "ok" }),
+  }));
+  assert.doesNotMatch(filtered, /Firmenreihenfolge bearbeiten|Banner-Reihenfolge bearbeiten/);
 });
 test("public ads use one anonymous RPC and one signing batch; real cards are labelled without demo ads", async () => {
   const { loadPublicAds } = await import("../src/lib/public-ads.ts");
@@ -549,6 +615,14 @@ test("real profiles win ID and slug collisions without duplicate cards", async (
     assert.equal(combined[0], winner);
     assert.ok(!combined.includes(demos[0]));
   }
+  const collisionRow = { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: demos[0].slug };
+  api([collisionRow], false, [], [
+    { profile_id: collisionRow.id, demo_slug: null, item_key: `profile:${collisionRow.id}`, sort_order: 0 },
+    ...demos.map((demo, i) => ({ profile_id: null, demo_slug: demo.slug, item_key: `demo:${demo.slug}`, sort_order: i + 1 })),
+  ]);
+  const collisionResult = await loadPortalCompanies();
+  assert.equal(collisionResult.data.some((item) => item.isDemo && item.slug === demos[0].slug), false);
+  assert.deepEqual(collisionResult.hiddenDemoKeys, [`demo:${demos[0].slug}`]);
   api([{ ...row, slug: demos[0].slug }]);
   const detail = await loadPortalCompanyBySlug(demos[0].slug);
   assert.equal(detail.data.name, row.display_name);
