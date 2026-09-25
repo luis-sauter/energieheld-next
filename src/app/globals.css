@@ -14,7 +14,7 @@
   --brand-accent-light: color-mix(in srgb, var(--brand-accent) 38%, var(--white));
   --category-blue: var(--brand-secondary);
   --surface: color-mix(in srgb, var(--brand-accent) 26%, var(--white));
-  --brand-surface: color-mix(in srgb, var(--brand-secondary) 22%, var(--white));
+  --brand-surface: color-mix(in srgb, var(--brand-secondary) 34%, var(--white));
   --line: color-mix(in srgb, var(--brand-accent) 55%, #d8c8c0);
   --muted: #765d5f;
   --radius: 8px;
@@ -416,7 +416,8 @@ button {
   gap: 13px;
 }
 .category-card {
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--brand-secondary) 42%, var(--line));
+  background: var(--brand-surface);
   padding: 24px 17px 17px;
   border-radius: 9px;
   transition:
@@ -1821,7 +1822,8 @@ button {
 }
 .hero-search {
   box-shadow: none;
-  background: var(--surface);
+  background: var(--brand-surface);
+  border-color: color-mix(in srgb, var(--brand-secondary) 52%, var(--line));
 }
 .hero-description {
   color: var(--muted);
@@ -2453,8 +2455,8 @@ button {
   color: var(--muted);
 }
 .directory-search {
-  background: var(--surface);
-  border-color: var(--line);
+  background: var(--brand-surface);
+  border-color: color-mix(in srgb, var(--brand-secondary) 52%, var(--line));
   border-radius: var(--radius);
 }
 .trade-tile {
