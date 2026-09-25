@@ -97,7 +97,7 @@ const originalFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = originalFetch;
 });
-function api(rows = [row], failure = false, ads = []) {
+function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((item) => item.status === "approved").map((item, sort_order) => ({ profile_id: item.id, sort_order }))) {
   const requests = [];
   globalThis.fetch = async (input, init) => {
     const url = new URL(input),
@@ -158,6 +158,20 @@ function api(rows = [row], failure = false, ads = []) {
         { headers: { "content-type": "application/json" } },
       );
     }
+    if (url.pathname === "/rest/v1/company_directory_order") {
+      assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
+      assert.equal(headers.get("cookie"), null);
+      if (orderRows === null)
+        return new Response(JSON.stringify({ code: "PGRST205", message: "table not deployed" }), {
+          status: 404,
+          headers: { "content-type": "application/json" },
+        });
+      const offset = Number(url.searchParams.get("offset") || 0);
+      const limit = Number(url.searchParams.get("limit") || 500);
+      return new Response(JSON.stringify(orderRows.slice(offset, offset + limit)), {
+        headers: { "content-type": "application/json" },
+      });
+    }
     assert.equal(url.pathname, "/rest/v1/company_profiles");
     assert.equal(url.searchParams.get("status"), "eq.approved");
     assert.equal(headers.get("apikey"), "sb_publishable_test");
@@ -186,6 +200,21 @@ const filters = {
   service: "",
   sort: "",
 };
+
+test("public loader applies manual order before demos and keeps the directory available before migration deployment", async () => {
+  const rows = [
+    { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: "alpha", display_name: "Alpha" },
+    { ...row, id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", slug: "beta", display_name: "Beta" },
+    { ...row, id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", slug: "charlie", display_name: "Charlie" },
+  ];
+  api(rows, false, [], [{ profile_id: rows[1].id, sort_order: 0 }, { profile_id: rows[0].id, sort_order: 1 }]);
+  assert.deepEqual((await loadPublicCompanies()).data.map((item) => item.name), ["Beta", "Alpha", "Charlie"]);
+  const combined = (await loadPortalCompanies()).data;
+  assert.deepEqual(combined.slice(0, 3).map((item) => item.name), ["Beta", "Alpha", "Charlie"]);
+  assert.deepEqual(combined.slice(3).map((item) => item.id), demos.filter((item) => item.isDemo).map((item) => item.id));
+  api(rows, false, [], null);
+  assert.deepEqual((await loadPublicCompanies()).data.map((item) => item.name), ["Alpha", "Beta", "Charlie"]);
+});
 test("public ads use one anonymous RPC and one signing batch; real cards are labelled without demo ads", async () => {
   const { loadPublicAds } = await import("../src/lib/public-ads.ts");
   const ads = [
@@ -665,7 +694,7 @@ test("quality seal is embedded in list query without extra per-card reads and ne
   ];
   const requests = api(rows);
   const loaded = await loadPublicCompanies();
-  assert.equal(requests.length, 1);
+  assert.equal(requests.length, 2);
   assert.match(
     requests[0].url.searchParams.get("select"),
     /company_quality_reviews\(status,verified_at,public_note\)/,

@@ -13,9 +13,13 @@ import { loadPublicAds } from "@/lib/public-ads";
 export async function DirectoryPage({
   searchParams,
   trade,
+  canReorder = false,
+  saveOrder,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
   trade?: Trade;
+  canReorder?: boolean;
+  saveOrder?: (ids: string[]) => Promise<{ success?: string; error?: string }>;
 }) {
   const params = await searchParams;
   const read = (key: string) =>
@@ -32,6 +36,12 @@ export async function DirectoryPage({
     loadPublicAds(trade?.id),
   ]);
   const results = loaded.data ? filterListings(loaded.data, filters) : [];
+  const showOrderEditor = Boolean(
+    canReorder && !trade && !Object.values(filters).some(Boolean) && saveOrder && results.length,
+  );
+  const OrderEditor = showOrderEditor
+    ? (await import("@/components/admin/directory-order-editor")).DirectoryOrderEditor
+    : null;
   const action = trade ? `/gewerke/${trade.id}` : "/experten";
   return (
     <main id="hauptinhalt" className="container trade-page">
@@ -138,6 +148,8 @@ export async function DirectoryPage({
           <div className="empty-state" role="alert">
             <p>{loaded.error}</p>
           </div>
+        ) : OrderEditor && saveOrder ? (
+          <OrderEditor listings={results} saveOrder={saveOrder} />
         ) : results.length ? (
           <div className="listing-rows">
             {results.map((listing) => (
