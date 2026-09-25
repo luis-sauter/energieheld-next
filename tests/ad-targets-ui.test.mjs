@@ -184,6 +184,30 @@ test("top and sidebar image creatives are linked banners without public text car
   assert.match(css, /\.imageCreative img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/);
   assert.doesNotMatch(css, /object-fit:\s*cover|max-height:\s*220px/);
 });
+
+test("signed creative images have no fixed dimensions for portrait, square or wide uploads", () => {
+  for (const shape of ["portrait", "square", "wide", "very-wide"]) {
+    const imageUrl = `https://signed.example/${shape}.png?token=private`;
+    for (const placement of ["top_banner", "sidebar_top"]) {
+      for (const preview of [false, true]) {
+        const html = render(CampaignSlot, {
+          placement,
+          ad: { ...campaign, placement, imageUrl },
+          preview,
+        });
+        const image = html.match(/<img\b[^>]*>/)?.[0];
+        assert.ok(image, `${shape} ${placement} ${preview ? "preview" : "public"}`);
+        assert.match(image, new RegExp(`src="https://signed\\.example/${shape}\\.png\\?token=private"`));
+        assert.doesNotMatch(image, /\s(?:width|height|srcset|sizes|style)=/i);
+        assert.doesNotMatch(html, /<strong>|Mehr erfahren/);
+        if (!preview) {
+          assert.match(html, /target="_blank"/);
+          assert.match(html, /rel="sponsored noopener noreferrer"/);
+        }
+      }
+    }
+  }
+});
 // Optional local, static visual fixture. Never writes to the application or DB.
 if (process.env.AD_TARGET_PREVIEW_FILE) {
   const css =
