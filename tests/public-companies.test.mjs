@@ -478,7 +478,7 @@ test("database errors produce neutral error, never mocks or empty-success", asyn
   assert.ok(html.includes(PUBLIC_COMPANIES_ERROR));
   assert.doesNotMatch(
     html,
-    /class="listing-row"|Noch kein passender Treffer|private database error/,
+    /class="listing-row listing-row--|Noch kein passender Treffer|private database error/,
   );
 });
 test("empty filtered directory and combined directory have distinct UI without service filter", async () => {
@@ -564,13 +564,26 @@ test("combined directory shows real and demo profiles, with badges only on demos
   const html = renderToStaticMarkup(
     await DirectoryPage({ searchParams: Promise.resolve({}) }),
   );
-  const cards = html.match(/<article class="listing-row"[\s\S]*?<\/article>/g);
+  const cards = html.match(/<article class="listing-row listing-row--(?:basic|premium)"[\s\S]*?<\/article>/g);
   assert.equal(cards.length, demos.length + 1);
   for (const card of cards) {
     if (card.includes("Test Firma"))
       assert.doesNotMatch(card, /Beispielprofil/);
-    else assert.match(card, /class="badge">Beispielprofil/);
+    else assert.match(card, /class="badge row-demo">Beispielprofil/);
   }
+});
+
+test("filtered trade directory retains Premium and Basic presentation", async () => {
+  api();
+  const html = renderToStaticMarkup(await DirectoryPage({
+    searchParams: Promise.resolve({}),
+    trade: { id: "heizung", name: "Heizung", icon: "heat", image: "heizung", description: "Heiztechnik" },
+  }));
+  assert.match(html, /Müller Haustechnik/);
+  assert.match(html, /listing-row--premium/);
+  assert.match(html, /Wärmezeit Bayern/);
+  assert.match(html, /listing-row--basic/);
+  assert.doesNotMatch(html, /Klarblick Energieberatung/);
 });
 
 test("combined category and location filtering and sorting include both sources", async () => {
@@ -670,7 +683,7 @@ test("database errors never expose demos in directory, detail or metadata", asyn
   }
 });
 
-test("public directory displays signed logo and detail displays sorted real gallery", async () => {
+test("real Basic directory keeps signed logo off the row while detail displays sorted gallery", async () => {
   api([
     {
       ...row,
@@ -701,7 +714,8 @@ test("public directory displays signed logo and detail displays sorted real gall
   const directory = renderToStaticMarkup(
     await DirectoryPage({ searchParams: Promise.resolve({ q: "Test Firma" }) }),
   );
-  assert.match(directory, /alt="Logo von Test Firma"/);
+  assert.match(directory, /listing-row--basic/);
+  assert.doesNotMatch(directory, /row-logo|alt="Logo von Test Firma"/);
   const detail = renderToStaticMarkup(
     await Detail({ params: Promise.resolve({ slug: row.slug }) }),
   );
@@ -710,12 +724,13 @@ test("public directory displays signed logo and detail displays sorted real gall
   assert.doesNotMatch(detail, /Symbolbild/);
 });
 
-test("directory retains initials and no image element inside real logo without uploaded logo", async () => {
+test("real Basic directory uses a compact row without a logo block", async () => {
   api();
   const html = renderToStaticMarkup(
     await DirectoryPage({ searchParams: Promise.resolve({ q: "Test Firma" }) }),
   );
-  assert.match(html, /<div class="row-logo"[^>]*>TF<\/div>/);
+  assert.match(html, /listing-row--basic/);
+  assert.doesNotMatch(html, /row-logo/);
 });
 
 test("demo details keep local symbol galleries after media integration", async () => {

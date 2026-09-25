@@ -21,22 +21,21 @@ export function CampaignSlot({
   preview?: boolean;
 }) {
   const content = ad && (
-    <>
-      {ad.imageUrl && (
-        <Image
-          src={ad.imageUrl}
-          alt={ad.headline}
-          width={1200}
-          height={600}
-          unoptimized
-        />
-      )}
+    ad.imageUrl ? (
+      <Image
+        src={ad.imageUrl}
+        alt={ad.headline}
+        width={1200}
+        height={600}
+        unoptimized
+      />
+    ) : (
       <div>
         <strong>{ad.headline || "Ihre Überschrift"}</strong>
         {ad.body_text && <p>{ad.body_text}</p>}
         <span>Mehr erfahren →</span>
       </div>
-    </>
+    )
   );
   return (
     <section
@@ -47,10 +46,10 @@ export function CampaignSlot({
       <div className={styles.label}>Anzeige{preview ? " · Vorschau" : ""}</div>
       {ad ? (
         preview ? (
-          <div className={styles.creative}>{content}</div>
+          <div className={`${styles.creative} ${ad.imageUrl ? styles.imageCreative : ""}`}>{content}</div>
         ) : (
           <a
-            className={styles.creative}
+            className={`${styles.creative} ${ad.imageUrl ? styles.imageCreative : ""}`}
             href={adTargetUrl(ad.target_url) ?? "#"}
             rel="sponsored noopener noreferrer"
             target="_blank"

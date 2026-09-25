@@ -115,6 +115,10 @@ export const listings: Listing[] = seeds.map(
     name,
     initials,
     tagline,
+    directoryPackage:
+      slug === "mueller-haustechnik" || slug === "sonnenwerk-oberland"
+        ? "premium"
+        : "basic",
     categoryIds,
     description: `${name} ist ein fiktiver Fachbetrieb aus ${city}. Dieses Beispielprofil zeigt, wie sich Unternehmen künftig mit ihren Leistungen vorstellen können. Im Mittelpunkt stehen eine persönliche Beratung, nachvollziehbare Planung und die passende Umsetzung für das jeweilige Gebäude. Sämtliche Angaben dienen ausschließlich der Gestaltungsvorschau.`,
     location: { city, postalCode, region: "Bayern", country: "Deutschland" },
