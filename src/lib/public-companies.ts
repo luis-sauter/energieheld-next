@@ -4,6 +4,7 @@ import { signCompanyMedia, type MediaRow } from "./company-media";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Listing, CompanyVerification } from "@/types/portal";
 import { createPublicClient } from "./supabase/public";
+import { sortByDirectoryOrder, type DirectoryOrderRow } from "./company-directory-order";
 
 export const PUBLIC_COMPANIES_ERROR =
   "Die Unternehmensprofile konnten gerade nicht geladen werden.";
@@ -44,7 +45,7 @@ type Result<T> = { data: T; error: null } | { data: null; error: string };
 export async function loadPublicCompanies(): Promise<Result<Listing[]>> {
   try {
     const client = createPublicClient();
-    const profiles: Listing[] = [];
+    const profiles: PublicProfile[] = [];
     // Avoid silently truncating the directory at the API's default row limit.
     const pageSize = 500;
     for (let offset = 0; ; offset += pageSize) {
@@ -56,16 +57,29 @@ export async function loadPublicCompanies(): Promise<Result<Listing[]>> {
         .range(offset, offset + pageSize - 1);
       if (error) throw error;
       const rows = data as PublicProfile[];
-      profiles.push(
-        ...(await Promise.all(
-          rows
-            .filter((row) => row.status === "approved")
-            .map((row) => toListing(client, row)),
-        )),
-      );
+      profiles.push(...rows.filter((row) => row.status === "approved"));
       if (rows.length < pageSize) break;
     }
-    return { data: profiles, error: null };
+    const orderRows: DirectoryOrderRow[] = [];
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await client
+        .from("company_directory_order")
+        .select("profile_id,sort_order")
+        .order("profile_id")
+        .range(offset, offset + pageSize - 1);
+      // The public directory remains available until the repository migration is deployed.
+      if (error?.code === "42P01" || error?.code === "PGRST205") break;
+      if (error) throw error;
+      const rows = (data ?? []) as DirectoryOrderRow[];
+      orderRows.push(...rows);
+      if (rows.length < pageSize) break;
+    }
+    return {
+      data: await Promise.all(
+        sortByDirectoryOrder(profiles, orderRows).map((row) => toListing(client, row)),
+      ),
+      error: null,
+    };
   } catch {
     console.error("Public company directory query failed.");
     return { data: null, error: PUBLIC_COMPANIES_ERROR };
