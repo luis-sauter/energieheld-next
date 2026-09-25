@@ -24,8 +24,8 @@ export function PortalHeader({ brand }: { brand: BrandConfig }) {
           >
             <Image
               src="/brand/das-reiseportal-logo.png"
-              width={2591}
-              height={422}
+              width={2048}
+              height={333}
               alt="DAS Reiseportal"
               priority
             />

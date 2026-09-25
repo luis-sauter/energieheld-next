@@ -6,7 +6,7 @@ export default function AdvertisingPage() {
       <p className="eyebrow">Werbung auf DAS Reiseportal</p>
       <h1>Werbung im Reiseportal.</h1>
       <p className="lead">
-        Ein großer Banner oberhalb der Inhalte und drei eigenständige
+        Ein großer Banner oberhalb der Inhalte und mehrere
         Anzeigenplätze in der rechten Spalte bieten Raum für Werbepartner.
       </p>
       <div className="notice">
