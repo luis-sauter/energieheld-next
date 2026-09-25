@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   adPlacements,
   adScopeLabel,
@@ -11,6 +10,13 @@ import {
 } from "@/lib/ad-values";
 import styles from "./advertising.module.css";
 import { energieheld } from "@/config/energieheld";
+
+function CreativeImage({ src, alt }: { src: string; alt: string }) {
+  // Signed uploads have unknown dimensions; the browser must use each image's intrinsic ratio.
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={alt} />;
+}
+
 export function CampaignSlot({
   placement,
   ad,
@@ -22,12 +28,9 @@ export function CampaignSlot({
 }) {
   const content = ad && (
     ad.imageUrl ? (
-      <Image
+      <CreativeImage
         src={ad.imageUrl}
         alt={ad.headline}
-        width={1200}
-        height={600}
-        unoptimized
       />
     ) : (
       <div>
