@@ -35,10 +35,41 @@ const { DirectoryOrderEditor, DirectoryOrderRows } = await import("../src/compon
 const { SidebarOrderEditor, SidebarOrderSlots } = await import("../src/components/admin/sidebar-order-editor.tsx");
 const { DirectoryEditModeProvider } = await import("../src/components/admin/directory-edit-mode.tsx");
 const { listings } = await import("../src/data/listings.ts");
+const { ListingRow } = await import("../src/components/portal/listing-row.tsx");
+const { energieheld } = await import("../src/config/energieheld.ts");
+const { filterListings } = await import("../src/lib/listings.ts");
+const { sortByDirectoryOrder } = await import("../src/lib/company-directory-order.ts");
 const idA = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const idB = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
-const realA = { ...listings[0], id: idA, isDemo: false, name: "Firma A" };
-const realB = { ...listings[1], id: idB, isDemo: false, name: "Firma B" };
+const realA = { ...listings[0], id: idA, isDemo: false, name: "Firma A", directoryPackage: undefined };
+const realB = { ...listings[1], id: idB, isDemo: false, name: "Firma B", directoryPackage: undefined };
+
+test("demo packages affect only row presentation, including filtered trade rows", () => {
+  const renderRow = (listing) => renderToStaticMarkup(createElement(ListingRow, {
+    listing, categories: energieheld.categories, href: `/experten/${listing.slug}`,
+  }));
+  assert.deepEqual(listings.filter((listing) => listing.directoryPackage === "premium").map((listing) => listing.slug),
+    ["mueller-haustechnik", "sonnenwerk-oberland"]);
+  assert.ok(listings.slice(2).every((listing) => listing.directoryPackage === "basic"));
+  for (const listing of [realA, { ...listings[0], directoryPackage: undefined }, listings[2]]) {
+    const html = renderRow(listing);
+    assert.match(html, /listing-row--basic/);
+    assert.doesNotMatch(html, /class="row-logo"/);
+  }
+  const premium = renderRow(listings[0]);
+  assert.match(premium, /listing-row--premium|class="row-logo"/);
+  assert.match(premium, /Unternehmensprofil|mailto:|tel:/);
+  const filtered = filterListings([realA, listings[2], listings[1]],
+    { query: "", category: "solar", location: "", service: "", sort: "" });
+  assert.deepEqual(filtered.map((listing) => listing.slug), [realA.slug, listings[1].slug]);
+  assert.match(renderRow(filtered[1]), /listing-row--premium/);
+  const ordered = sortByDirectoryOrder([listings[0], listings[2], realA], [
+    { item_key: `demo:${listings[2].slug}`, profile_id: null, sort_order: 0 },
+    { item_key: `profile:${realA.id}`, profile_id: realA.id, sort_order: 1 },
+    { item_key: `demo:${listings[0].slug}`, profile_id: null, sort_order: 2 },
+  ]);
+  assert.deepEqual(ordered.map((listing) => listing.name), [listings[2].name, realA.name, listings[0].name]);
+});
 
 function client({ signedIn = true, admin = false, rpcError = null } = {}) {
   const calls = [];
@@ -98,7 +129,7 @@ test("sidebar editor renders three empty slots and a separate admin entry", () =
 test("active company editor gives demo rows the same drag and arrow controls as real rows", () => {
   const demo = listings[0];
   const html = renderToStaticMarkup(createElement(DirectoryOrderRows, {
-    listings: [demo, realA], editing: true, busy: false, dragged: null, target: null,
+    listings: [demo, listings[2], realA], editing: true, busy: false, dragged: null, target: null,
     onPointerDown() {}, onPointerMove() {}, onPointerUp() {}, onMove() {},
   }));
   assert.match(html, new RegExp(`data-directory-id="demo:${demo.slug}"`));
@@ -106,6 +137,8 @@ test("active company editor gives demo rows the same drag and arrow controls as 
   assert.match(html, new RegExp(`Firma ${demo.name} nach unten`));
   assert.match(html, /Beispielprofil/);
   assert.match(html, /Firma Firma A verschieben/);
+  assert.match(html, /listing-row--premium/);
+  assert.match(html, /listing-row--basic/);
   assert.doesNotMatch(html, /nicht Teil der redaktionellen Reihenfolge/);
 });
 

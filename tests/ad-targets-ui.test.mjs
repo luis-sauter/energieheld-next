@@ -159,24 +159,30 @@ test("admin review exposes every target and explains removed assignments", () =>
     /value="resume"/,
   );
 });
-test("public creative and both previews share imagery and text without recording events", () => {
+test("top and sidebar image creatives are linked banners without public text cards or cropping", () => {
   const preview = render(CampaignSlot, {
     placement: "top_banner",
     ad: campaign,
     preview: true,
   });
-  const publicAd = render(CampaignSlot, {
-    placement: "top_banner",
-    ad: campaign,
-  });
-  for (const html of [preview, publicAd]) {
-    assert.match(html, /Energie vom eigenen Dach/);
-    assert.match(html, /images\/solar.jpg/);
-    assert.match(html, /data-placement="top_banner"/);
+  for (const placement of ["top_banner", "sidebar_top"]) {
+    const publicAd = render(CampaignSlot, { placement, ad: { ...campaign, placement } });
+    assert.match(publicAd, new RegExp(`data-placement="${placement}"`));
+    assert.match(publicAd, /href="https:\/\/example.org\/"/);
+    assert.match(publicAd, /images\/solar.jpg/);
+    assert.match(publicAd, /rel="sponsored noopener noreferrer"/);
+    assert.doesNotMatch(publicAd, /<strong>|<p>|Mehr erfahren|sendBeacon|trackEvent/);
   }
-  assert.match(publicAd, /rel="sponsored noopener noreferrer"/);
-  assert.doesNotMatch(preview, /href="https:\/\/example.org"/);
-  assert.doesNotMatch(publicAd, /sendBeacon|trackEvent/);
+  assert.match(preview, /images\/solar.jpg/);
+  assert.doesNotMatch(preview, /<strong>|Mehr erfahren/);
+  assert.doesNotMatch(preview, /href="https:\/\/example.org\/"/);
+  const textFallback = render(CampaignSlot, { placement: "sidebar_top", ad: { ...campaign, imageUrl: null }, preview: true });
+  assert.match(textFallback, /Energie vom eigenen Dach|Mehr erfahren/);
+  const empty = render(CampaignSlot, { placement: "sidebar_middle" });
+  assert.match(empty, /Freier Werbeplatz|Werbemöglichkeiten entdecken/);
+  const css = readFileSync(new URL("../src/components/advertising/advertising.module.css", import.meta.url), "utf8");
+  assert.match(css, /\.imageCreative img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/);
+  assert.doesNotMatch(css, /object-fit:\s*cover|max-height:\s*220px/);
 });
 // Optional local, static visual fixture. Never writes to the application or DB.
 if (process.env.AD_TARGET_PREVIEW_FILE) {

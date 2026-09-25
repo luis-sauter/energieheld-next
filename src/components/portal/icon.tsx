@@ -13,6 +13,7 @@ const paths: Record<string, string> = {
   check: "m5 12 4 4L19 6",
   shield: "m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6l9-4Zm-5 10 3 3 7-7",
   mail: "M2 4h20v16H2ZM2 4l10 9L22 4",
+  phone: "M6 2h4l2 5-3 2a16 16 0 0 0 6 6l2-3 5 2v4c0 2-2 4-4 4C9 22 2 15 2 6c0-2 2-4 4-4Z",
   globe:
     "M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0ZM2 12h20M12 2c6 6 6 14 0 20-6-6-6-14 0-20",
   menu: "M3 6h18M3 12h18M3 18h18",
