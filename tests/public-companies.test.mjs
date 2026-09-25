@@ -67,6 +67,8 @@ const { default: Detail, generateMetadata: detailMetadata } =
   await import("../src/app/(energieheld)/experten/[slug]/page.tsx");
 const { default: TradePage } =
   await import("../src/app/(energieheld)/gewerke/[slug]/page.tsx");
+const { default: HomePage } =
+  await import("../src/app/(energieheld)/page.tsx");
 const { energieheld } = await import("../src/config/energieheld.ts");
 const { listings: demos } = await import("../src/data/listings.ts");
 const { combinePortalCompanies, loadPortalCompanies, loadPortalCompanyBySlug } =
@@ -245,6 +247,7 @@ test("real and demo profiles interleave after merge, while sidebar order applies
     { slot: "sidebar_bottom", sort_order: 0 },
     { slot: "sidebar_top", sort_order: 1 },
     { slot: "sidebar_middle", sort_order: 2 },
+    ...Array.from({ length: 9 }, (_, i) => ({ slot: `sidebar_${String(i + 4).padStart(2, "0")}`, sort_order: i + 3 })),
   ];
   api([real], false, [], order, sidebar);
   assert.deepEqual((await loadPortalCompanies()).data.slice(0, 3).map((item) => item.slug), [demos[1].slug, real.slug, demos[0].slug]);
@@ -259,7 +262,25 @@ test("real and demo profiles interleave after merge, while sidebar order applies
   assert.deepEqual([...trade.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]).slice(0, 4), placements.slice(0, 4));
 });
 
-test("admin sees both inline order entries over the actual list and three empty sidebar slots", async () => {
+test("homepage keeps editorial company order beside the shared long rail and queries only homepage ads", async () => {
+  const basic = { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: "basic-home", display_name: "Basic Home", package_type: "basic" };
+  const premium = { ...row, id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", slug: "premium-home", display_name: "Premium Home", package_type: "premium" };
+  const requests = api([premium, basic], false, [], [
+    { profile_id: basic.id, sort_order: 0 },
+    { profile_id: premium.id, sort_order: 1 },
+  ]);
+  const html = renderToStaticMarkup(await HomePage());
+  assert.ok(html.indexOf("Basic Home") < html.indexOf("Premium Home"));
+  assert.match(html, /href="\/experten\/basic-home"/);
+  assert.match(html, /href="\/experten\/premium-home"/);
+  assert.equal((html.match(/data-placement="sidebar_/g) ?? []).length, 10);
+  assert.equal((html.match(/>Anzeige<\/p>/g) ?? []).length, 1);
+  const adRequest = requests.find(({ url }) => url.pathname === "/rest/v1/rpc/get_active_ad_campaigns");
+  assert.ok(adRequest);
+  assert.equal(adRequest.body.p_scope_type, "homepage");
+});
+
+test("admin sees both inline order entries and the compact sidebar rail", async () => {
   api([row]);
   const html = renderToStaticMarkup(await DirectoryPage({
     searchParams: Promise.resolve({}),
@@ -269,7 +290,8 @@ test("admin sees both inline order entries over the actual list and three empty 
   }));
   assert.match(html, /Firmenreihenfolge bearbeiten/);
   assert.match(html, /Banner-Reihenfolge bearbeiten/);
-  assert.equal((html.match(/Freier Werbeplatz/g) ?? []).length, 4);
+  assert.equal((html.match(/Freier Werbeplatz/g) ?? []).length, 1);
+  assert.equal((html.match(/data-sidebar-slot=/g) ?? []).length, 10);
   assert.match(html, /Beispielprofil/);
   assert.doesNotMatch(html, /Banner-Bearbeitung aktiv|Firma .* nach oben/);
   api([row]);

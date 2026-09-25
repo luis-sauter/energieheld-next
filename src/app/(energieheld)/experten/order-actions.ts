@@ -51,6 +51,7 @@ export async function saveSidebarOrder(slots: SidebarSlot[]) {
     };
     revalidatePath("/experten");
     revalidatePath("/gewerke", "layout");
+    revalidatePath("/");
     return { success: "Die Banner-Reihenfolge wurde gespeichert." };
   } catch {
     return { error: "Speichern ist gerade nicht möglich. Bitte versuchen Sie es erneut." };

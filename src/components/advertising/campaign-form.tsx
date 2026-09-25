@@ -128,6 +128,18 @@ export function CampaignForm({
           <input
             type="checkbox"
             name="targets"
+            value="homepage"
+            checked={values.targets.some((t) => t.target_type === "homepage")}
+            onChange={(event) =>
+              setTarget({ target_type: "homepage", category_id: null }, event.target.checked)
+            }
+          />
+          Startseite
+        </label>
+        <label className={styles.target}>
+          <input
+            type="checkbox"
+            name="targets"
             value="experts_directory"
             checked={values.targets.some(
               (t) => t.target_type === "experts_directory",

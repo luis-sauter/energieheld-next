@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Trade } from "@/config/trades";
 import { CampaignSlot } from "@/components/advertising/campaign-view";
+import { AdvertisingRail } from "@/components/advertising/advertising-rail";
 import type { ActiveAd } from "@/lib/ad-values";
 import { defaultSidebarOrder, type SidebarSlot } from "@/lib/sidebar-order";
 import { DirectoryEditModeProvider } from "@/components/admin/directory-edit-mode";
@@ -56,19 +57,7 @@ export function AdvertisingLayout({
       />
       <div className="commercial-columns">
         <div className="commercial-content">{children}</div>
-        <aside className="commercial-sidebar" aria-label="Werbeanzeigen">
-          <p className="sidebar-title">Partner für Ihr Vorhaben</p>
-          {sidebarEditor ?? sidebarOrder.map((placement) => (
-            <CampaignSlot
-              key={placement}
-              placement={placement}
-              ad={ads.find((ad) => ad.placement === placement)}
-            />
-          ))}
-          <Link className="advertise-link" href="/werbung">
-            Hier könnte Ihre Anzeige stehen <Icon name="arrow" size={16} />
-          </Link>
-        </aside>
+        <AdvertisingRail slots={sidebarOrder} ads={ads} editor={sidebarEditor} />
       </div>
     </div>
   );

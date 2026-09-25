@@ -3,16 +3,14 @@
 import { useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { CampaignSlot } from "@/components/advertising/campaign-view";
+import { adPlacements } from "@/lib/ad-values";
+import { sidebarCreative } from "@/lib/advertising-rail";
 import type { ActiveAd } from "@/lib/ad-values";
 import { moveSidebarSlot, type SidebarSlot } from "@/lib/sidebar-order";
 import { useDirectoryEditMode } from "./directory-edit-mode";
 import styles from "./sidebar-order-editor.module.css";
 
-const label = (slot: SidebarSlot) => ({
-  sidebar_top: "Banner A",
-  sidebar_middle: "Banner B",
-  sidebar_bottom: "Banner C",
-})[slot];
+const label = (slot: SidebarSlot) => adPlacements[slot];
 
 export function SidebarOrderSlots({
   ads,
@@ -37,7 +35,10 @@ export function SidebarOrderSlots({
   onPointerUp: () => void;
   onMove: (from: number, to: number) => void;
 }) {
-  return slots.map((slot, index) => (
+  return slots.map((slot, index) => {
+    const ad = sidebarCreative(slot, ads);
+    if (!editing && !ad) return null;
+    return (
     <div key={slot} data-sidebar-slot={slot}
       className={`${styles.row} ${dragged === slot ? styles.dragging : ""} ${target === slot ? styles.target : ""}`}>
       {editing && (
@@ -49,14 +50,17 @@ export function SidebarOrderSlots({
               onPointerUp={onPointerUp} onPointerCancel={onPointerUp} disabled={busy}>↕</button>
             <button type="button" aria-label={`${label(slot)} nach oben`} disabled={busy || index === 0}
               onClick={() => onMove(index, index - 1)}>↑</button>
-            <button type="button" aria-label={`${label(slot)} nach unten`} disabled={busy || index === 2}
+            <button type="button" aria-label={`${label(slot)} nach unten`} disabled={busy || index === slots.length - 1}
               onClick={() => onMove(index, index + 1)}>↓</button>
           </div>
         </>
       )}
-      <CampaignSlot placement={slot} ad={ads.find((ad) => ad.placement === slot)} />
+      {ad ? (
+        <CampaignSlot placement={slot} ad={ad} showLabel={false} />
+      ) : <div className={styles.placeholder}>Noch kein Banner</div>}
     </div>
-  ));
+  );
+  });
 }
 
 export function SidebarOrderEditor({

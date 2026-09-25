@@ -19,7 +19,7 @@ registerHooks({
       };
     if (s === "next/navigation")
       return {
-        url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")}',
+        url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")};export function useRouter(){return {refresh(){}}}',
         shortCircuit: true,
       };
     if (s.endsWith("/supabase/server"))
@@ -65,6 +65,10 @@ const { CampaignForm, AdminCampaignForm } = await import(
 const { CampaignFacts, CampaignSlot } = await import(
   "../src/components/advertising/campaign-view.tsx"
 );
+const { AdvertisingRail } = await import("../src/components/advertising/advertising-rail.tsx");
+const { sidebarCreative } = await import("../src/lib/advertising-rail.ts");
+const { defaultSidebarOrder } = await import("../src/lib/sidebar-order.ts");
+const { SidebarOrderSlots } = await import("../src/components/admin/sidebar-order-editor.tsx");
 const campaign = {
   id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   profile_id: "own",
@@ -94,7 +98,7 @@ const campaign = {
 };
 const render = (Component, props) =>
   renderToStaticMarkup(createElement(Component, props));
-test("campaign form offers simultaneous directory and official trade checkboxes only", () => {
+test("campaign form offers homepage, directory and official trade checkboxes", () => {
   const html = render(CampaignForm, {
     campaign,
     categoryIds: ["solar", "elektro", "dach"],
@@ -102,7 +106,7 @@ test("campaign form offers simultaneous directory and official trade checkboxes 
   assert.match(html, /Werbung anzeigen auf:/);
   assert.match(html, /Ihre Gewerke:/);
   const inputs = html.match(/<input[^>]*type="checkbox"[^>]*>/g);
-  assert.equal(inputs.length, 4);
+  assert.equal(inputs.length, 5);
   for (const target of ["experts_directory", "trade:solar", "trade:elektro"])
     assert.ok(
       inputs.some(
@@ -117,6 +121,8 @@ test("campaign form offers simultaneous directory and official trade checkboxes 
         input.includes('value="trade:dach"') && !input.includes('checked=""'),
     ),
   );
+  assert.ok(inputs.some((input) => input.includes('value="homepage"')));
+  assert.match(html, /Startseite/);
   assert.doesNotMatch(
     html,
     /value="trade:heizung"|name="scope_type"|name="category_id"|Alle Gewerkeseiten/,
@@ -125,7 +131,7 @@ test("campaign form offers simultaneous directory and official trade checkboxes 
     campaign: { ...campaign, targets: [campaign.targets[0]] },
     categoryIds: [],
   });
-  assert.equal((noTrades.match(/type="checkbox"/g) || []).length, 1);
+  assert.equal((noTrades.match(/type="checkbox"/g) || []).length, 2);
   assert.match(noTrades, /noch keine offiziellen Gewerke/);
   const removed = render(CampaignForm, { campaign, categoryIds: ["solar"] });
   assert.doesNotMatch(removed, /value="trade:elektro"/);
@@ -207,6 +213,48 @@ test("signed creative images have no fixed dimensions for portrait, square or wi
       }
     }
   }
+});
+
+test("public rail prefers active campaigns, fills only mapped slots, and has one label and CTA", () => {
+  const live = { ...campaign, placement: "sidebar_top", imageUrl: "https://signed.example/live.jpg?token=private" };
+  assert.equal(sidebarCreative("sidebar_top", [live]), live);
+  assert.match(sidebarCreative("sidebar_middle", [])?.imageUrl ?? "", /legacy-ads\/haus-salzburg\.jpg/);
+  assert.equal(sidebarCreative("sidebar_12", []), undefined);
+  const html = render(AdvertisingRail, { slots: [...defaultSidebarOrder], ads: [live] });
+  assert.match(html, /signed\.example\/live\.jpg\?token=private/);
+  assert.doesNotMatch(html, /legacy-ads\/city-apart-square\.jpg/);
+  assert.equal((html.match(/<section\b/g) ?? []).length, 10);
+  assert.equal((html.match(/class="advertising-rail-label"/g) ?? []).length, 1);
+  assert.equal((html.match(/Hier könnte Ihre Anzeige stehen/g) ?? []).length, 1);
+  assert.doesNotMatch(html, /Freier Werbeplatz|<strong>|Mehr erfahren/);
+  assert.match(html, /rel="sponsored noopener noreferrer"/);
+  assert.match(html, /target="_blank"/);
+  const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+  assert.match(css, /\.advertising-rail-creatives img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/);
+});
+
+test("admin reorder view renders twelve controls with dynamic first and last bounds", () => {
+  const html = render(SidebarOrderSlots, {
+    ads: [], slots: [...defaultSidebarOrder], editing: true, busy: false,
+    dragged: null, target: null,
+    onPointerDown() {}, onPointerMove() {}, onPointerUp() {}, onMove() {},
+  });
+  assert.equal((html.match(/data-sidebar-slot=/g) ?? []).length, 12);
+  assert.match(html, /Banner A nach oben"[^>]*disabled/);
+  assert.match(html, /Banner L nach unten"[^>]*disabled/);
+  assert.match(html, /Banner F verschieben/);
+  assert.equal((html.match(/Noch kein Banner/g) ?? []).length, 2);
+});
+
+test("homepage reuses ordered portal rows and the shared rail", () => {
+  const source = readFileSync(new URL("../src/app/(energieheld)/page.tsx", import.meta.url), "utf8");
+  assert.match(source, /loadPortalCompanies\(\)/);
+  assert.match(source, /loadPublicAds\(undefined, "homepage"\)/);
+  assert.match(source, /loadPublicSidebarOrder\(\)/);
+  assert.match(source, /companies\.data\?\.map\(\(listing\)/);
+  assert.match(source, /<ListingRow/);
+  assert.match(source, /<AdvertisingRail slots=\{sidebarOrder\} ads=\{ads\}/);
+  assert.doesNotMatch(source, /listings\.slice|directoryPackage === "premium"/);
 });
 // Optional local, static visual fixture. Never writes to the application or DB.
 if (process.env.AD_TARGET_PREVIEW_FILE) {

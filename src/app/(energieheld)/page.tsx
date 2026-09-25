@@ -1,11 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { energieheld } from "@/config/energieheld";
-import { reiseportal } from "@/config/reiseportal";
-import { listings, travelListing } from "@/data/listings";
 import { HeroSearch } from "@/components/portal/search";
-import { ListingCard } from "@/components/portal/listings";
 import { CampaignSlot } from "@/components/advertising/campaign-view";
+import { AdvertisingRail } from "@/components/advertising/advertising-rail";
+import { ListingRow } from "@/components/portal/listing-row";
+import { loadPortalCompanies } from "@/lib/portal-companies";
+import { loadPublicAds } from "@/lib/public-ads";
+import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 import { Icon } from "@/components/portal/icon";
 
 const topics = [
@@ -76,7 +78,13 @@ const stories = [
     "/images/trades/gewerke.jpg",
   ],
 ];
-export default function Home() {
+export const dynamic = "force-dynamic";
+export default async function Home() {
+  const [companies, ads, sidebarOrder] = await Promise.all([
+    loadPortalCompanies(),
+    loadPublicAds(undefined, "homepage"),
+    loadPublicSidebarOrder(),
+  ]);
   return (
     <main id="hauptinhalt" className="editorial-home">
       <section className="portal-intro container">
@@ -109,7 +117,7 @@ export default function Home() {
         <HeroSearch />
       </section>
       <div className="container premium-space">
-        <CampaignSlot placement="top_banner" />
+        <CampaignSlot placement="top_banner" ad={ads.find((ad) => ad.placement === "top_banner")} />
       </div>
       <section className="section container" id="gewerke">
         <div className="section-heading">
@@ -189,26 +197,13 @@ export default function Home() {
           </Link>
         </div>
         <div className="commercial-columns">
-          <div className="editorial-recommendations">
-            {listings.slice(0, 2).map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                categories={energieheld.categories}
-                href={"/experten/" + listing.slug}
-              />
+          <div className="editorial-recommendations listing-rows">
+            {companies.error ? <p role="alert">{companies.error}</p> : companies.data?.map((listing) => (
+              <ListingRow key={listing.id} listing={listing} categories={energieheld.categories}
+                href={`/experten/${listing.slug}`} />
             ))}
-            <ListingCard
-              listing={travelListing}
-              categories={reiseportal.categories}
-              href="/portal-vorschau#hotelprofil"
-            />
           </div>
-          <aside className="commercial-sidebar" aria-label="Werbung">
-            <CampaignSlot placement="sidebar_top" />
-            <CampaignSlot placement="sidebar_middle" />
-            <CampaignSlot placement="sidebar_bottom" />
-          </aside>
+          <AdvertisingRail slots={sidebarOrder} ads={ads} />
         </div>
       </section>
       <section
