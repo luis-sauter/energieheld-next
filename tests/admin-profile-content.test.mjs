@@ -177,6 +177,28 @@ test("heading overrides use fixed slots and block moves submit an exact same-pro
   });
 });
 
+test("history reorder accepts only the complete displayed block permutation", async () => {
+  const order = (ids) => {
+    const data = form({ intent: "reorder", profile_id: foreignProfile });
+    ids.forEach((id) => data.append("block_ids", id));
+    return data;
+  };
+  const db = client();
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, order([second, first]))).success);
+  assert.deepEqual(db.calls.find((call) => call.rpc === "reorder_profile_content_blocks")?.args,
+    { p_profile_id: profileId, p_block_ids: [second, first] });
+  for (const ids of [[first], [first, first], [first, foreignBlock]]) {
+    const denied = client();
+    assert.ok((await changeAdminProfileContent(denied, profileId, slug, order(ids))).error);
+    assert.ok(!denied.calls.some((call) => call.rpc === "reorder_profile_content_blocks"));
+  }
+  for (const [id, targetSlug, options] of [[foreignProfile, slug, {}], [profileId, "fremd", {}], [profileId, slug, { admin: false }]]) {
+    const denied = client(options);
+    assert.notEqual((await changeAdminProfileContent(denied, id, targetSlug, order([second, first]))).success, "Die Reihenfolge wurde gespeichert.");
+    assert.ok(!denied.calls.some((call) => call.rpc === "reorder_profile_content_blocks"));
+  }
+});
+
 test("existing heading override can be edited or cleared without touching profile description", async () => {
   const db = client({ blocks: [{
     id: first, profile_id: profileId, type: "heading", slot: "about_heading",

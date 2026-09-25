@@ -7,7 +7,7 @@ const profile = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const block = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const image = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const path = `profiles/${profile}/blocks/${block}/${image}.jpg`;
-function client({ newTable = true, withImage = true, crop = null } = {}) {
+function client({ newTable = true, withImage = true, crop = null, caption } = {}) {
   const content = [
     { id: "heading", profile_id: profile, type: "heading", slot: null, sort_order: 0, content: { text: "Willkommen" }, config: {} },
     { id: "text", profile_id: profile, type: "text", slot: null, sort_order: 1, content: { text: "Bestehender Inhalt" }, config: {} },
@@ -21,6 +21,7 @@ function client({ newTable = true, withImage = true, crop = null } = {}) {
         then(resolve) { return resolve(table === "profile_content_blocks"
           ? { data: content, error: null }
           : newTable ? { data: [{ id: image, block_id: block, storage_path: path, alt_text: "Blick aufs Haus", sort_order: 0,
+            ...(caption !== undefined ? { caption } : {}),
             ...(crop ?? {}) }], error: null }
             : { data: null, error: { code: "42P01" } }); },
       };
@@ -48,6 +49,13 @@ test("loader forwards only safe crop metadata when present and preserves signed 
     { focus_x: 20, focus_y: 70, zoom: 1.8 });
   assert.equal(image.src, "https://signed.invalid/image");
   assert.equal("storage_path" in image, false);
+});
+
+test("loader forwards a visible caption without leaking the private storage path", async () => {
+  const result = await loadPublicProfileContent(client({ caption: "Montage einer Wärmepumpe" }), profile);
+  const item = splitProfileContent(result.blocks, "Firma").blocks.find((block) => block.type === "image_grid").images[0];
+  assert.equal(item.caption, "Montage einer Wärmepumpe");
+  assert.equal("storage_path" in item, false);
 });
 
 test("a missing image migration leaves existing heading and text blocks available", async () => {

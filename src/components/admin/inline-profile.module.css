@@ -67,7 +67,7 @@
 .layoutButtons { display: flex; flex-wrap: wrap; gap: 8px; }
 .layoutButtons button[aria-pressed="true"] { border-color: var(--brand-primary); color: var(--brand-primary); font-weight: 700; }
 .editImageGrid { align-items: start; }
-.imageTile { min-width: 0; display: grid; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); overflow-wrap: anywhere; }
+.imageTile { min-width: 0; display: grid; gap: 8px; margin: 0; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); overflow-wrap: anywhere; }
 .imageTile button { min-width: 0; max-width: 100%; padding: 7px 8px; white-space: normal; overflow-wrap: anywhere; }
 .imageReorderHandle[draggable="true"] { cursor: grab; user-select: none; }
 .imageReorderHandle[draggable="true"]:active { cursor: grabbing; }
@@ -80,7 +80,7 @@
 .emptyImageTile { min-height: 0; align-self: start; background: var(--surface); overflow-wrap: anywhere; }
 .imageAlt { display: grid; gap: 6px; }
 .imageAlt label { display: grid; gap: 4px; font-size: 13px; }
-.imageAlt input { width: 100%; min-width: 0; padding: 9px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.imageAlt textarea { width: 100%; min-width: 0; padding: 9px; border: 1px solid var(--line); border-radius: 6px; font: inherit; resize: vertical; }
 .resizeFooter { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .resizeButtons { display: flex; flex-wrap: wrap; gap: 6px; }
 .resizeButtons button { min-height: 38px; padding: 6px 10px; font-size: 12px; }

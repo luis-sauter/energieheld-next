@@ -10,6 +10,7 @@ export type ProfileBlockImage = Partial<ImageCrop> & {
   id: string;
   block_id: string;
   alt_text: string | null;
+  caption?: string | null;
   sort_order: number;
   src: string;
 };
@@ -81,6 +82,7 @@ export async function loadPublicProfileContent(client: SupabaseClient, profileId
             urls.has(row.storage_path))
           .map((row) => ({
             id: row.id, block_id: row.block_id, alt_text: row.alt_text,
+            ...("caption" in row ? { caption: typeof row.caption === "string" ? row.caption : null } : {}),
             sort_order: row.sort_order, src: urls.get(row.storage_path)!,
             ...(typeof row.focus_x === "number" && typeof row.focus_y === "number" && typeof row.zoom === "number"
               ? { focus_x: row.focus_x, focus_y: row.focus_y, zoom: row.zoom } : {}),

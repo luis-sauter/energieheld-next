@@ -3,10 +3,11 @@ import Image from "next/image";
 import { normalizeImageGridConfig, publicImageGridColumns } from "@/lib/image-grid-layout";
 import { normalizeBlockLayout, normalizeTextBlockLayout } from "@/lib/content-block-layout";
 import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";
+import { imageCaptionPresentation } from "@/lib/image-caption";
 import styles from "./profile-content-blocks.module.css";
 
 export function ProfileBlockImage({ image, crop }: { image: ProfileBlockImage; crop?: ImageCrop }) {
-  return <Image src={image.src} alt={image.alt_text ?? ""} fill unoptimized
+  return <Image src={image.src} alt={imageCaptionPresentation(image).alt} fill unoptimized
     sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 25vw"
     style={imageCropStyle(crop ?? image)} />;
 }
@@ -17,9 +18,10 @@ export function BlockImageGrid({ block }: { block: ProfileContentBlock }) {
   const config = normalizeImageGridConfig(block.config);
   return <div className={styles.frame}>
     <div className={styles.grid} data-columns={publicImageGridColumns(config.columns, images.length)}>
-    {images.map((image) => <div key={image.id} className={styles.tile} style={{ aspectRatio: config.aspect_ratio }}>
-      <ProfileBlockImage image={image} />
-    </div>)}
+    {images.map((image) => <figure key={image.id} className={styles.figure}>
+      <div className={styles.tile} style={{ aspectRatio: config.aspect_ratio }}><ProfileBlockImage image={image} /></div>
+      {imageCaptionPresentation(image).caption && <figcaption className={styles.caption}>{imageCaptionPresentation(image).caption}</figcaption>}
+    </figure>)}
     </div>
   </div>;
 }

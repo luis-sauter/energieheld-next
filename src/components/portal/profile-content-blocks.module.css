@@ -6,6 +6,8 @@
 .grid[data-columns="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .tile { position: relative; width: 100%; aspect-ratio: 1.5; overflow: hidden; border-radius: 6px; background: var(--surface); }
 .tile img { object-fit: cover; }
+.figure { min-width: 0; margin: 0; }
+.caption { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; white-space: pre-wrap; }
 @media (max-width: 900px) {
   .grid[data-columns="3"], .grid[data-columns="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
