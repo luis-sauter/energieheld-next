@@ -23,7 +23,7 @@ registerHooks({
       return { url: 'data:text/javascript,export function revalidatePath(){}', shortCircuit: true };
     if (s === "next/navigation")
       return {
-        url: 'data:text/javascript,export function notFound(){throw Error("NOT_FOUND")};export function redirect(path){throw Error("REDIRECT:"+path)};export function useRouter(){return {refresh(){}}}',
+        url: 'data:text/javascript,export function notFound(){throw Error("NOT_FOUND")};export function redirect(path){throw Error("REDIRECT:"+path)};export const permanentRedirect=redirect;export function useRouter(){return {refresh(){}}}',
         shortCircuit: true,
       };
     if (s === "next/link" || s === "next/image")
@@ -102,6 +102,24 @@ const travelRow = {
   tagline: "Unterkunft in der Region",
   business_areas: "Übernachtung",
   company_profile_categories: [],
+};
+const demoRow = {
+  ...travelRow,
+  id: "31ae7d1e-26a7-4161-8d14-f5ee4735f5d4",
+  slug: "energieheld-demo-gmbh-c3351d59",
+  display_name: "Energieheld Demo GmbH",
+  tagline: "Photovoltaik",
+  description: "Modernisierung und Elektrotechnik",
+  business_areas: "Gebäudetechnik",
+  street: "Musterstraße 12",
+  public_email: "kontakt@energieheld.bayern",
+  website: "https://energieheld.bayern",
+  logo_path: "profiles/31ae7d1e-26a7-4161-8d14-f5ee4735f5d4/logo.jpg",
+  company_profile_images: [
+    { id: "demo-image-1", storage_path: "profiles/31ae7d1e-26a7-4161-8d14-f5ee4735f5d4/one.jpg", alt_text: "Photovoltaik", sort_order: 0 },
+    { id: "demo-image-2", storage_path: "profiles/31ae7d1e-26a7-4161-8d14-f5ee4735f5d4/two.jpg", alt_text: "Elektrotechnik", sort_order: 1 },
+    { id: "demo-image-3", storage_path: "profiles/31ae7d1e-26a7-4161-8d14-f5ee4735f5d4/three.jpg", alt_text: "Modernisierung", sort_order: 2 },
+  ],
 };
 const originalFetch = globalThis.fetch;
 afterEach(() => {
@@ -274,7 +292,30 @@ test("real and demo profiles interleave after merge, while sidebar order applies
   assert.deepEqual([...travel.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]).slice(0, 4), placements.slice(0, 4));
 });
 
-test("homepage shows travel preview beside the shared long rail and queries only homepage ads", async () => {
+test("public loader retries its existing columns when anon has no street grant", async () => {
+  api([travelRow]);
+  const fetchWithData = globalThis.fetch;
+  let denied = 0;
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(input);
+    if (url.pathname === "/rest/v1/company_profiles" && url.searchParams.get("select")?.includes("street")) {
+      denied++;
+      return new Response(JSON.stringify({ code: "42501", message: "permission denied" }), {
+        status: 403, headers: { "content-type": "application/json" },
+      });
+    }
+    return fetchWithData(input, init);
+  };
+  const directory = await loadPublicCompanies();
+  assert.equal(directory.error, null);
+  assert.equal(directory.data[0].location.street, "");
+  const detail = await loadPublicCompanyBySlug(travelRow.slug);
+  assert.equal(detail.error, null);
+  assert.equal(detail.data.location.street, "");
+  assert.equal(denied, 2);
+});
+
+test("homepage shows real travel cards beside the shared long rail and queries only homepage ads", async () => {
   const basic = { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: "basic-home", display_name: "Basic Home", package_type: "basic" };
   const premium = { ...row, id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", slug: "premium-home", display_name: "Premium Home", package_type: "premium" };
   const requests = api([premium, basic], false, [], [
@@ -283,7 +324,10 @@ test("homepage shows travel preview beside the shared long rail and queries only
   ]);
   const html = renderToStaticMarkup(await HomePage());
   assert.match(html, /Bayerischer Wald/);
-  assert.match(html, /Demo GmbH/);
+  assert.match(html, /Finde deinen passenden Urlaub/);
+  assert.match(html, /Reise finden/);
+  assert.match(html, /Ausgewählte Unterkünfte/);
+  assert.doesNotMatch(html, /Demo GmbH/);
   assert.match(html, /href="\/unterkuenfte\/bayerischer-wald"/);
   assert.doesNotMatch(html, /Basic Home|Premium Home/);
   assert.equal((html.match(/data-placement="sidebar_/g) ?? []).length, 10);
@@ -293,8 +337,8 @@ test("homepage shows travel preview beside the shared long rail and queries only
   assert.equal(adRequest.body.p_scope_type, "homepage");
 });
 
-test("public accommodations directory shows all six travel previews and the existing advertising rail", async () => {
-  api([row]);
+test("public accommodations directory shows five legacy previews and one sanitized live demo", async () => {
+  api([row, demoRow]);
   const html = renderToStaticMarkup(
     await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({}) }),
   );
@@ -303,6 +347,18 @@ test("public accommodations directory shows all six travel previews and the exis
   assert.match(html, /Demo\/Testprofil/);
   assert.match(html, /advertising-rail/);
   assert.doesNotMatch(html, /Test Firma|Müller Haustechnik|Energieheld Demo GmbH|Gewerke|Fachbetriebe/);
+});
+
+test("travel search submits supported destination and theme filters to the real directory", async () => {
+  api([demoRow]);
+  const html = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({
+    ziel: "oesterreich", thema: "wanderurlaub",
+  }) }));
+  assert.match(html, /name="ziel"/);
+  assert.match(html, /name="thema"/);
+  assert.match(html, /2 Unterkünfte/);
+  assert.match(html, /Höflehner|Schafhuber/);
+  assert.doesNotMatch(html, /Demo GmbH|Pension Sonnenhof|Villner Hof|Energieheld Demo GmbH/);
 });
 
 test("admin sees both inline order entries and the compact sidebar rail", async () => {
@@ -781,14 +837,21 @@ test("real Basic directory uses a compact row without a logo block", async () =>
   assert.doesNotMatch(html, /row-logo/);
 });
 
-test("the single neutral demo detail has a clear label and no invented imagery", async () => {
-  api([]);
+test("live demo detail uses its actual media and address without energy-sector copy", async () => {
+  api([demoRow]);
   const html = renderToStaticMarkup(
     await Detail({ params: Promise.resolve({ slug: "demo-gmbh" }) }),
   );
   assert.match(html, /Demo GmbH/);
   assert.match(html, /Demo\/Testprofil/);
-  assert.doesNotMatch(html, /src="\/images\/|Symbolbild|Müller Haustechnik/);
+  assert.match(html, /profiles\/31ae7d1e-26a7-4161-8d14-f5ee4735f5d4\/logo\.jpg/);
+  assert.match(html, /Bild 1 von Demo GmbH/);
+  assert.match(html, /Google Maps – Adresse: Musterstraße 12/);
+  assert.doesNotMatch(html, /Energieheld Demo GmbH|Photovoltaik|Elektrotechnik|Energiesysteme|Gebäudetechnik|Modernisierung|energieheld\.bayern|Symbolbild/);
+});
+
+test("old Höflehner URL redirects to the ASCII slug", async () => {
+  await assert.rejects(Detail({ params: Promise.resolve({ slug: "höflehner" }) }), /REDIRECT:\/unterkuenfte\/hoeflehner/);
 });
 
 test("real approved profile has an inquiry dialog even without public email; demos remain disabled", async () => {
@@ -800,7 +863,7 @@ test("real approved profile has an inquiry dialog even without public email; dem
   assert.match(real, /name="consent"/);
   assert.match(real, /name="website"/);
   assert.match(real, /Anfrage senden/);
-  api([]);
+  api([demoRow]);
   const demo = renderToStaticMarkup(
     await Detail({ params: Promise.resolve({ slug: "demo-gmbh" }) }),
   );

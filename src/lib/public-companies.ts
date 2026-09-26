@@ -10,7 +10,10 @@ export const PUBLIC_COMPANIES_ERROR =
   "Die Unternehmensprofile konnten gerade nicht geladen werden.";
 
 const publicFields =
-  "id,status,slug,display_name,tagline,description,phone,public_email,website,postal_code,city,region,country,logo_path,company_profile_images(id,storage_path,alt_text,sort_order),business_areas,company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note)";
+  "id,status,slug,display_name,tagline,description,phone,public_email,website,street,postal_code,city,region,country,logo_path,company_profile_images(id,storage_path,alt_text,sort_order),business_areas,company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note)";
+// Older public column grants omit street. Keep approved profiles readable until
+// that grant is deployed; the existing city-level map remains available.
+const publicFieldsWithoutStreet = publicFields.replace("website,street,postal_code", "website,postal_code");
 
 type PublicProfile = {
   id: string;
@@ -22,6 +25,7 @@ type PublicProfile = {
   phone: string | null;
   public_email: string | null;
   website: string | null;
+  street?: string | null;
   postal_code: string | null;
   city: string | null;
   region: string | null;
@@ -48,15 +52,25 @@ export async function loadPublicCompanyDirectory(): Promise<Result<{ listings: L
     const profiles: PublicProfile[] = [];
     // Avoid silently truncating the directory at the API's default row limit.
     const pageSize = 500;
+    let streetReadable = true;
     for (let offset = 0; ; offset += pageSize) {
-      const { data, error } = await client
+      let { data, error } = await client
         .from("company_profiles")
-        .select(publicFields)
+        .select(streetReadable ? publicFields : publicFieldsWithoutStreet)
         .eq("status", "approved")
         .order("id")
         .range(offset, offset + pageSize - 1);
+      if (error?.code === "42501" && streetReadable) {
+        streetReadable = false;
+        ({ data, error } = await client
+          .from("company_profiles")
+          .select(publicFieldsWithoutStreet)
+          .eq("status", "approved")
+          .order("id")
+          .range(offset, offset + pageSize - 1));
+      }
       if (error) throw error;
-      const rows = data as PublicProfile[];
+      const rows = data as unknown as PublicProfile[];
       profiles.push(...rows.filter((row) => row.status === "approved"));
       if (rows.length < pageSize) break;
     }
@@ -108,12 +122,20 @@ export async function loadPublicCompanyBySlug(
 ): Promise<Result<Listing | null>> {
   try {
     const client = createPublicClient();
-    const { data, error } = await client
+    let { data, error } = await client
       .from("company_profiles")
       .select(publicFields)
       .eq("status", "approved")
       .eq("slug", slug)
       .maybeSingle();
+    if (error?.code === "42501") {
+      ({ data, error } = await client
+        .from("company_profiles")
+        .select(publicFieldsWithoutStreet)
+        .eq("status", "approved")
+        .eq("slug", slug)
+        .maybeSingle());
+    }
     if (error) throw error;
     return {
       data:

@@ -13,7 +13,7 @@ export default async function AccommodationsPage({
 }) {
   const params = await searchParams;
   let canReorder = false;
-  if (!["q", "ort", "sort"].some((key) => params[key] !== undefined)) {
+  if (!["q", "ort", "sort", "ziel", "thema"].some((key) => params[key] !== undefined)) {
     try {
       canReorder = (await checkAdmin(await createClient())) === "admin";
     } catch {

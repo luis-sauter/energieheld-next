@@ -9,6 +9,7 @@ export type CompanyPresentation = {
   tagline?: string | null;
   description?: string | null;
   business_areas?: string | null;
+  street?: string | null;
   postal_code?: string | null;
   city?: string | null;
   region?: string | null;
@@ -41,6 +42,7 @@ export function companyProfileListing(
       (category) => category.category_id,
     ),
     location: {
+      street: profile.street ?? "",
       postalCode: profile.postal_code ?? "",
       city: profile.city ?? "",
       region: profile.region ?? "",

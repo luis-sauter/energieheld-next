@@ -119,7 +119,9 @@ export function ContactSection({
             Kontakt aufnehmen
           </button>
           <p className="small muted">
-            {listing.isPreview
+            {listing.slug === "demo-gmbh"
+              ? "Testprofil: Kontaktaufnahme ist nicht verfügbar."
+              : listing.isPreview
               ? "Für dieses Testprofil sind keine Kontaktdaten hinterlegt. Kontaktaufnahme ist nicht verfügbar."
               : "Beispielprofil: Kontaktdaten sind fiktiv. Kontaktaufnahme ist in dieser Vorschau nicht verfügbar."}
           </p>
@@ -168,11 +170,15 @@ export function ListingDetail({
   contentBlocks,
   contactAction,
   showMap = false,
+  allowDemoMap = false,
+  originalDemoMedia = false,
   showVerification = true,
 }: {
   listing: Listing;
   categories: Category[];
   showMap?: boolean;
+  allowDemoMap?: boolean;
+  originalDemoMedia?: boolean;
   showVerification?: boolean;
   qualityArea?: React.ReactNode;
   headingLevel?: 1 | 2;
@@ -189,8 +195,8 @@ export function ListingDetail({
   contactAction?: React.ReactNode;
 }) {
   const Heading = headingLevel === 1 ? "h1" : "h2";
-  const map =
-    showMap && !listing.isDemo ? googleMapsLocation(listing.location) : null;
+  const map = showMap && (!listing.isDemo || allowDemoMap)
+    ? googleMapsLocation(listing.location) : null;
   const content = (
     <>
       <div className="detail-heading">
@@ -317,7 +323,7 @@ export function ListingDetail({
               <ImageGallery
                 key={listing.images.map((image) => image.src).join("|")}
                 images={listing.images}
-                isDemo={listing.isDemo}
+                isDemo={listing.isDemo && !originalDemoMedia}
               />
             ))}
           {(listing.businessAreas || inlineFields?.business_areas) && (
