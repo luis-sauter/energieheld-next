@@ -218,6 +218,9 @@ button {
   display: flex;
   align-items: center;
   gap: 22px;
+  margin-left: auto;
+  padding-right: 22px;
+  border-right: 1px solid var(--line);
 }
 .desktop-nav > a:not(.button) {
   padding-block: 18px;
@@ -225,28 +228,21 @@ button {
 .desktop-nav > a:hover {
   color: var(--brand-primary);
 }
-.header-account {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding-left: 20px;
-  border-left: 1px solid var(--line);
-  white-space: nowrap;
-  font-size: 0.8rem;
-}
-.header-account > a:not(.button):hover {
-  color: var(--brand-primary);
-  text-decoration: underline;
-}
-.mobile-account-label {
-  display: block;
-  margin-top: 6px;
-  padding: 15px 12px 4px;
-  border-top: 1px solid var(--line);
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--muted);
-}
+.account-menu { position: relative; flex: 0 0 auto; }
+.account-trigger { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--brand-primary); font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+.account-trigger svg { width: 23px; height: 23px; }
+.account-trigger:hover, .account-trigger[aria-expanded="true"] { border-color: var(--brand-primary); }
+.account-trigger:focus-visible, .account-panel :is(a, button):focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.account-panel { position: absolute; z-index: 50; top: calc(100% + 12px); right: 0; width: min(300px, calc(100vw - 32px)); padding: 10px; border: 1px solid var(--line); border-radius: 13px; background: var(--white); box-shadow: 0 18px 46px color-mix(in srgb, var(--brand-primary) 15%, transparent); }
+.account-panel nav { display: grid; }
+.account-panel a, .account-panel button { width: 100%; min-height: 39px; display: flex; align-items: center; padding: 8px 11px; border: 0; border-radius: 6px; background: none; color: var(--text); text-align: left; font: inherit; font-size: 0.84rem; text-decoration: none; cursor: pointer; }
+.account-panel a:hover, .account-panel button:hover { background: var(--surface); color: var(--brand-primary); }
+.account-identity { display: grid; gap: 2px; padding: 9px 11px 12px; overflow-wrap: anywhere; }
+.account-identity strong { font-size: 0.88rem; }
+.account-identity span { color: var(--muted); font-size: 0.75rem; }
+.account-group-label { padding: 10px 11px 4px; color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.account-divider { border-top: 1px solid var(--line); margin-top: 7px; padding-top: 10px; }
+.account-logout span[role="alert"] { display: block; padding: 6px 11px; font-size: 0.75rem; }
 .footer-account-links {
   display: flex;
   flex-direction: column;
@@ -1303,11 +1299,11 @@ button {
   .desktop-nav {
     display: none;
   }
-  .header-account {
-    display: none;
-  }
+  .header-inner > .header-cta { margin-left: auto; }
+  .account-menu { order: 4; }
   .mobile-menu {
     display: block;
+    order: 3;
   }
   .mobile-menu summary {
     list-style: none;
@@ -2904,6 +2900,13 @@ h6 {
 .commercial-sidebar.advertising-rail {
   display: block;
   min-width: 0;
+}
+@media (max-width: 620px) {
+  .header-inner { gap: 10px; }
+  .brand img { width: 145px; }
+  .header-inner > .header-cta { display: none; }
+  .account-menu { margin-left: auto; }
+  .account-trigger { width: 42px; height: 42px; }
 }
 .advertising-rail-label {
   margin: 0 0 9px;

@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { DiscoveryEntry } from "@/data/reiseportal-discovery";
-import { reiseportalPreview } from "@/data/reiseportal-preview";
 import type { Listing } from "@/types/portal";
 
 export function AccommodationCard({ listing }: { listing: Listing }) {
@@ -19,15 +18,12 @@ export function AccommodationCard({ listing }: { listing: Listing }) {
   </article>;
 }
 
-export function DiscoveryDetail({ entry, title, basePath }: {
+export function DiscoveryDetail({ entry, title, basePath, listings }: {
   entry: DiscoveryEntry;
   title: string;
   basePath: string;
+  listings: Listing[];
 }) {
-  const listings = entry.previewSlugs.flatMap((slug) => {
-    const listing = reiseportalPreview.find((item) => item.slug === slug);
-    return listing ? [listing] : [];
-  });
   return <main id="hauptinhalt" className="container trade-page discovery-detail">
     <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
       <Link href="/">Startseite</Link><span>›</span>

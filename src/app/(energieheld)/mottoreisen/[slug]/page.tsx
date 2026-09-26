@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { travelThemes } from "@/data/reiseportal-discovery";
 import { DiscoveryDetail } from "@/components/portal/discovery-detail";
+import { loadReiseportalFeatured } from "@/lib/reiseportal-directory";
+
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return travelThemes.map(({ slug }) => ({ slug }));
@@ -15,5 +18,6 @@ export default async function ThemeDetail({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const entry = travelThemes.find((item) => item.slug === slug);
   if (!entry) notFound();
-  return <DiscoveryDetail entry={entry} title="Mottoreisen" basePath="/mottoreisen" />;
+  const listings = await loadReiseportalFeatured(entry.previewSlugs);
+  return <DiscoveryDetail entry={entry} title="Mottoreisen" basePath="/mottoreisen" listings={listings} />;
 }

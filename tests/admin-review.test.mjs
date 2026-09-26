@@ -25,25 +25,35 @@ function client({
   const profiles = [
     {
       id: profileId,
+      slug: "a",
       status: "pending",
       submitted_at: "2026-09-01",
       display_name: "A",
     },
     {
       id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      slug: "b",
       status: "approved",
       submitted_at: "2026-08-01",
     },
     {
       id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      slug: "c",
       status: "pending",
       submitted_at: "2026-08-01",
       display_name: "C",
     },
     {
       id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      slug: "d",
       status: "rejected",
       submitted_at: "2026-08-01",
+    },
+    {
+      id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+      slug: "e",
+      status: "draft",
+      submitted_at: null,
     },
   ];
   return {
@@ -100,6 +110,7 @@ function client({
           call.orders.push([key, options]);
           return this;
         },
+        range() { return this; },
         async maybeSingle() {
           call.single = true;
           return result();
@@ -158,15 +169,18 @@ test("non-admin cannot load overview or details or call a review RPC", async () 
   }
 });
 
-test("admin overview contains pending only, oldest first, with separate status counts", async () => {
+test("admin overview contains all statuses with counts and filters", async () => {
   const result = await loadReviewOverview(client());
   assert.equal(result.access, "admin");
-  assert.deepEqual(result.counts, { pending: 2, approved: 1, rejected: 1 });
+  assert.deepEqual(result.counts, { alle: 5, draft: 1, pending: 2, approved: 1, rejected: 1 });
   assert.deepEqual(
-    result.profiles.map((p) => p.display_name),
-    ["C", "A"],
+    result.profiles.map((p) => p.id),
+    ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "cccccccc-cccc-4ccc-8ccc-cccccccccccc", "dddddddd-dddd-4ddd-8ddd-dddddddddddd", profileId],
   );
-  assert.ok(result.profiles.every((p) => p.status === "pending"));
+  assert.deepEqual((await loadReviewOverview(client(), "pruefung")).profiles.map((p) => p.display_name), ["C", "A"]);
+  assert.equal((await loadReviewOverview(client(), "veroeffentlicht")).profiles.length, 1);
+  assert.equal((await loadReviewOverview(client(), "aenderungen")).profiles.length, 1);
+  assert.equal((await loadReviewOverview(client(), "entwuerfe")).profiles.length, 1);
 });
 
 test("admin can load a profile by profile ID after role check", async () => {

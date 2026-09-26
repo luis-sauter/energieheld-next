@@ -5,7 +5,7 @@ import { AdvertisingRail } from "@/components/advertising/advertising-rail";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
 import { DiscoveryCard } from "@/components/portal/reise-overview";
 import { destinations, travelThemes } from "@/data/reiseportal-discovery";
-import { reiseportalPreview } from "@/data/reiseportal-preview";
+import { loadReiseportalFeatured } from "@/lib/reiseportal-directory";
 import { loadPublicAds } from "@/lib/public-ads";
 import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 
@@ -15,9 +15,10 @@ const featuredStays = ["bayerischer-wald", "hoeflehner", "pension-sonnenhof", "s
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [ads, sidebarOrder] = await Promise.all([
+  const [ads, sidebarOrder, featured] = await Promise.all([
     loadPublicAds(undefined, "homepage"),
     loadPublicSidebarOrder(),
+    loadReiseportalFeatured(featuredStays),
   ]);
 
   return <main id="hauptinhalt" className="editorial-home discovery-home">
@@ -79,7 +80,7 @@ export default async function Home() {
         <Link className="text-link" href="/unterkuenfte-a-z">Alle Unterkünfte →</Link></div>
       <div className="commercial-columns">
         <div className="accommodation-grid">
-          {reiseportalPreview.filter((listing) => featuredStays.includes(listing.slug)).map((listing) =>
+          {featured.map((listing) =>
             <AccommodationCard key={listing.id} listing={listing} />)}
         </div>
         <AdvertisingRail slots={sidebarOrder} ads={ads} />

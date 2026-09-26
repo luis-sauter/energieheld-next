@@ -19,7 +19,6 @@ export async function checkInlineProfileTarget(
     .select("id")
     .eq("id", profileId)
     .eq("slug", storedSlug)
-    .eq("status", "approved")
     .maybeSingle();
   if (error || data?.id !== profileId)
     return { access, error: "Das angezeigte Firmenprofil wurde nicht gefunden. Bitte laden Sie die Seite neu." };

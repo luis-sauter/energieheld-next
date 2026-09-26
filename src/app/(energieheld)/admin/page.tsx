@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { loadQualityRequestQueue } from "@/lib/company-quality";
 import { createClient } from "@/lib/supabase/server";
-import { loadReviewOverview } from "@/lib/admin-review";
+import { adminProfileViews, loadReviewOverview, type AdminProfileView } from "@/lib/admin-review";
 import { requireAdminAccess, formatSubmission, legalName } from "@/lib/admin";
 import styles from "@/components/admin/admin.module.css";
 import { analyticsPeriod, loadAdminMetrics } from "@/lib/dashboard-analytics";
+import { profileStatus } from "@/lib/auth";
 import {
   PeriodPicker,
   AdminOverviewMetrics,
@@ -22,9 +23,10 @@ export default async function AdminPage({
   searchParams: Promise<{ ansicht?: string; zeitraum?: string }>;
 }) {
   const params = await searchParams;
-  const published = params.ansicht === "veroeffentlicht";
+  const view: AdminProfileView = adminProfileViews.some((item) => item.key === params.ansicht)
+    ? params.ansicht as AdminProfileView : "alle";
   const period = analyticsPeriod(params.zeitraum);
-  const result = await loadReviewOverview(await createClient(), published);
+  const result = await loadReviewOverview(await createClient(), view);
   requireAdminAccess(result.access);
   const client = await createClient();
   const [qualityQueue, metrics] = await Promise.all([
@@ -38,7 +40,7 @@ export default async function AdminPage({
       <PeriodPicker
         period={period}
         base="/admin"
-        view={published ? "veroeffentlicht" : undefined}
+        view={view === "alle" ? undefined : view}
       />
       <p>
         Statistikzeitraum in Europe/Berlin, einschließlich heute. Das Besucher-
@@ -82,21 +84,21 @@ export default async function AdminPage({
         )}
       </section>
       <nav className={styles.actions} aria-label="Firmenansicht">
-        <Link className="button" href={`/admin?zeitraum=${period}`}>
-          Erstfreischaltungen
-        </Link>
-        <Link
-          className="button"
-          href={`/admin?ansicht=veroeffentlicht&zeitraum=${period}`}
-        >
-          Veröffentlichte Firmen
-        </Link>
+        {adminProfileViews.map((item) => <Link key={item.key} className="button"
+          aria-current={view === item.key ? "page" : undefined}
+          href={`/admin?ansicht=${item.key}&zeitraum=${period}`}>
+          {item.label} ({item.status ? result.counts?.[item.status] ?? 0 : result.counts?.alle ?? 0})
+        </Link>)}
       </nav>
       {result.error ? (
         <p role="alert">{result.error}</p>
       ) : (
         <>
           <dl className={styles.metrics}>
+            <div>
+              <dt>Entwürfe</dt>
+              <dd>{result.counts?.draft}</dd>
+            </div>
             <div>
               <dt>Zur Prüfung</dt>
               <dd>{result.counts?.pending}</dd>
@@ -110,11 +112,7 @@ export default async function AdminPage({
               <dd>{result.counts?.rejected}</dd>
             </div>
           </dl>
-          <h2>
-            {published
-              ? "Veröffentlichte Firmen"
-              : "Zur erstmaligen Freischaltung"}
-          </h2>
+          <h2>{adminProfileViews.find((item) => item.key === view)?.label}</h2>
           {!result.profiles?.length ? (
             <p>Keine Firmenprofile in dieser Ansicht.</p>
           ) : (
@@ -128,13 +126,15 @@ export default async function AdminPage({
                       .filter(Boolean)
                       .join(", ") || "Kein Standort angegeben"}
                   </p>
+                  <p>Status: {profileStatus(profile.status)}</p>
                   <p>Eingereicht: {formatSubmission(profile.submitted_at)}</p>
                   <Link
                     className="button button-primary"
-                    href={`/admin/firmen/${profile.id}`}
+                    href={`/admin/firmen/${profile.id}/vorschau`}
                   >
-                    {published ? "Gewerke bearbeiten" : "Firma freischalten"}
+                    Profil bearbeiten
                   </Link>
+                  <Link className="text-link" href={`/admin/firmen/${profile.id}`}>Prüfung und Freigabe</Link>
                 </li>
               ))}
             </ul>

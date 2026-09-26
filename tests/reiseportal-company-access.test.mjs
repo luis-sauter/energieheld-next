@@ -16,8 +16,9 @@ registerHooks({
     if (virtual[specifier]) return { url: `data:text/javascript,${virtual[specifier]}`, shortCircuit: true };
     if (specifier.endsWith(".css")) return { url: 'data:text/javascript,export default {}', shortCircuit: true };
     if (specifier.endsWith("/supabase/server")) return {
-      url: 'data:text/javascript,export async function createClient(){globalThis.__companyAccessClientCalls++;return {}}', shortCircuit: true,
+      url: 'data:text/javascript,export async function createClient(){globalThis.__companyAccessClientCalls++;return {auth:{getUser:async()=>({data:{user:{id:"user",email:"louis@example.org",user_metadata:{full_name:"Louis Sauter"}}}})}}}', shortCircuit: true,
     };
+    if (specifier.endsWith("/auth-actions")) return { url: 'data:text/javascript,export async function logout(){return {}}', shortCircuit: true };
     if (specifier.endsWith("/admin-review")) return {
       url: 'data:text/javascript,export async function checkAdmin(){return globalThis.__companyAccessRole}', shortCircuit: true,
     };
@@ -60,17 +61,20 @@ const { default: Layout } = await import("../src/app/(energieheld)/layout.tsx");
 const { default: CompanyPage } = await import("../src/app/(energieheld)/firma/page.tsx");
 
 test("shared layout reads existing server auth and renders guest, company and admin links", async () => {
-  for (const [role, expected, hidden] of [
-    ["unauthenticated", ["/registrieren", "/login"], ["/firma", "/admin"]],
-    ["forbidden", ["/firma"], ["/login", "/admin"]],
-    ["admin", ["/firma", "/admin"], ["/login"]],
+  for (const [role, expected] of [
+    ["unauthenticated", ""],
+    ["forbidden", "LS"],
+    ["admin", "LS"],
   ]) {
     globalThis.__companyAccessRole = role;
     globalThis.__companyAccessClientCalls = 0;
     const html = renderToStaticMarkup(await Layout({ children: createElement("p", null, "Inhalt") }));
     assert.equal(globalThis.__companyAccessClientCalls, 1);
-    for (const href of expected) assert.match(html, new RegExp(`href="${href}"`));
-    for (const href of hidden) assert.doesNotMatch(html.split("</header>")[0], new RegExp(`href="${href}"`));
+    const header = html.split("</header>")[0];
+    assert.match(header, /Unterkunft eintragen|href="\/registrieren"/);
+    assert.match(header, /aria-label="Kontomenü öffnen"/);
+    assert.doesNotMatch(header, /href="\/firma"|href="\/admin"|href="\/login"/);
+    if (expected) assert.match(header, new RegExp(`>${expected}<`));
   }
 });
 
@@ -91,6 +95,6 @@ test("company dashboard keeps profile, designer, inquiry, ads, analytics and log
 test("existing account and admin routes remain present", () => {
   for (const route of [
     "registrieren", "login", "firma", "firma/profil", "firma/profil/gestalten",
-    "firma/anfragen", "firma/werbung", "firma/statistiken", "admin", "admin/werbung", "admin/firmen/[id]",
+    "firma/anfragen", "firma/werbung", "firma/statistiken", "admin", "admin/werbung", "admin/firmen/[id]", "admin/firmen/[id]/vorschau",
   ]) assert.ok(existsSync(new URL(`../src/app/(energieheld)/${route}/page.tsx`, import.meta.url)), route);
 });

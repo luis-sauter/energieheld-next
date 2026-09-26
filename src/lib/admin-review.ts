@@ -20,6 +20,14 @@ export function validateCategoryIds(value: unknown) {
 }
 
 export type AdminAccess = "admin" | "unauthenticated" | "forbidden";
+export type AdminProfileView = "alle" | "entwuerfe" | "pruefung" | "veroeffentlicht" | "aenderungen";
+export const adminProfileViews: { key: AdminProfileView; label: string; status?: "draft" | "pending" | "approved" | "rejected" }[] = [
+  { key: "alle", label: "Alle" },
+  { key: "entwuerfe", label: "Entwürfe", status: "draft" },
+  { key: "pruefung", label: "Zur Prüfung", status: "pending" },
+  { key: "veroeffentlicht", label: "Veröffentlicht", status: "approved" },
+  { key: "aenderungen", label: "Änderungen erforderlich", status: "rejected" },
+];
 export async function checkAdmin(
   supabase: SupabaseClient,
 ): Promise<AdminAccess> {
@@ -51,48 +59,32 @@ export function isProfileId(value: unknown): value is string {
 
 export async function loadReviewOverview(
   supabase: SupabaseClient,
-  published = false,
+  view: AdminProfileView = "alle",
 ) {
   const access = await checkAdmin(supabase);
   if (access !== "admin") return { access };
-  const [pending, approved, rejected, queue] = await Promise.all([
-    supabase
-      .from("company_profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "pending"),
-    supabase
-      .from("company_profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "approved"),
-    supabase
-      .from("company_profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "rejected"),
-    supabase
-      .from("company_profiles")
-      .select(
-        "id, display_name, city, region, submitted_at, companies!inner(legal_name)",
-      )
-      .eq("status", published ? "approved" : "pending")
-      .order("submitted_at", { ascending: true, nullsFirst: false })
-      .order("id", { ascending: true }),
-  ]);
-  if ([pending, approved, rejected, queue].some((result) => result.error)) {
-    return {
-      access,
-      error:
-        "Die eingereichten Firmenprofile konnten gerade nicht geladen werden. Bitte versuchen Sie es erneut.",
-    };
+  const rows: { id: string; slug: string; status: string; display_name: string; city: string | null; region: string | null; submitted_at: string | null; companies: { legal_name: string } | { legal_name: string }[] }[] = [];
+  const pageSize = 500;
+  for (let offset = 0; ; offset += pageSize) {
+    const page = await supabase.from("company_profiles")
+      .select("id,slug,status,display_name,city,region,submitted_at,companies!inner(legal_name)")
+      .order("id", { ascending: true })
+      .range(offset, offset + pageSize - 1);
+    if (page.error) return { access, error: "Die Firmenprofile konnten gerade nicht geladen werden. Bitte versuchen Sie es erneut." };
+    const chunk = (page.data ?? []) as unknown as typeof rows;
+    rows.push(...chunk);
+    if (chunk.length < pageSize) break;
   }
-  return {
-    access,
-    counts: {
-      pending: pending.count ?? 0,
-      approved: approved.count ?? 0,
-      rejected: rejected.count ?? 0,
-    },
-    profiles: queue.data ?? [],
+  const counts = {
+    alle: rows.length,
+    draft: rows.filter((row) => row.status === "draft").length,
+    pending: rows.filter((row) => row.status === "pending").length,
+    approved: rows.filter((row) => row.status === "approved").length,
+    rejected: rows.filter((row) => row.status === "rejected").length,
   };
+  const status = adminProfileViews.find((item) => item.key === view)?.status;
+  return { access, counts, profiles: (status ? rows.filter((row) => row.status === status) : rows)
+    .sort((a, b) => (a.submitted_at ?? "").localeCompare(b.submitted_at ?? "") || a.id.localeCompare(b.id)) };
 }
 
 export async function loadReviewProfile(
@@ -105,7 +97,7 @@ export async function loadReviewProfile(
   const { data, error } = await supabase
     .from("company_profiles")
     .select(
-      "id, slug, logo_path, company_profile_images(id,storage_path,alt_text,sort_order), display_name, business_areas, status, submitted_at, tagline, description, phone, public_email, website, street, postal_code, city, region, companies!inner(legal_name), company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note),company_quality_requests(status,requested_at,decided_at)",
+      "id, slug, logo_path, company_profile_images(id,storage_path,alt_text,sort_order), display_name, business_areas, status, submitted_at, tagline, description, phone, public_email, website, street, postal_code, city, region, country, companies!inner(legal_name), company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note),company_quality_requests(status,requested_at,decided_at)",
     )
     .eq("id", profileId)
     .maybeSingle();

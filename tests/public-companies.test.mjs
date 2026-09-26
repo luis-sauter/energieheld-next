@@ -71,6 +71,7 @@ const { default: LegacyDetail } =
   await import("../src/app/(energieheld)/experten/[slug]/page.tsx");
 const { default: HomePage } =
   await import("../src/app/(energieheld)/page.tsx");
+const { reiseportalPreview } = await import("../src/data/reiseportal-preview.ts");
 const { energieheld } = await import("../src/config/energieheld.ts");
 const { listings: demos } = await import("../src/data/listings.ts");
 const { combinePortalCompanies, loadPortalCompanies, loadPortalCompanyBySlug } =
@@ -103,6 +104,24 @@ const travelRow = {
   business_areas: "Übernachtung",
   company_profile_categories: [],
 };
+const legacyRows = reiseportalPreview.map((listing, index) => ({
+  ...travelRow,
+  id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(index + 1).padStart(12, "0")}`,
+  slug: listing.slug,
+  display_name: listing.name,
+  tagline: listing.tagline,
+  description: listing.description,
+  business_areas: null,
+  street: listing.location.street,
+  postal_code: listing.location.postalCode,
+  city: listing.location.city,
+  region: listing.location.region,
+  country: listing.location.country,
+  phone: listing.contact.phone,
+  public_email: listing.contact.email,
+  website: listing.contact.website,
+  company_profile_images: [],
+}));
 const demoRow = {
   ...travelRow,
   id: "31ae7d1e-26a7-4161-8d14-f5ee4735f5d4",
@@ -318,7 +337,7 @@ test("public loader retries its existing columns when anon has no street grant",
 test("homepage shows real travel cards beside the shared long rail and queries only homepage ads", async () => {
   const basic = { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: "basic-home", display_name: "Basic Home", package_type: "basic" };
   const premium = { ...row, id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", slug: "premium-home", display_name: "Premium Home", package_type: "premium" };
-  const requests = api([premium, basic], false, [], [
+  const requests = api([premium, basic, legacyRows[0]], false, [], [
     { profile_id: basic.id, sort_order: 0 },
     { profile_id: premium.id, sort_order: 1 },
   ]);
@@ -337,20 +356,22 @@ test("homepage shows real travel cards beside the shared long rail and queries o
   assert.equal(adRequest.body.p_scope_type, "homepage");
 });
 
-test("public accommodations directory shows five legacy previews and one sanitized live demo", async () => {
-  api([row, demoRow]);
+test("public accommodations directory shows five stored legacy profiles once and one sanitized live demo", async () => {
+  api([...legacyRows, row, demoRow]);
   const html = renderToStaticMarkup(
     await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({}) }),
   );
   for (const name of ["Bayerischer Wald", "Höflehner", "Pension Sonnenhof", "Schafhuber", "Villner Hof", "Demo GmbH"])
     assert.match(html, new RegExp(name));
+  for (const name of ["Bayerischer Wald", "Höflehner", "Pension Sonnenhof", "Schafhuber", "Villner Hof"])
+    assert.equal((html.match(new RegExp(`>${name}<`, "g")) ?? []).length, 1);
   assert.match(html, /Demo\/Testprofil/);
   assert.match(html, /advertising-rail/);
   assert.doesNotMatch(html, /Test Firma|Müller Haustechnik|Energieheld Demo GmbH|Gewerke|Fachbetriebe/);
 });
 
 test("travel search submits supported destination and theme filters to the real directory", async () => {
-  api([demoRow]);
+  api([...legacyRows, demoRow]);
   const html = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({
     ziel: "oesterreich", thema: "wanderurlaub",
   }) }));
