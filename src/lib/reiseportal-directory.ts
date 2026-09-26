@@ -33,16 +33,25 @@ function publicDemo(listing: Listing): Listing | null {
   };
 }
 
+// The verified legacy photos remain presentation fallbacks until replaced by
+// provider-specific uploads. Database rows and their new media stay canonical.
+export function withLegacyImages(listing: Listing): Listing {
+  const source = reiseportalPreview.find((item) => item.slug === listing.slug);
+  if (!source) return listing;
+  return { ...listing, directoryPackage: source.directoryPackage,
+    images: listing.images.length ? listing.images : source.images };
+}
+
 export async function loadReiseportalDirectory() {
   const result = await loadPublicCompanyDirectory();
   if (result.error !== null) return {
-    preview: reiseportalPreview,
+    preview: [] as Listing[],
     database: [] as Listing[],
     hiddenOrderKeys: [] as string[],
     error: result.error,
   };
   const demo = result.data.listings.map(publicDemo).find((item) => item !== null);
-  const database = result.data.listings.filter(travelVisible);
+  const database = result.data.listings.filter(travelVisible).map(withLegacyImages);
   const shown = new Set(database.map(directoryItemKey));
   const hiddenOrderKeys = result.data.orderRows
     .slice().sort((a, b) => a.sort_order - b.sort_order)
@@ -52,16 +61,23 @@ export async function loadReiseportalDirectory() {
     const key = directoryItemKey(profile);
     if (!hiddenOrderKeys.includes(key)) hiddenOrderKeys.push(key);
   }
-  return { preview: demo ? [...reiseportalPreview, demo] : reiseportalPreview, database, hiddenOrderKeys, error: null };
+  return { preview: demo ? [demo] : [], database, hiddenOrderKeys, error: null };
+}
+
+export async function loadReiseportalFeatured(slugs: readonly string[]) {
+  const directory = await loadReiseportalDirectory();
+  const bySlug = new Map(directory.database.map((listing) => [listing.slug, listing]));
+  return slugs.flatMap((slug) => {
+    const listing = bySlug.get(slug);
+    return listing ? [listing] : [];
+  });
 }
 
 export async function loadReiseportalListingBySlug(slug: string) {
-  const preview = reiseportalPreview.find((listing) => listing.slug === slug);
-  if (preview) return { data: preview, error: null };
   if (slug === demoSourceSlug) return { data: null, error: null };
   const result = await loadPublicCompanyBySlug(slug === demoPublicSlug ? demoSourceSlug : slug);
   if (slug === demoPublicSlug) return { data: result.data ? publicDemo(result.data) : null, error: result.error };
   return result.data && !travelVisible(result.data)
     ? { data: null, error: null }
-    : result;
+    : { data: result.data ? withLegacyImages(result.data) : null, error: result.error };
 }

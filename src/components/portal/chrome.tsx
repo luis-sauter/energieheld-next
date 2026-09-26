@@ -3,18 +3,9 @@ import Link from "next/link";
 import type { BrandConfig } from "@/types/portal";
 import type { AdminAccess } from "@/lib/admin-review";
 import { MobileNavigation } from "./mobile-navigation";
+import { AccountMenu, type AccountIdentity } from "./account-menu";
 
-function AccountLinks({ access }: { access: AdminAccess }) {
-  return access === "unauthenticated" ? <>
-    <Link className="button header-cta" href="/registrieren">Firma eintragen</Link>
-    <Link href="/login">Einloggen</Link>
-  </> : <>
-    <Link href="/firma">Firmenbereich</Link>
-    {access === "admin" && <Link href="/admin">Admin</Link>}
-  </>;
-}
-
-export function PortalHeader({ brand, access = "unauthenticated" }: { brand: BrandConfig; access?: AdminAccess }) {
+export function PortalHeader({ brand, access = "unauthenticated", identity }: { brand: BrandConfig; access?: AdminAccess; identity?: AccountIdentity }) {
   const navigation = (
     <>
       {brand.navigation.map((item) => (
@@ -44,13 +35,11 @@ export function PortalHeader({ brand, access = "unauthenticated" }: { brand: Bra
           <nav className="desktop-nav" aria-label="Hauptnavigation">
             {navigation}
           </nav>
-          <nav className="header-account" aria-label="Unternehmen und Konto">
-            <AccountLinks access={access} />
-          </nav>
+          <Link className="button header-cta" href="/registrieren">Unterkunft eintragen</Link>
+          <AccountMenu access={access} identity={identity} />
           <MobileNavigation>
             {navigation}
-            <span className="mobile-account-label">Unternehmen und Konto</span>
-            <AccountLinks access={access} />
+            <Link className="button header-cta" href="/registrieren">Unterkunft eintragen</Link>
           </MobileNavigation>
         </div>
       </header>

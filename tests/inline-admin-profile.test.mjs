@@ -41,6 +41,7 @@ registerHooks({
 });
 
 const { default: ExpertDetail } = await import("../src/app/(energieheld)/unterkuenfte/[slug]/page.tsx");
+const { default: AdminProfilePreview } = await import("../src/app/(energieheld)/admin/firmen/[id]/vorschau/page.tsx");
 const { checkInlineProfileTarget } = await import("../src/lib/inline-admin-profile.ts");
 const { InlineProfileEditor } = await import("../src/components/admin/inline-profile-editor.tsx");
 const { InlineImageGridEditor } = await import("../src/components/admin/inline-image-grid-editor.tsx");
@@ -86,6 +87,7 @@ function client({ authenticated = true, admin = true, profile = publicProfile, s
           if (call.payload) return { data: { id: profile.id }, error: null };
           if (call.filters.some(([key, value]) => key === "slug" && value !== slug)) return { data: null, error: null };
           if (call.filters.some(([key, value]) => key === "id" && value !== profile.id)) return { data: null, error: null };
+          if (call.filters.some(([key, value]) => key === "status" && value !== profile.status)) return { data: null, error: null };
           return { data: profile, error: null };
         },
       };
@@ -233,15 +235,58 @@ test("Demo uses its real Supabase media and blocks for the admin editor while pu
   assert.match(editing, /Unsere Energiesysteme|Logo ändern|Bild löschen|Speichern/);
 });
 
-test("static legacy previews never receive the admin editor or a profile mutation target", async () => {
+test("missing stored legacy records do not create a fake editor", async () => {
+  globalThis.__inlinePublicClient = client({ authenticated: false, admin: false, profile: demoProfile });
   globalThis.__inlineAdminClient = client({ authenticated: true, admin: true, profile: demoProfile });
-  const element = await ExpertDetail({ params: Promise.resolve({ slug: "bayerischer-wald" }) });
-  const html = renderToStaticMarkup(element);
-  assert.doesNotMatch(html, /Profil bearbeiten|Bearbeitungsmodus aktiv/);
+  await assert.rejects(ExpertDetail({ params: Promise.resolve({ slug: "bayerischer-wald" }) }), /NOT_FOUND/);
   assert.equal(globalThis.__inlineAdminClient.calls.length, 0);
 });
 
-test("inline mutations require matching displayed ID, slug and approved state after admin auth", async () => {
+test("all five stored legacy accommodations and Demo offer the real inline editor to admins", async () => {
+  for (const [index, slug] of ["bayerischer-wald", "hoeflehner", "pension-sonnenhof", "schafhuber", "villner-hof"].entries()) {
+    const profile = { ...publicProfile,
+      id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(index + 1).padStart(12, "0")}`,
+      slug, display_name: slug, tagline: "Urlaub", business_areas: "",
+      company_profile_categories: [], company_profile_images: [],
+    };
+    globalThis.__inlinePublicClient = client({ authenticated: false, admin: false, profile });
+    globalThis.__inlineAdminClient = client({ authenticated: true, admin: true, profile });
+    const adminPage = await ExpertDetail({ params: Promise.resolve({ slug }) });
+    assert.ok(adminPage.props.children.find((child) => child?.type === InlineProfileEditor), slug);
+    assert.match(renderToStaticMarkup(adminPage), /Profil bearbeiten/);
+    globalThis.__inlineAdminClient = client({ authenticated: true, admin: false, profile });
+    assert.doesNotMatch(renderToStaticMarkup(await ExpertDetail({ params: Promise.resolve({ slug }) })), /Profil bearbeiten/);
+  }
+});
+
+test("internal preview reuses the inline editor for draft, pending and rejected profiles only after admin auth", async () => {
+  for (const status of ["draft", "pending", "rejected"]) {
+    const profile = { ...publicProfile, status };
+    globalThis.__inlineAdminClient = client({ profile });
+    const page = await AdminProfilePreview({ params: Promise.resolve({ id: profileId }) });
+    assert.ok(page.props.children.find((child) => child?.type === InlineProfileEditor));
+    assert.match(renderToStaticMarkup(page), /Dieses Profil ist noch nicht öffentlich sichtbar/);
+    globalThis.__inlinePublicClient = client({ authenticated: false, admin: false, profile });
+    await assert.rejects(ExpertDetail({ params: Promise.resolve({ slug: profile.slug }) }), /NOT_FOUND/);
+  }
+  globalThis.__inlineAdminClient = client({ admin: false, profile: { ...publicProfile, status: "draft" } });
+  await assert.rejects(AdminProfilePreview({ params: Promise.resolve({ id: profileId }) }), /REDIRECT|NOT_FOUND/);
+});
+
+test("approved travel profiles edit on the public page while hidden energy profiles stay in admin preview", async () => {
+  const travel = { ...publicProfile, business_areas: "Urlaub" };
+  globalThis.__inlineAdminClient = client({ profile: travel });
+  globalThis.__inlinePublicClient = client({ authenticated: false, admin: false, profile: travel });
+  await assert.rejects(AdminProfilePreview({ params: Promise.resolve({ id: profileId }) }), /REDIRECT:\/unterkuenfte\/redaktionelle-firma/);
+  const hidden = { ...publicProfile, business_areas: "Photovoltaik" };
+  globalThis.__inlineAdminClient = client({ profile: hidden });
+  globalThis.__inlinePublicClient = client({ authenticated: false, admin: false, profile: hidden });
+  const preview = await AdminProfilePreview({ params: Promise.resolve({ id: profileId }) });
+  assert.ok(preview.props.children.find((child) => child?.type === InlineProfileEditor));
+  assert.match(renderToStaticMarkup(preview), /nicht im Reiseportal-Verzeichnis sichtbar/);
+});
+
+test("inline mutations require matching displayed ID and slug after admin auth at every status", async () => {
   for (const options of [{ authenticated: false }, { authenticated: true, admin: false }]) {
     const db = client(options);
     const result = await checkInlineProfileTarget(db, profileId, publicProfile.slug);
@@ -255,7 +300,9 @@ test("inline mutations require matching displayed ID, slug and approved state af
   assert.equal(result.access, "admin");
   assert.equal(result.error, undefined);
   const targetCall = db.calls.at(-1);
-  assert.deepEqual(targetCall.filters, [["id", profileId], ["slug", publicProfile.slug], ["status", "approved"]]);
+  assert.deepEqual(targetCall.filters, [["id", profileId], ["slug", publicProfile.slug]]);
+  for (const status of ["draft", "pending", "approved", "rejected"])
+    assert.equal((await checkInlineProfileTarget(client({ profile: { ...publicProfile, status } }), profileId, publicProfile.slug)).error, undefined);
 });
 
 test("the public Demo alias authorizes only its exact stored profile after admin verification", async () => {
@@ -266,7 +313,7 @@ test("the public Demo alias authorizes only its exact stored profile after admin
   const target = await checkInlineProfileTarget(db, demoProfileId, demoPublicSlug);
   assert.equal(target.access, "admin");
   assert.equal(target.error, undefined);
-  assert.deepEqual(db.calls.at(-1).filters, [["id", demoProfileId], ["slug", demoSourceSlug], ["status", "approved"]]);
+  assert.deepEqual(db.calls.at(-1).filters, [["id", demoProfileId], ["slug", demoSourceSlug]]);
   const callsBeforeForgery = db.calls.length;
   assert.ok((await checkInlineProfileTarget(db, profileId, demoPublicSlug)).error);
   assert.equal(db.calls.length, callsBeforeForgery + 1); // Admin check only; no profile query.

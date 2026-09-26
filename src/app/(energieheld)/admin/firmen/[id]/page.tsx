@@ -9,7 +9,6 @@ import { profileStatus } from "@/lib/auth";
 import { ReviewActions } from "@/components/admin/review-actions";
 import { QualityReviewForm } from "@/components/quality/quality-review-form";
 import styles from "@/components/admin/admin.module.css";
-import { publicSlugForStoredProfile } from "@/lib/reiseportal-demo";
 
 export const metadata = {
   title: "Firmenprofil",
@@ -71,7 +70,7 @@ export default async function ReviewPage({
             <div className={styles.actions}>
               <Link
                 className="button button-primary"
-                href={profile.status === "approved" ? `/unterkuenfte/${publicSlugForStoredProfile(profile)}` : `/admin/firmen/${profile.id}/bearbeiten`}
+                href={`/admin/firmen/${profile.id}/vorschau`}
               >
                 Profil bearbeiten
               </Link>

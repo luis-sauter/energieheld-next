@@ -18,6 +18,7 @@ registerHooks({
       url: `data:text/javascript,export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`,
       shortCircuit: true,
     };
+    if (specifier.endsWith("/auth-actions")) return { url: 'data:text/javascript,export async function logout(){return {}}', shortCircuit: true };
     if (specifier.endsWith("/public-companies")) return {
       url: 'data:text/javascript,export async function loadPublicCompanyDirectory(){return globalThis.__travelDirectoryResult};export async function loadPublicCompanyBySlug(slug){globalThis.__travelLookups.push(slug);return globalThis.__travelDetailResult}',
       shortCircuit: true,
@@ -54,6 +55,7 @@ const { filterTravelDiscovery } = await import("../src/lib/reiseportal-search.ts
 const destinationRoute = await import("../src/app/(energieheld)/reiseziele/[slug]/page.tsx");
 const themeRoute = await import("../src/app/(energieheld)/mottoreisen/[slug]/page.tsx");
 const { PortalHeader, PortalFooter } = await import("../src/components/portal/chrome.tsx");
+const { accountMenuGroups } = await import("../src/components/portal/account-menu.tsx");
 const { loadReiseportalDirectory, loadReiseportalListingBySlug } =
   await import("../src/lib/reiseportal-directory.ts");
 const { default: LegacyExperts } = await import("../src/app/(energieheld)/experten/page.tsx");
@@ -74,24 +76,25 @@ test("public navigation has only the three travel entries and uses the untouched
   assert.equal((html.match(/href="\/unterkuenfte-a-z"/g) ?? []).length, 2);
 });
 
-test("account links use the server-provided session and admin access on desktop, mobile and footer", () => {
+test("account button and dropdown groups use server-provided access without permanent header links", () => {
   const header = (access) => renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal, access }));
   const footer = (access) => renderToStaticMarkup(createElement(PortalFooter, { brand: reiseportal, access }));
   const guest = header("unauthenticated");
-  assert.match(guest, /aria-label="Unternehmen und Konto"/);
+  assert.match(guest, /aria-label="Kontomenü öffnen"/);
   assert.match(guest, /aria-label="Mobile Hauptnavigation"/);
   assert.equal((guest.match(/href="\/registrieren"/g) ?? []).length, 2);
-  assert.equal((guest.match(/href="\/login"/g) ?? []).length, 2);
-  assert.match(guest, /Firma eintragen/);
-  assert.match(guest, /Einloggen/);
+  assert.match(guest, /Unterkunft eintragen/);
+  assert.doesNotMatch(guest, /href="\/login"|href="\/firma"|href="\/admin"/);
+  assert.deepEqual(accountMenuGroups("unauthenticated").account.map((link) => link.label), ["Einloggen"]);
   assert.doesNotMatch(guest, /href="\/firma"|href="\/admin"/);
 
   const member = header("forbidden");
-  assert.equal((member.match(/href="\/firma"/g) ?? []).length, 2);
-  assert.doesNotMatch(member, /href="\/registrieren"|href="\/login"|href="\/admin"/);
+  assert.doesNotMatch(member, /href="\/firma"|href="\/admin"|href="\/login"/);
+  assert.deepEqual(accountMenuGroups("forbidden").account.map((link) => link.label), ["Firmenbereich", "Profil bearbeiten", "Profil gestalten", "Anfragen", "Werbung", "Statistiken"]);
+  assert.deepEqual(accountMenuGroups("forbidden").administration, []);
   const admin = header("admin");
-  assert.equal((admin.match(/href="\/firma"/g) ?? []).length, 2);
-  assert.equal((admin.match(/href="\/admin"/g) ?? []).length, 2);
+  assert.doesNotMatch(admin, /href="\/firma"|href="\/admin"|href="\/login"/);
+  assert.deepEqual(accountMenuGroups("admin").administration.map((link) => link.label), ["Adminbereich", "Firmen verwalten", "Werbung verwalten"]);
 
   assert.match(footer("unauthenticated"), /href="\/registrieren".*href="\/login".*href="\/fuer-unternehmen"/s);
   assert.match(footer("forbidden"), /href="\/registrieren".*href="\/firma".*href="\/fuer-unternehmen"/s);
@@ -123,6 +126,10 @@ test("destination and motto overviews use only the current visible legacy groups
 });
 
 test("four destinations and twelve themes have image cards, links and detail routes", async () => {
+  globalThis.__travelDirectoryResult = { data: {
+    listings: reiseportalPreview.map((listing, index) => ({ ...listing, id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(index + 1).padStart(12, "0")}`, isPreview: false })),
+    orderRows: [],
+  }, error: null };
   assert.deepEqual(destinations.map((item) => item.title), [...reiseziele]);
   assert.deepEqual(travelThemes.map((item) => item.title), [...mottoreisen]);
   assert.equal(destinationRoute.generateStaticParams().length, 4);
@@ -138,7 +145,7 @@ test("four destinations and twelve themes have image cards, links and detail rou
   }
   const destination = renderToStaticMarkup(await destinationRoute.default({ params: Promise.resolve({ slug: "oesterreich" }) }));
   assert.match(destination, /Höflehner|Schafhuber/);
-  const theme = renderToStaticMarkup(createElement(DiscoveryDetail, { entry: travelThemes[0], title: "Mottoreisen", basePath: "/mottoreisen" }));
+  const theme = renderToStaticMarkup(createElement(DiscoveryDetail, { entry: travelThemes[0], title: "Mottoreisen", basePath: "/mottoreisen", listings: reiseportalPreview.slice(0, 1) }));
   assert.match(theme, /Bayerischer Wald/);
   await assert.rejects(destinationRoute.default({ params: Promise.resolve({ slug: "unbekannt" }) }), /NOT_FOUND/);
 });
@@ -177,7 +184,7 @@ test("travel loader excludes approved energy profiles without mutating the sourc
   globalThis.__travelDetailResult = { data: oldTest, error: null };
   const result = await loadReiseportalDirectory();
   assert.deepEqual(result.database.map((item) => item.slug), ["reise-unterkunft"]);
-  assert.deepEqual(result.preview.map((item) => item.name), [...reiseportalPreview.map((item) => item.name), "Demo GmbH"]);
+  assert.deepEqual(result.preview.map((item) => item.name), ["Demo GmbH"]);
   assert.deepEqual(result.hiddenOrderKeys, [`profile:${oldTest.id}`, "profile:category-energy", "profile:energy-copy"]);
   const demo = (await loadReiseportalListingBySlug("demo-gmbh")).data;
   assert.equal(demo.name, "Demo GmbH");

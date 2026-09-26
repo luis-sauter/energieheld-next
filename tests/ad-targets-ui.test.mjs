@@ -251,7 +251,7 @@ test("homepage keeps the shared ad rail and uses sourced accommodation cards", (
   assert.match(source, /loadPublicAds\(undefined, "homepage"\)/);
   assert.match(source, /loadPublicSidebarOrder\(\)/);
   assert.match(source, /<AccommodationCard/);
-  assert.match(source, /reiseportalPreview\.filter/);
+  assert.match(source, /loadReiseportalFeatured\(featuredStays\)/);
   assert.match(source, /<CampaignSlot placement="top_banner"/);
   assert.match(source, /<AdvertisingRail slots=\{sidebarOrder\} ads=\{ads\}/);
   assert.doesNotMatch(source, /Demo GmbH|<ListingRow/);
