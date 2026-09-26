@@ -72,6 +72,8 @@ const { default: LegacyDetail } =
 const { default: HomePage } =
   await import("../src/app/(energieheld)/page.tsx");
 const { reiseportalPreview } = await import("../src/data/reiseportal-preview.ts");
+const { importedJoomlaMedia } = await import("../src/data/reiseportal-import-media.ts");
+const { withLegacyImages } = await import("../src/lib/reiseportal-directory.ts");
 const { energieheld } = await import("../src/config/energieheld.ts");
 const { listings: demos } = await import("../src/data/listings.ts");
 const { combinePortalCompanies, loadPortalCompanies, loadPortalCompanyBySlug } =
@@ -345,6 +347,10 @@ test("homepage shows real travel cards beside the shared long rail and queries o
   assert.match(html, /Bayerischer Wald/);
   assert.match(html, /Finde deinen passenden Urlaub/);
   assert.match(html, /Reise finden/);
+  assert.match(html, /hero-loop\.mp4/);
+  assert.doesNotMatch(html, /poster=|hero\.jpg/);
+  assert.match(html, /name="sort"/);
+  assert.equal((html.match(/href="\/mottoreisen\/[^\"]+"/g) ?? []).length, 12);
   assert.match(html, /Ausgewählte Unterkünfte/);
   assert.doesNotMatch(html, /Demo GmbH/);
   assert.match(html, /href="\/unterkuenfte\/bayerischer-wald"/);
@@ -354,6 +360,20 @@ test("homepage shows real travel cards beside the shared long rail and queries o
   const adRequest = requests.find(({ url }) => url.pathname === "/rest/v1/rpc/get_active_ad_campaigns");
   assert.ok(adRequest);
   assert.equal(adRequest.body.p_scope_type, "homepage");
+});
+
+test("selected Joomla media are presentation fallbacks and uploaded media remain canonical", () => {
+  const media = importedJoomlaMedia.wirthshof;
+  const listing = {
+    ...reiseportalPreview[0], slug: "wirthshof", logo: undefined, images: [],
+  };
+  const fallback = withLegacyImages(listing);
+  assert.deepEqual(fallback.logo, media.logo);
+  assert.deepEqual(fallback.images, media.images);
+  const uploaded = { src: "https://example.test/signed-image", alt: "Redaktioneller Upload" };
+  const updated = withLegacyImages({ ...listing, logo: uploaded, images: [uploaded] });
+  assert.deepEqual(updated.logo, uploaded);
+  assert.deepEqual(updated.images, [uploaded]);
 });
 
 test("public accommodations directory shows five stored legacy profiles once and one sanitized live demo", async () => {

@@ -54,6 +54,7 @@ const { ListingDetail } = await import("../src/components/portal/listing-detail.
 const { filterTravelDiscovery } = await import("../src/lib/reiseportal-search.ts");
 const destinationRoute = await import("../src/app/(energieheld)/reiseziele/[slug]/page.tsx");
 const themeRoute = await import("../src/app/(energieheld)/mottoreisen/[slug]/page.tsx");
+const { default: ThemeOverview } = await import("../src/app/(energieheld)/mottoreisen/page.tsx");
 const { PortalHeader, PortalFooter } = await import("../src/components/portal/chrome.tsx");
 const { accountMenuGroups } = await import("../src/components/portal/account-menu.tsx");
 const { loadReiseportalDirectory, loadReiseportalListingBySlug } =
@@ -135,7 +136,7 @@ test("destination and motto overviews use only the current visible legacy groups
   ]);
 });
 
-test("four destinations and twelve themes have image or honest fallback cards, links and detail routes", async () => {
+test("four destinations and twelve themes have sourced images, links and detail routes", async () => {
   globalThis.__travelDirectoryResult = { data: {
     listings: reiseportalPreview.map((listing, index) => ({ ...listing, id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(index + 1).padStart(12, "0")}`, isPreview: false })),
     orderRows: [],
@@ -163,10 +164,13 @@ test("four destinations and twelve themes have image or honest fallback cards, l
   assert.match(theme, /Bayerischer Wald/);
   for (const slug of ["tauchurlaub", "nordic-walking"]) {
     const entry = travelThemes.find((item) => item.slug === slug);
-    assert.equal(entry.image, null);
-    const fallbackDetail = renderToStaticMarkup(createElement(DiscoveryDetail, { entry, title: "Mottoreisen", basePath: "/mottoreisen", listings: [] }));
-    assert.doesNotMatch(fallbackDetail, /<img\b/);
+    assert.ok(entry.image?.endsWith(`/${slug}.jpg`));
+    const detail = renderToStaticMarkup(createElement(DiscoveryDetail, { entry, title: "Mottoreisen", basePath: "/mottoreisen", listings: [] }));
+    assert.match(detail, new RegExp(`${slug}\\.jpg`));
   }
+  const overview = renderToStaticMarkup(createElement(ThemeOverview));
+  assert.match(overview, /mottoreisen-intro\.jpg/);
+  assert.match(overview, /Vielleicht geht es Ihnen aber gar nicht so sehr um ein bestimmtes Ziel/);
   await assert.rejects(destinationRoute.default({ params: Promise.resolve({ slug: "unbekannt" }) }), /NOT_FOUND/);
 });
 

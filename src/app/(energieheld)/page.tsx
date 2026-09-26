@@ -9,6 +9,7 @@ import { loadPublicAds } from "@/lib/public-ads";
 import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 
 const featuredThemes = ["natur-pur", "familienurlaub", "wanderurlaub", "wellnessangebote"];
+const quickThemes = ["wellnessangebote", "familienurlaub", "wanderurlaub", "romantik-zu-zweit", "campingurlaub", "radwandern", "urlaub-am-wasser", "golfurlaub"];
 const featuredStays = ["bayerischer-wald", "hoeflehner", "pension-sonnenhof", "schafhuber"];
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ export default async function Home() {
 
   return <main id="hauptinhalt" className="editorial-home discovery-home">
     <section className="travel-hero" aria-labelledby="travel-hero-title">
-      <video autoPlay muted loop playsInline preload="metadata" poster="/reiseportal/hero.jpg" aria-hidden="true" tabIndex={-1}>
+      <video autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1}>
         <source src="/reiseportal/hero-loop.mp4" type="video/mp4" />
       </video>
       <div className="travel-hero-content container">
@@ -39,7 +40,7 @@ export default async function Home() {
           <label>Reiseart
             <select name="thema" defaultValue="">
               <option value="">Alle Reisearten</option>
-              {travelThemes.filter((entry) => entry.previewSlugs.length > 0).map((entry) =>
+              {travelThemes.map((entry) =>
                 <option key={entry.slug} value={entry.slug}>{entry.title}</option>)}
             </select>
           </label>
@@ -49,14 +50,26 @@ export default async function Home() {
           <label>Ort oder Postleitzahl
             <input name="ort" type="search" placeholder="Ort oder PLZ" />
           </label>
+          <label>Sortieren
+            <select name="sort" defaultValue="">
+              <option value="">Passende Ergebnisse</option>
+              <option value="name">Name A–Z</option>
+              <option value="city">Ort A–Z</option>
+            </select>
+          </label>
           <button className="button button-primary" type="submit">Reise finden →</button>
         </form>
       </div>
     </section>
 
     <nav className="container travel-quicklinks" aria-label="Schnell zu Reisethemen">
-      {travelThemes.filter((entry) => featuredThemes.includes(entry.slug)).map((entry) =>
-        <Link key={entry.slug} href={`/mottoreisen/${entry.slug}`}>{entry.title}<span aria-hidden="true">→</span></Link>)}
+      {quickThemes.map((slug) => {
+        const entry = travelThemes.find((theme) => theme.slug === slug);
+        return entry && <Link key={entry.slug} href={`/mottoreisen/${entry.slug}`}>
+          <span className="travel-quicklink-image" style={{ backgroundImage: `url(${entry.image})` }} aria-hidden="true" />
+          <span>{entry.title}</span>
+        </Link>;
+      })}
     </nav>
 
     <section className="section container" aria-labelledby="inspiration-title">
