@@ -61,6 +61,8 @@ const { createPublicClient } = await import("../src/lib/supabase/public.ts");
 const { filterListings } = await import("../src/lib/listings.ts");
 const { ListingDetail } =
   await import("../src/components/portal/listing-detail.tsx");
+const { AccommodationCard } =
+  await import("../src/components/portal/discovery-detail.tsx");
 const { DirectoryPage } =
   await import("../src/components/portal/directory-page.tsx");
 const { default: Detail, generateMetadata: detailMetadata } =
@@ -369,6 +371,18 @@ test("homepage shows real travel cards beside the shared long rail and queries o
   const adRequest = requests.find(({ url }) => url.pathname === "/rest/v1/rpc/get_active_ad_campaigns");
   assert.ok(adRequest);
   assert.equal(adRequest.body.p_scope_type, "homepage");
+});
+
+test("accommodation cards keep a linked neutral image space when no sourced photo exists", () => {
+  const empty = renderToStaticMarkup(createElement(AccommodationCard, { listing: reiseportalPreview[4] }));
+  assert.match(empty, /accommodation-card-image--empty/);
+  assert.match(empty, /aria-label="Villner Hof ansehen"/);
+  assert.match(empty, /aria-hidden="true">VH<\/span>/);
+  assert.doesNotMatch(empty, /<img/);
+
+  const pictured = renderToStaticMarkup(createElement(AccommodationCard, { listing: reiseportalPreview[0] }));
+  assert.match(pictured, /bayerischer-wald\/01\.jpg/);
+  assert.doesNotMatch(pictured, /accommodation-card-image--empty/);
 });
 
 test("selected Joomla media are presentation fallbacks and uploaded media remain canonical", () => {
