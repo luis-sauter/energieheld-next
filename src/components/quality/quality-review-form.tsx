@@ -18,8 +18,8 @@ export function QualityReviewForm({
     <section className={styles.admin}>
       <h2>Persönliche Verifizierung</h2>
       <p>
-        Unabhängig von Profilfreischaltung und Gewerken. Dieses Siegel
-        dokumentiert die persönliche Erfahrung des Energieheld-Teams.
+        Unabhängig von der Profilfreischaltung dokumentiert dieses Siegel
+        eine bestehende persönliche Prüfung.
       </p>
       {review?.status === "verified" ? (
         <>

@@ -1,9 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { BrandConfig } from "@/types/portal";
+import type { AdminAccess } from "@/lib/admin-review";
 import { MobileNavigation } from "./mobile-navigation";
 
-export function PortalHeader({ brand }: { brand: BrandConfig }) {
+function AccountLinks({ access }: { access: AdminAccess }) {
+  return access === "unauthenticated" ? <>
+    <Link className="button header-cta" href="/registrieren">Firma eintragen</Link>
+    <Link href="/login">Einloggen</Link>
+  </> : <>
+    <Link href="/firma">Firmenbereich</Link>
+    {access === "admin" && <Link href="/admin">Admin</Link>}
+  </>;
+}
+
+export function PortalHeader({ brand, access = "unauthenticated" }: { brand: BrandConfig; access?: AdminAccess }) {
   const navigation = (
     <>
       {brand.navigation.map((item) => (
@@ -33,14 +44,21 @@ export function PortalHeader({ brand }: { brand: BrandConfig }) {
           <nav className="desktop-nav" aria-label="Hauptnavigation">
             {navigation}
           </nav>
-          <MobileNavigation>{navigation}</MobileNavigation>
+          <nav className="header-account" aria-label="Unternehmen und Konto">
+            <AccountLinks access={access} />
+          </nav>
+          <MobileNavigation>
+            {navigation}
+            <span className="mobile-account-label">Unternehmen und Konto</span>
+            <AccountLinks access={access} />
+          </MobileNavigation>
         </div>
       </header>
     </>
   );
 }
 
-export function PortalFooter({ brand }: { brand: BrandConfig }) {
+export function PortalFooter({ brand, access = "unauthenticated" }: { brand: BrandConfig; access?: AdminAccess }) {
   return (
     <footer className="site-footer">
       <div className="container footer-main">
@@ -63,6 +81,13 @@ export function PortalFooter({ brand }: { brand: BrandConfig }) {
               {item.label}
             </Link>
           ))}
+          <span className="footer-account-links">
+            <Link href="/registrieren">Firma eintragen</Link>
+            <Link href={access === "unauthenticated" ? "/login" : "/firma"}>
+              {access === "unauthenticated" ? "Einloggen" : "Firmenbereich"}
+            </Link>
+            <Link href="/fuer-unternehmen">Für Unternehmen</Link>
+          </span>
         </nav>
       </div>
       <div className="container footer-bottom">

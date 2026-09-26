@@ -9,9 +9,10 @@ import { profileStatus } from "@/lib/auth";
 import { ReviewActions } from "@/components/admin/review-actions";
 import { QualityReviewForm } from "@/components/quality/quality-review-form";
 import styles from "@/components/admin/admin.module.css";
+import { publicSlugForStoredProfile } from "@/lib/reiseportal-demo";
 
 export const metadata = {
-  title: "Firma & Gewerke",
+  title: "Firmenprofil",
   robots: { index: false, follow: false },
 };
 export const dynamic = "force-dynamic";
@@ -70,7 +71,7 @@ export default async function ReviewPage({
             <div className={styles.actions}>
               <Link
                 className="button button-primary"
-                href={profile.status === "approved" ? `/unterkuenfte/${profile.slug}` : `/admin/firmen/${profile.id}/bearbeiten`}
+                href={profile.status === "approved" ? `/unterkuenfte/${publicSlugForStoredProfile(profile)}` : `/admin/firmen/${profile.id}/bearbeiten`}
               >
                 Profil bearbeiten
               </Link>
@@ -87,7 +88,7 @@ export default async function ReviewPage({
               <h2>Firmenlogo und Unternehmensbilder</h2>
               {!media ? (
                 <p role="alert">
-                  Die Medien konnten nicht geladen werden. Die Gewerke können
+                  Die Medien konnten nicht geladen werden. Die Kategorien können
                   unabhängig davon bearbeitet werden.
                 </p>
               ) : (

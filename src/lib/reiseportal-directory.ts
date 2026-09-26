@@ -3,9 +3,8 @@ import { reiseportalPreview } from "@/data/reiseportal-preview";
 import type { Listing } from "@/types/portal";
 import { directoryItemKey } from "./company-directory-order";
 import { loadPublicCompanyBySlug, loadPublicCompanyDirectory } from "./public-companies";
+import { demoProfileId, demoPublicSlug, demoSourceSlug } from "./reiseportal-demo";
 
-const demoSourceSlug = "energieheld-demo-gmbh-c3351d59";
-const demoProfileId = "31ae7d1e-26a7-4161-8d14-f5ee4735f5d4";
 const oldEnergyContent = /energieheld|energieberatung|photovoltaik|heizung|dämmung|dachsanierung|smart home|fachbetrieb|sanierung/i;
 
 // Phase 1 has no travel taxonomy in Supabase. Keep energy-category profiles and
@@ -21,7 +20,7 @@ function publicDemo(listing: Listing): Listing | null {
   if (listing.id !== demoProfileId || listing.slug !== demoSourceSlug) return null;
   return {
     ...listing,
-    slug: "demo-gmbh", name: "Demo GmbH", initials: "DG",
+    slug: demoPublicSlug, name: "Demo GmbH", initials: "DG",
     tagline: "", description: "", businessAreas: "", categoryIds: [], services: [],
     logo: listing.logo ? { ...listing.logo, alt: "Logo von Demo GmbH" } : undefined,
     images: listing.images.map((image, index) => ({ ...image, alt: `Bild ${index + 1} von Demo GmbH` })),
@@ -60,8 +59,8 @@ export async function loadReiseportalListingBySlug(slug: string) {
   const preview = reiseportalPreview.find((listing) => listing.slug === slug);
   if (preview) return { data: preview, error: null };
   if (slug === demoSourceSlug) return { data: null, error: null };
-  const result = await loadPublicCompanyBySlug(slug === "demo-gmbh" ? demoSourceSlug : slug);
-  if (slug === "demo-gmbh") return { data: result.data ? publicDemo(result.data) : null, error: result.error };
+  const result = await loadPublicCompanyBySlug(slug === demoPublicSlug ? demoSourceSlug : slug);
+  if (slug === demoPublicSlug) return { data: result.data ? publicDemo(result.data) : null, error: result.error };
   return result.data && !travelVisible(result.data)
     ? { data: null, error: null }
     : result;

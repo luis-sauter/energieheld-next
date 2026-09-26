@@ -35,7 +35,7 @@ export function QualityRequestForm({
               }).format(new Date(request.requested_at))}
             </time>
           </p>
-          <p>Das Energieheld-Team prüft Ihre Anfrage.</p>
+          <p>Das Team von DAS Reiseportal prüft Ihre Anfrage.</p>
         </>
       ) : (
         <>
@@ -44,7 +44,7 @@ export function QualityRequestForm({
           )}
           <p>
             Mit der persönlichen Verifizierung können Unternehmen sichtbar
-            machen, dass sie dem Energieheld-Team persönlich bekannt sind und
+            machen, dass sie dem Team von DAS Reiseportal persönlich bekannt sind und
             bereits positive Erfahrungen hinsichtlich Qualität, Ausführung,
             Termintreue, Kostentreue und Kommunikation vorliegen.
           </p>

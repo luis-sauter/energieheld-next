@@ -72,7 +72,7 @@ export function ProfileForm({
               }
               placeholder={
                 name === "business_areas"
-                  ? "z. B. Wärmedämmung, WDVS, Fassadensanierung, Dachbodendämmung"
+                  ? "Beschreiben Sie Ihr Angebot und Ihre Leistungen."
                   : undefined
               }
               value={values[name]}
@@ -140,7 +140,7 @@ export function CompanyProfileForm({
       initialValues={initialValues}
       saveAction={saveProfile}
       submitLabel="Speichern & Profil gestalten"
-      businessAreasHelp="Beschreiben Sie, in welchen Branchen und Tätigkeitsbereichen Ihr Unternehmen arbeitet. Die öffentliche Zuordnung zu den Energieheld-Gewerken erfolgt durch Energieheld."
+      businessAreasHelp="Beschreiben Sie, in welchen Bereichen Ihr Unternehmen tätig ist."
     />
   );
 }

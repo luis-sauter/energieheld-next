@@ -53,7 +53,7 @@ const { ListingDetail } = await import("../src/components/portal/listing-detail.
 const { filterTravelDiscovery } = await import("../src/lib/reiseportal-search.ts");
 const destinationRoute = await import("../src/app/(energieheld)/reiseziele/[slug]/page.tsx");
 const themeRoute = await import("../src/app/(energieheld)/mottoreisen/[slug]/page.tsx");
-const { PortalHeader } = await import("../src/components/portal/chrome.tsx");
+const { PortalHeader, PortalFooter } = await import("../src/components/portal/chrome.tsx");
 const { loadReiseportalDirectory, loadReiseportalListingBySlug } =
   await import("../src/lib/reiseportal-directory.ts");
 const { default: LegacyExperts } = await import("../src/app/(energieheld)/experten/page.tsx");
@@ -72,6 +72,29 @@ test("public navigation has only the three travel entries and uses the untouched
   assert.equal((html.match(/href="\/reiseziele"/g) ?? []).length, 2);
   assert.equal((html.match(/href="\/mottoreisen"/g) ?? []).length, 2);
   assert.equal((html.match(/href="\/unterkuenfte-a-z"/g) ?? []).length, 2);
+});
+
+test("account links use the server-provided session and admin access on desktop, mobile and footer", () => {
+  const header = (access) => renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal, access }));
+  const footer = (access) => renderToStaticMarkup(createElement(PortalFooter, { brand: reiseportal, access }));
+  const guest = header("unauthenticated");
+  assert.match(guest, /aria-label="Unternehmen und Konto"/);
+  assert.match(guest, /aria-label="Mobile Hauptnavigation"/);
+  assert.equal((guest.match(/href="\/registrieren"/g) ?? []).length, 2);
+  assert.equal((guest.match(/href="\/login"/g) ?? []).length, 2);
+  assert.match(guest, /Firma eintragen/);
+  assert.match(guest, /Einloggen/);
+  assert.doesNotMatch(guest, /href="\/firma"|href="\/admin"/);
+
+  const member = header("forbidden");
+  assert.equal((member.match(/href="\/firma"/g) ?? []).length, 2);
+  assert.doesNotMatch(member, /href="\/registrieren"|href="\/login"|href="\/admin"/);
+  const admin = header("admin");
+  assert.equal((admin.match(/href="\/firma"/g) ?? []).length, 2);
+  assert.equal((admin.match(/href="\/admin"/g) ?? []).length, 2);
+
+  assert.match(footer("unauthenticated"), /href="\/registrieren".*href="\/login".*href="\/fuer-unternehmen"/s);
+  assert.match(footer("forbidden"), /href="\/registrieren".*href="\/firma".*href="\/fuer-unternehmen"/s);
 });
 
 test("preview contains the five sourced legacy accommodations; the demo comes from Supabase", () => {
