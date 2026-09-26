@@ -24,6 +24,8 @@ export type Listing = {
   // Temporary presentation/demo data until the commercial package model is finalized.
   directoryPackage?: "basic" | "premium";
   categoryIds: string[];
+  /** Present when the travel taxonomy has been loaded from Supabase. */
+  travelTermKeys?: string[];
   location: Location;
   services: string[];
   images: PortalImage[];

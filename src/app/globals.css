@@ -2941,15 +2941,20 @@ h6 {
 
 /* Reiseportal discovery: original travel photography and functional directory search. */
 .reiseportal-shell {
+  --brand-primary: #29b6e0;
   --brand-accent-hover: #a93618;
   --brand-secondary: #29b6e0;
+  --category-blue: #d9f4fc;
   --brand-beige: #efd0bd;
   --white: #fffdfc;
   --surface: #fff8f3;
   --line: #e9d8ce;
-  --text: #5d040a;
-  --muted: #674d4d;
+  --text: #26363d;
+  --muted: #52636a;
   background: #fffdfc;
+}
+.reiseportal-shell :is(a, button, input, select, summary):focus-visible {
+  outline-color: #087a99;
 }
 .travel-hero {
   position: relative;
@@ -2978,7 +2983,7 @@ h6 {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(90deg, rgba(30, 12, 12, .78), rgba(30, 12, 12, .18));
+  background: linear-gradient(90deg, rgba(17, 36, 43, .78), rgba(17, 36, 43, .18));
 }
 .travel-hero-content {
   padding-block: 72px;
@@ -3065,7 +3070,7 @@ h6 {
   background-position: center;
 }
 .travel-quicklinks a:hover,
-.travel-quicklinks a:focus-visible { border-color: var(--brand-secondary); background: #fff3eb; }
+.travel-quicklinks a:focus-visible { border-color: var(--brand-primary); background: #e7f8fd; }
 .discovery-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3083,7 +3088,7 @@ h6 {
 .discovery-card:hover,
 .discovery-card:focus-visible {
   transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(93, 4, 10, .1);
+  box-shadow: 0 12px 28px rgba(30, 110, 130, .12);
 }
 .discovery-card-image {
   position: relative;
@@ -3146,10 +3151,10 @@ h6 {
 .motto-page .discovery-grid { gap: 28px 22px; }
 .motto-page .discovery-card { border: 0; border-radius: 2px; box-shadow: none; background: #fffaf7; }
 .motto-page .discovery-card:hover,
-.motto-page .discovery-card:focus-visible { box-shadow: 0 10px 24px rgba(93, 4, 10, .08); }
+.motto-page .discovery-card:focus-visible { box-shadow: 0 10px 24px rgba(30, 110, 130, .12); }
 .motto-page .discovery-card-image { aspect-ratio: 1.5; }
 .motto-page .discovery-card-title { padding: 20px 14px; font-size: 1.03rem; font-weight: 650; }
-.motto-page .discovery-card-title span { color: var(--brand-accent); }
+.motto-page .discovery-card-title span { color: var(--brand-primary); }
 .discovery-detail-hero {
   position: relative;
   display: flex;
@@ -3163,7 +3168,7 @@ h6 {
 .discovery-detail-hero > img { z-index: -2; object-fit: cover; }
 .discovery-detail-hero::after {
   content: ""; position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(0deg, rgba(40, 9, 12, .82), transparent 70%);
+  background: linear-gradient(0deg, rgba(17, 36, 43, .82), transparent 70%);
 }
 .discovery-detail-hero > div { padding: 34px; }
 .discovery-detail-hero h1,

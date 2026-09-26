@@ -23,6 +23,10 @@ registerHooks({
       url: 'data:text/javascript,export async function loadPublicCompanyDirectory(){return globalThis.__travelDirectoryResult};export async function loadPublicCompanyBySlug(slug){globalThis.__travelLookups.push(slug);return globalThis.__travelDetailResult}',
       shortCircuit: true,
     };
+    if (specifier.endsWith("/public-travel-taxonomy")) return {
+      url: 'data:text/javascript,export async function loadPublicTravelAssignments(){return globalThis.__travelAssignments ?? null}',
+      shortCircuit: true,
+    };
     if (specifier.startsWith("@/") || specifier.startsWith(".")) {
       const base = specifier.startsWith("@/")
         ? new URL("../src/" + specifier.slice(2), import.meta.url)
@@ -181,6 +185,27 @@ test("travel search filters destinations and only source-tagged preview themes",
   assert.deepEqual(filterTravelDiscovery(reiseportalPreview, "", "golfurlaub"), []);
 });
 
+test("database travel terms take precedence over fallback slugs and combine all structured filters", () => {
+  const listing = { ...reiseportalPreview[0], travelTermKeys: [
+    "theme:tauchurlaub", "audience:paar", "accommodation:hotel", "feature:sauna",
+  ] };
+  assert.deepEqual(filterTravelDiscovery([listing], "", "natur-pur"), []);
+  assert.deepEqual(filterTravelDiscovery([listing], "deutschland", "tauchurlaub", "paar", "hotel", "sauna"), [listing]);
+  assert.deepEqual(filterTravelDiscovery([listing], "", "tauchurlaub", "familie"), []);
+  assert.deepEqual(filterTravelDiscovery([listing], "", "", "", "", "pool"), []);
+  assert.deepEqual(filterTravelDiscovery([reiseportalPreview[0]], "", "", "paar"), []);
+});
+
+test("public Reiseportal primary is turquoise while CTA and body text keep separate roles", () => {
+  const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+  assert.equal(reiseportal.colors.primary, "#29B6E0");
+  assert.equal(reiseportal.colors.accent, "#C3421C");
+  assert.match(css, /\.reiseportal-shell\s*\{[^}]*--text: #26363d;/);
+  assert.match(css, /\.reiseportal-shell :is\(a, button, input, select, summary\):focus-visible\s*\{\s*outline-color: #087a99;/);
+  assert.match(css, /\.motto-page \.discovery-card-title span \{ color: var\(--brand-primary\); \}/);
+  assert.doesNotMatch(css.slice(css.indexOf(".reiseportal-shell")), /#5d040a|rgba\(93, 4, 10/i);
+});
+
 test("legacy previews with addresses render the existing Google map and provider gallery", () => {
   for (const listing of reiseportalPreview) {
     const html = renderToStaticMarkup(createElement(ListingDetail, { listing, categories: [], showMap: true, showVerification: false }));
@@ -220,6 +245,26 @@ test("travel loader excludes approved energy profiles without mutating the sourc
   assert.equal((await loadReiseportalListingBySlug(energyCopy.slug)).data, null);
   globalThis.__travelDetailResult = { data: { ...oldTest, id: "wrong-id" }, error: null };
   assert.equal((await loadReiseportalListingBySlug("demo-gmbh")).data, null);
+});
+
+test("travel loader attaches only profile-specific database assignments", async () => {
+  const first = { ...reiseportalPreview[0], id: "profile-one", isPreview: false };
+  const second = { ...reiseportalPreview[1], id: "profile-two", isPreview: false };
+  globalThis.__travelDirectoryResult = {
+    data: { listings: [first, second], orderRows: [] }, error: null,
+  };
+  globalThis.__travelAssignments = new Map([
+    [first.id, ["theme:tauchurlaub", "audience:paar"]],
+  ]);
+  try {
+    const directory = await loadReiseportalDirectory();
+    assert.deepEqual(directory.database.map((item) => item.travelTermKeys),
+      [["theme:tauchurlaub", "audience:paar"], []]);
+    assert.deepEqual(filterTravelDiscovery(directory.database, "", "tauchurlaub").map((item) => item.id), [first.id]);
+    assert.deepEqual(filterTravelDiscovery(directory.database, "", "natur-pur"), []);
+  } finally {
+    globalThis.__travelAssignments = null;
+  }
 });
 
 test("old public energy routes redirect to travel or home", async () => {

@@ -8,6 +8,9 @@ import { requireAdminAccess, formatSubmission, legalName } from "@/lib/admin";
 import { profileStatus } from "@/lib/auth";
 import { ReviewActions } from "@/components/admin/review-actions";
 import { QualityReviewForm } from "@/components/quality/quality-review-form";
+import { TravelTaxonomyEditor } from "@/components/admin/travel-taxonomy-editor";
+import { loadAdminTravelTaxonomy } from "@/lib/admin-travel-taxonomy";
+import { toggleTravelTerm } from "./travel-actions";
 import styles from "@/components/admin/admin.module.css";
 
 export const metadata = {
@@ -27,6 +30,8 @@ export default async function ReviewPage({
   requireAdminAccess(result.access);
   if (!result.error && !result.profile) notFound();
   const profile = result.profile;
+  const travelTaxonomy = profile && !result.error
+    ? await loadAdminTravelTaxonomy(client, profile.id) : null;
   let media;
   if (profile && !result.error) {
     try {
@@ -118,6 +123,11 @@ export default async function ReviewPage({
                 (category) => category.category_id,
               )}
             />
+            {travelTaxonomy && ("error" in travelTaxonomy
+              ? <p role="alert">{travelTaxonomy.error}</p>
+              : <TravelTaxonomyEditor terms={travelTaxonomy.terms}
+                  assignedKeys={travelTaxonomy.assignedKeys}
+                  toggleAction={toggleTravelTerm.bind(null, profile.id)} />)}
             <QualityReviewForm
               profileId={profile.id}
               review={profile.company_quality_reviews}
