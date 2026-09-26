@@ -90,14 +90,24 @@ test("account button and dropdown groups use server-provided access without perm
 
   const member = header("forbidden");
   assert.doesNotMatch(member, /href="\/firma"|href="\/admin"|href="\/login"/);
-  assert.deepEqual(accountMenuGroups("forbidden").account.map((link) => link.label), ["Firmenbereich", "Profil bearbeiten", "Profil gestalten", "Anfragen", "Werbung", "Statistiken"]);
+  assert.deepEqual(accountMenuGroups("forbidden").account.map((link) => link.label), ["Firmenbereich", "Profil bearbeiten", "Anfragen", "Werbung", "Statistiken"]);
   assert.deepEqual(accountMenuGroups("forbidden").administration, []);
   const admin = header("admin");
   assert.doesNotMatch(admin, /href="\/firma"|href="\/admin"|href="\/login"/);
   assert.deepEqual(accountMenuGroups("admin").administration.map((link) => link.label), ["Adminbereich", "Firmen verwalten", "Werbung verwalten"]);
 
-  assert.match(footer("unauthenticated"), /href="\/registrieren".*href="\/login".*href="\/fuer-unternehmen"/s);
-  assert.match(footer("forbidden"), /href="\/registrieren".*href="\/firma".*href="\/fuer-unternehmen"/s);
+  assert.match(footer("unauthenticated"), /DAS Reiseportal.*Neue Lieblingsorte entdecken/s);
+  assert.doesNotMatch(footer("unauthenticated"), /<a\b|<nav\b/);
+  assert.doesNotMatch(footer("forbidden"), /<a\b|<nav\b/);
+});
+
+test("homepage uses the supplied MP4 as the hero background with search above it", () => {
+  const source = readFileSync(new URL("../src/app/(energieheld)/page.tsx", import.meta.url), "utf8");
+  const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+  assert.ok(existsSync(new URL("../public/reiseportal/hero-loop.mp4", import.meta.url)));
+  assert.match(source, /<section className="travel-hero"[\s\S]*?<video autoPlay muted loop playsInline preload="metadata"[\s\S]*?<source src="\/reiseportal\/hero-loop\.mp4"[\s\S]*?<h1 id="travel-hero-title">Finde deinen passenden Urlaub<\/h1>[\s\S]*?<form className="travel-search"/);
+  assert.match(css, /\.travel-hero > video\s*\{[^}]*object-fit: cover;[^}]*pointer-events: none;/);
+  assert.doesNotMatch(source, /<Image src="\/reiseportal\/hero\.jpg"/);
 });
 
 test("preview contains the five sourced legacy accommodations; the demo comes from Supabase", () => {
@@ -125,7 +135,7 @@ test("destination and motto overviews use only the current visible legacy groups
   ]);
 });
 
-test("four destinations and twelve themes have image cards, links and detail routes", async () => {
+test("four destinations and twelve themes have image or honest fallback cards, links and detail routes", async () => {
   globalThis.__travelDirectoryResult = { data: {
     listings: reiseportalPreview.map((listing, index) => ({ ...listing, id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(index + 1).padStart(12, "0")}`, isPreview: false })),
     orderRows: [],
@@ -139,14 +149,24 @@ test("four destinations and twelve themes have image cards, links and detail rou
     assert.equal((html.match(/class="discovery-card"/g) ?? []).length, entries.length);
     for (const entry of entries) {
       assert.match(html, new RegExp(`href="${basePath}/${entry.slug}"`));
-      assert.match(html, new RegExp(entry.image.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-      assert.ok(existsSync(new URL(`../public${entry.image}`, import.meta.url)));
+      if (entry.image) {
+        assert.match(html, new RegExp(entry.image.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+        assert.ok(existsSync(new URL(`../public${entry.image}`, import.meta.url)));
+      } else {
+        assert.match(html, /discovery-card-image-fallback/);
+      }
     }
   }
   const destination = renderToStaticMarkup(await destinationRoute.default({ params: Promise.resolve({ slug: "oesterreich" }) }));
   assert.match(destination, /Höflehner|Schafhuber/);
   const theme = renderToStaticMarkup(createElement(DiscoveryDetail, { entry: travelThemes[0], title: "Mottoreisen", basePath: "/mottoreisen", listings: reiseportalPreview.slice(0, 1) }));
   assert.match(theme, /Bayerischer Wald/);
+  for (const slug of ["tauchurlaub", "nordic-walking"]) {
+    const entry = travelThemes.find((item) => item.slug === slug);
+    assert.equal(entry.image, null);
+    const fallbackDetail = renderToStaticMarkup(createElement(DiscoveryDetail, { entry, title: "Mottoreisen", basePath: "/mottoreisen", listings: [] }));
+    assert.doesNotMatch(fallbackDetail, /<img\b/);
+  }
   await assert.rejects(destinationRoute.default({ params: Promise.resolve({ slug: "unbekannt" }) }), /NOT_FOUND/);
 });
 

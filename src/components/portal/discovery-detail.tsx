@@ -30,7 +30,7 @@ export function DiscoveryDetail({ entry, title, basePath, listings }: {
       <Link href={basePath}>{title}</Link><span>›</span><span>{entry.title}</span>
     </nav>
     <header className="discovery-detail-hero">
-      <Image src={entry.image} alt={entry.alt} fill sizes="100vw" priority />
+      {entry.image && <Image src={entry.image} alt={entry.alt} fill sizes="100vw" priority />}
       <div><p className="eyebrow">{title}</p><h1>{entry.title}</h1></div>
     </header>
     <div className="discovery-detail-content">
