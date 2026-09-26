@@ -237,7 +237,8 @@ function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((i
         headers: { "content-type": "application/json" },
       });
     }
-    if (url.pathname === "/rest/v1/company_profile_travel_terms") {
+    if (url.pathname === "/rest/v1/travel_terms" ||
+        url.pathname === "/rest/v1/company_profile_travel_terms") {
       assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
       assert.equal(headers.get("cookie"), null);
       return new Response(JSON.stringify({ code: "PGRST205", message: "travel taxonomy not deployed" }), {

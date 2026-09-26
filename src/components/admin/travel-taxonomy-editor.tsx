@@ -5,9 +5,9 @@ import type { TravelTerm } from "@/lib/admin-travel-taxonomy";
 import styles from "./admin.module.css";
 
 const groups = [
-  ["theme", "Reisearten und Themen"],
-  ["audience", "Reisende"],
-  ["accommodation", "Unterkunftstypen"],
+  ["theme", "Reisearten"],
+  ["audience", "Zielgruppen"],
+  ["accommodation", "Unterkunftstyp"],
   ["feature", "Besonderheiten"],
 ] as const;
 
@@ -44,8 +44,9 @@ export function TravelTaxonomyEditor({ terms, assignedKeys, toggleAction }: {
     <p>Ordnen Sie nur Merkmale zu, die für dieses Profil belegt sind.</p>
     {groups.map(([dimension, title]) => {
       const options = terms.filter((term) => term.dimension === dimension);
-      return options.length > 0 && <div key={dimension} className={styles.categories}>
+      return <div key={dimension} className={styles.categories}>
         <h3>{title}</h3>
+        {options.length === 0 && <p>Für dieses Merkmal sind noch keine belegten Optionen vorhanden.</p>}
         {options.map((term) => <div key={term.term_key} className={styles.actions}>
           <span>{term.label}</span>
           <button type="button" className="button" disabled={pending}

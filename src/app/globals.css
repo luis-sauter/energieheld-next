@@ -2133,6 +2133,24 @@ button {
   padding: 10px;
   font-size: 0.74rem;
 }
+.active-travel-filters {
+  grid-column: 1/-1;
+  display: grid;
+  gap: 8px;
+  color: var(--text);
+  font-size: 0.75rem;
+}
+.active-travel-filters > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.active-travel-filters span {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--white);
+}
 .directory-reset {
   grid-column: 1/-1;
   font-size: 0.7rem;

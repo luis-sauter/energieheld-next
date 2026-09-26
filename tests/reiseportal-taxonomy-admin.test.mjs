@@ -2,10 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import { readFileSync, existsSync } from "node:fs";
-import { transpileModule, ModuleKind } from "typescript";
+import { transpileModule, ModuleKind, JsxEmit } from "typescript";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 registerHooks({
   resolve(specifier, context, next) {
+    if (specifier.endsWith("admin.module.css")) return {
+      url: 'data:text/javascript,export default { categories: "categories", actions: "actions" }',
+      shortCircuit: true,
+    };
     if (specifier.endsWith("/admin-review")) return {
       url: 'data:text/javascript,export async function checkAdmin(client){return client.access};export function isProfileId(value){return /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value)}',
       shortCircuit: true,
@@ -20,10 +26,10 @@ registerHooks({
     return next(specifier, context);
   },
   load(url, context, next) {
-    if (url.endsWith(".ts")) return {
+    if (url.endsWith(".ts") || url.endsWith(".tsx")) return {
       format: "module", shortCircuit: true,
       source: transpileModule(readFileSync(new URL(url), "utf8"), {
-        compilerOptions: { module: ModuleKind.ESNext },
+        compilerOptions: { module: ModuleKind.ESNext, jsx: JsxEmit.ReactJSX },
       }).outputText,
     };
     return next(url, context);
@@ -31,6 +37,7 @@ registerHooks({
 });
 
 const { updateAdminTravelTerm } = await import("../src/lib/admin-travel-taxonomy.ts");
+const { TravelTaxonomyEditor } = await import("../src/components/admin/travel-taxonomy-editor.tsx");
 const profileId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
 function client(access = "admin", foundProfile = true, foundTerm = true) {
@@ -75,4 +82,19 @@ test("only an authenticated portal admin can change validated travel assignments
     { profile_id: profileId, term_key: "theme:tauchurlaub" });
   assert.match((await updateAdminTravelTerm(allowed, profileId, "theme:tauchurlaub", false)).success, /gespeichert/);
   assert.ok(allowed.calls.some(([kind]) => kind === "delete"));
+});
+
+test("admin editor groups terms with human labels and explains missing feature evidence", () => {
+  const html = renderToStaticMarkup(createElement(TravelTaxonomyEditor, {
+    terms: [
+      { term_key: "audience:paar", dimension: "audience", label: "Paar" },
+      { term_key: "accommodation:hotel", dimension: "accommodation", label: "Hotel" },
+    ],
+    assignedKeys: ["audience:paar"],
+    toggleAction: async () => ({ success: "Gespeichert." }),
+  }));
+  for (const label of ["Reisearten", "Zielgruppen", "Unterkunftstyp", "Besonderheiten", "Paar", "Hotel"])
+    assert.match(html, new RegExp(label));
+  assert.match(html, /keine belegten Optionen/);
+  assert.doesNotMatch(html, /audience:paar|accommodation:hotel/);
 });

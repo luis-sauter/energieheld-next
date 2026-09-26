@@ -1,7 +1,17 @@
 import "server-only";
 import { createPublicClient } from "@/lib/supabase/public";
+import type { PublicTravelTerm } from "./reiseportal-filter-options";
 
 type Assignment = { profile_id: string; term_key: string };
+
+export async function loadPublicTravelTerms(): Promise<PublicTravelTerm[]> {
+  const client = createPublicClient();
+  const { data, error } = await client.from("travel_terms")
+    .select("term_key,dimension,slug,label").order("term_key");
+  if (error?.code === "PGRST205" || error?.code === "42P01") return [];
+  if (error) throw new Error("Die Reisefilter konnten nicht geladen werden.");
+  return (data ?? []) as PublicTravelTerm[];
+}
 
 // null means the prepared migration has not reached the Cloud yet. An empty
 // map means it is installed and there are genuinely no matching assignments.

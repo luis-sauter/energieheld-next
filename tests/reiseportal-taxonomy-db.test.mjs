@@ -122,6 +122,37 @@ test("travel taxonomy seeds only sourced themes and enforces approved-only publi
     await db.query("DELETE FROM company_profile_travel_terms WHERE profile_id='aaaaaaaa-aaaa-4aaa-8aaa-000000000012'");
     assert.equal((await db.query("SELECT count(*)::int n FROM company_profile_travel_terms")).rows[0].n, 23);
     await db.exec("ROLLBACK");
+
+    const newMigration = await readFile(new URL("../supabase/migrations/20260926181416_complete_reiseportal_taxonomy.sql", import.meta.url), "utf8");
+    const article = (id) => articles.find((entry) => entry.attributes.id === id).attributes;
+    assert.equal(article(464).tags["13"], "Familienurlaub");
+    assert.equal(article(450).tags["18"], "Romantik zu zweit");
+    assert.match(article(470).title, /^Pension Sonnenhof$/);
+    assert.match(article(457).title, /^Hotel zur Post\s*$/);
+    assert.match(article(452).title, /Golfhotel Andreus/);
+    await db.exec(newMigration);
+    await db.exec(newMigration); // Reapplying cannot duplicate assignments.
+    const added = await db.query(`SELECT p.slug,x.term_key FROM company_profile_travel_terms x
+      JOIN company_profiles p ON p.id=x.profile_id WHERE x.term_key NOT LIKE 'theme:%'
+      ORDER BY p.slug,x.term_key`);
+    assert.deepEqual(added.rows, [
+      { slug: "anni-romantikhaeuschen", term_key: "audience:paar" },
+      { slug: "golfhotel-andreus", term_key: "accommodation:hotel" },
+      { slug: "hoeflehner", term_key: "audience:familie" },
+      { slug: "hotel-zur-post", term_key: "accommodation:hotel" },
+      { slug: "pension-sonnenhof", term_key: "accommodation:pension" },
+    ]);
+    assert.equal((await db.query("SELECT count(*)::int n FROM company_profile_travel_terms")).rows[0].n, 28);
+    assert.equal((await db.query("SELECT count(*)::int n FROM company_profile_travel_terms WHERE term_key LIKE 'theme:%'")).rows[0].n, 23);
+    assert.equal((await db.query("SELECT count(*)::int n FROM travel_terms")).rows[0].n, 20);
+    assert.equal((await db.query("SELECT count(*)::int n FROM company_profile_travel_terms WHERE profile_id=(SELECT id FROM company_profiles WHERE slug='demo-gmbh')")).rows[0].n, 0);
+
+    await db.exec("BEGIN");
+    await db.exec("SET LOCAL ROLE anon");
+    assert.equal((await db.query("SELECT count(*)::int n FROM company_profile_travel_terms")).rows[0].n, 28);
+    assert.equal((await db.query("SELECT count(*)::int n FROM travel_terms")).rows[0].n, 16);
+    await assert.rejects(db.query("INSERT INTO company_profile_travel_terms VALUES ('aaaaaaaa-aaaa-4aaa-8aaa-000000000011','audience:paar')"));
+    await db.exec("ROLLBACK");
   } finally {
     await db.close();
   }
