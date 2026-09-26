@@ -32,7 +32,16 @@
     "already_in_supabase": false,
     "import_status": "POSSIBLE_DUPLICATE",
     "reason": "Unveröffentlicht; gleiche Adresse, Telefonnummer und Homepage wie 507/454.",
-    "source": ".legacy-reiseportal/normalized/company-candidates.json#508; raw/articles.json#508"
+    "source": ".legacy-reiseportal/normalized/company-candidates.json#508; raw/articles.json#508",
+    "review": {
+      "previous_classification": "POSSIBLE_DUPLICATE",
+      "classification": "CONFIRMED_DUPLICATE",
+      "compared_with": [507, 454],
+      "preferred_source_id": 507,
+      "evidence": ["raw/articles.json#508,#507", "normalized/company-candidates.json#508,#507", "normalized/company-media-references.json#507"],
+      "reason": "Unveröffentlichter Testartikel mit exakt demselben Artikeltext, derselben Anschrift, Telefonnummer, E-Mail, Homepage und demselben Logo-Verweis wie 507.",
+      "import_decision": "DO_NOT_IMPORT"
+    }
   },
   {
     "joomla_id": 507,
@@ -71,7 +80,16 @@
     "already_in_supabase": false,
     "import_status": "POSSIBLE_DUPLICATE",
     "reason": "Gleicher Anbieter wie 454 (Adresse, Telefon, Name); keine automatische Auswahl.",
-    "source": ".legacy-reiseportal/normalized/companies.json#507"
+    "source": ".legacy-reiseportal/normalized/companies.json#507",
+    "review": {
+      "previous_classification": "POSSIBLE_DUPLICATE",
+      "classification": "CONFIRMED_DUPLICATE",
+      "compared_with": [508, 454],
+      "preferred_source_id": 507,
+      "evidence": ["raw/articles.json#507,#454,#508", "normalized/company-candidates.json#507,#454", "normalized/company-media-references.json#507", "normalized/banner-inventory.json#122,#325,#342,#646"],
+      "reason": "507 und 454 nennen denselben Betrieb, dieselbe Hausnummer/PLZ, Stadt und Telefonnummer; 507 ergänzt dieselbe Homepage und E-Mail wie die veröffentlichten Anbieterbanner. 507 ist die vollständigere Quelle mit Langtext und Originalmedien.",
+      "import_decision": "MANUAL_SOURCE_SELECTION"
+    }
   },
   {
     "joomla_id": 506,
@@ -279,7 +297,16 @@
     "already_in_supabase": false,
     "import_status": "POSSIBLE_DUPLICATE",
     "reason": "Gleicher Anbieter wie 502 (Adresse, Telefon, E-Mail, Homepage); unterschiedliche Themenartikel.",
-    "source": ".legacy-reiseportal/normalized/companies.json#503"
+    "source": ".legacy-reiseportal/normalized/companies.json#503",
+    "review": {
+      "previous_classification": "POSSIBLE_DUPLICATE",
+      "classification": "CONFIRMED_DUPLICATE",
+      "compared_with": [502],
+      "preferred_source_id": 502,
+      "evidence": ["raw/articles.json#503,#502", "normalized/company-candidates.json#503,#502", "normalized/company-media-references.json#503,#502"],
+      "reason": "Identische Anschrift, Telefonnummer, E-Mail, Homepage, Kontaktperson und Vorschaulogo. 503 ist der Wander-Themenartikel desselben Hotels; der Text und die Motivbilder unterscheiden sich fachlich.",
+      "import_decision": "MANUAL_SOURCE_SELECTION"
+    }
   },
   {
     "joomla_id": 502,
@@ -322,7 +349,16 @@
     "already_in_supabase": false,
     "import_status": "POSSIBLE_DUPLICATE",
     "reason": "Gleicher Anbieter wie 503 (Adresse, Telefon, E-Mail, Homepage); unterschiedliche Themenartikel.",
-    "source": ".legacy-reiseportal/normalized/companies.json#502"
+    "source": ".legacy-reiseportal/normalized/companies.json#502",
+    "review": {
+      "previous_classification": "POSSIBLE_DUPLICATE",
+      "classification": "CONFIRMED_DUPLICATE",
+      "compared_with": [503],
+      "preferred_source_id": 502,
+      "evidence": ["raw/articles.json#502,#503", "normalized/company-candidates.json#502,#503", "normalized/company-media-references.json#502,#503"],
+      "reason": "Identische Anschrift, Telefonnummer, E-Mail, Homepage, Kontaktperson und Vorschaulogo. 502 hat den allgemeineren Slug und mehr Medienreferenzen (21 statt 18); 503 enthält einen längeren Wander-Thementext.",
+      "import_decision": "MANUAL_SOURCE_SELECTION"
+    }
   },
   {
     "joomla_id": 501,
@@ -1068,7 +1104,16 @@
     "already_in_supabase": false,
     "import_status": "POSSIBLE_DUPLICATE",
     "reason": "Gleiche Adresse und Telefonnummer wie bereits importierter Höflehner (464).",
-    "source": ".legacy-reiseportal/normalized/companies.json#486"
+    "source": ".legacy-reiseportal/normalized/companies.json#486",
+    "review": {
+      "previous_classification": "POSSIBLE_DUPLICATE",
+      "classification": "CONFIRMED_DUPLICATE",
+      "compared_with": [464],
+      "preferred_source_id": 464,
+      "evidence": ["raw/articles.json#486,#464", "normalized/company-candidates.json#486,#464", "normalized/companies.json#464", "Cloud: company_profiles.slug=hoeflehner"],
+      "reason": "Gleicher Hotelname, Gumpenberg 2, 8967 Haus/Ennstal und nach Ziffern normalisierte Telefonnummer; 464 ist der umfangreiche Artikel mit Kontakt, Homepage und Medien und bereits importiert.",
+      "import_decision": "DO_NOT_IMPORT"
+    }
   },
   {
     "joomla_id": 485,
@@ -1565,7 +1610,16 @@
     "already_in_supabase": false,
     "import_status": "POSSIBLE_DUPLICATE",
     "reason": "Unveröffentlicht; gleicher Anbieter wie bereits importierter Artikel 450.",
-    "source": ".legacy-reiseportal/normalized/company-candidates.json#475; raw/articles.json#475"
+    "source": ".legacy-reiseportal/normalized/company-candidates.json#475; raw/articles.json#475",
+    "review": {
+      "previous_classification": "POSSIBLE_DUPLICATE",
+      "classification": "CONFIRMED_DUPLICATE",
+      "compared_with": [450],
+      "preferred_source_id": 450,
+      "evidence": ["raw/articles.json#475,#450", "normalized/company-candidates.json#475,#450", "normalized/companies.json#450", "Cloud: company_profiles.slug=anni-romantikhaeuschen"],
+      "reason": "Unveröffentlichter Kurzartikel zum selben Romantikhäuschen an Am Königstein 4, 01824 Königstein mit derselben Telefonnummer nach Ziffernnormalisierung; 450 ist der vollständige, bereits importierte Artikel.",
+      "import_decision": "DO_NOT_IMPORT"
+    }
   },
   {
     "joomla_id": 474,
@@ -2515,7 +2569,17 @@
     "already_in_supabase": false,
     "import_status": "INSUFFICIENT_DATA",
     "reason": "Nur Name, Adresse und Telefon; weder Beschreibung noch Homepage, E-Mail oder zuordenbare Bilder.",
-    "source": ".legacy-reiseportal/normalized/companies.json#455"
+    "source": ".legacy-reiseportal/normalized/companies.json#455",
+    "review": {
+      "previous_classification": "INSUFFICIENT_DATA",
+      "classification": "SAFE_IMPORT",
+      "compared_with": [],
+      "preferred_source_id": 455,
+      "evidence": ["raw/articles.json#455", "normalized/company-candidates.json#455", "normalized/banner-inventory.json#353,#354,#397,#398", "https://www.ferienbauernhof-buechele.de/"],
+      "reason": "Der veröffentlichte Joomla-Artikel belegt Name, Anschrift, Telefon und fünf strukturierte Themen. Vier veröffentlichte Anbieterbanner belegen die Homepage; die Anbieterwebsite bestätigt Name, Anschrift und Telefonnummer. Beschreibung, E-Mail und Profilbilder bleiben leer.",
+      "import_decision": "PENDING_EXPLICIT_APPROVAL",
+      "planned_slug": "ferienbauernhof-buechele"
+    }
   },
   {
     "joomla_id": 454,
@@ -2558,7 +2622,16 @@
     "already_in_supabase": false,
     "import_status": "POSSIBLE_DUPLICATE",
     "reason": "Gleicher Anbieter wie 507 (Adresse, Telefon, Name).",
-    "source": ".legacy-reiseportal/normalized/companies.json#454"
+    "source": ".legacy-reiseportal/normalized/companies.json#454",
+    "review": {
+      "previous_classification": "POSSIBLE_DUPLICATE",
+      "classification": "CONFIRMED_DUPLICATE",
+      "compared_with": [507, 508],
+      "preferred_source_id": 507,
+      "evidence": ["raw/articles.json#454,#507,#508", "normalized/company-candidates.json#454,#507", "normalized/companies.json#507"],
+      "reason": "Kurzartikel desselben Appartementhauses mit gleicher Hausnummer, PLZ, Stadt und Telefonnummer; die Straßen-Schreibweise variiert. 507 enthält die vollständigen Kontaktdaten und Originalmedien.",
+      "import_decision": "MANUAL_SOURCE_SELECTION"
+    }
   },
   {
     "joomla_id": 453,
