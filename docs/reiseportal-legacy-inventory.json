@@ -1,0 +1,3195 @@
+[
+  {
+    "joomla_id": 508,
+    "name": "Test",
+    "published": false,
+    "source_slug": "testest",
+    "source_tags": [
+      "Natur pur"
+    ],
+    "planned_slug": null,
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Prof.-Böhm-Straße 7",
+    "postal_code": "94072",
+    "city": "Bad Füssing",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 8531 27070",
+    "email": "info@haus-salzburg.de",
+    "source_email": "info@haus-salzburg.de",
+    "homepage": "https://haus-salzburg.de/",
+    "description": "Ein herzliches „Grüß Gott“ aus Bad Füssing!\n\nWillkommen im Appartementhaus Salzburg. Schön, dass Sie da sind. Bei uns entdecken Sie, wie unkompliziert, angenehm und erholsam Urlaub oder Kur in Bad Füssing sein kann. Unser Haus liegt zentrumsnah und dennoch wunderbar ruhig. Von hier aus erreichen Sie die Thermalbäder, das Kurmittelhaus, Arzt- und Massagepraxen sowie viele Restaurants, Cafés und Einkaufsmöglichkeiten bequem in wenigen Schritten.\n\nUnsere Appartements bieten Ihnen eine gemütliche und preiswerte Alternative zum Hotel. Sie wohnen unabhängig, komfortabel und mit allem, was Sie für einen entspannten Aufenthalt brauchen. Jedes Appartement ist geschmackvoll und modern eingerichtet, verfügt über eine voll ausgestattete Küchenzeile, SAT-TV, Balkon sowie eine Sitzgruppe oder Couch und eignet sich ideal für ein bis zwei Personen.",
+    "media_reference_count": 10,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [],
+    "theme_labels": [],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": "Unveröffentlicht; gleiche Adresse, Telefonnummer und Homepage wie 507/454.",
+    "already_in_supabase": false,
+    "import_status": "POSSIBLE_DUPLICATE",
+    "reason": "Unveröffentlicht; gleiche Adresse, Telefonnummer und Homepage wie 507/454.",
+    "source": ".legacy-reiseportal/normalized/company-candidates.json#508; raw/articles.json#508"
+  },
+  {
+    "joomla_id": 507,
+    "name": "Appartementhaus Salzburg",
+    "published": true,
+    "source_slug": "appartementhaus-salzburg-up",
+    "source_tags": [
+      "Natur pur"
+    ],
+    "planned_slug": null,
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Prof.-Böhm-Straße 7",
+    "postal_code": "94072",
+    "city": "Bad Füssing",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 8531 27070",
+    "email": "info@haus-salzburg.de",
+    "source_email": "info@haus-salzburg.de",
+    "homepage": "https://haus-salzburg.de/",
+    "description": "Ein herzliches „Grüß Gott“ aus Bad Füssing!\n\nWillkommen im Appartementhaus Salzburg. Schön, dass Sie da sind. Bei uns entdecken Sie, wie unkompliziert, angenehm und erholsam Urlaub oder Kur in Bad Füssing sein kann. Unser Haus liegt zentrumsnah und dennoch wunderbar ruhig. Von hier aus erreichen Sie die Thermalbäder, das Kurmittelhaus, Arzt- und Massagepraxen sowie viele Restaurants, Cafés und Einkaufsmöglichkeiten bequem in wenigen Schritten.\n\nUnsere Appartements bieten Ihnen eine gemütliche und preiswerte Alternative zum Hotel. Sie wohnen unabhängig, komfortabel und mit allem, was Sie für einen entspannten Aufenthalt brauchen. Jedes Appartement ist geschmackvoll und modern eingerichtet, verfügt über eine voll ausgestattete Küchenzeile, SAT-TV, Balkon sowie eine Sitzgruppe oder Couch und eignet sich ideal für ein bis zwei Personen.",
+    "media_reference_count": 13,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur"
+    ],
+    "theme_labels": [
+      "Natur pur"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": "Gleicher Anbieter wie 454 (Adresse, Telefon, Name); keine automatische Auswahl.",
+    "already_in_supabase": false,
+    "import_status": "POSSIBLE_DUPLICATE",
+    "reason": "Gleicher Anbieter wie 454 (Adresse, Telefon, Name); keine automatische Auswahl.",
+    "source": ".legacy-reiseportal/normalized/companies.json#507"
+  },
+  {
+    "joomla_id": 506,
+    "name": "Apartbauernhof Valrunzhof",
+    "published": true,
+    "source_slug": "apartbauernhof-valrunzhof",
+    "source_tags": [
+      "Familienurlaub",
+      "Startseite"
+    ],
+    "planned_slug": "apartbauernhof-valrunzhof",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Nauders 491",
+    "postal_code": "6543",
+    "city": "Nauders",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 5473 89092",
+    "email": "info@valrunzhof.com",
+    "source_email": "info@valrunzhof.com",
+    "homepage": "https://www.valrunzhof.com/",
+    "description": "Urlaubsglück am Valrunzhof - für die ganze Familie!\n\nDu liebst komfortabel ausgestattete, liebevoll eingerichtete Apartments? Du schätzt eine familiäre Atmosphäre, ländliche Ruhe und die Nähe zur Natur? Dann freue dich auf unvergessliche Urlaubstage am Bauernhof Valrunzhof in Nauders am Reschenpass.\n\nUnser Hof liegt im Dreiländereck zwischen Österreich, Italien und der Schweiz – ein idealer Ausgangspunkt für aktive und erholsame Tage in den Bergen. Wanderwege, die 2-Länder-Skiarena und der Einstieg in die Langlaufloipe befinden sich direkt in der Nähe. Zur Wahl stehen drei gemütliche Ferienwohnungen mit Südbalkon oder Terrasse, von denen aus du den herrlichen Panoramablick auf die beeindruckende Nauderer Bergwelt genießen kannst.",
+    "media_reference_count": 12,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "logo-details-bd",
+      "original_path": "images/unterkuenfte/valrunzhof/logo-quer.jpg",
+      "bytes": 9102
+    },
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/valrunzhof/750x400-haus.jpg",
+        "bytes": 28146
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/valrunzhof/750x400-familie.jpg",
+        "bytes": 19199
+      }
+    ],
+    "theme_terms": [
+      "theme:familienurlaub"
+    ],
+    "theme_labels": [
+      "Familienurlaub"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#506"
+  },
+  {
+    "joomla_id": 505,
+    "name": "Hotel Ravelli Luxury Spa",
+    "published": true,
+    "source_slug": "hotel-ravelli-luxury-spaita",
+    "source_tags": [
+      "Südtirol/Italien",
+      "Wellnessangebote"
+    ],
+    "planned_slug": "hotel-ravelli-luxury-spa",
+    "type": "Unterkunft",
+    "address": "Via IV Novembre 20",
+    "postal_code": "38020",
+    "city": "Mezzana",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 046 3757122",
+    "email": "hotelravelli@ravellihotels.com",
+    "source_email": "hotelravelli@ravellihotels.com",
+    "homepage": "https://www.ravellihotels.com",
+    "description": "Im Ravelli Hotel, inmitten der wildromantischen Natur des Val di Sole, wollen wir jedem unserer Gäste außergewöhnliche Erlebnisse bieten.\n\nWir möchten sicher gehen, dass Sie Urlaub erleben, der maßgeschneidert ist auf Ihre Wünsche. Egal ob Sie sich nach einer Pause vom Alltag im neuen Adults-only-Spa oder dem großen Bergabenteuer sehnen. In unserem familiengeführten Hotel ist echte Gastfreundschaft der Schlüssel zu Ihrem Urlaubsglück. Besondere Erlebnisse im Hotel Trentino, Val di Sole! Your mountain getaway! Das persönliche Wohlgefühl ist auch eine Frage des Stils. Deshalb bieten wir im Trentino Unterkünfte für jeden Geschmack. Orte, die einladen zu bleiben. Die ihren ganz eigenen Charme versprühen. Die mit gemütlicher Atmosphäre locken. In unserer Auswahl an Zimmern und Suiten finden Sie liebevoll ausgewählte Details, die für individuellen Charakter sorgen. Die Sie dazu verleiten, an nichts zu denken und einfach den Moment zu genießen. Was alle Räume gemeinsam haben? Annehmlichkeiten, die für genussvollen Urlaub nötig sind sowie viele Inklusivleistungen .\n\nRavelli Spa at Ravelli Hotel",
+    "media_reference_count": 35,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/hotel-ravelli/hotel-01-750x400.jpg",
+        "bytes": 102356
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/hotel-ravelli/hotel-02-750x400.jpg",
+        "bytes": 133147
+      }
+    ],
+    "theme_terms": [
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Wellnessangebote"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#505"
+  },
+  {
+    "joomla_id": 504,
+    "name": "Der Königsleitner - Romantik zu Zweit",
+    "published": true,
+    "source_slug": "der-königsleitner",
+    "source_tags": [
+      "Österreich",
+      "Romantik zu zweit"
+    ],
+    "planned_slug": "der-koenigsleitner-romantik-zu-zweit",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Königsleiten 181",
+    "postal_code": "5742",
+    "city": "Königsleiten",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 6564 20290",
+    "email": "urlaub@koenigsleiten.at",
+    "source_email": "urlaub@koenigsleiten.at",
+    "homepage": "https://www.koenigsleiten.at",
+    "description": "Kinderfreies Hotel in Österreich - Am Waldrand, inmitten der Bergwelten des Nationalparks Hohe Tauern, liegt die Ruheoase DER KÖNIGSLEITNER.\n\nFür Genießertypen und Ruhesucher - Lärmfreier Urlaub im Zillertal Wenn Sie an Urlaub denken, was fällt Ihnen dabei ein? Legen Sie Wert auf All-Inclusive-Action, Gästeabfertigung und Ultimaten zum günstigsten Preis?\n\nOder sind Sie eher der Genießertyp? Jemand der Genuss und Ruhe braucht, um das absolute Urlaubsglück zu finden? Suchen Sie nach Rundum-Erholung, Tiefenentspannung und wertvoller Zeit mit Freunden und Familie? Brauchen Sie dafür frische Luft, umgeben von atemberaubenden Naturkulissen, Bergwelten , Wäldern und Seen?",
+    "media_reference_count": 33,
+    "source_logo_reference": false,
+    "logo": {
+      "source": "article-html",
+      "original_path": "images/unterkuenfte/Der%20Konigsleitner/Logo_Koenigsleitner.png",
+      "bytes": 56755
+    },
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Der%20Konigsleitner/Hotel-500x500-1.jpg",
+        "bytes": 122298
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Der%20Konigsleitner/Innen-2-375x250.jpg",
+        "bytes": 34088
+      }
+    ],
+    "theme_terms": [
+      "theme:romantik-zu-zweit"
+    ],
+    "theme_labels": [
+      "Romantik zu zweit"
+    ],
+    "audience_terms": [
+      "audience:paar"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#504"
+  },
+  {
+    "joomla_id": 503,
+    "name": "Hotel Salzburger Hof - Wanderurlaub",
+    "published": true,
+    "source_slug": "hotel-salzburger-hof-wanderurlaub",
+    "source_tags": [
+      "Wanderurlaub"
+    ],
+    "planned_slug": null,
+    "type": "Unterkunft",
+    "address": "Dorf 6",
+    "postal_code": "5652",
+    "city": "Dienten am Hockönig",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 6461 2170",
+    "email": "hotel@salzburger-hof.at",
+    "source_email": "hotel@salzburger-hof.at",
+    "homepage": "https://www.salzburger-hof.at",
+    "description": "Wanderurlaub mit der ganzen Familie in Dienten im Salzburger Land in der Hochkönig-Region.\n\nUnvergessliche Gipfelgefühle erleben, intakte Natur entdecken, ursprüngliche Almwirtschaft genießen – der Wanderurlaub in Dienten am Hochkönig im Salzburger Land ist faszinierend! Zwischen dem schroffen Massiv des Hochkönigs und den Dientner Grasbergen erwarten Sie vielfältige Wander- und Bergrouten, Themen- und Fernwanderwege. Die Routen rund um den Salzburger Hof sind für Familien gut geeignet. Auch bei Kletterern und Bergsteigern ist der Hochkönig als Eldorado bekannt. Wir sind selbst begeisterte Gipfelstürmer und freuen uns sehr, dass unser Hotel mit dem Österreichischen Wandergütesiegel ausgezeichnet wurde. Unsere Gäste finden im Salzburger Hof alles für den erfolgreichen Wanderurlaub in der Hochkönig-Region. Die Lage unseres ausgezeichneten Familienhotels in Salzburg garantiert Freizeitspaß für Groß und Klein, inmitten der sagenumwobenen Bergwelt des Hochkönigmassivs. Erkunden Sie auf den zahlreichen Wanderrouten die Region – alleine oder mit unserem Wanderführer Otti Bacher Senior. Ihre Wandervorteile im Familienhotel Salzburger Hof\n\nDie weiteren Sommer - und Winteraktivitäten sind unzählig. Der Salzburger Hof in Dienten lädt Familien, Paaren und Singles zu einem herrlichen All Inclusive-Urlaub der Extraklasse ein. Skitouren, Schneeschuh- & Winterwandern",
+    "media_reference_count": 18,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": "Gleicher Anbieter wie 502 (Adresse, Telefon, E-Mail, Homepage); unterschiedliche Themenartikel.",
+    "already_in_supabase": false,
+    "import_status": "POSSIBLE_DUPLICATE",
+    "reason": "Gleicher Anbieter wie 502 (Adresse, Telefon, E-Mail, Homepage); unterschiedliche Themenartikel.",
+    "source": ".legacy-reiseportal/normalized/companies.json#503"
+  },
+  {
+    "joomla_id": 502,
+    "name": "Hotel Salzburger Hof - Familienurlaub",
+    "published": true,
+    "source_slug": "hotel-salzburger-hof",
+    "source_tags": [
+      "Familienurlaub"
+    ],
+    "planned_slug": null,
+    "type": "Unterkunft",
+    "address": "Dorf 6",
+    "postal_code": "5652",
+    "city": "Dienten am Hockönig",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 6461 2170",
+    "email": "hotel@salzburger-hof.at",
+    "source_email": "hotel@salzburger-hof.at",
+    "homepage": "https://www.salzburger-hof.at",
+    "description": "Urlaub mit der ganzen Familie in Dienten am Hochkönig - Familienhotel im Salzburger Land\n\nDas Kinderparadies mit Gute-Laune-Garantie – Erlebt im Familienhotel Salzburger Hof in Dienten viele lustige Abenteuer! Hier erwarten euch ein paradiesischer Sommer- und Winterurlaub mit unvergesslichen Erlebnissen für Zwergerl, Prinzessinnen und kleine Könige,…\n\nEntspannung für Mama und Papa, Spiel und Spaß für die Kids – das bietet Ihnen der Salzburger Hof in Dienten am Hochkönig. In unserem 3 Sterne Superior Hotel im Salzburger Land erwartet Sie das All Inclusive-Verwöhnprogramm: herzhafte Kulinarik, pure Erholung, Bacher All Inclusives sowie hoteleigene Aktiv-Angebote. Unsere kleinen Gäste lieben den Riesenspielplatz, den Bummeltraktor, das Kinderprogramm mit Kinderbetreuung sowie die eigenen Kids-All Inclusives.",
+    "media_reference_count": 21,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:familienurlaub"
+    ],
+    "theme_labels": [
+      "Familienurlaub"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": "Gleicher Anbieter wie 503 (Adresse, Telefon, E-Mail, Homepage); unterschiedliche Themenartikel.",
+    "already_in_supabase": false,
+    "import_status": "POSSIBLE_DUPLICATE",
+    "reason": "Gleicher Anbieter wie 503 (Adresse, Telefon, E-Mail, Homepage); unterschiedliche Themenartikel.",
+    "source": ".legacy-reiseportal/normalized/companies.json#502"
+  },
+  {
+    "joomla_id": 501,
+    "name": "Wellnesshotel Almhof Call",
+    "published": true,
+    "source_slug": "wellnesshotel-almhof-call",
+    "source_tags": [
+      "Südtirol/Italien",
+      "Wanderurlaub",
+      "Wellnessangebote"
+    ],
+    "planned_slug": "wellnesshotel-almhof-call",
+    "type": "Unterkunft",
+    "address": "Plazores Strasse 8",
+    "postal_code": "39030",
+    "city": "St. Vigil in Enneberg Dolomiten",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0474 501043",
+    "email": "info@almhof-call.com",
+    "source_email": "info@almhof-call.com",
+    "homepage": "https://www.almhof-call.com/",
+    "description": "Ihr Urlaub in den Bergen! Im Almhof Call, Ihrem Wellnesshotel in St. Vigil am Kronplatz.\n\nGenießen Sie die familiäre Atmosphäre unseres Wellnesshotels in St. Vigil in Enneberg direkt am Kronplatz. Die einladende Umgebung, die Entspannung, die eleganten Zimmer und Suiten, die ausgezeichnete Küche und die vielen Aktivitäten, die im Winter wie im Sommer auf Sie warten, sichern dem Hotel in den Dolomiten einen festen Platz in Ihrem Herzen. Als ständiger Begleiter beglücken Sie die herrlichen Umrisse der Dolomitengipfel, eine der eindrucksvollsten Naturkulissen der Erde.\n\n1.200 m² für Ihr Wohlbefinden - Wellness am Kronplatz in den Dolomiten Der Wellness- und Therapy-Bereich des Almhofs Call, Ihrem Hotel mit Spa in den Dolomiten, ist eine authentische Wohlfühloase. In seinem Inneren bestimmen Sie ganz nach Ihrem Belieben. Gönnen Sie sich Zeit: für sich, zum Schwimmen in den Pools, für regenerierende Saunengänge, Massagen, verschiedene Behandlungen und Entspannung auf den Wasserbetten im Ruheraum. Eine Reise zu tiefstem Wohlbefinden und neuer Balance - Wellness am Kronplatz in den Dolomiten wirkt Wunder!",
+    "media_reference_count": 14,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Almhof%20Call/1.jpg",
+        "bytes": 926578
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Almhof%20Call/2.jpg",
+        "bytes": 241936
+      }
+    ],
+    "theme_terms": [
+      "theme:wanderurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Wanderurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#501"
+  },
+  {
+    "joomla_id": 500,
+    "name": "RHÖN PARK AKTIV RESORT",
+    "published": true,
+    "source_slug": "rhön-park-aktiv-resort",
+    "source_tags": [],
+    "planned_slug": "rhoen-park-aktiv-resort",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Rother Kuppe 2",
+    "postal_code": "97647",
+    "city": "Hausen-Roth",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 9779 910",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Unser beliebtes Tagungshotel liegt auf 750 Höhenmetern mitten im UNESCO Biosphärenreservat Bayerische Rhön im Dreiländereck Bayern, Hessen, Thüringen.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:geschaeftsreisen",
+      "theme:natur-pur",
+      "theme:wanderurlaub",
+      "theme:radwandern",
+      "theme:nordic-walking"
+    ],
+    "theme_labels": [
+      "Geschäftsreisen",
+      "Natur pur",
+      "Wanderurlaub",
+      "Radwandern",
+      "Nordic Walking"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#500"
+  },
+  {
+    "joomla_id": 499,
+    "name": "Mintrops Land Hotel",
+    "published": true,
+    "source_slug": "mintrops-land-hotel",
+    "source_tags": [],
+    "planned_slug": "mintrops-land-hotel",
+    "type": "Unterkunft",
+    "address": "Schwarzensteinweg 81",
+    "postal_code": "45289",
+    "city": "Essen",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 201 57171-0",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Das Mintrops Land Hotel in Burgaltendorf ist ein 4-Sterne-Hotel mit individuell gestalteten Designer-Zimmern und einer wahren Liebe zum Detail.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:geschaeftsreisen",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Geschäftsreisen",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#499"
+  },
+  {
+    "joomla_id": 498,
+    "name": "Landgut Ramshof",
+    "published": true,
+    "source_slug": "landgut-ramshof",
+    "source_tags": [],
+    "planned_slug": "landgut-ramshof",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Ramshof 1",
+    "postal_code": "47877",
+    "city": "Willich",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 2156 – 95890",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Unser Hotel verfügt über 56 sehr komfortable Zimmer, von klassisch bis modern, sowie eine wunderschöne Hochzeits-Suite.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:geschaeftsreisen"
+    ],
+    "theme_labels": [
+      "Geschäftsreisen"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#498"
+  },
+  {
+    "joomla_id": 497,
+    "name": "Pletzer Resorts Bayrischzell",
+    "published": true,
+    "source_slug": "pletzer-resorts-bayrischzell",
+    "source_tags": [],
+    "planned_slug": "pletzer-resorts-bayrischzell",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Kranzerstraße 6",
+    "postal_code": "83735",
+    "city": "Bayrischzell",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 8023 8194 600",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Ob der Berg ruft oder der See – wir haben die perfekte Antwort. In faszinierenden Destinationen in Österreich und im bayerischen Alpenraum bieten wir Ihnen erholsame und bewegende Urlaubstage.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:geschaeftsreisen",
+      "theme:familienurlaub",
+      "theme:wellnessangebote",
+      "theme:wanderurlaub",
+      "theme:radwandern",
+      "theme:natur-pur",
+      "theme:nordic-walking"
+    ],
+    "theme_labels": [
+      "Geschäftsreisen",
+      "Familienurlaub",
+      "Wellnessangebote",
+      "Wanderurlaub",
+      "Radwandern",
+      "Natur pur",
+      "Nordic Walking"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#497"
+  },
+  {
+    "joomla_id": 496,
+    "name": "Lindner Hotel Köln City Plaza",
+    "published": true,
+    "source_slug": "lindner-hotel-köln-city-plaza",
+    "source_tags": [],
+    "planned_slug": "lindner-hotel-koeln-city-plaza",
+    "type": "Unterkunft",
+    "address": "Magnusstrasse 20",
+    "postal_code": "50672",
+    "city": "Köln",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 221 2034 0",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Modernste Technik, professionelle Dienstleistungen und eine reibungslose Organisation sorgen dafür, dass Sie sich voll und ganz auf Ihr Geschäft konzentrieren können.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:geschaeftsreisen"
+    ],
+    "theme_labels": [
+      "Geschäftsreisen"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#496"
+  },
+  {
+    "joomla_id": 495,
+    "name": "Schlosshotel Ralswiek",
+    "published": true,
+    "source_slug": "schlosshotel-ralswiek",
+    "source_tags": [],
+    "planned_slug": "schlosshotel-ralswiek",
+    "type": "Unterkunft",
+    "address": "Parkstraße 3",
+    "postal_code": "18528",
+    "city": "Ralswiek",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 3838-20320",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Privilegiert gelegen in traumhaft schöner Lage am Großen Jasmunder Bodden, empfängt Sie das Schlosshotel in seiner historischen Atmosphäre.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:urlaub-am-wasser",
+      "theme:geschaeftsreisen",
+      "theme:romantik-zu-zweit"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Urlaub am Wasser",
+      "Geschäftsreisen",
+      "Romantik zu zweit"
+    ],
+    "audience_terms": [
+      "audience:familie",
+      "audience:paar"
+    ],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#495"
+  },
+  {
+    "joomla_id": 494,
+    "name": "Hotel GODEWIND",
+    "published": true,
+    "source_slug": "hotel-godewind",
+    "source_tags": [],
+    "planned_slug": "hotel-godewind",
+    "type": "Unterkunft",
+    "address": "De niege Wech 7",
+    "postal_code": "18586",
+    "city": "Mönchgut",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 (0)38308 – 34 20",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Das Meer von drei Seiten, ein endloser Sandstrand, eine unverwechselbare Natur und immer eine frische Brise um die Nase – das alles finden Sie im Hotel Godewind im Ostseebad Thiessow auf der Insel Rügen.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:urlaub-am-wasser",
+      "theme:familienurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Urlaub am Wasser",
+      "Familienurlaub"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#494"
+  },
+  {
+    "joomla_id": 493,
+    "name": "OEWERS Wellness & Spa Hotel",
+    "published": true,
+    "source_slug": "oewers-wellness-spa-hotel",
+    "source_tags": [],
+    "planned_slug": "oewers-wellness-und-spa-hotel",
+    "type": "Unterkunft",
+    "address": "WILHELMSTRASSE 34",
+    "postal_code": "18586",
+    "city": "OSTSEEBAD SELLIN",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 38303 122 – 0",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Inmitten einer wunderschönen Landschaft, die der Seele gut tut, mit grünen Wäldern, duftenden Wiesen und Feldern auf der sonnenverwöhnten.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:wellnessangebote",
+      "theme:urlaub-am-wasser"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Wellnessangebote",
+      "Urlaub am Wasser"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#493"
+  },
+  {
+    "joomla_id": 492,
+    "name": "Landhotel Talblick ****",
+    "published": true,
+    "source_slug": "landhotel-talblick",
+    "source_tags": [],
+    "planned_slug": "landhotel-talblick",
+    "type": "Unterkunft",
+    "address": "Breitenbergerstraße 15",
+    "postal_code": "75389",
+    "city": "Neuweiler-Oberkollwangen",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 7055-92880",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Inmitten einer wunderschönen Landschaft, die der Seele gut tut, mit grünen Wäldern, duftenden Wiesen und Feldern auf der sonnenverwöhnten.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#492"
+  },
+  {
+    "joomla_id": 491,
+    "name": "Lärchenhof",
+    "published": true,
+    "source_slug": "lärchenhof",
+    "source_tags": [],
+    "planned_slug": "laerchenhof",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Holzleiten 86",
+    "postal_code": "6416",
+    "city": "Obsteig",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 (0)5264 8234",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Urlaub in Tirol heißt ankommen, mit Freunden Zeit verbringen, die Kraft der Natur und ehrliche Gastfreundschaft spüren.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#491"
+  },
+  {
+    "joomla_id": 490,
+    "name": "Haus Terra - Ferienwohnung",
+    "published": true,
+    "source_slug": "haus-terra-ferienwohnung",
+    "source_tags": [],
+    "planned_slug": "haus-terra-ferienwohnung",
+    "type": "Unterkunft",
+    "address": "Vorberg 188",
+    "postal_code": "8973",
+    "city": "Schladming",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 664 2525181",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Die unberührte Natur am Waldrand lädt zum Erholen und Genießen für Naturliebhaber und Sportsuchende ein.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:ferienwohnung"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#490"
+  },
+  {
+    "joomla_id": 489,
+    "name": "Hotel Mondschein",
+    "published": true,
+    "source_slug": "hotel-mondschein",
+    "source_tags": [],
+    "planned_slug": "hotel-mondschein",
+    "type": "Unterkunft",
+    "address": "Hannes-Schneider-Promenade 9",
+    "postal_code": "6762",
+    "city": "Stuben am Arlberg",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 5582 511",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "MEHR ALS EIN HOTEL: VIER GEMÜTLICHE RÜCKZUGSORTEN AM ARLBERG",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#489"
+  },
+  {
+    "joomla_id": 488,
+    "name": "FEELFREE NATURE RESORT",
+    "published": true,
+    "source_slug": "feelfree-nature-resort",
+    "source_tags": [],
+    "planned_slug": "feelfree-nature-resort",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Piburger Straße 6",
+    "postal_code": "6433",
+    "city": "Oetz",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 5252 20248",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "In unserem einzigartigen Resort ist der Urlaub erfrischend anders, unglaublich vielfältig und einfach. Warum? Weil wir selber so sind. Und weil wir das Leben so mögen.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#488"
+  },
+  {
+    "joomla_id": 487,
+    "name": "Alpenhotel Montafon",
+    "published": true,
+    "source_slug": "alpenhotel-montafon",
+    "source_tags": [],
+    "planned_slug": "alpenhotel-montafon",
+    "type": "Unterkunft",
+    "address": "Silvrettastraße 175",
+    "postal_code": "6780",
+    "city": "Schruns im Montafon",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 5556 75700",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Gönnen Sie sich ausgiebigen Urlaubsgenuss, wertvolle Zeit für sich selbst und schöne Erlebnisse mit Ihren Liebsten.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:wellnessangebote",
+      "theme:geschaeftsreisen",
+      "theme:radwandern"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Wellnessangebote",
+      "Geschäftsreisen",
+      "Radwandern"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#487"
+  },
+  {
+    "joomla_id": 486,
+    "name": "Natur- und Wellnesshotel Höflehner",
+    "published": true,
+    "source_slug": "natur-und-wellnesshotel-höflehner",
+    "source_tags": [],
+    "planned_slug": null,
+    "type": "Unterkunft",
+    "address": "Gumpenberg 2",
+    "postal_code": "8967",
+    "city": "Haus/Ennstal",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 36 86 25 48",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Unser 4*Superior Natur und Wellness Hotel Höflehner befindet sich bei Haus im Ennstal, ganz in der Nähe von Schladming, in einer einzigartigen Lage auf 1.117 Metern Höhe.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": "Gleiche Adresse und Telefonnummer wie bereits importierter Höflehner (464).",
+    "already_in_supabase": false,
+    "import_status": "POSSIBLE_DUPLICATE",
+    "reason": "Gleiche Adresse und Telefonnummer wie bereits importierter Höflehner (464).",
+    "source": ".legacy-reiseportal/normalized/companies.json#486"
+  },
+  {
+    "joomla_id": 485,
+    "name": "Kesselgrub",
+    "published": true,
+    "source_slug": "kesselgrub",
+    "source_tags": [],
+    "planned_slug": "kesselgrub",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Lackengasse 1",
+    "postal_code": "5541",
+    "city": "Salzburg Altenmarkt im Pongau",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 6452/5232",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Familienzeit leicht gemacht. WER WILL GLÜCKLICHE FAMILIEN SEHEN? DER MUSS INS KESSELGRUB GEHEN!",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#485"
+  },
+  {
+    "joomla_id": 484,
+    "name": "Small & Beautiful Hotel Gnaid",
+    "published": true,
+    "source_slug": "small-beautiful-hotel-gnaid",
+    "source_tags": [],
+    "planned_slug": "small-und-beautiful-hotel-gnaid",
+    "type": "Unterkunft",
+    "address": "Gnaidweg 5",
+    "postal_code": "39019",
+    "city": "Dorf Tirol",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0473 923 412",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Am Panoramahügel Dorf Tirol thront das Hotel Gnaid mit Blick in südwestliche Richtung auf die Texelgruppe, über das Etschtal und hinauf in den Vinschgau.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:wellnessangebote",
+      "theme:golfurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Wellnessangebote",
+      "Golfurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#484"
+  },
+  {
+    "joomla_id": 483,
+    "name": "GOLF- & SPORTHOTEL HOF MARAN",
+    "published": true,
+    "source_slug": "golf-sporthotel-hof-maran",
+    "source_tags": [],
+    "planned_slug": "golf-und-sporthotel-hof-maran",
+    "type": "Unterkunft",
+    "address": "Maranerstrasse 66",
+    "postal_code": "7050",
+    "city": "Arosa",
+    "region": null,
+    "country": "CH",
+    "phone": "+41 81 378 51 51",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Freuen Sie sich auch so auf den Sommer in Arosa? Auf blühende Bergwiesen, kristallklare Bergseen, auf Murmeltiere, Eichhörnli und die Bären im benachbarten Bärenland.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:nordic-walking",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:golfurlaub",
+      "theme:familienurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Nordic Walking",
+      "Radwandern",
+      "Wanderurlaub",
+      "Golfurlaub",
+      "Familienurlaub"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#483"
+  },
+  {
+    "joomla_id": 482,
+    "name": "Wellnesshotel Golfpanorama",
+    "published": true,
+    "source_slug": "wellnesshotel-golfpanorama",
+    "source_tags": [],
+    "planned_slug": "wellnesshotel-golfpanorama",
+    "type": "Unterkunft",
+    "address": "Golfpanorama 6",
+    "postal_code": "8564",
+    "city": "Lipperswil",
+    "region": null,
+    "country": "CH",
+    "phone": "+41 52 208 08 08",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Beginnen Sie den Tag mit einem herrlichen Frühstück, geniessen Sie den Wellnessbereich oder erleben Sie mit dem Velo oder auf Wanderwegen den herrlichen Kanton Thurgau",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:wellnessangebote",
+      "theme:golfurlaub",
+      "theme:geschaeftsreisen",
+      "theme:wanderurlaub",
+      "theme:radwandern",
+      "theme:nordic-walking"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Wellnessangebote",
+      "Golfurlaub",
+      "Geschäftsreisen",
+      "Wanderurlaub",
+      "Radwandern",
+      "Nordic Walking"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#482"
+  },
+  {
+    "joomla_id": 481,
+    "name": "Kaiser Hans - Natur Residence",
+    "published": true,
+    "source_slug": "kaiser-hans-natur-residence",
+    "source_tags": [],
+    "planned_slug": "kaiser-hans-natur-residence",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Verdins Dorf 31",
+    "postal_code": "39017",
+    "city": "Schenna",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0473 868 156",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Freuen Sie sich auf die modernen und gemütlich eingerichteten Suiten und Apartments mit unvergleichlichem Ausblick!",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#481"
+  },
+  {
+    "joomla_id": 480,
+    "name": "Villner Hof",
+    "published": true,
+    "source_slug": "villner-hof",
+    "source_tags": [],
+    "planned_slug": "villner-hof",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Villnerstraße 30",
+    "postal_code": "39044",
+    "city": "Vill bei Neumarkt",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0471 812 039",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Der „Villner Hof“ befindet sich inmitten von Obst- und Weingärten, in sonniger Lage. Die familiäre Führung bürgt für persönlichen, aufmerksamen Service und Gastlichkeit.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:nordic-walking",
+      "theme:radwandern",
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Nordic Walking",
+      "Radwandern",
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": true,
+    "import_status": "ALREADY_IMPORTED",
+    "reason": "Cloud-Profil villner-hof vorhanden.",
+    "source": ".legacy-reiseportal/normalized/companies.json#480"
+  },
+  {
+    "joomla_id": 479,
+    "name": "Pension Steingarten",
+    "published": true,
+    "source_slug": "pension-steingarten",
+    "source_tags": [],
+    "planned_slug": "pension-steingarten",
+    "type": "Unterkunft",
+    "address": "Rittsteinweg 67",
+    "postal_code": "39057",
+    "city": "Eppan",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0471 66 46 66",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Idealer Aufenthaltsort für Ihren Urlaub. Die Montiggler Seen sowie der Kalterer See sind in kürzester Zeit erreichbar. Günstiger Ausgangspunkt für Tagesausflüge in die Dolomiten, zum Gardasee und nach Venedig.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:pension"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#479"
+  },
+  {
+    "joomla_id": 478,
+    "name": "Stroblhof",
+    "published": true,
+    "source_slug": "stroblhof",
+    "source_tags": [],
+    "planned_slug": "stroblhof",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Passeierstraße 28/29",
+    "postal_code": "39015",
+    "city": "St. Leonhard in Passeier",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0473 010500",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Die Kinder sind glücklich, die Eltern entspannt und der langersehnte Urlaub ist ein voller Erfolg – denn in unserem Familienhotel in Südtirol mit Pool haben wir wirklich an alles gedacht.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#478"
+  },
+  {
+    "joomla_id": 477,
+    "name": "Kronplatz",
+    "published": true,
+    "source_slug": "kronplatz",
+    "source_tags": [],
+    "planned_slug": "kronplatz",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Pfarrstraße 4",
+    "postal_code": "39030",
+    "city": "Niederolang",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0474 496173",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Ein Familienurlaub am Kronplatz bedeutet sowohl im Sommer als auch im Winter vor allem Erholung für die Eltern und jede Menge Spaß für die Kleinsten.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#477"
+  },
+  {
+    "joomla_id": 476,
+    "name": "Familienhotel & Kinderhotel Sonnwies",
+    "published": true,
+    "source_slug": "familienhotel-kinderhotel-sonnwies",
+    "source_tags": [],
+    "planned_slug": "familienhotel-und-kinderhotel-sonnwies",
+    "type": "Unterkunft",
+    "address": "Alter Runggerweg 20",
+    "postal_code": "39040",
+    "city": "Lüsen",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0472 413 533",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Das exklusive Familienhotel Sonnwies - Ihr Hotel für Familien in Südtirol!",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#476"
+  },
+  {
+    "joomla_id": 475,
+    "name": "Annis Romantikhäuschen",
+    "published": false,
+    "source_slug": "annis-romantikhäuschen",
+    "source_tags": [],
+    "planned_slug": null,
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Am Königstein 4",
+    "postal_code": "01824",
+    "city": "Königstein",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 35021 – 99 9 65",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Der Rückzugsort der Gemütlichkeit an den Ufern der Geschichte, nahe der beeindruckenden Festung Königstein.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [],
+    "theme_labels": [],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": "Unveröffentlicht; gleicher Anbieter wie bereits importierter Artikel 450.",
+    "already_in_supabase": false,
+    "import_status": "POSSIBLE_DUPLICATE",
+    "reason": "Unveröffentlicht; gleicher Anbieter wie bereits importierter Artikel 450.",
+    "source": ".legacy-reiseportal/normalized/company-candidates.json#475; raw/articles.json#475"
+  },
+  {
+    "joomla_id": 474,
+    "name": "ALFSEEFERIEN- UND ERLEBNISPARK",
+    "published": true,
+    "source_slug": "alfseeferien-und-erlebnispark",
+    "source_tags": [],
+    "planned_slug": "alfseeferien-und-erlebnispark",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Am Campingpark 10",
+    "postal_code": "49597",
+    "city": "Rieste",
+    "region": null,
+    "country": "DE",
+    "phone": "+49-5464-9212-0",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Entdecken Sie Ihr Urlaubserlebnis im Osnabrücker Land. Langeweile hat am Alfsee keine Chance!",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:campingurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Radwandern",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Campingurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#474"
+  },
+  {
+    "joomla_id": 473,
+    "name": "Blausee",
+    "published": true,
+    "source_slug": "blausee",
+    "source_tags": [
+      "Schweiz",
+      "Geschäftsreisen"
+    ],
+    "planned_slug": "blausee",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Blausee 222",
+    "postal_code": "3717",
+    "city": "Blausee",
+    "region": null,
+    "country": "CH",
+    "phone": "+41 33 672 33 33",
+    "email": "info@blausee.ch",
+    "source_email": "info@blausee.ch",
+    "homepage": "https://www.blausee.ch/",
+    "description": "365 TAGE IM JAHR GEÖFFNET! DIE NATUR IN IHREN SCHÖNSTEN FACETTEN\n\nDer Blausee - einer der schönsten Bergseen der Schweiz Wir begrüßen Sie herzlich in unserem kleinen Paradies inmitten der Kandertaler Berge. Die Marke «Blausee» steht für Einzigartigkeit auf ganzer Linie. Gastfreundschaft ist uns sehr wichtig und wir möchten Sie mit all Ihren Sinnen verwöhnen. Der Blausee soll ein Kraftort sein, in dem Sie sich entspannen und die Natur von Ihrer schönsten Seite geniessen können. Es erwartet Sie ein charmant eingerichtetes kleines Grand Hotel mit Spa-Bereich, ein märchenhafter Naturpark und eine 13-Punkte Gault-Millau-Küche, die sie auf eine kulinarische Entdeckungsreise schickt. Auch für Events und Seminare sind wir ausgerüstet und bieten eine traumhafte Location für Ihren Anlass.\n\nSind Sie einmal am Bielersee unterwegs, besuchen Sie auch unseren Partnerbetrieb auf der St. Petersinsel. Das ehemalige Klosterhotel liegt auf der Südostseite der schönen Halbinsel und serviert liebevoll angerichtete Speisen aus der Region.",
+    "media_reference_count": 12,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "article-html",
+      "original_path": "images/unterkuenfte/Blausee/logo_blausee-transparent.png",
+      "bytes": 90426
+    },
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Blausee/blausee_imagebild.jpg",
+        "bytes": 565984
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Blausee/blausee-sommer-1_ohneauto.jpg",
+        "bytes": 632230
+      }
+    ],
+    "theme_terms": [
+      "theme:geschaeftsreisen"
+    ],
+    "theme_labels": [
+      "Geschäftsreisen"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#473"
+  },
+  {
+    "joomla_id": 472,
+    "name": "Kemmeriboden-Bad",
+    "published": true,
+    "source_slug": "kemmeriboden-bad",
+    "source_tags": [
+      "Schweiz",
+      "Romantik zu zweit"
+    ],
+    "planned_slug": "kemmeriboden-bad",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Kemmeribodenbad 181",
+    "postal_code": "6197",
+    "city": "Schangnau",
+    "region": null,
+    "country": "IT",
+    "phone": "+41 (0) 34 493 77 77",
+    "email": "hotel@kemmeriboden.ch",
+    "source_email": "hotel@kemmeriboden.ch",
+    "homepage": "https://www.kemmeriboden.ch/",
+    "description": "Herzlich willkommen im Kemmeriboden Bad!\n\nErleben Sie unvergessliche Momente im Hotel Landgasthof Kemmeriboden Bad und tauchen Sie ein, in die malerische Schönheit des wild-romantischen Quellgebiets der Emme.\n\nLassen Sie sich von unserem Restaurantteam kulinarisch verwöhnen und geniessen Sie die Köstlichkeiten aus unserer Region. Unser Hotelteam sorgt für Ihre Erholung im und ums Haus. Verbringen Sie ein paar Tage in einem unserer individuell gestalteten Zimmern und lassen Sie sich von der lieblichen Natur rund um unser Haus verzaubern.",
+    "media_reference_count": 8,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:romantik-zu-zweit"
+    ],
+    "theme_labels": [
+      "Romantik zu zweit"
+    ],
+    "audience_terms": [
+      "audience:paar"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#472"
+  },
+  {
+    "joomla_id": 471,
+    "name": "Rü Blanch",
+    "published": true,
+    "source_slug": "rü-blanch",
+    "source_tags": [
+      "Südtirol/Italien",
+      "Natur pur"
+    ],
+    "planned_slug": "rue-blanch",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Str. Glira 39",
+    "postal_code": "39036",
+    "city": "St. Kassian",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0471 849423",
+    "email": "info@rublanch.com",
+    "source_email": "info@rublanch.com",
+    "homepage": "https://www.rublanch.com/de/",
+    "description": "HOTEL CIASA RÜ BLANCH - Ihr zweites Zuhause!\n\nIn unserem Hause, in ruhiger, sonniger Lage oberhalb von St. Kassian – Alta Badia, können Sie so richtig abschalten und Ihre verdiente Ruhe finden. Unser Haus liegt zu Fuße des majestätischen Berges La Varella und genießt über eine atemberaubende Aussicht auf die Dolomiten.\n\n800 m von den Liftanlagen entfernt, ist unser Haus idealer Ausgangspunkt, im Winter zum Skifahren & Langlaufen und im Sommer zum Wandern.",
+    "media_reference_count": 7,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/RU%20Blanch/1_hotel_appartamenti_san_cassiano_alta_badia_10.jpg",
+        "bytes": 628654
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/RU%20Blanch/1_hotel_appartamenti_san_cassiano_alta_badia_20.jpg",
+        "bytes": 418348
+      }
+    ],
+    "theme_terms": [
+      "theme:natur-pur"
+    ],
+    "theme_labels": [
+      "Natur pur"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#471"
+  },
+  {
+    "joomla_id": 470,
+    "name": "Pension Sonnenhof",
+    "published": true,
+    "source_slug": "pension-sonnenhof",
+    "source_tags": [
+      "Südtirol/Italien",
+      "Nordic Walking",
+      "Radwandern"
+    ],
+    "planned_slug": "pension-sonnenhof",
+    "type": "Unterkunft",
+    "address": "Lindenstrasse 10",
+    "postal_code": "39037",
+    "city": "Mühlbach",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0472 520164",
+    "email": "info@sonnenhof.bz.it",
+    "source_email": "info@sonnenhof.bz.it",
+    "homepage": "https://www.pension-sonnenhof.info/",
+    "description": "Der Sonnenhof am Logenplatz in Meransen. Urlaub in der Ski- & Almenregion Gitschberg Jochtal\n\nHoch über dem Pustertal im Sonnendorf Meransen heißt Sie Familie Unterkircher im Sonnenhof herzlich zu einem unvergesslichen Urlaub in Südtirol willkommen. Unsere Hotel Pension liegt auf einer Höhe von 1.400 Metern an einem sonnigen Hang am Ortszentrum und mitten in der Ski- & Almenregion Gitschberg Jochtal. Die traumhafte Panoramaaussicht von unserer Sonnenterrasse reicht von den grünen Berghängen des Pustertales bis zu den hellen Kalksteinspitzen der Dolomiten. Überragt wird Meransen vom 2.510 Meter hohen Gitschberg. Auf dem Gipfel des Berges befindet sich eine Panoramaplattform, von der Sie eine fantastische Aussicht auf 500 Alpengipfel genießen.\n\nSo einen herrlichen Ausblick genießen Sie nur in Meransen in Südtirol Der Logenplatz an der Sonne – so kann man das sonnenverwöhnte Meransen nennen. Aber nicht nur die außerordentlich hohe Zahl an Sonnentagen machen unsere Lage so besonders: Von Ihrem Zimmerbalkon oder der Sonnenterrasse genießen Sie eine Aussicht, die ihresgleichen sucht. Wo Eisacktal und Pustertal ineinander übergehen und die mächtigen Dolomiten im Süden grüßen, ist ein prachtvoller Panoramablick garantiert. Und weil unsere Pension zudem auf 1.400 Metern liegt, können Sie ungehindert tief nach Südtirol hineinschauen. Der Blick reicht vom Gitschberg – dem Wahrzeichen unserer Region –, über das Pustertal, die Rodenecker Alm, den Peitler Kofel bis zum Schlern. Das müssen Sie gesehen und genossen haben! Wer bei uns Urlaub macht, kann die schönsten Ausflugsziele schon vorab in Augenschein nehmen und sich am Fernblick erfreuen. Das Hochplateau von Meransen ist ein Paradies für Nordic Walking Fans und die Pension Sonnenhof ist der ideale Standort, um zu erlebnisreichen Touren durch reizvolle Naturlandschaften aufzubrechen. Direkt von der Haustür Ihrer Unterkunft starten Sie ohne Zeitverzögerung zu abwechslungsreichen Ausflügen in die Südtiroler Bergwelt. Das Nordic Walking Streckennetz in der Ski- & Almenregion Gitschberg Jochtal besitzt eine Länge von mehr als 100 Kilometern. Diese Trendsportart ist mittlerweile fester Bestandteil eines Aktivurlaubs in Südtirol. Bei dieser Art der Freizeitbeschäftigung steht weniger die sportliche Höchstleistung als vielmehr Entspannung, Vitalität und Naturgenuss im Vordergrund. Mehr als 80 Prozent aller Muskeln des Körpers werden auf den Ausflügen trainiert und der Kreislauf wird nachhaltig gestärkt.",
+    "media_reference_count": 8,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:nordic-walking",
+      "theme:radwandern"
+    ],
+    "theme_labels": [
+      "Nordic Walking",
+      "Radwandern"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:pension"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": true,
+    "import_status": "ALREADY_IMPORTED",
+    "reason": "Cloud-Profil pension-sonnenhof vorhanden.",
+    "source": ".legacy-reiseportal/normalized/companies.json#470"
+  },
+  {
+    "joomla_id": 469,
+    "name": "Schwarzwälderhof",
+    "published": true,
+    "source_slug": "schwarzwälderhof",
+    "source_tags": [
+      "Deutschland",
+      "Campingurlaub",
+      "Romantik zu zweit"
+    ],
+    "planned_slug": "schwarzwaelderhof",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Tretenhofstrasse 76 D",
+    "postal_code": "77960",
+    "city": "Seelbach",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 (0) 78 23 / 96 09 50",
+    "email": "info@spacamping.de",
+    "source_email": "info@spacamping.de",
+    "homepage": "https://spacamping.de/de/",
+    "description": "Luxusurlaub in Natur und Ruhe.\n\nHier wartet der Sonnenaufgang auf Sie. Traumhaft eingebettet in die Natur des Schwarzwaldes, auf mehreren Terrassen angelegt und mit allem ausgestattet, was ein herrlicher Campingurlaub braucht. Wo sonst findet man einen 5 Sterne Campingplatz mit Sauna, Wellness, Hallenbad und einem Restaurant direkt mit dabei? Und auch in Punkto Infrastruktur ist hier Camping mit Komfort angesagt. Ein echter Geheimtipp für alle, die beim Camping auch ein wenig Luxus mögen.\n\nImmer wieder betonen unsere Gäste, dass sie es besonders schätzen hier einen wirklich kinderfreundlichen Campingplatz zu haben. Und Hundebesitzer werden bei uns ebenfalls glücklich, denn auf dem Campingplatz sind auch Hunde erlaubt.",
+    "media_reference_count": 11,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "article-html",
+      "original_path": "images/unterkuenfte/Schwarzwalder%20Hof/logo.png",
+      "bytes": 51333
+    },
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Schwarzwalder%20Hof/3.jpg",
+        "bytes": 306721
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Schwarzwalder%20Hof/5.jpg",
+        "bytes": 387057
+      }
+    ],
+    "theme_terms": [
+      "theme:campingurlaub",
+      "theme:romantik-zu-zweit"
+    ],
+    "theme_labels": [
+      "Campingurlaub",
+      "Romantik zu zweit"
+    ],
+    "audience_terms": [
+      "audience:paar"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#469"
+  },
+  {
+    "joomla_id": 468,
+    "name": "Wirthshof",
+    "published": true,
+    "source_slug": "wirthshof",
+    "source_tags": [
+      "Urlaub am Wasser",
+      "Campingurlaub"
+    ],
+    "planned_slug": "wirthshof",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Steibensteg 4",
+    "postal_code": "88677",
+    "city": "Markdorf",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 (0) 7544 9627-0",
+    "email": "post@wirthshof.de",
+    "source_email": "post@wirthshof.de",
+    "homepage": "https://www.wirthshof.de/",
+    "description": "BODENSEE-CAMPING: FÜR KINDER, GENIESSER UND AKTIVURLAUBER\n\nIm Urlaub einen Gang herunterschalten und genau das tun, was ich will – das ist Bodensee-Camping bei uns auf dem Wirthshof. Mit der Familie die Bodenseeregion erkunden, die Natur entdecken, im Wald einen verborgenen Schatz finden oder einfach nur Nichtstun und sich erholen.\n\nOb mit dem eigenen Caravan oder Wohnmobil, in einem unserer komfortablen Mobilheime oder klassisch im Zelt. Verbringen Sie Ihren Natur-, Abenteuer- oder Erholungs-Urlaub auf unserem Campingplatz in Markdorf in der Nähe des Bodensees. Zeit zum Genießen! IHRE EIGENEN VIER WÄNDE & CAMPING-FREIHEIT INKLUSIVE Kein eigenes Wohnmobil? Kein Problem. Erleben Sie auf unserem ausgezeichneten Campingplatz am Bodensee das Urlaub-in-der-Natur-Gefühl auch ohne eigenen Wohnwagen oder Wohnmobil. Mieten Sie sich eine unserer komfortablen und gemütlichen Unterkünfte und erleben Sie das exklusive Campinggefühl.",
+    "media_reference_count": 13,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:urlaub-am-wasser",
+      "theme:campingurlaub"
+    ],
+    "theme_labels": [
+      "Urlaub am Wasser",
+      "Campingurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": true,
+    "import_status": "ALREADY_IMPORTED",
+    "reason": "Cloud-Profil wirthshof vorhanden.",
+    "source": ".legacy-reiseportal/normalized/companies.json#468"
+  },
+  {
+    "joomla_id": 467,
+    "name": "Camping Resort Allweglehen",
+    "published": true,
+    "source_slug": "camping-resort-allweglehen",
+    "source_tags": [
+      "Deutschland",
+      "Natur pur",
+      "Urlaub am Wasser",
+      "Campingurlaub"
+    ],
+    "planned_slug": "camping-resort-allweglehen",
+    "type": "Unterkunft",
+    "address": "Allweggasse 4",
+    "postal_code": "83471",
+    "city": "Berchtesgaden",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 8652 2396",
+    "email": "urlaub@allweglehen.de",
+    "source_email": "urlaub@allweglehen.de",
+    "homepage": "https://www.allweglehen.de/de/",
+    "description": "Der erste Reisemobilstellplatz in Berchtesgaden!\n\nIn der Vergangenheit suchten Feriengäste, die mit dem Wohnmobil unterwegs waren, in Berchtesgaden vergeblich nach einem geeigneten Stellplatz. Diesem Mangel können wir nun abhelfen! Wir bieten Ihnen nunmehr auf unserem Grundstück, nur 100 Meter unterhalb des Campingareals, 28 großzügig angelegte Stellplätze in einem leicht zugänglichen Bereich und in ruhiger Lage.\n\nDank unseres 24-Stunden-Check-In-Services genießen Sie eine weitgehende Ungebundenheit. Eine Wasserzapfstelle, eine Entsorgungsstation und ein kostenfreier Stromanschluss sind vorhanden. Außerdem können Sie die Sanitären Einrichtungen des Campingplatzes nutzen, sofern Sie es wünschen.",
+    "media_reference_count": 9,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Camping%20Resort%20Allweglehen/02-Chalet.jpg",
+        "bytes": 516305
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Camping%20Resort%20Allweglehen/04-Chalet.jpg",
+        "bytes": 511326
+      }
+    ],
+    "theme_terms": [
+      "theme:urlaub-am-wasser",
+      "theme:campingurlaub",
+      "theme:natur-pur"
+    ],
+    "theme_labels": [
+      "Urlaub am Wasser",
+      "Campingurlaub",
+      "Natur pur"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:camping"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#467"
+  },
+  {
+    "joomla_id": 466,
+    "name": "The Chedi",
+    "published": true,
+    "source_slug": "the-chedi",
+    "source_tags": [
+      "Schweiz",
+      "Golfurlaub",
+      "Geschäftsreisen"
+    ],
+    "planned_slug": "the-chedi",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Gotthardstrasse 4",
+    "postal_code": "6490",
+    "city": "Andermatt",
+    "region": null,
+    "country": "CH",
+    "phone": "+41 41 888 74 88",
+    "email": "info@chediandermatt.com",
+    "source_email": "info@chediandermatt.com",
+    "homepage": "https://www.thechediandermatt.com/de",
+    "description": "IHR SCHWEIZER GOLFURLAUB IM HOTEL THE CHEDI ANDERMATT\n\nSie suchen ein Golfhotel in der Schweiz, dass nicht nur mit Golfplatz-Nähe, sondern auch mit höchster Qualität und einer überragenden Gastlichkeit überzeugt? Im The Chedi Andermatt sind Sie an der richtigen Adresse: Nur wenige Minuten vom Hotel wartet der Par-72-Championship-Golfplatz der Swiss PGA mit 18 Loch. Wer beim Bälleschlagen Abwechslung sucht, findet diese auf drei weiteren Golfplätzen in nächster Umgebung. So verfügen Sedrun, Realp und Source du Rhône über je einen 9-Loch-Golfplatz und bilden gemeinsam mit dem Andermatter Green echtes \"Alpine Golf\". The Chedi Andermatt – der perfekte Ort für einen Golfurlaub in der Schweiz, der keine Wünsche unerfüllt lässt.\n\nCRAFTING MEMORIES Das «The Chedi Andermatt» zählt zu den renommiertesten Luxushotels der Schweiz und ist ein Ort zum Wohlfühlen, umgeben von einer atemberaubenden Natur. In diesem luxuriösen Fünfsternehotel trifft dezente Eleganz auf modernen Lifestyle, verschmelzen asiatische Elemente mit alpinem Chic.",
+    "media_reference_count": 9,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "article-html",
+      "original_path": "images/unterkuenfte/The%20Chedi/logo-color.png",
+      "bytes": 5505
+    },
+    "images": [],
+    "theme_terms": [
+      "theme:golfurlaub",
+      "theme:geschaeftsreisen"
+    ],
+    "theme_labels": [
+      "Golfurlaub",
+      "Geschäftsreisen"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#466"
+  },
+  {
+    "joomla_id": 465,
+    "name": "Schafhuber",
+    "published": true,
+    "source_slug": "schafhuber",
+    "source_tags": [
+      "Österreich",
+      "Nordic Walking",
+      "Wanderurlaub"
+    ],
+    "planned_slug": "schafhuber",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Urslaustraße 4-6",
+    "postal_code": "5761",
+    "city": "Maria Alm-Hinterthal",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 6584 8147-0",
+    "email": "info@landhotel-schafhuber.at",
+    "source_email": "info@landhotel-schafhuber.at",
+    "homepage": "https://www.landhotel-schafhuber.at",
+    "description": "Viele Wege führen ins Salzburgerland, dort wo der Himmel die Erde berührt …\n\nWir sind das erste und einzige Wanderhotel in Maria Alm-Hinterthal. Das heißt: Wir bieten Ihnen das beste Wanderprogramm – und vieles mehr! Wandern bedeutet für uns Genuss: und darum erklimmen wir keine Dreitausender, sondern führen unsere Wandergäste durch die mittlere Höhenlage von 1.000 bis 1.600 Meter, mit viel Zeit zum Schauen und Genießen.\n\nWerner und Susi werden Sie in bewährter Manier in die Salzburger Berge führen. Bei den Einkehrschwüngen in urige Almhütten können Sie sich die regionalen Schmankerln auf der Zunge zergehen lassen. Gleich ob Wanderer, Bergsteiger, Almgeher oder Romantiker: die Region Hochkönig bietet jedem das Richtige, in unterschiedlichen Schwierigkeitsgraden. Im Sommer wie auch im Winter. Der „Schafhuber“ steht für einen genussvollen Wanderurlaub im Salzburgerland. Wir kennen die besten Wege und die schönsten Aussichtsplätze – fragen Sie einfach nach!",
+    "media_reference_count": 11,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:nordic-walking",
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Nordic Walking",
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": true,
+    "import_status": "ALREADY_IMPORTED",
+    "reason": "Cloud-Profil schafhuber vorhanden.",
+    "source": ".legacy-reiseportal/normalized/companies.json#465"
+  },
+  {
+    "joomla_id": 464,
+    "name": "Höflehner",
+    "published": true,
+    "source_slug": "höflehner",
+    "source_tags": [
+      "Österreich",
+      "Nordic Walking",
+      "Wanderurlaub",
+      "Familienurlaub"
+    ],
+    "planned_slug": "hoeflehner",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Gumpenberg 2",
+    "postal_code": "8967",
+    "city": "Haus/Ennstal",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 3686 2548",
+    "email": "info@hoeflehner.com",
+    "source_email": "info@hoeflehner.com",
+    "homepage": "https://www.hoeflehner.com/",
+    "description": "Erleben Sie kulinarische Highlights und ein umfangreiches Angebot an Aktivitäten und Entspannungsmöglichkeiten.\n\nWandern ist nicht nur unsere Passion, sondern unsere Leidenschaft . Als einziges steirisches Mitglied der Wanderhotels zeigen wir unseren Gästen, was es für einen perfekten Wander- und Wellnessurlaub benötigt.\n\nDas Natur- und Wellnesshotel Höflehner ist Ihr Wanderhotel im steirischen Ennstal , ganz in der Nähe von Schladming. Genießen Sie eine exquisite Naturküche, ein erstklassiges Wellnessangebot und unsere zahlreichen Wanderextras , die für uns als Wanderhotel selbstverständlich sind. Mit unseren ausgebildeten Wanderführer:innen entdecken Sie die Natur auf täglich, kostenlos geführten Wandertouren . Dabei nehmen wir stets Rücksicht auf Ihr Können und Ihre Verfassung und passen die Touren individuell an die Bedürfnisse unserer Gäste an.",
+    "media_reference_count": 8,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:nordic-walking",
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Nordic Walking",
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": true,
+    "import_status": "ALREADY_IMPORTED",
+    "reason": "Cloud-Profil hoeflehner vorhanden.",
+    "source": ".legacy-reiseportal/normalized/companies.json#464"
+  },
+  {
+    "joomla_id": 463,
+    "name": "Jägeralpe",
+    "published": true,
+    "source_slug": "jägeralpe",
+    "source_tags": [
+      "Österreich",
+      "Wanderurlaub"
+    ],
+    "planned_slug": "jaegeralpe",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Hochkrumbach 5",
+    "postal_code": "6767",
+    "city": "Warth am Arlberg",
+    "region": null,
+    "country": "AT",
+    "phone": "+43 5583 4250",
+    "email": "hotel@jaegeralpe.at",
+    "source_email": "hotel@jaegeralpe.at",
+    "homepage": "https://www.jaegeralpe.at/.iisnode",
+    "description": "URLAUB IN IHREM FAMILIENGEFÜHRTEN 4*SUPERIOR HOTEL IN WARTH AM ARLBERG! Das Haus für sportliche Genießer.\n\nEINEN AUSZUG UNSERER GEFÜHRTEN WANDERUNGEN DÜRFEN WIR IHNEN HIER VORSTELLEN.\n\nIn Kleingruppen den Arlberg erkunden Familie Jäger, selbst alles begeisterte Wanderer und Bergsteiger, begleiten Sie bei Ihren Touren am Arlberg. Oskar, Oswald, Jasmin, Brigitte und Marcel sind alles ausgebildete Wanderführer und stehen Ihnen für jegliche Fragen zur Seite und geben Ihnen Tipps zu den schönsten Touren und Geheimtipps. Oskar Jäger begleitet Sie bei den meisten Touren, aber auch die anderen Familienmitglieder freuen sich, mit Ihnen auf Tour zu gehen!",
+    "media_reference_count": 8,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#463"
+  },
+  {
+    "joomla_id": 462,
+    "name": "Tourismusverband Sächsische Schweiz e.V.",
+    "published": true,
+    "source_slug": "tourismusverband-sächsische-schweiz-e-v",
+    "source_tags": [
+      "Deutschland",
+      "Radwandern"
+    ],
+    "planned_slug": null,
+    "type": "Tourismus/Route",
+    "address": "Bahnhofstr. 21",
+    "postal_code": "01796",
+    "city": "Pirna",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 (0)3501 470147",
+    "email": "info@saechsische-schweiz.de",
+    "source_email": "info@saechsische-schweiz.de",
+    "homepage": "https://www.saechsische-schweiz.de/",
+    "description": "Radtouren sind die ideale Methode, die Sächsische Schweiz ausgiebig zu erkunden.\n\nRADFAHREN IN DER SÄCHSISCHEN SCHWEIZ\n\nMit dem Elberadweg findet der Genussradler die ideale Verbindung von entspanntem Radfahren und dem Erleben imposanter Natur. Auch abseits der Elbe können sich Höhenmeterhungrige an den Panoramen des Elbsandsteingebirges berauschen. Die Streckenbeschaffenheit ist mitunter rustikal und ab und an sind Aufstiege zu meistern. Doch immer folgt mit fantastischen Aussichten und herrlichen Abfahrten der direkte Lohn für die Anstrengungen.",
+    "media_reference_count": 9,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:radwandern"
+    ],
+    "theme_labels": [
+      "Radwandern"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "NOT_A_TRAVEL_PROVIDER",
+    "reason": "Tourismusverband und Radregion, kein eigener Reise-/Unterkunftsanbieter.",
+    "source": ".legacy-reiseportal/normalized/companies.json#462"
+  },
+  {
+    "joomla_id": 461,
+    "name": "Neckartal Radweg",
+    "published": true,
+    "source_slug": "neckartal-radweg",
+    "source_tags": [
+      "Deutschland",
+      "Radwandern"
+    ],
+    "planned_slug": null,
+    "type": "Tourismus/Route",
+    "address": "Reinsburgstr. 97",
+    "postal_code": "70197",
+    "city": "Stuttgart",
+    "region": null,
+    "country": "DE",
+    "phone": "+49711/50479416",
+    "email": "info@neckartalradweg-bw.de",
+    "source_email": "info@neckartalradweg-bw.de",
+    "homepage": "https://www.neckartalradweg-bw.de/",
+    "description": "entdecken. erleben. genießen. Deutschlands kontrastreichster Flussradweg!\n\nDer Neckar ist ein echter Baden-Württemberger. Mitten durch das Herz des Bundeslands im Südwesten fließt er von Württemberg nach Baden in die Kurpfalz und schließlich in den Rhein. Auf der ganzen Strecke begleitet ihn der Neckartal-Radweg.\n\nEine Radreise für Genießer und Entdecker, für Menschen, die Land und Leuten auf die Spur kommen wollen. Die lauschigen Anfänge im Schwenninger Moos, die poetischen Ufer am Tübinger Hölderlinturm, die Weinlagen der Großstadt, die Burgen im Odenwald.",
+    "media_reference_count": 10,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:radwandern"
+    ],
+    "theme_labels": [
+      "Radwandern"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "NOT_A_TRAVEL_PROVIDER",
+    "reason": "Radweg als Route, kein eigener Reise-/Unterkunftsanbieter.",
+    "source": ".legacy-reiseportal/normalized/companies.json#461"
+  },
+  {
+    "joomla_id": 460,
+    "name": "FELDHOF DOLCEVITA RESORT",
+    "published": true,
+    "source_slug": "feldhof",
+    "source_tags": [
+      "Südtirol/Italien",
+      "Radwandern",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "planned_slug": "feldhof-dolcevita-resort",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Rathausstraße 4",
+    "postal_code": "39025",
+    "city": "Naturns",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 0473 666 366",
+    "email": "iinfo@feldhof.com",
+    "source_email": "iinfo@feldhof.com",
+    "homepage": "https://www.feldhof.com/",
+    "description": "Romantik unter Sternen. Zeit mit den Menschen, die uns wichtig sind. Wellnessglück. Aktivitäten und süßes Nichtstun perfekt kombiniert: Willkommen im Wellnesshotel Naturns, Südtirol.\n\nUrlaub im Wellnesshotel bei Meran ist Quality-Time für jeden. ZEIT FÜR UNS\n\nSo charmant und federleicht wie das Südtiroler Lebensgefühl ist Urlaub in unserem 4-Sterne-Superior-Wellnesshotel in Naturns bei Meran. Dolce Vita eben. Zwischen Naturlandschaft und faszinierender Gipfelwelt mit 315 Sonnentagen im Jahr. Hier treffen mediterrane Lebensfreude und alpine Gemütlichkeit aufeinander und vereinen sich zu einem unvergleichlichen Urlaubsfeeling.",
+    "media_reference_count": 10,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Feldhof/1.jpg",
+        "bytes": 197447
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Feldhof/2.jpg",
+        "bytes": 196567
+      }
+    ],
+    "theme_terms": [
+      "theme:radwandern",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Radwandern",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#460"
+  },
+  {
+    "joomla_id": 459,
+    "name": "SUB Aqua Tauchreisen",
+    "published": true,
+    "source_slug": "sub-aqua-tauchreisen",
+    "source_tags": [
+      "Tauchurlaub"
+    ],
+    "planned_slug": "sub-aqua-tauchreisen",
+    "type": "Reiseveranstalter",
+    "address": "Franz-Joseph-Str. 43",
+    "postal_code": "80801",
+    "city": "München",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 (0) 89 20 80 76-135",
+    "email": null,
+    "source_email": "https://www.sub-aqua.de/",
+    "homepage": "https://www.sub-aqua.de/",
+    "description": "Buchen Sie Ihren Tauchurlaub beim Spezialisten für besondere Tauchreisen!\n\nHier finden Sie die Kur für Ihr Meer- und Fernweh! Entdecken Sie die schönsten Tauchreisen, Tauchsafaris und Abenteuerreiseziele weltweit.\n\nVom entspannten Einsteiger-Erlebnis bis zur spektakulären Tauchsafari , vom Familien-Tauchspaß bis zum Bambus-Chalet mit Privatstrand – seit 1972 ist SUB AQUA für Sie an den schönsten Spots der Welt zuhause.",
+    "media_reference_count": 7,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "article-html",
+      "original_path": "images/unterkuenfte/SUB%20Aqua%20Tauchreisen/logo-subaqua-d0f09947f94b1ba02587c76c9628e496.png",
+      "bytes": 41751
+    },
+    "images": [],
+    "theme_terms": [
+      "theme:tauchurlaub"
+    ],
+    "theme_labels": [
+      "Tauchurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#459"
+  },
+  {
+    "joomla_id": 458,
+    "name": "WIRODIVE Tauch- und Erlebnisreisen GmbH",
+    "published": true,
+    "source_slug": "wirodive-tauch-und-erlebnisreisen-gmbh",
+    "source_tags": [
+      "Tauchurlaub"
+    ],
+    "planned_slug": "wirodive-tauchreisen",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Egerlandstr. 30",
+    "postal_code": "85368",
+    "city": "Moosburg/Isar",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 (0) 8761 724 8000",
+    "email": "info@wirodive.de",
+    "source_email": "info@wirodive.de",
+    "homepage": "https://wirodive.de/",
+    "description": "Tauchreisen, Tauchsafaris und Abenteuerurlaube weltweit! Alles Gute für Ihren gelungenen Tauchurlaub!\n\nHier finden Sie die Kur für Ihr Meer- und Fernweh! Entdecken Sie die schönsten Tauchreisen, Tauchsafaris und Abenteuerreiseziele weltweit.\n\nDes Tauchers Wunschliste Ägypten - sich einfach einmal kurz eine Auszeit nehmen und die Schätze des Roten Meeres ergründen... Azoren - Wale, Haie, Delfine beinah vor der Haustür. Dazu eine Traumkulisse, die wie eine Mischung aus Irland und Hawaii anmutet... Malaysia - einmal Weltklassetauchen und Exotik pur erleben. Ursprüngliche Regenwälder, farbenprächtige Fauna und Flora und richtig nette Gastgeber... Mikronesien - einmal die grüne, üppige Zauberwelt über Wasser und tiefstes Blau und sprühende, tropische Artenvielfalt unter Wasser mit allen Sinnen erfahren... Thailand - verwöhnen & abtauchen vom Feinsten zu moderaten Preisen... Philippinen - paradiesisch Tauchen und exotische Vielfalt, Traumstrände und freundlichen Service quasi nebenbei erleben... Indonesien - Tauchen und Segeln im nahezu unberührten Garten Eden... Galapagos - einmal Abenteuer-Tauchen und Großfisch satt vor der Linse haben... Südafrika - einmal mitten drin sein, im legendären Sardine Run... Mexiko - einmal Mantas und Delfine streicheln in Socorro und Käfigtauchen mit dem großen Weißen Hai in Guadalupe... Cocos - einmal die riesigen Hammerhaischulen über mir kreisen sehen und im Kegel des Sonnenlichts fotografieren... Bahamas - Haiverhalten besser verstehen lernen. Am liebsten mit den Tigerhaien am Tiger Beach und den Hammerhaien in Bimini. Sie lesen es schon: Sie haben die köstliche Qual der Wahl! Das fulminante Buffet ist eröffnet! Für Sie bereit steht ein internationales Reiseangebot zu weltweiten, exklusiv ausgesuchten Tauchgebieten zum Beispiel in Ägypten, Thailand, Palau und den Malediven. Garniert mit absoluten „taucherischen“ Leckerbissen wie Mozambique, dem Geheimtipp für Taucher und Naturliebhaber, und Raritäten wie St. Helena, den Kapverden, dem Bikini-Atoll und den Polargebieten. Besondere Sahneschnitten für Großfischliebhaber und Hai-Fans sind Südafrika, Cocos, Mexiko und Galapagos. Natürlich halten wir für Sie auch echte Schmankerl auf den Philippinen und in Indonesien bereit, die nicht nur die Makrofans unter den Unterwasserfotografen begeistern werden.",
+    "media_reference_count": 9,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:tauchurlaub"
+    ],
+    "theme_labels": [
+      "Tauchurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": true,
+    "import_status": "ALREADY_IMPORTED",
+    "reason": "Cloud-Profil wirodive-tauchreisen vorhanden.",
+    "source": ".legacy-reiseportal/normalized/companies.json#458"
+  },
+  {
+    "joomla_id": 457,
+    "name": "Hotel zur Post",
+    "published": true,
+    "source_slug": "hotel-zur-post",
+    "source_tags": [
+      "Deutschland",
+      "Geschäftsreisen"
+    ],
+    "planned_slug": "hotel-zur-post",
+    "type": "Unterkunft",
+    "address": "Kapellplatz 2",
+    "postal_code": "84503",
+    "city": "Altötting",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 (0) 8671/97337-0",
+    "email": "info@hotelzurpost-altoetting.de",
+    "source_email": "info@hotelzurpost-altoetting.de",
+    "homepage": "https://hotelzurpost-altoetting.de/",
+    "description": "In unserem Tagungshotel in Bayern gibt es drei helle Tagungsräume mit Platz für insgesamt bis zu 95 Personen und modernster technischer Ausstattung.\n\nDas Hotel Zur Post liegt in idyllischer Lage zwischen München und Salzburg, jeweils nur eine Autostunde entfernt und einfach zu erreichen. Der ideale Ort für Ihre Tagung in Bayern nahe München, Salzburg oder Passau. In diesem charmanten Ambiente lässt es sich nicht nur herrlich tagen, sondern auch übernachten: dazu laden 75 Zimmer mit Wohlfühlcharakter ein.\n\nAuch für große Veranstaltungen stehen wir Ihnen mit unserer Eventlocation und unserem Know-How zur Verfügung. Unser Ballsaal bietet Raum für ganz besondere Anlässe wie Hochzeiten, Firmenfeiern, Tanzabende und Bühnenshows. Insgesamt 150 Personen können im Ballsaal gemeinsam feiern. Selbstverständlich unterstützen wir Sie gerne bei der Planung – denn Ihr Event zu einem unvergesslichen Erlebnis zu machen, ist uns eine Herzensangelegenheit!",
+    "media_reference_count": 8,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:geschaeftsreisen"
+    ],
+    "theme_labels": [
+      "Geschäftsreisen"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": true,
+    "import_status": "ALREADY_IMPORTED",
+    "reason": "Cloud-Profil hotel-zur-post vorhanden.",
+    "source": ".legacy-reiseportal/normalized/companies.json#457"
+  },
+  {
+    "joomla_id": 456,
+    "name": "Platzl Hotel",
+    "published": true,
+    "source_slug": "platzl-hotel",
+    "source_tags": [
+      "Deutschland",
+      "Geschäftsreisen"
+    ],
+    "planned_slug": "platzl-hotel",
+    "type": "Unterkunft",
+    "address": "Sparkassenstraße 10",
+    "postal_code": "80331",
+    "city": "München",
+    "region": null,
+    "country": "DE",
+    "phone": "+49(0)89 237030",
+    "email": "servus@platzl.de",
+    "source_email": "servus@platzl.de",
+    "homepage": "https://www.platzl.de/",
+    "description": "Ihr Tagungshotel in München - TAGEN UND FEIERN SIE DORT WO MÜNCHENS HERZ SCHLÄGT!\n\nIm Jahr 2015 haben wir im Platzl Hotel unseren gesamten Tagungsbereich neu gestaltet. Das Ergebnis ist eine unvergleichliche Wohlfühl- und Arbeitsatmosphäre im Herzen von München! Alle Tagungsräume sind mit modernster Technik ausgestattet und haben dank natürlicher Qualitätsmaterialien die charakteristische Platzl-Note bewahrt. Beeindrucken Sie Ihre Gäste in Räumlichkeiten, die ein traditionelles aber modernes sowie funktionelles Ambiente bieten: Der perfekte Rahmen für geschäftliche Treffen oder feierliche Anlässe mit höchsten Ansprüchen. Trotz der Lage unseres Tagungshotels im Zentrum von München bieten wir komfortable Anreise- und Parkmöglichkeiten für Gäste mit Auto.\n\nSeminare und Meetings im PLATZL HOTEL München Wussten Sie, dass wir in unserem Tagungshotel auch über Seminarräume für Veranstaltungen im kleinen Rahmen verfügen? Die Tagungsräume Schmid-Wildy und die Bäcker-Stube bieten Platz für 10 oder weniger Personen.",
+    "media_reference_count": 11,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "article-html",
+      "original_path": "images/unterkuenfte/Platzl%20Hotel/Logo1.png",
+      "bytes": 86930
+    },
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Platzl%20Hotel/7.png",
+        "bytes": 3041756
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/Platzl%20Hotel/8.png",
+        "bytes": 1929731
+      }
+    ],
+    "theme_terms": [
+      "theme:geschaeftsreisen"
+    ],
+    "theme_labels": [
+      "Geschäftsreisen"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#456"
+  },
+  {
+    "joomla_id": 455,
+    "name": "Ferienbauernhof Büchele",
+    "published": true,
+    "source_slug": "ferienbauernhof-büchele",
+    "source_tags": [],
+    "planned_slug": null,
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Schmalenberg 15",
+    "postal_code": "79875",
+    "city": "Dachsberg",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 7672/2274",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": null,
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:nordic-walking",
+      "theme:radwandern",
+      "theme:wanderurlaub",
+      "theme:familienurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Nordic Walking",
+      "Radwandern",
+      "Wanderurlaub",
+      "Familienurlaub"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "INSUFFICIENT_DATA",
+    "reason": "Nur Name, Adresse und Telefon; weder Beschreibung noch Homepage, E-Mail oder zuordenbare Bilder.",
+    "source": ".legacy-reiseportal/normalized/companies.json#455"
+  },
+  {
+    "joomla_id": 454,
+    "name": "Appartementhaus Salzburg",
+    "published": true,
+    "source_slug": "appartementhaus-salzburg",
+    "source_tags": [],
+    "planned_slug": null,
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Prof. Böhm Straße 7",
+    "postal_code": "94072",
+    "city": "Bad Füssing",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 8531 27070",
+    "email": null,
+    "source_email": null,
+    "homepage": null,
+    "description": "Entdecken Sie bei uns, wie einfach und erholsam Ihr Kurerlebnis in Bad Füssing sein kann.",
+    "media_reference_count": 0,
+    "source_logo_reference": false,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:nordic-walking",
+      "theme:radwandern",
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Nordic Walking",
+      "Radwandern",
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": "Gleicher Anbieter wie 507 (Adresse, Telefon, Name).",
+    "already_in_supabase": false,
+    "import_status": "POSSIBLE_DUPLICATE",
+    "reason": "Gleicher Anbieter wie 507 (Adresse, Telefon, Name).",
+    "source": ".legacy-reiseportal/normalized/companies.json#454"
+  },
+  {
+    "joomla_id": 453,
+    "name": "OVERSUM Vital Resort im Hochsauerland",
+    "published": true,
+    "source_slug": "oversum-vital-resort-im-hochsauerland",
+    "source_tags": [
+      "Deutschland",
+      "Natur pur",
+      "Wanderurlaub",
+      "Geschäftsreisen",
+      "Startseite"
+    ],
+    "planned_slug": "oversum-vital-resort-im-hochsauerland",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Am Kurpark 6",
+    "postal_code": "59955",
+    "city": "Winterberg",
+    "region": null,
+    "country": "DE",
+    "phone": "+49(0)2981-929550",
+    "email": "info@oversum-vitalresort.de",
+    "source_email": "info@oversum-vitalresort.de",
+    "homepage": "https://www.oversum-vitalresort.de",
+    "description": "Nicht einfach nur ein Hotel ist das im Mai 2012 neu eröffnete OVERSUM Vital Resort im Hochsauerland, nahe den großen Zentren wie Düsseldorf und Köln. OVERSUM (lat. „Ovum“ und „Universum“) ist ein kosmopolitisches Hotel-Universum der Extraklasse auf 13.000 qm.\n\nOVERSUM ist die neue Landmarke von Winterberg. OVERSUM ist das wohl erste Hotel-Ei Europas: Einzigartig das Zusammenspiel architektonischer Elemente, exzellent und exklusiv das Ambiente. OVERSUM gibt ein tief geborgenes Gefühl und individuelle Freiheit. OVERSUM lebt durch ein junges, motiviertes Team. OVERSUM ist ein Gefühl, eine Lebensart. OVERSUM ist Energie.\n\nWohn VERSUM Wände in Weiß und einem warmen Cappuccino-Ton, Akzente in dunklem Braun und Rot: Die Farbwelten der 77 OVERSUM-Zimmer stehen für trendige Eleganz. Aus riesigen Fenster-fronten schweift der Blick über die tausend Berge im Sauerland, dazwischen Schieferdächer und Baumkronen.",
+    "media_reference_count": 20,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "article-html",
+      "original_path": "images/unterkuenfte/oversum/oversum-logo.png",
+      "bytes": 24399
+    },
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/oversum/impressionen-02.jpg",
+        "bytes": 175944
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/oversum/_87X0787.jpg",
+        "bytes": 186830
+      }
+    ],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:wanderurlaub",
+      "theme:geschaeftsreisen"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Wanderurlaub",
+      "Geschäftsreisen"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#453"
+  },
+  {
+    "joomla_id": 452,
+    "name": "5* Golfurlaub Südtirol- Das Golfhotel Andreus",
+    "published": true,
+    "source_slug": "5-golfurlaub-südtirol-das-golfhotel-andreus",
+    "source_tags": [
+      "Südtirol/Italien",
+      "Golfurlaub",
+      "Wellnessangebote"
+    ],
+    "planned_slug": "golfhotel-andreus",
+    "type": "Unterkunft",
+    "address": "Kellerlahne 3a",
+    "postal_code": "39015",
+    "city": "St. Leonhard i. Pass.",
+    "region": null,
+    "country": "IT",
+    "phone": "+39 / 0473 49 13 30",
+    "email": "info@andreus.it",
+    "source_email": "info@andreus.it",
+    "homepage": "http://www.andreus.it/",
+    "description": "Golf in Südtirol auf der Sonnenseite der Alpen.\n\nDas Golf & Spa Resort Hotel Andreus liegt direkt am traumhaft gelegenen 18-Loch Golfplatz Passeier. Meran. Diese Einmaligkeit des Hotels direkt am Golfplatz zu liegen gibt es nur ein einziges Mal in Südtirol. Die Lage des Golfhotels Südtirol Andreus, direkt an der 18-Loch Golfanlage in Südtirol, ist die Mega Chance für jeden Golfer direkt los zu legen.\n\nDer Golfplatz besticht durch seine idyllische Lage, die jedem Golfer im Golfurlaub Südtirol das Herz aufgehen lässt. Bedingt durch das milde Klima ist die Golfanlage von März bis Dezember durchgehend bespielbar.",
+    "media_reference_count": 19,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:golfurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Golfurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": true,
+    "import_status": "ALREADY_IMPORTED",
+    "reason": "Cloud-Profil golfhotel-andreus vorhanden.",
+    "source": ".legacy-reiseportal/normalized/companies.json#452"
+  },
+  {
+    "joomla_id": 451,
+    "name": "Das 5-Sterne-Wellness-Hotel STOCK resort",
+    "published": true,
+    "source_slug": "das-5-sterne-wellness-hotel-stock-resort",
+    "source_tags": [
+      "Österreich",
+      "Wanderurlaub",
+      "Wellnessangebote"
+    ],
+    "planned_slug": "das-5-sterne-wellness-hotel-stock-resort",
+    "type": "Unterkunft",
+    "address": "Dorf 142",
+    "postal_code": "6292",
+    "city": "Finkenberg Zillertal",
+    "region": "Tirol",
+    "country": "AT",
+    "phone": "+43.5285.6775 422",
+    "email": "urlaub@stock.at",
+    "source_email": "urlaub@stock.at",
+    "homepage": "http://www.stock.at/",
+    "description": "Wellnessurlaub im Hotel STOCK resort in Tirol, mit Wellnessangeboten der Spitzenklasse.\n\nDas 5-Sterne Wellnesshotel bietet über die Privilegien eines 5 Sterne Hotels hinaus pures Wohlbefinden für alle Sinne.\n\nPerfekte Voraussetzungen für unvergessliche Urlaubstage inmitten einer atemberaubenden Bergkulisse.",
+    "media_reference_count": 12,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "logo-details-bd",
+      "original_path": "images/unterkuenfte/stock/logo.jpg",
+      "bytes": 65848
+    },
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/stock/Stock_02.jpg",
+        "bytes": 85418
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/stock/Stock_05.jpg",
+        "bytes": 62866
+      }
+    ],
+    "theme_terms": [
+      "theme:wanderurlaub",
+      "theme:familienurlaub",
+      "theme:wellnessangebote"
+    ],
+    "theme_labels": [
+      "Wanderurlaub",
+      "Familienurlaub",
+      "Wellnessangebote"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [
+      "accommodation:hotel"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#451"
+  },
+  {
+    "joomla_id": 450,
+    "name": "Anni´s Romantikhäuschen in der Sächsische Schweiz",
+    "published": true,
+    "source_slug": "anni´s-romantikhäuschen-in-der-sächsische-schweiz",
+    "source_tags": [
+      "Deutschland",
+      "Wanderurlaub",
+      "Romantik zu zweit"
+    ],
+    "planned_slug": "anni-romantikhaeuschen",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Am Königstein 4",
+    "postal_code": "01824",
+    "city": "Königstein",
+    "region": null,
+    "country": "DE",
+    "phone": "035021/99965",
+    "email": "annis-romantikhaeuschen@freenet.de",
+    "source_email": "annis-romantikhaeuschen@freenet.de",
+    "homepage": "http://www.annis-romantikhaeuschen.de/",
+    "description": "Hier geht Ihnen im wahrsten Sinne das Herz auf. Romantik - Kurzreisen als Kuschelwochenende zählt zu den besonderen Erlebnissen für Verliebte!\n\nAbseits vom Alltag - die Zeit zu Zweit genießen. Mit liebevollen, romantischen Arrangements und Details ermöglicht Ihnen Anni´s Romantik-Angebot traute Zweisamkeit in absoluter Privatsphäre.\n\nDas Angebot bietet frisch Verliebten und solchen, die ihre Liebe wieder neu entflammen wollen, 7 Nächte in Ihrem privaten Bungalow mit freiem Eintritt in die Festung Königstein sowie einen Strauß Roter Rosen und einer Flasche Prosecco. Der krönende Abschluss bietet eine 30-minütige Fuß-Massage, die durch ihre ätherischen Öle ein entspanntes und vitalisierendes Hautgefühl verspricht. So können Sie sich oder Ihrer Liebsten eine Zeit der Entspannung gönnen.",
+    "media_reference_count": 14,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:wanderurlaub",
+      "theme:romantik-zu-zweit"
+    ],
+    "theme_labels": [
+      "Wanderurlaub",
+      "Romantik zu zweit"
+    ],
+    "audience_terms": [
+      "audience:paar"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": true,
+    "import_status": "ALREADY_IMPORTED",
+    "reason": "Cloud-Profil anni-romantikhaeuschen vorhanden.",
+    "source": ".legacy-reiseportal/normalized/companies.json#450"
+  },
+  {
+    "joomla_id": 449,
+    "name": "OSTSEE - BARFUSSpark",
+    "published": true,
+    "source_slug": "ostsee-barfusspark",
+    "source_tags": [
+      "Deutschland",
+      "Familienurlaub",
+      "Urlaub am Wasser",
+      "Startseite"
+    ],
+    "planned_slug": "ostsee-barfusspark",
+    "type": "Unterkunft + Freizeit",
+    "address": "Schwackendorf 37",
+    "postal_code": "24376",
+    "city": "Hasselberg",
+    "region": null,
+    "country": "DE",
+    "phone": "0 46 42 / 96 51 78",
+    "email": "info@barfusspark-schwackendorf.de",
+    "source_email": "info@barfusspark-schwackendorf.de",
+    "homepage": "http://www.barfusspark-schwackendorf.de/",
+    "description": "Ferien, Spass & Urlaub an der Ostsee! Zu jeder Jahreszeit – Frühling, Sommer, Herbst & Winter. Ferien an der Ostsee!\n\nDie Ferienwohnungen bieten euch allen Komfort: gemütlich eingerichteter Wohnraum, Sat-TV, Radio, komplett ausgestattete Küchenzeile, Essecke, separate(s) Schlafzimmer, Kinderbettchen und Hochstuhl auf Wunsch.\n\nPs: Auf dem Ferienhof sind eure Vierbeiner nicht nur erlaubt, sie sind herzlich willkommen! Mit Urlaub für die ganze Familie, ist eben auch die ganze Familie gemeint.",
+    "media_reference_count": 22,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "logo-details-bd",
+      "original_path": "images/unterkuenfte/barfuss/logo.jpg",
+      "bytes": 83861
+    },
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/barfuss/ostsee_04-wohn-essbereich-steuerbord_9394.jpg",
+        "bytes": 642685
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/barfuss/ostsee_07-schlafen-steuerbord_9421.jpg",
+        "bytes": 667103
+      }
+    ],
+    "theme_terms": [
+      "theme:familienurlaub",
+      "theme:urlaub-am-wasser"
+    ],
+    "theme_labels": [
+      "Familienurlaub",
+      "Urlaub am Wasser"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#449"
+  },
+  {
+    "joomla_id": 448,
+    "name": "Urlaub auf Borkum",
+    "published": true,
+    "source_slug": "urlaub-auf-borkum",
+    "source_tags": [
+      "Deutschland",
+      "Familienurlaub",
+      "Urlaub am Wasser"
+    ],
+    "planned_slug": "urlaub-auf-borkum",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Bismarckstraße 38",
+    "postal_code": "26757",
+    "city": "Borkum",
+    "region": null,
+    "country": "DE",
+    "phone": "04922 / 9397-0",
+    "email": "info@villa-weststrand.de",
+    "source_email": "info@villa-weststrand.de",
+    "homepage": "http://www.villa-weststrand.de/",
+    "description": "Willkommen auf der beliebten Ferieninsel Borkum.\n\nWillkommen im Hotel Villa Weststrand . Flanieren Sie in der beliebten Einkaufsstraße in den Geschäften und erkunden Sie die traumhafte Umgebung.\n\nDie Nordseeinsel mit Hochseeklima verspricht Durchatmen auf höchstem Niveau. Mit rund 30 Kilometern Entfernung zur deutschen Küste hat Borkum nicht nur einen wunderbaren Abstand zum Alltag. Es liegt auch als einzige ostfriesische Insel ganzjährig unter Einfluss von Hochseeklima.",
+    "media_reference_count": 23,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "logo-details-bd",
+      "original_path": "images/unterkuenfte/borkum/logo.jpg",
+      "bytes": 29115
+    },
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/borkum/IMG_4535.jpg",
+        "bytes": 116814
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/borkum/8282732.jpg",
+        "bytes": 51448
+      }
+    ],
+    "theme_terms": [
+      "theme:familienurlaub",
+      "theme:urlaub-am-wasser"
+    ],
+    "theme_labels": [
+      "Familienurlaub",
+      "Urlaub am Wasser"
+    ],
+    "audience_terms": [
+      "audience:familie"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#448"
+  },
+  {
+    "joomla_id": 447,
+    "name": "City Apart Dresden",
+    "published": true,
+    "source_slug": "city-apart-dresden",
+    "source_tags": [
+      "Deutschland",
+      "Romantik zu zweit",
+      "Geschäftsreisen"
+    ],
+    "planned_slug": "city-apart-dresden",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Orangeriestr. 7",
+    "postal_code": "01326",
+    "city": "Dresden",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 (0) 351 315 542 1",
+    "email": "kontakt@city-apart-dresden.de",
+    "source_email": "kontakt@city-apart-dresden.de",
+    "homepage": "http://www.city-apart-dresden.de/",
+    "description": "Erleben Sie Kultur, mitten im Herzen von Dresden!\n\nUnsere FeWo´s sind ideal für Familien oder Paare. Die perfekte Alternative zum Hotel.\n\nAlle Sehenswürdigkeiten wie Frauenkirche , Semperoper , Brühlsche Terrasse , Kreuzkirche , Dresdner Zwinger , Hausmannsturm , katholische Hofkirche sowie die Anlegestelle der Sächsischen Dampfschiff-Fahrt liegen direkt vor der Haustür.Sie können alles bequem zu Fuß erreichen.",
+    "media_reference_count": 12,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/city-apart/Pillnitzer_Apartment_6_001.jpg",
+        "bytes": 66152
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/city-apart/Pillnitzer_Apartment_6_003.jpg",
+        "bytes": 50994
+      }
+    ],
+    "theme_terms": [
+      "theme:romantik-zu-zweit",
+      "theme:geschaeftsreisen"
+    ],
+    "theme_labels": [
+      "Romantik zu zweit",
+      "Geschäftsreisen"
+    ],
+    "audience_terms": [
+      "audience:paar"
+    ],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#447"
+  },
+  {
+    "joomla_id": 446,
+    "name": "Ferienwohnung Sieber",
+    "published": true,
+    "source_slug": "ferienwohnung-sieber",
+    "source_tags": [
+      "Deutschland",
+      "Natur pur",
+      "Urlaub am Wasser"
+    ],
+    "planned_slug": "ferienwohnung-sieber",
+    "type": "Unterkunft",
+    "address": "Untere Seestrasse 28",
+    "postal_code": "88085",
+    "city": "Langenargen",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 7543 / 2657",
+    "email": "urlaub@fewo-sieber.de",
+    "source_email": "urlaub@fewo-sieber.de",
+    "homepage": "http://www.fewo-sieber.de/",
+    "description": "Komfortabel und gemütlich eingerichtete App. in Langenargen am Bodensee.\n\nSeit 1963 ist unser Appartementhaus im Familienbesitz, zahlreiche Stammgäste zeichnen uns aus. Viele Jahre sind wir, Edgar & Dagmar Sieber mit Herz und Seele dabei und geben unsere Gastfreundlichkeit zum Besten!Leben Sie bei uns frei nach dem Motto:\"In der Ruhe liegt die Kraft\". Wir würden uns freuen, Sie bald als liebe Gäste bei uns begrüßen zu dürfen!\n\nLiebevoll ausgestattete Appartements, bestehend aus einem großzügigen Wohnraum mit bequemer Schlafcouch und Tisch, einer gemütlichen Essecke mit gepolsterten Stühlen und einer komplett eingerichteten Küche oder Kochnische sind die Perlen unseres Appartementhauses. Die Einrichtung lässt keine Wünsche offen: 42 Zoll Panasonic Plasma Flachbild TV der Luxusklasse mit ca. 70 deutschen und 50 ausländischen Sendern in fantastischer Full HD Qualität was für einen erstklassigen Heimkino Genuss sorgt sowie ca. 120 Radiosender - Stereo-Radiowecker, gratis. Breitband Internetzugang und Küchen mit Kaffeemaschine, Toaster, Wasser- und Eierkocher sowie Mikrowelle.",
+    "media_reference_count": 9,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "logo-details-bd",
+      "original_path": "images/unterkuenfte/ferienwohnung-siebert/logo.jpg",
+      "bytes": 15067
+    },
+    "images": [
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/ferienwohnung-siebert/Garten_Startseite.jpg",
+        "bytes": 827265
+      },
+      {
+        "source": "article-html",
+        "original_path": "images/unterkuenfte/ferienwohnung-siebert/w2romannshorn2.jpg",
+        "bytes": 144097
+      }
+    ],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:urlaub-am-wasser"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Urlaub am Wasser"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [
+      "accommodation:ferienwohnung"
+    ],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#446"
+  },
+  {
+    "joomla_id": 444,
+    "name": "Willkommen beim Autoservice Nientiedt",
+    "published": false,
+    "source_slug": "autoservice-nientiedt",
+    "source_tags": [
+      "Deutschland",
+      "Campingurlaub",
+      "Startseite"
+    ],
+    "planned_slug": null,
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Gildenstr. 2a",
+    "postal_code": "48157",
+    "city": "Münster",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 25 1 / 2 84 29 3",
+    "email": "info@autoservice-nientiedt.de",
+    "source_email": "info@autoservice-nientiedt.de",
+    "homepage": "http://www.autoservice-nientiedt.de/",
+    "description": "Münster - Lassen Sie Ihr Auto VOR Ihrem Urlaub checken?\n\nViel Platz für eine Transporter- oder Autoreparatur in Münster\n\nAufgrund unserer Werkstattraumhöhe von acht Metern können wir problemlos Transporter jeglicher Größe und Art sowie Wohnmobile bis circa fünf Tonnen reparieren und warten. Auf 300 Quadratmetern haben wir genügend Platz, um uns Ihren Fahrzeugen fachgerecht zu widmen. Besuchen Sie uns, lernen Sie uns kennen und verschaffen Sie sich einen Eindruck von unserer Werkstatt.",
+    "media_reference_count": 3,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [],
+    "theme_labels": [],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "NOT_A_TRAVEL_PROVIDER",
+    "reason": "Unveröffentlichter Autoservice, kein Reiseanbieter.",
+    "source": ".legacy-reiseportal/normalized/company-candidates.json#444; raw/articles.json#444"
+  },
+  {
+    "joomla_id": 443,
+    "name": "Bayerischer Wald",
+    "published": true,
+    "source_slug": "bayerischer-wald",
+    "source_tags": [
+      "Natur pur",
+      "Nordic Walking",
+      "Wanderurlaub",
+      "Startseite"
+    ],
+    "planned_slug": "bayerischer-wald",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Weiherweg 5 a – 11 b",
+    "postal_code": "94556",
+    "city": "Neuschönau",
+    "region": null,
+    "country": "DE",
+    "phone": "0171/4082656",
+    "email": "info@ferienanlage-am-nationalpark.de",
+    "source_email": "info@ferienanlage-am-nationalpark.de",
+    "homepage": "https://www.ferienanlage-am-nationalpark.de/",
+    "description": "Endlose Wiesen, grüne Wälder und Natur soweit das Auge reicht.\n\nFerienanlage am Nationalpark! Das ist Urlaub in Neuschönau, direkt am Nationalpark Bayerischer Wald. Genießen Sie die herrliche Landschaft - Hier können Sie die frische und saubere Luft einatmen und so richtig entspannen. Tauschen Sie Autolärm gegen Vogelgezwitscher, fernab von Stress und Alltag zu jeder Jahreszeit! Es erwarten Sie familienfreundliche Appartements zu einem spannenden und erholsamen Urlaub. Bei uns kann jeder etwas erleben: Die Kleinen, wie auch die Großen. Für Kinder gibt es jeden Tag ein Abenteuer und für die Eltern die langersehnte Erholung und mal wieder etwas Zeit zu zweit.\n\nWohnen und Erleben Die im Landhausstil errichteten Doppelhäuser verfügen über je drei Wohnungen: Erdgeschosswohnungen mit Terrasse, 1. Obergeschoss und Dachgeschoss mit Balkon (Terrassen und Balkone sind mit Gartenmöbeln ausgestattet).",
+    "media_reference_count": 9,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:nordic-walking",
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Nordic Walking",
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": true,
+    "import_status": "ALREADY_IMPORTED",
+    "reason": "Cloud-Profil bayerischer-wald vorhanden.",
+    "source": ".legacy-reiseportal/normalized/companies.json#443"
+  },
+  {
+    "joomla_id": 442,
+    "name": "Landgasthof \"Neue Schänke\"",
+    "published": true,
+    "source_slug": "landgasthof-neue-schänke",
+    "source_tags": [
+      "Deutschland",
+      "Natur pur",
+      "Wanderurlaub",
+      "Startseite"
+    ],
+    "planned_slug": "landgasthof-neue-schaenke",
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Am Königstein 3",
+    "postal_code": "01824",
+    "city": "Königstein / Sächsische Schweiz",
+    "region": null,
+    "country": "DE",
+    "phone": "035021 - 9 99 60",
+    "email": "NeueSchaenke@t-online.de",
+    "source_email": "NeueSchaenke@t-online.de",
+    "homepage": "http://www.neue-schaenke.de",
+    "description": "Landgasthof „Neue Schänke“ in der sächsischen Schweiz.\n\nIm Elbsandsteingebirge, auch bekannt als Sächsische Schweiz, nahe der weltberühmten Kunst-, Kultur- und Landeshauptstadt Dresden, inmitten einer durch romantische Täler, mächtige Tafelberge und bizarre Sandsteinfelsen geprägten Landschaft findet man Königstein an der Elbe.\n\nWahrzeichen des Ortes ist die gleichnamige Festung - Besuchermagnet und Herzstück eines Museumskomplexes, welcher in besonderer Weise einen Teil der sächsischen Geschichte darstellt.",
+    "media_reference_count": 5,
+    "source_logo_reference": true,
+    "logo": {
+      "source": "logo-details-bd",
+      "original_path": "images/unterkuenfte/neue-schaenke/logo-neue-schanke_NEU_05.04.2023.png",
+      "bytes": 516776
+    },
+    "images": [
+      {
+        "source": "contact-person-image-bd",
+        "original_path": "images/unterkuenfte/neue-schaenke/Haus.jpg",
+        "bytes": 101746
+      },
+      {
+        "source": "content-image-1-bd",
+        "original_path": "images/unterkuenfte/neue-schaenke/6.jpg",
+        "bytes": 270249
+      }
+    ],
+    "theme_terms": [
+      "theme:natur-pur",
+      "theme:wanderurlaub"
+    ],
+    "theme_labels": [
+      "Natur pur",
+      "Wanderurlaub"
+    ],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "SAFE_IMPORT",
+    "reason": "Veröffentlichter Reise-/Unterkunftsanbieter mit Originalkontakt und Artikelbeleg.",
+    "source": ".legacy-reiseportal/normalized/companies.json#442"
+  },
+  {
+    "joomla_id": 424,
+    "name": "emilQ® EXCELLENCE & TV",
+    "published": false,
+    "source_slug": "emilq®-excellence-tv-1201364756",
+    "source_tags": [
+      "Deutschland",
+      "Nordic Walking",
+      "Startseite"
+    ],
+    "planned_slug": null,
+    "type": "Reiseanbieter/Unterkunft",
+    "address": "Trimburgstraße 2",
+    "postal_code": "81249",
+    "city": "München",
+    "region": null,
+    "country": "DE",
+    "phone": "+49 89 - 88 99 86 22",
+    "email": "office@emilq.com",
+    "source_email": "office@emilq.com",
+    "homepage": "https://emilq.com/de/",
+    "description": "Business & Media Consulting\n\nDie drei übergreifenden Disziplinen ANGEWANDTE Qualität, Führung und Kommunikation (QLC) sind untrennbar miteinander verbunden. Sie bedingen sich gegenseitig und resultieren auch voneinander - in ein spannendes Miteinander im Zeitalter der Digitalisierung.\n\nemilQ ® EXCELLENCE bringt alle drei Elemente digital gestützt zusammen - beratend , in Vorträgen oder in einem umfassenden QLC Masterprogramm mit Abschluss als PRACTITIONER, MASTER, BLACK MASTER oder LECTURER (Dozent mit Lehrgenehmigung).",
+    "media_reference_count": 2,
+    "source_logo_reference": true,
+    "logo": null,
+    "images": [],
+    "theme_terms": [],
+    "theme_labels": [],
+    "audience_terms": [],
+    "accommodation_terms": [],
+    "feature_terms": [],
+    "duplicate_hint": null,
+    "already_in_supabase": false,
+    "import_status": "NOT_A_TRAVEL_PROVIDER",
+    "reason": "Unveröffentlichter Medien-/TV-Eintrag, kein Reiseanbieter.",
+    "source": ".legacy-reiseportal/normalized/company-candidates.json#424; raw/articles.json#424"
+  }
+]

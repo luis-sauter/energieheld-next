@@ -19,13 +19,14 @@ test("all twelve published Joomla theme banners are present as real JPEGs", () =
 });
 
 test("selected Joomla provider media refer only to existing local originals", () => {
-  assert.deepEqual(Object.keys(importedJoomlaMedia).sort(), [
+  const originalProviders = [
     "anni-romantikhaeuschen", "golfhotel-andreus", "hotel-zur-post",
     "wirodive-tauchreisen", "wirthshof",
-  ]);
+  ];
+  for (const slug of originalProviders) assert.ok(importedJoomlaMedia[slug]?.logo, slug);
+  assert.equal(Object.keys(importedJoomlaMedia).length, 24);
   for (const [slug, media] of Object.entries(importedJoomlaMedia)) {
-    assert.ok(media.logo, slug);
-    for (const image of [media.logo, ...media.images])
+    for (const image of [media.logo, ...media.images].filter(Boolean))
       assert.ok(existsSync(asset(image.src)), `${slug}: ${image.src}`);
   }
 });

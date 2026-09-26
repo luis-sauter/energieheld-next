@@ -1,0 +1,264 @@
+{
+  "apartbauernhof-valrunzhof": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/apartbauernhof-valrunzhof/logo.jpg",
+      "alt": "Logo von Apartbauernhof Valrunzhof"
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/apartbauernhof-valrunzhof/01.jpg",
+        "alt": "Apartbauernhof Valrunzhof – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/apartbauernhof-valrunzhof/02.jpg",
+        "alt": "Apartbauernhof Valrunzhof – Originalbild 2"
+      }
+    ]
+  },
+  "hotel-ravelli-luxury-spa": {
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/hotel-ravelli-luxury-spa/01.jpg",
+        "alt": "Hotel Ravelli Luxury Spa – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/hotel-ravelli-luxury-spa/02.jpg",
+        "alt": "Hotel Ravelli Luxury Spa – Originalbild 2"
+      }
+    ]
+  },
+  "der-koenigsleitner-romantik-zu-zweit": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/der-koenigsleitner-romantik-zu-zweit/logo.png",
+      "alt": "Logo von Der Königsleitner - Romantik zu Zweit"
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/der-koenigsleitner-romantik-zu-zweit/01.jpg",
+        "alt": "Der Königsleitner - Romantik zu Zweit – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/der-koenigsleitner-romantik-zu-zweit/02.jpg",
+        "alt": "Der Königsleitner - Romantik zu Zweit – Originalbild 2"
+      }
+    ]
+  },
+  "wellnesshotel-almhof-call": {
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/wellnesshotel-almhof-call/01.jpg",
+        "alt": "Wellnesshotel Almhof Call – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/wellnesshotel-almhof-call/02.jpg",
+        "alt": "Wellnesshotel Almhof Call – Originalbild 2"
+      }
+    ]
+  },
+  "blausee": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/blausee/logo.png",
+      "alt": "Logo von Blausee"
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/blausee/01.jpg",
+        "alt": "Blausee – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/blausee/02.jpg",
+        "alt": "Blausee – Originalbild 2"
+      }
+    ]
+  },
+  "rue-blanch": {
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/rue-blanch/01.jpg",
+        "alt": "Rü Blanch – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/rue-blanch/02.jpg",
+        "alt": "Rü Blanch – Originalbild 2"
+      }
+    ]
+  },
+  "schwarzwaelderhof": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/schwarzwaelderhof/logo.png",
+      "alt": "Logo von Schwarzwälderhof"
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/schwarzwaelderhof/01.jpg",
+        "alt": "Schwarzwälderhof – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/schwarzwaelderhof/02.jpg",
+        "alt": "Schwarzwälderhof – Originalbild 2"
+      }
+    ]
+  },
+  "camping-resort-allweglehen": {
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/camping-resort-allweglehen/01.jpg",
+        "alt": "Camping Resort Allweglehen – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/camping-resort-allweglehen/02.jpg",
+        "alt": "Camping Resort Allweglehen – Originalbild 2"
+      }
+    ]
+  },
+  "the-chedi": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/the-chedi/logo.png",
+      "alt": "Logo von The Chedi"
+    },
+    "images": []
+  },
+  "feldhof-dolcevita-resort": {
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/feldhof-dolcevita-resort/01.jpg",
+        "alt": "FELDHOF DOLCEVITA RESORT – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/feldhof-dolcevita-resort/02.jpg",
+        "alt": "FELDHOF DOLCEVITA RESORT – Originalbild 2"
+      }
+    ]
+  },
+  "sub-aqua-tauchreisen": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/sub-aqua-tauchreisen/logo.png",
+      "alt": "Logo von SUB Aqua Tauchreisen"
+    },
+    "images": []
+  },
+  "platzl-hotel": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/platzl-hotel/logo.png",
+      "alt": "Logo von Platzl Hotel"
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/platzl-hotel/01.png",
+        "alt": "Platzl Hotel – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/platzl-hotel/02.png",
+        "alt": "Platzl Hotel – Originalbild 2"
+      }
+    ]
+  },
+  "oversum-vital-resort-im-hochsauerland": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/oversum-vital-resort-im-hochsauerland/logo.png",
+      "alt": "Logo von OVERSUM Vital Resort im Hochsauerland"
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/oversum-vital-resort-im-hochsauerland/01.jpg",
+        "alt": "OVERSUM Vital Resort im Hochsauerland – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/oversum-vital-resort-im-hochsauerland/02.jpg",
+        "alt": "OVERSUM Vital Resort im Hochsauerland – Originalbild 2"
+      }
+    ]
+  },
+  "das-5-sterne-wellness-hotel-stock-resort": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/das-5-sterne-wellness-hotel-stock-resort/logo.jpg",
+      "alt": "Logo von Das 5-Sterne-Wellness-Hotel STOCK resort"
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/das-5-sterne-wellness-hotel-stock-resort/01.jpg",
+        "alt": "Das 5-Sterne-Wellness-Hotel STOCK resort – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/das-5-sterne-wellness-hotel-stock-resort/02.jpg",
+        "alt": "Das 5-Sterne-Wellness-Hotel STOCK resort – Originalbild 2"
+      }
+    ]
+  },
+  "ostsee-barfusspark": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/ostsee-barfusspark/logo.jpg",
+      "alt": "Logo von OSTSEE - BARFUSSpark"
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/ostsee-barfusspark/01.jpg",
+        "alt": "OSTSEE - BARFUSSpark – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/ostsee-barfusspark/02.jpg",
+        "alt": "OSTSEE - BARFUSSpark – Originalbild 2"
+      }
+    ]
+  },
+  "urlaub-auf-borkum": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/urlaub-auf-borkum/logo.jpg",
+      "alt": "Logo von Urlaub auf Borkum"
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/urlaub-auf-borkum/01.jpg",
+        "alt": "Urlaub auf Borkum – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/urlaub-auf-borkum/02.jpg",
+        "alt": "Urlaub auf Borkum – Originalbild 2"
+      }
+    ]
+  },
+  "city-apart-dresden": {
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/city-apart-dresden/01.jpg",
+        "alt": "City Apart Dresden – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/city-apart-dresden/02.jpg",
+        "alt": "City Apart Dresden – Originalbild 2"
+      }
+    ]
+  },
+  "ferienwohnung-sieber": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/ferienwohnung-sieber/logo.jpg",
+      "alt": "Logo von Ferienwohnung Sieber"
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/ferienwohnung-sieber/01.jpg",
+        "alt": "Ferienwohnung Sieber – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/ferienwohnung-sieber/02.jpg",
+        "alt": "Ferienwohnung Sieber – Originalbild 2"
+      }
+    ]
+  },
+  "landgasthof-neue-schaenke": {
+    "logo": {
+      "src": "/reiseportal/unterkuenfte/landgasthof-neue-schaenke/logo.png",
+      "alt": "Logo von Landgasthof \"Neue Schänke\""
+    },
+    "images": [
+      {
+        "src": "/reiseportal/unterkuenfte/landgasthof-neue-schaenke/01.jpg",
+        "alt": "Landgasthof \"Neue Schänke\" – Originalbild 1"
+      },
+      {
+        "src": "/reiseportal/unterkuenfte/landgasthof-neue-schaenke/02.jpg",
+        "alt": "Landgasthof \"Neue Schänke\" – Originalbild 2"
+      }
+    ]
+  }
+}

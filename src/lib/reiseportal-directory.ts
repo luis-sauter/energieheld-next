@@ -38,6 +38,13 @@ function publicDemo(listing: Listing): Listing | null {
 // The verified legacy photos remain presentation fallbacks until replaced by
 // provider-specific uploads. Database rows and their new media stay canonical.
 export function withLegacyImages(listing: Listing): Listing {
+  // Older imports inherited the energy-portal default "Bayern" even when
+  // Joomla recorded another country. Keep stored data intact and show that
+  // recorded country until an editor supplies a real region.
+  if (listing.location.region === "Bayern" && listing.location.country &&
+      listing.location.country !== "Deutschland") {
+    listing = { ...listing, location: { ...listing.location, region: "" } };
+  }
   const source = reiseportalPreview.find((item) => item.slug === listing.slug);
   const imported = importedJoomlaMedia[listing.slug];
   if (!source && !imported) return listing;

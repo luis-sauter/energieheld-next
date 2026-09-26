@@ -1,4 +1,5 @@
 import type { PortalImage } from "@/types/portal";
+import legacyImported from "./reiseportal-legacy-import-media.json" with { type: "json" };
 
 type LegacyMedia = { logo?: PortalImage; images: PortalImage[] };
 
@@ -12,6 +13,7 @@ function gallery(slug: string, name: string, count: number, extension = "jpg"): 
 }
 
 export const importedJoomlaMedia: Readonly<Record<string, LegacyMedia>> = {
+  ...legacyImported,
   "wirodive-tauchreisen": {
     logo: { src: "/reiseportal/unterkuenfte/wirodive-tauchreisen/logo.png", alt: "Logo von WIRODIVE" },
     images: [],
