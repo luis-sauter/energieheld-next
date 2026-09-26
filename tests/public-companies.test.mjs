@@ -237,6 +237,14 @@ function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((i
         headers: { "content-type": "application/json" },
       });
     }
+    if (url.pathname === "/rest/v1/company_profile_travel_terms") {
+      assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
+      assert.equal(headers.get("cookie"), null);
+      return new Response(JSON.stringify({ code: "PGRST205", message: "travel taxonomy not deployed" }), {
+        status: 404,
+        headers: { "content-type": "application/json" },
+      });
+    }
     assert.equal(url.pathname, "/rest/v1/company_profiles");
     assert.equal(url.searchParams.get("status"), "eq.approved");
     assert.equal(headers.get("apikey"), "sb_publishable_test");

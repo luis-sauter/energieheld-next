@@ -5,11 +5,12 @@ import type { Listing } from "@/types/portal";
 import { directoryItemKey } from "./company-directory-order";
 import { loadPublicCompanyBySlug, loadPublicCompanyDirectory } from "./public-companies";
 import { demoProfileId, demoPublicSlug, demoSourceSlug } from "./reiseportal-demo";
+import { loadPublicTravelAssignments } from "./public-travel-taxonomy";
+import { filterTravelDiscovery } from "./reiseportal-search";
 
 const oldEnergyContent = /energieheld|energieberatung|photovoltaik|heizung|dämmung|dachsanierung|smart home|fachbetrieb|sanierung/i;
 
-// Phase 1 has no travel taxonomy in Supabase. Keep energy-category profiles and
-// energy copy out of the public travel directory until the Joomla import exists.
+// Keep energy-category profiles and energy copy out of the public travel directory.
 function travelVisible(listing: Listing) {
   return listing.slug !== demoSourceSlug && listing.categoryIds.length === 0 &&
     !oldEnergyContent.test([listing.name, listing.tagline, listing.description, listing.businessAreas].join(" "));
@@ -56,7 +57,17 @@ export async function loadReiseportalDirectory() {
     error: result.error,
   };
   const demo = result.data.listings.map(publicDemo).find((item) => item !== null);
-  const database = result.data.listings.filter(travelVisible).map(withLegacyImages);
+  let assignments: Map<string, string[]> | null;
+  try {
+    assignments = await loadPublicTravelAssignments();
+  } catch {
+    return { preview: [] as Listing[], database: [] as Listing[], hiddenOrderKeys: [] as string[],
+      error: "Die Reisethemen konnten nicht geladen werden." };
+  }
+  const database = result.data.listings.filter(travelVisible).map((listing) => withLegacyImages({
+    ...listing,
+    ...(assignments ? { travelTermKeys: assignments.get(listing.id) ?? [] } : {}),
+  }));
   const shown = new Set(database.map(directoryItemKey));
   const hiddenOrderKeys = result.data.orderRows
     .slice().sort((a, b) => a.sort_order - b.sort_order)
@@ -76,6 +87,11 @@ export async function loadReiseportalFeatured(slugs: readonly string[]) {
     const listing = bySlug.get(slug);
     return listing ? [listing] : [];
   });
+}
+
+export async function loadReiseportalTheme(theme: string) {
+  const directory = await loadReiseportalDirectory();
+  return directory.database.filter((listing) => filterTravelDiscovery([listing], "", theme).length > 0);
 }
 
 export async function loadReiseportalListingBySlug(slug: string) {

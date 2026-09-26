@@ -43,6 +43,9 @@ export async function DirectoryPage({
   };
   const destination = travel ? read("ziel") : "";
   const theme = travel ? read("thema") : "";
+  const audience = travel ? read("zielgruppe") : "";
+  const accommodation = travel ? read("unterkunftstyp") : "";
+  const feature = travel ? read("besonderheit") : "";
   const [loaded, ads, sidebarOrder] = await Promise.all([
     travel ? loadReiseportalDirectory() : loadPortalCompanies(),
     loadPublicAds(trade?.id),
@@ -50,16 +53,30 @@ export async function DirectoryPage({
   ]);
   const preview = "preview" in loaded ? loaded.preview : [];
   const database = "database" in loaded ? loaded.database : loaded.data ?? [];
-  const previewResults = filterTravelDiscovery(filterListings(preview, filters), destination, theme);
+  const assignedTerms = new Set(database.flatMap((listing) => listing.travelTermKeys ?? []));
+  const audienceOptions = [
+    ["paar", "Paar"], ["familie", "Familie"], ["mit-hund", "Mit Hund"], ["gruppe", "Gruppe"],
+  ].filter(([slug]) => assignedTerms.has(`audience:${slug}`));
+  const accommodationOptions = [
+    ["hotel", "Hotel"], ["ferienwohnung", "Ferienwohnung"],
+    ["pension", "Pension"], ["camping", "Camping"],
+  ].filter(([slug]) => assignedTerms.has(`accommodation:${slug}`));
+  const featureOptions = [...assignedTerms].filter((key) => key.startsWith("feature:"))
+    .map((key) => key.slice("feature:".length)).sort();
+  const travelFilter = (items: typeof database) => filterTravelDiscovery(
+    filterListings(items, filters), destination, theme, audience, accommodation, feature,
+  );
+  const previewResults = travelFilter(preview);
   const databaseResults = travel
-    ? filterTravelDiscovery(filterListings(database, filters), destination, theme)
+    ? travelFilter(database)
     : filterListings(database, filters);
   const sortedTravel = travel && Boolean(filters.sort);
   const results = sortedTravel
-    ? filterTravelDiscovery(filterListings([...preview, ...database], filters), destination, theme)
+    ? travelFilter([...preview, ...database])
     : [...previewResults, ...databaseResults];
   const showOrderEditor = Boolean(
-    canReorder && !trade && !Object.values(filters).some(Boolean) && !destination && !theme && saveOrder && saveSidebarOrder,
+    canReorder && !trade && !Object.values(filters).some(Boolean) && !destination && !theme &&
+      !audience && !accommodation && !feature && saveOrder && saveSidebarOrder,
   );
   const OrderEditor = showOrderEditor && (!travel || databaseResults.length > 0)
     ? (await import("@/components/admin/directory-order-editor")).DirectoryOrderEditor
@@ -120,7 +137,7 @@ export async function DirectoryPage({
           action={action}
           method="get"
           className="directory-search"
-          key={JSON.stringify(filters)}
+          key={JSON.stringify([filters, destination, theme, audience, accommodation, feature])}
           aria-label={travel ? "Unterkünfte filtern" : "Experten filtern"}
         >
           {travel && <>
@@ -137,6 +154,24 @@ export async function DirectoryPage({
                   <option key={entry.slug} value={entry.slug}>{entry.title}</option>)}
               </select>
             </label>
+            {audienceOptions.length > 0 && <label>Mit wem?
+              <select name="zielgruppe" defaultValue={audience}>
+                <option value="">Alle Zielgruppen</option>
+                {audienceOptions.map(([slug, label]) => <option key={slug} value={slug}>{label}</option>)}
+              </select>
+            </label>}
+            {accommodationOptions.length > 0 && <label>Unterkunftstyp
+              <select name="unterkunftstyp" defaultValue={accommodation}>
+                <option value="">Alle Unterkunftstypen</option>
+                {accommodationOptions.map(([slug, label]) => <option key={slug} value={slug}>{label}</option>)}
+              </select>
+            </label>}
+            {featureOptions.length > 0 && <label>Besonderheit
+              <select name="besonderheit" defaultValue={feature}>
+                <option value="">Alle Besonderheiten</option>
+                {featureOptions.map((slug) => <option key={slug} value={slug}>{slug.replaceAll("-", " ")}</option>)}
+              </select>
+            </label>}
           </>}
           <label>
             Suchbegriff

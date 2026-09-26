@@ -8,11 +8,20 @@ const countryNames: Record<string, readonly string[]> = {
   "suedtirol-italien": ["Italien", "Italy", "IT"],
 };
 
-export function filterTravelDiscovery(items: Listing[], destination: string, theme: string) {
+export function filterTravelDiscovery(
+  items: Listing[], destination: string, theme: string,
+  audience = "", accommodation = "", feature = "",
+) {
   const selectedDestination = destinations.find((entry) => entry.slug === destination);
   const selectedTheme = travelThemes.find((entry) => entry.slug === theme);
-  return items.filter((listing) =>
-    (!destination || (selectedDestination && countryNames[destination]?.includes(listing.location.country))) &&
-    (!theme || (selectedTheme && selectedTheme.previewSlugs.includes(listing.slug)))
-  );
+  return items.filter((listing) => {
+    const hasTerm = (dimension: string, slug: string) =>
+      !slug || listing.travelTermKeys?.includes(`${dimension}:${slug}`) === true;
+    return (!destination || (selectedDestination && countryNames[destination]?.includes(listing.location.country))) &&
+      (!theme || (selectedTheme && (listing.travelTermKeys
+        ? hasTerm("theme", theme)
+        : selectedTheme.previewSlugs.includes(listing.slug)))) &&
+      hasTerm("audience", audience) && hasTerm("accommodation", accommodation) &&
+      hasTerm("feature", feature);
+  });
 }
