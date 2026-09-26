@@ -385,6 +385,18 @@ test("selected Joomla media are presentation fallbacks and uploaded media remain
   assert.deepEqual(updated.images, [uploaded]);
 });
 
+test("legacy travel cards use the recorded foreign country instead of the Bayern default", () => {
+  const foreign = withLegacyImages({ ...reiseportalPreview[1], location: {
+    ...reiseportalPreview[1].location, region: "Bayern", country: "Österreich",
+  } });
+  assert.equal(foreign.location.region, "");
+  assert.equal(foreign.location.country, "Österreich");
+  const domestic = withLegacyImages({ ...reiseportalPreview[0], location: {
+    ...reiseportalPreview[0].location, region: "Bayern", country: "Deutschland",
+  } });
+  assert.equal(domestic.location.region, "Bayern");
+});
+
 test("public accommodations directory shows five stored legacy profiles once and one sanitized live demo", async () => {
   api([...legacyRows, row, demoRow]);
   const html = renderToStaticMarkup(
