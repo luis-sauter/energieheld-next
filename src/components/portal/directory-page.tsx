@@ -12,8 +12,11 @@ import { Icon } from "./icon";
 import { loadPublicAds } from "@/lib/public-ads";
 import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 import type { SidebarSlot } from "@/lib/sidebar-order";
-import { destinations, travelThemes } from "@/data/reiseportal-discovery";
+import { destinations } from "@/data/reiseportal-discovery";
 import { filterTravelDiscovery } from "@/lib/reiseportal-search";
+import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
+import { activeTravelFilterLabels, availableTravelFilters, readTravelFilterValues } from "@/lib/reiseportal-filter-options";
+import { DirectoryFilterSubmit } from "./directory-filter-submit";
 
 export async function DirectoryPage({
   searchParams,
@@ -34,6 +37,7 @@ export async function DirectoryPage({
   const read = (key: string) =>
     typeof params[key] === "string" ? (params[key] as string) : "";
   const travel = mode === "travel";
+  const travelValues = readTravelFilterValues(params);
   const filters = {
     query: read("q"),
     category: travel ? "" : trade?.id ?? read("kategorie"),
@@ -41,28 +45,21 @@ export async function DirectoryPage({
     service: "",
     sort: read("sort"),
   };
-  const destination = travel ? read("ziel") : "";
-  const theme = travel ? read("thema") : "";
-  const audience = travel ? read("zielgruppe") : "";
-  const accommodation = travel ? read("unterkunftstyp") : "";
-  const feature = travel ? read("besonderheit") : "";
-  const [loaded, ads, sidebarOrder] = await Promise.all([
+  const destination = travel ? travelValues.destination : "";
+  const theme = travel ? travelValues.theme : "";
+  const audience = travel ? travelValues.audience : "";
+  const accommodation = travel ? travelValues.accommodation : "";
+  const feature = travel ? travelValues.feature : "";
+  const [loaded, ads, sidebarOrder, publicTerms] = await Promise.all([
     travel ? loadReiseportalDirectory() : loadPortalCompanies(),
     loadPublicAds(trade?.id),
     loadPublicSidebarOrder(),
+    travel ? loadPublicTravelTerms() : Promise.resolve([]),
   ]);
   const preview = "preview" in loaded ? loaded.preview : [];
   const database = "database" in loaded ? loaded.database : loaded.data ?? [];
-  const assignedTerms = new Set(database.flatMap((listing) => listing.travelTermKeys ?? []));
-  const audienceOptions = [
-    ["paar", "Paar"], ["familie", "Familie"], ["mit-hund", "Mit Hund"], ["gruppe", "Gruppe"],
-  ].filter(([slug]) => assignedTerms.has(`audience:${slug}`));
-  const accommodationOptions = [
-    ["hotel", "Hotel"], ["ferienwohnung", "Ferienwohnung"],
-    ["pension", "Pension"], ["camping", "Camping"],
-  ].filter(([slug]) => assignedTerms.has(`accommodation:${slug}`));
-  const featureOptions = [...assignedTerms].filter((key) => key.startsWith("feature:"))
-    .map((key) => key.slice("feature:".length)).sort();
+  const travelOptions = availableTravelFilters(database, publicTerms);
+  const activeTravelFilters = travel ? activeTravelFilterLabels(travelValues, travelOptions) : [];
   const travelFilter = (items: typeof database) => filterTravelDiscovery(
     filterListings(items, filters), destination, theme, audience, accommodation, feature,
   );
@@ -150,26 +147,26 @@ export async function DirectoryPage({
             <label>Reiseart
               <select name="thema" defaultValue={theme}>
                 <option value="">Alle Reisearten</option>
-                {travelThemes.filter((entry) => entry.previewSlugs.length > 0).map((entry) =>
-                  <option key={entry.slug} value={entry.slug}>{entry.title}</option>)}
+                {travelOptions.themes.map((entry) =>
+                  <option key={entry.slug} value={entry.slug}>{entry.label}</option>)}
               </select>
             </label>
-            {audienceOptions.length > 0 && <label>Mit wem?
+            {travelOptions.audiences.length > 0 && <label>Mit wem?
               <select name="zielgruppe" defaultValue={audience}>
                 <option value="">Alle Zielgruppen</option>
-                {audienceOptions.map(([slug, label]) => <option key={slug} value={slug}>{label}</option>)}
+                {travelOptions.audiences.map(({ slug, label }) => <option key={slug} value={slug}>{label}</option>)}
               </select>
             </label>}
-            {accommodationOptions.length > 0 && <label>Unterkunftstyp
+            {travelOptions.accommodations.length > 0 && <label>Unterkunftstyp
               <select name="unterkunftstyp" defaultValue={accommodation}>
                 <option value="">Alle Unterkunftstypen</option>
-                {accommodationOptions.map(([slug, label]) => <option key={slug} value={slug}>{label}</option>)}
+                {travelOptions.accommodations.map(({ slug, label }) => <option key={slug} value={slug}>{label}</option>)}
               </select>
             </label>}
-            {featureOptions.length > 0 && <label>Besonderheit
+            {travelOptions.features.length > 0 && <label>Besonderheit
               <select name="besonderheit" defaultValue={feature}>
                 <option value="">Alle Besonderheiten</option>
-                {featureOptions.map((slug) => <option key={slug} value={slug}>{slug.replaceAll("-", " ")}</option>)}
+                {travelOptions.features.map(({ slug, label }) => <option key={slug} value={slug}>{label}</option>)}
               </select>
             </label>}
           </>}
@@ -206,9 +203,13 @@ export async function DirectoryPage({
               <option value="city">Standort A–Z</option>
             </select>
           </label>
-          <button className="button button-primary">
+          {travel && activeTravelFilters.length > 0 && <div className="active-travel-filters" aria-label="Aktive Filter">
+            <strong>Aktive Filter</strong>
+            <div>{activeTravelFilters.map((label) => <span key={label}>{label}</span>)}</div>
+          </div>}
+          {travel ? <DirectoryFilterSubmit /> : <button className="button button-primary">
             Ergebnisse anzeigen <Icon name="search" size={18} />
-          </button>
+          </button>}
           <Link className="directory-reset" href={action}>
             Filter zurücksetzen
           </Link>
