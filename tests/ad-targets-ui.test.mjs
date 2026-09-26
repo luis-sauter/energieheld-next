@@ -246,15 +246,15 @@ test("admin reorder view renders twelve controls with dynamic first and last bou
   assert.equal((html.match(/Noch kein Banner/g) ?? []).length, 2);
 });
 
-test("homepage reuses travel preview rows and the shared rail", () => {
+test("homepage keeps the shared ad rail and uses sourced accommodation cards", () => {
   const source = readFileSync(new URL("../src/app/(energieheld)/page.tsx", import.meta.url), "utf8");
-  assert.match(source, /loadReiseportalDirectory\(\)/);
   assert.match(source, /loadPublicAds\(undefined, "homepage"\)/);
   assert.match(source, /loadPublicSidebarOrder\(\)/);
-  assert.match(source, /directory\.preview\.map\(\(listing\)/);
-  assert.match(source, /<ListingRow/);
+  assert.match(source, /<AccommodationCard/);
+  assert.match(source, /reiseportalPreview\.filter/);
+  assert.match(source, /<CampaignSlot placement="top_banner"/);
   assert.match(source, /<AdvertisingRail slots=\{sidebarOrder\} ads=\{ads\}/);
-  assert.doesNotMatch(source, /listings\.slice|directoryPackage === "premium"/);
+  assert.doesNotMatch(source, /Demo GmbH|<ListingRow/);
 });
 // Optional local, static visual fixture. Never writes to the application or DB.
 if (process.env.AD_TARGET_PREVIEW_FILE) {

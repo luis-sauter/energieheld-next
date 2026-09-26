@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { loadReiseportalListingBySlug } from "@/lib/reiseportal-directory";
 import { ListingDetail } from "@/components/portal/listing-detail";
 import { InquiryDialog } from "@/components/leads/inquiry-dialog";
@@ -22,6 +22,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  if (slug === "höflehner") permanentRedirect("/unterkuenfte/hoeflehner");
   const result = await loadReiseportalListingBySlug(slug);
   return { title: result.data?.name ?? "Unternehmensprofil" };
 }
@@ -32,6 +33,7 @@ export default async function AccommodationDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  if (slug === "höflehner") permanentRedirect("/unterkuenfte/hoeflehner");
   const result = await loadReiseportalListingBySlug(slug);
   if (result.error)
     return (
@@ -95,7 +97,9 @@ export default async function AccommodationDetail({
         categories={[]}
         showVerification={false}
         presentation="company"
-        showMap={!listing.isPreview}
+        showMap
+        allowDemoMap={listing.slug === "demo-gmbh"}
+        originalDemoMedia={listing.slug === "demo-gmbh"}
         aboutHeading={presentedContent.aboutHeading}
         businessHeading={presentedContent.businessHeading}
         contentBlocks={presentedContent.blocks.length

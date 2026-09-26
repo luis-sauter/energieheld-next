@@ -1,5 +1,5 @@
 // Visible on the current DAS-Reiseportal overview pages and present in the
-// local Joomla tags export. Phase 1 lists the groups without detail routes.
+// local Joomla tags export. Clickable detail routes use reiseportal-discovery.ts.
 export const reiseziele = [
   "Deutschland",
   "Österreich",

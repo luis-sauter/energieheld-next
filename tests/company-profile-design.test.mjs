@@ -504,16 +504,18 @@ test("company quality request form shows request states without granting decisio
     );
 });
 
-test("portal home is a minimal Reiseportal entry page with the shared advertising rail", async () => {
+test("portal home follows the discovery wireframe with the shared advertising rail", async () => {
   const { default: Home } = await import("../src/app/(energieheld)/page.tsx");
   const html = renderToStaticMarkup(await Home());
   const ordered = [
-    "portal-intro",
-    'data-placement="top_banner"',
-    'href="/reiseziele"',
-    'href="/mottoreisen"',
-    'href="/unterkuenfte-a-z"',
+    "travel-hero",
+    'class="travel-search"',
+    "travel-quicklinks",
+    "Inspiration &amp; Themenwelten",
+    'id="destinations-title"',
+    'id="stays-title"',
     'class="commercial-sidebar advertising-rail"',
+    'data-placement="top_banner"',
   ];
   let last = -1;
   for (const marker of ordered) {
@@ -522,7 +524,8 @@ test("portal home is a minimal Reiseportal entry page with the shared advertisin
     last = current;
   }
   assert.match(html, /DAS Reiseportal/);
-  assert.match(html, /Reiseziele, Mottoreisen und Unterkünfte im deutschsprachigen Raum entdecken/);
+  assert.match(html, /Finde deinen passenden Urlaub/);
+  assert.match(html, /name="ziel"|name="thema"/);
   assert.doesNotMatch(html, /Expertensuche|Gewerke|Fachbetriebe|Photovoltaik|Sanieren mit Grips/);
 });
 

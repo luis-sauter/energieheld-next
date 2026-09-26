@@ -12,6 +12,8 @@ import { Icon } from "./icon";
 import { loadPublicAds } from "@/lib/public-ads";
 import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 import type { SidebarSlot } from "@/lib/sidebar-order";
+import { destinations, travelThemes } from "@/data/reiseportal-discovery";
+import { filterTravelDiscovery } from "@/lib/reiseportal-search";
 
 export async function DirectoryPage({
   searchParams,
@@ -39,6 +41,8 @@ export async function DirectoryPage({
     service: "",
     sort: read("sort"),
   };
+  const destination = travel ? read("ziel") : "";
+  const theme = travel ? read("thema") : "";
   const [loaded, ads, sidebarOrder] = await Promise.all([
     travel ? loadReiseportalDirectory() : loadPortalCompanies(),
     loadPublicAds(trade?.id),
@@ -46,14 +50,16 @@ export async function DirectoryPage({
   ]);
   const preview = "preview" in loaded ? loaded.preview : [];
   const database = "database" in loaded ? loaded.database : loaded.data ?? [];
-  const previewResults = filterListings(preview, filters);
-  const databaseResults = filterListings(database, filters);
+  const previewResults = filterTravelDiscovery(filterListings(preview, filters), destination, theme);
+  const databaseResults = travel
+    ? filterTravelDiscovery(filterListings(database, filters), destination, theme)
+    : filterListings(database, filters);
   const sortedTravel = travel && Boolean(filters.sort);
   const results = sortedTravel
-    ? filterListings([...preview, ...database], filters)
+    ? filterTravelDiscovery(filterListings([...preview, ...database], filters), destination, theme)
     : [...previewResults, ...databaseResults];
   const showOrderEditor = Boolean(
-    canReorder && !trade && !Object.values(filters).some(Boolean) && saveOrder && saveSidebarOrder,
+    canReorder && !trade && !Object.values(filters).some(Boolean) && !destination && !theme && saveOrder && saveSidebarOrder,
   );
   const OrderEditor = showOrderEditor && (!travel || databaseResults.length > 0)
     ? (await import("@/components/admin/directory-order-editor")).DirectoryOrderEditor
@@ -117,6 +123,21 @@ export async function DirectoryPage({
           key={JSON.stringify(filters)}
           aria-label={travel ? "Unterkünfte filtern" : "Experten filtern"}
         >
+          {travel && <>
+            <label>Wohin?
+              <select name="ziel" defaultValue={destination}>
+                <option value="">Alle Reiseziele</option>
+                {destinations.map((entry) => <option key={entry.slug} value={entry.slug}>{entry.title}</option>)}
+              </select>
+            </label>
+            <label>Reiseart
+              <select name="thema" defaultValue={theme}>
+                <option value="">Alle Reisearten</option>
+                {travelThemes.filter((entry) => entry.previewSlugs.length > 0).map((entry) =>
+                  <option key={entry.slug} value={entry.slug}>{entry.title}</option>)}
+              </select>
+            </label>
+          </>}
           <label>
             Suchbegriff
             <input
