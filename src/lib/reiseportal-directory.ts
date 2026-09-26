@@ -1,5 +1,6 @@
 import "server-only";
 import { reiseportalPreview } from "@/data/reiseportal-preview";
+import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
 import type { Listing } from "@/types/portal";
 import { directoryItemKey } from "./company-directory-order";
 import { loadPublicCompanyBySlug, loadPublicCompanyDirectory } from "./public-companies";
@@ -37,9 +38,13 @@ function publicDemo(listing: Listing): Listing | null {
 // provider-specific uploads. Database rows and their new media stay canonical.
 export function withLegacyImages(listing: Listing): Listing {
   const source = reiseportalPreview.find((item) => item.slug === listing.slug);
-  if (!source) return listing;
-  return { ...listing, directoryPackage: source.directoryPackage,
-    images: listing.images.length ? listing.images : source.images };
+  const imported = importedJoomlaMedia[listing.slug];
+  if (!source && !imported) return listing;
+  const fallback = imported ?? source;
+  return { ...listing,
+    directoryPackage: source?.directoryPackage ?? listing.directoryPackage,
+    logo: listing.logo ?? fallback.logo,
+    images: listing.images.length ? listing.images : fallback.images };
 }
 
 export async function loadReiseportalDirectory() {

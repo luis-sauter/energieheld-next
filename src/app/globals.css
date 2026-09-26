@@ -2940,6 +2940,17 @@ h6 {
 }
 
 /* Reiseportal discovery: original travel photography and functional directory search. */
+.reiseportal-shell {
+  --brand-accent-hover: #a93618;
+  --brand-secondary: #29b6e0;
+  --brand-beige: #efd0bd;
+  --white: #fffdfc;
+  --surface: #fff8f3;
+  --line: #e9d8ce;
+  --text: #5d040a;
+  --muted: #674d4d;
+  background: #fffdfc;
+}
 .travel-hero {
   position: relative;
   min-height: 560px;
@@ -2947,7 +2958,7 @@ h6 {
   align-items: center;
   isolation: isolate;
   overflow: hidden;
-  background: var(--brand-primary) url("/reiseportal/hero.jpg") center 55% / cover no-repeat;
+  background: #283033;
 }
 .travel-hero > video {
   position: absolute;
@@ -2967,10 +2978,13 @@ h6 {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(90deg, rgba(8, 22, 70, .78), rgba(8, 22, 70, .2));
+  background: linear-gradient(90deg, rgba(30, 12, 12, .78), rgba(30, 12, 12, .18));
 }
 .travel-hero-content {
   padding-block: 72px;
+}
+@media (min-width: 701px) {
+  .travel-hero-content { transform: translateY(30px); }
 }
 .travel-hero .eyebrow,
 .travel-hero h1,
@@ -2990,7 +3004,7 @@ h6 {
 }
 .travel-search {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: end;
   gap: 12px;
   width: 100%;
@@ -3022,23 +3036,36 @@ h6 {
 .travel-search .button { min-height: 46px; white-space: nowrap; }
 .travel-quicklinks {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 12px;
   padding-top: 24px;
 }
 .travel-quicklinks a {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  min-height: 64px;
-  padding: 12px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
+  justify-content: center;
+  gap: 8px;
+  min-height: 104px;
+  padding: 10px;
+  border: 1px solid var(--brand-beige);
+  border-radius: 6px;
+  background: #fffaf7;
+  color: var(--brand-primary);
+  font-size: .77rem;
   font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+.travel-quicklink-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
 }
 .travel-quicklinks a:hover,
-.travel-quicklinks a:focus-visible { border-color: var(--brand-primary); }
+.travel-quicklinks a:focus-visible { border-color: var(--brand-secondary); background: #fff3eb; }
 .discovery-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3056,7 +3083,7 @@ h6 {
 .discovery-card:hover,
 .discovery-card:focus-visible {
   transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(19, 35, 127, .13);
+  box-shadow: 0 12px 28px rgba(93, 4, 10, .1);
 }
 .discovery-card-image {
   position: relative;
@@ -3104,6 +3131,25 @@ h6 {
 .discovery-home .section { padding-block: 44px; }
 .discovery-home .commercial-columns { margin-top: 0; }
 .discovery-page .discovery-grid { margin-top: 28px; }
+.motto-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
+  align-items: center;
+  gap: clamp(30px, 5vw, 72px);
+  padding-block: 28px 18px;
+}
+.motto-intro h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); margin-bottom: 26px; }
+.motto-intro p:not(.eyebrow) { max-width: 60ch; font-size: 1.05rem; line-height: 1.8; }
+.motto-intro-image { position: relative; min-height: 360px; aspect-ratio: 1.5; overflow: hidden; border-radius: 4px; }
+.motto-intro-image img { object-fit: cover; }
+.motto-page .section { padding-top: 38px; }
+.motto-page .discovery-grid { gap: 28px 22px; }
+.motto-page .discovery-card { border: 0; border-radius: 2px; box-shadow: none; background: #fffaf7; }
+.motto-page .discovery-card:hover,
+.motto-page .discovery-card:focus-visible { box-shadow: 0 10px 24px rgba(93, 4, 10, .08); }
+.motto-page .discovery-card-image { aspect-ratio: 1.5; }
+.motto-page .discovery-card-title { padding: 20px 14px; font-size: 1.03rem; font-weight: 650; }
+.motto-page .discovery-card-title span { color: var(--brand-accent); }
 .discovery-detail-hero {
   position: relative;
   display: flex;
@@ -3117,7 +3163,7 @@ h6 {
 .discovery-detail-hero > img { z-index: -2; object-fit: cover; }
 .discovery-detail-hero::after {
   content: ""; position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(0deg, rgba(8, 22, 70, .8), transparent 70%);
+  background: linear-gradient(0deg, rgba(40, 9, 12, .82), transparent 70%);
 }
 .discovery-detail-hero > div { padding: 34px; }
 .discovery-detail-hero h1,
@@ -3129,6 +3175,7 @@ h6 {
   .travel-search { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .travel-search .button { grid-column: 1/-1; }
   .discovery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .travel-quicklinks { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .discovery-detail .accommodation-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 700px) {
@@ -3137,6 +3184,9 @@ h6 {
   .travel-search { grid-template-columns: 1fr; padding: 14px; }
   .travel-search .button { grid-column: auto; }
   .travel-quicklinks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .travel-quicklinks a { min-height: 84px; }
+  .motto-intro { grid-template-columns: 1fr; gap: 22px; }
+  .motto-intro-image { min-height: 240px; }
   .discovery-grid,
   .accommodation-grid,
   .discovery-detail .accommodation-grid { grid-template-columns: 1fr; }

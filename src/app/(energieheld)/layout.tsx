@@ -36,7 +36,7 @@ export default async function ReiseportalLayout({
     "--brand-surface": reiseportal.colors.surface,
   } as CSSProperties;
   return (
-    <div style={style}>
+    <div className="reiseportal-shell" style={style}>
       <PortalHeader brand={reiseportal} access={access} identity={identity} />
       {children}
       <PortalFooter brand={reiseportal} />
