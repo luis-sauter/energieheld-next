@@ -6,9 +6,13 @@ import type { Listing } from "@/types/portal";
 export function AccommodationCard({ listing }: { listing: Listing }) {
   const image = listing.images[0];
   return <article className="accommodation-card">
-    {image && <Link href={`/unterkuenfte/${listing.slug}`} className="accommodation-card-image">
-      <Image src={image.src} alt={image.alt} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" />
-    </Link>}
+    <Link href={`/unterkuenfte/${listing.slug}`}
+      className={`accommodation-card-image${image ? "" : " accommodation-card-image--empty"}`}
+      aria-label={`${listing.name} ansehen`}>
+      {image
+        ? <Image src={image.src} alt={image.alt} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" />
+        : <span aria-hidden="true">{listing.initials}</span>}
+    </Link>
     <div className="accommodation-card-copy">
       <p className="eyebrow">{[listing.location.city, listing.location.country].filter(Boolean).join(", ")}</p>
       <h3><Link href={`/unterkuenfte/${listing.slug}`}>{listing.name}</Link></h3>
