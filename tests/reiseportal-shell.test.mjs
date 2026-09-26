@@ -60,6 +60,7 @@ const destinationRoute = await import("../src/app/(energieheld)/reiseziele/[slug
 const themeRoute = await import("../src/app/(energieheld)/mottoreisen/[slug]/page.tsx");
 const { default: ThemeOverview } = await import("../src/app/(energieheld)/mottoreisen/page.tsx");
 const { PortalHeader, PortalFooter } = await import("../src/components/portal/chrome.tsx");
+const { headerNavigation } = await import("../src/components/portal/navigation-data.ts");
 const { accountMenuGroups } = await import("../src/components/portal/account-menu.tsx");
 const { loadReiseportalDirectory, loadReiseportalListingBySlug } =
   await import("../src/lib/reiseportal-directory.ts");
@@ -79,6 +80,25 @@ test("public navigation has only the three travel entries and uses the untouched
   assert.equal((html.match(/href="\/reiseziele"/g) ?? []).length, 2);
   assert.equal((html.match(/href="\/mottoreisen"/g) ?? []).length, 2);
   assert.equal((html.match(/href="\/unterkuenfte-a-z"/g) ?? []).length, 2);
+});
+
+test("header dropdowns derive only existing theme and destination routes from the shared discovery data", () => {
+  const items = headerNavigation(reiseportal);
+  const themes = items.find((item) => item.href === "/mottoreisen");
+  const places = items.find((item) => item.href === "/reiseziele");
+  assert.deepEqual(themes.children, travelThemes.map(({ title, slug }) =>
+    ({ label: title, href: `/mottoreisen/${slug}` })));
+  assert.deepEqual(places.children, destinations.map(({ title, slug }) =>
+    ({ label: title, href: `/reiseziele/${slug}` })));
+  assert.equal(themes.children.length, 12);
+  assert.equal(places.children.length, 4);
+  assert.ok(existsSync(new URL("../src/app/(energieheld)/mottoreisen/[slug]/page.tsx", import.meta.url)));
+  assert.ok(existsSync(new URL("../src/app/(energieheld)/reiseziele/[slug]/page.tsx", import.meta.url)));
+  const html = renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal }));
+  assert.equal((html.match(/aria-haspopup="menu"/g) ?? []).length, 2);
+  assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 5); // Four navigation triggers and the account menu.
+  assert.match(html, /href="\/registrieren"[^>]*>Unterkunft eintragen<\/a>/);
+  assert.match(html, /src="\/brand\/das-reiseportal-logo\.png"/);
 });
 
 test("account button and dropdown groups use server-provided access without permanent header links", () => {
