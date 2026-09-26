@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { CampaignSlot } from "@/components/advertising/campaign-view";
 import { AdvertisingRail } from "@/components/advertising/advertising-rail";
@@ -23,7 +22,9 @@ export default async function Home() {
 
   return <main id="hauptinhalt" className="editorial-home discovery-home">
     <section className="travel-hero" aria-labelledby="travel-hero-title">
-      <Image src="/reiseportal/hero.jpg" alt="Blausee in der Schweiz" fill sizes="100vw" priority />
+      <video autoPlay muted loop playsInline preload="metadata" poster="/reiseportal/hero.jpg" aria-hidden="true" tabIndex={-1}>
+        <source src="/reiseportal/hero-loop.mp4" type="video/mp4" />
+      </video>
       <div className="travel-hero-content container">
         <p className="eyebrow">DAS Reiseportal</p>
         <h1 id="travel-hero-title">Finde deinen passenden Urlaub</h1>

@@ -4,7 +4,9 @@ import type { DiscoveryEntry } from "@/data/reiseportal-discovery";
 
 export function DiscoveryCard({ entry, basePath }: { entry: DiscoveryEntry; basePath: string }) {
   return <Link className="discovery-card" href={`${basePath}/${entry.slug}`}>
-    <span className="discovery-card-image"><Image src={entry.image} alt={entry.alt} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" /></span>
+    <span className={`discovery-card-image${entry.image ? "" : " discovery-card-image-fallback"}`}>
+      {entry.image && <Image src={entry.image} alt={entry.alt} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" />}
+    </span>
     <span className="discovery-card-title">{entry.title}<span aria-hidden="true">→</span></span>
   </Link>;
 }

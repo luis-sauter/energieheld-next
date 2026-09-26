@@ -39,7 +39,7 @@ export default async function ReiseportalLayout({
     <div style={style}>
       <PortalHeader brand={reiseportal} access={access} identity={identity} />
       {children}
-      <PortalFooter brand={reiseportal} access={access} />
+      <PortalFooter brand={reiseportal} />
     </div>
   );
 }

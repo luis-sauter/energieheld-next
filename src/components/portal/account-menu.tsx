@@ -9,7 +9,6 @@ export type AccountIdentity = { name?: string; email?: string; initials: string 
 const accountLinks = [
   { label: "Firmenbereich", href: "/firma" },
   { label: "Profil bearbeiten", href: "/firma/profil" },
-  { label: "Profil gestalten", href: "/firma/profil/gestalten" },
   { label: "Anfragen", href: "/firma/anfragen" },
   { label: "Werbung", href: "/firma/werbung" },
   { label: "Statistiken", href: "/firma/statistiken" },

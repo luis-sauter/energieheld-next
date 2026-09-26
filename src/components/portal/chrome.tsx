@@ -47,44 +47,18 @@ export function PortalHeader({ brand, access = "unauthenticated", identity }: { 
   );
 }
 
-export function PortalFooter({ brand, access = "unauthenticated" }: { brand: BrandConfig; access?: AdminAccess }) {
+export function PortalFooter({ brand }: { brand: BrandConfig }) {
   return (
     <footer className="site-footer">
       <div className="container footer-main">
         <div>
-          <Link
-            className="footer-brand"
-            href="/"
-          >
-            {brand.name}
-          </Link>
-          <p>
-            {brand.tagline}
-            <br />
-            Reiseziele, Mottoreisen und Unterkünfte entdecken.
-          </p>
+          <span className="footer-brand">{brand.name}</span>
+          <p>{brand.tagline}</p>
         </div>
-        <nav aria-label="Footernavigation">
-          {brand.navigation.map((item) => (
-            <Link key={item.href} href={item.href}>
-              {item.label}
-            </Link>
-          ))}
-          <span className="footer-account-links">
-            <Link href="/registrieren">Firma eintragen</Link>
-            <Link href={access === "unauthenticated" ? "/login" : "/firma"}>
-              {access === "unauthenticated" ? "Einloggen" : "Firmenbereich"}
-            </Link>
-            <Link href="/fuer-unternehmen">Für Unternehmen</Link>
-          </span>
-        </nav>
       </div>
       <div className="container footer-bottom">
         <span>
           © {new Date().getFullYear()} {brand.name}
-        </span>
-        <span>
-          Unterkünfte und Anbieter im deutschsprachigen Raum
         </span>
       </div>
     </footer>
