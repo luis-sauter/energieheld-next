@@ -14,7 +14,7 @@ import { InlineEditorHistoryContext, useInlineEditorHistoryController } from "./
 
 const formId = "inline-admin-profile-form";
 
-export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, showVerification = true }: {
+export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, showVerification = true, allowDemoMap = false, originalDemoMedia = false }: {
   listing: Listing;
   categories: Category[];
   values: ProfileValues;
@@ -24,12 +24,15 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   saveProfile: (form: FormData) => Promise<ProfileFormState>;
   saveMedia: (form: FormData) => Promise<MediaState>;
   contentBlocks: ProfileContentBlock[];
+  publicContentBlocks?: ProfileContentBlock[];
   contentAvailable: boolean;
   imagesAvailable: boolean;
   saveContent: (form: FormData) => Promise<{ error?: string; success?: string }>;
   saveBlockImage: (form: FormData) => Promise<MediaState>;
   initialEditing?: boolean;
   showVerification?: boolean;
+  allowDemoMap?: boolean;
+  originalDemoMedia?: boolean;
 }) {
   const router = useRouter();
   const busyRef = useRef(false);
@@ -38,7 +41,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   const [feedback, setFeedback] = useState<ProfileFormState>({});
   const history = useInlineEditorHistoryController(saveContent, saveBlockImage, editing);
   const mediaEditor = useInlineAdminMedia({ saveAction: saveMedia, media, rows, profileName: listing.name, initials: listing.initials });
-  const content = splitProfileContent(contentBlocks, listing.name);
+  const content = splitProfileContent(editing ? contentBlocks : publicContentBlocks ?? contentBlocks, listing.name);
 
   function field(name: keyof ProfileValues, label: string, multiline = false) {
     const common = { id: `inline-${name}`, name, form: formId, defaultValue: values[name], disabled: busy || history.busy, "aria-label": label, onChange: () => setFeedback({}) };
@@ -105,6 +108,8 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       categories={categories}
       presentation="company"
       showMap
+      allowDemoMap={allowDemoMap}
+      originalDemoMedia={originalDemoMedia}
       contactAction={editing ? undefined : contactAction}
       adminAction={editing ? undefined : <button type="button" className={`button ${styles.editButton}`} onClick={() => { setFeedback({}); setEditing(true); }}>Profil bearbeiten</button>}
       inlineFields={editing ? inlineFields : undefined}

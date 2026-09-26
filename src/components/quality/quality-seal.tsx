@@ -39,9 +39,9 @@ export function QualitySeal({
           </button>
         </div>
         <p>
-          „Persönlich verifiziert“ bedeutet, dass das Unternehmen dem
-          Energieheld-Team persönlich bekannt ist und aufgrund positiver
-          Erfahrungen in folgenden Bereichen empfohlen wird:
+          „Persönlich verifiziert“ bedeutet, dass das Unternehmen persönlich
+          geprüft wurde und aufgrund positiver Erfahrungen in folgenden
+          Bereichen empfohlen wird:
         </p>
         <ul>
           <li>Qualität</li>

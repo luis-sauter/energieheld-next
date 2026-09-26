@@ -9,8 +9,7 @@ export function CompanyPublication({ status }: { status: string }) {
       <>
         <h2>Bereit für Ihr öffentliches Profil?</h2>
         <p>
-          Die offizielle Zuordnung zu Gewerken erfolgt durch Energieheld. Dafür
-          ist einmalig eine Freischaltung nötig. Spätere Text- und
+          Für die erste Veröffentlichung ist eine Freischaltung nötig. Spätere Text- und
           Medienänderungen benötigen keine erneute Freigabe.
         </p>
         <form action={action}>

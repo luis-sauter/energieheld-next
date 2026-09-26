@@ -1,7 +1,6 @@
 import { QualityRequestForm } from "@/components/quality/quality-request-form";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { energieheld } from "@/config/energieheld";
 import { createClient } from "@/lib/supabase/server";
 import { loadCompanyDashboard } from "@/lib/company-dashboard";
 import { profileStatus } from "@/lib/auth";
@@ -31,11 +30,6 @@ export default async function CompanyPage({
   ]);
   if (!dashboard.authenticated) redirect("/login");
   const { company, profile, email, error } = dashboard;
-  const assignedCategories = energieheld.categories.filter((category) =>
-    profile?.company_profile_categories?.some(
-      (assignment) => assignment.category_id === category.id,
-    ),
-  );
   const location = profile
     ? [profile.postal_code, profile.city, profile.region]
         .filter(Boolean)
@@ -50,6 +44,7 @@ export default async function CompanyPage({
       <h1>Firmenbereich</h1>
       <nav className={dashboardStyles.nav} aria-label="Firmenbereich">
         <Link href="/firma/profil">Profil bearbeiten</Link>
+        <Link href="/firma/profil/gestalten">Profil gestalten</Link>
         <Link href="/firma/anfragen">Anfragen</Link>
         <Link href="#verifizierung">Verifizierung</Link>
         <Link href="/firma/werbung">Werbung</Link>
@@ -128,18 +123,6 @@ export default async function CompanyPage({
             </>
           )}
         </dl>
-        {assignedCategories.length > 0 && (
-          <section>
-            <h2>Öffentliche Gewerke</h2>
-            <p>
-              {assignedCategories.map((category) => category.name).join(" · ")}
-            </p>
-            <p>
-              Die öffentliche Einordnung wird bei der Prüfung durch Energieheld
-              festgelegt.
-            </p>
-          </section>
-        )}
         <Link className="button" href="/firma/profil">
           Profil bearbeiten
         </Link>

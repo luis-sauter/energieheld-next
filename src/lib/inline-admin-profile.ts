@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { checkAdmin, isProfileId, type AdminAccess } from "./admin-review";
+import { storedSlugForInlineTarget } from "./reiseportal-demo";
 
 // The route identity is bound on the server; a submitted field cannot retarget it.
 export async function checkInlineProfileTarget(
@@ -11,10 +12,13 @@ export async function checkInlineProfileTarget(
   if (access !== "admin") return { access };
   if (!isProfileId(profileId) || typeof slug !== "string" || !slug)
     return { access, error: "Das angezeigte Firmenprofil wurde nicht gefunden." };
+  const storedSlug = storedSlugForInlineTarget(profileId, slug);
+  if (!storedSlug)
+    return { access, error: "Das angezeigte Firmenprofil wurde nicht gefunden." };
   const { data, error } = await client.from("company_profiles")
     .select("id")
     .eq("id", profileId)
-    .eq("slug", slug)
+    .eq("slug", storedSlug)
     .eq("status", "approved")
     .maybeSingle();
   if (error || data?.id !== profileId)

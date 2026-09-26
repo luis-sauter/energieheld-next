@@ -225,6 +225,35 @@ button {
 .desktop-nav > a:hover {
   color: var(--brand-primary);
 }
+.header-account {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-left: 20px;
+  border-left: 1px solid var(--line);
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+.header-account > a:not(.button):hover {
+  color: var(--brand-primary);
+  text-decoration: underline;
+}
+.mobile-account-label {
+  display: block;
+  margin-top: 6px;
+  padding: 15px 12px 4px;
+  border-top: 1px solid var(--line);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.footer-account-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 24px;
+  border-left: 1px solid var(--line);
+}
 .header-cta {
   font-size: 0.78rem;
   padding: 10px 15px;
@@ -1274,6 +1303,9 @@ button {
   .desktop-nav {
     display: none;
   }
+  .header-account {
+    display: none;
+  }
   .mobile-menu {
     display: block;
   }
@@ -1305,6 +1337,10 @@ button {
   }
   .mobile-menu nav > a {
     padding: 12px;
+  }
+  .mobile-menu nav > a.button {
+    justify-content: center;
+    margin: 6px 12px;
   }
   .header-inner {
     height: 82px;

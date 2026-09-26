@@ -6,6 +6,7 @@ import { signCompanyMedia } from "@/lib/company-media";
 import { companyProfileListing } from "@/lib/company-presentation";
 import { CompanyProfileDesigner } from "@/components/auth/company-media-form";
 import { CompanyPublication } from "@/components/auth/company-publication";
+import { publicSlugForStoredProfile } from "@/lib/reiseportal-demo";
 
 export const dynamic = "force-dynamic";
 const statusLabels: Record<string, string> = {
@@ -46,7 +47,7 @@ export default async function CompanyDesignPage() {
           )}
           <Link href="/firma/profil">Stammdaten bearbeiten</Link>
           {profile?.status === "approved" && (
-            <Link href={`/unterkuenfte/${profile.slug}`}>
+            <Link href={`/unterkuenfte/${publicSlugForStoredProfile(profile)}`}>
               Öffentliches Profil ansehen ↗
             </Link>
           )}

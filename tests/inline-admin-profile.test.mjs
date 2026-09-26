@@ -49,6 +49,9 @@ const { InlineImageCropEditor } = await import("../src/components/admin/inline-i
 const { ProfileContentBlocks } = await import("../src/components/portal/profile-content-blocks.tsx");
 const { companyProfileListing } = await import("../src/lib/company-presentation.ts");
 const { saveInlineProfile, saveInlineMedia } = await import("../src/app/(energieheld)/experten/[slug]/inline-actions.ts");
+const { saveInlineContent } = await import("../src/app/(energieheld)/experten/[slug]/content-actions.ts");
+const { saveInlineBlockImage } = await import("../src/app/(energieheld)/experten/[slug]/block-image-actions.ts");
+const { demoProfileId, demoPublicSlug, demoSourceSlug, publicSlugForStoredProfile } = await import("../src/lib/reiseportal-demo.ts");
 const profileId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 function renderGrid(props) {
   return renderToStaticMarkup(createElement(InlineEditorHistoryContext.Provider, {
@@ -64,7 +67,7 @@ const publicProfile = {
   company_quality_requests: null, companies: { legal_name: "Redaktionelle Firma GmbH" },
 };
 
-function client({ authenticated = true, admin = true, slug = publicProfile.slug, contentRows = [] } = {}) {
+function client({ authenticated = true, admin = true, profile = publicProfile, slug = profile.slug, contentRows = [] } = {}) {
   const calls = [];
   return {
     calls,
@@ -80,14 +83,14 @@ function client({ authenticated = true, admin = true, slug = publicProfile.slug,
         then(resolve) { return resolve({ data: table === "profile_content_blocks" ? contentRows : [], error: null }); },
         async maybeSingle() {
           if (table === "portal_admins") return { data: admin ? { user_id: "verified-user" } : null, error: null };
-          if (call.payload) return { data: { id: profileId }, error: null };
+          if (call.payload) return { data: { id: profile.id }, error: null };
           if (call.filters.some(([key, value]) => key === "slug" && value !== slug)) return { data: null, error: null };
-          if (call.filters.some(([key, value]) => key === "id" && value !== profileId)) return { data: null, error: null };
-          return { data: publicProfile, error: null };
+          if (call.filters.some(([key, value]) => key === "id" && value !== profile.id)) return { data: null, error: null };
+          return { data: profile, error: null };
         },
       };
     },
-    storage: { from() { return {}; } },
+    storage: { from() { return { createSignedUrls: async (paths) => ({ data: paths.map((path) => ({ path, signedUrl: `https://media.example/${path}` })), error: null }) }; } },
   };
 }
 
@@ -96,6 +99,36 @@ async function renderPage(options, contentRows = []) {
   globalThis.__inlineAdminClient = client(options);
   const element = await ExpertDetail({ params: Promise.resolve({ slug: publicProfile.slug }) });
   return renderToStaticMarkup(element);
+}
+
+const demoProfile = {
+  ...publicProfile,
+  id: demoProfileId,
+  slug: demoSourceSlug,
+  display_name: "Energieheld Demo GmbH",
+  tagline: "Photovoltaik",
+  description: "Elektrotechnik und Energiesysteme",
+  business_areas: "Gebäudetechnik",
+  logo_path: `profiles/${demoProfileId}/logo/demo.png`,
+  company_profile_images: [{
+    id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+    storage_path: `profiles/${demoProfileId}/gallery/demo.png`,
+    alt_text: "Photovoltaik", sort_order: 0,
+  }],
+};
+const demoBlocks = [{
+  id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", profile_id: demoProfileId,
+  type: "text", slot: null, sort_order: 0,
+  content: { text: "Unsere Energiesysteme" },
+}];
+
+async function renderDemoPage({ authenticated = false, admin = false } = {}) {
+  const publicClient = client({ authenticated: false, admin: false, profile: demoProfile });
+  const adminClient = client({ authenticated, admin, profile: demoProfile, contentRows: demoBlocks });
+  globalThis.__inlinePublicClient = publicClient;
+  globalThis.__inlineAdminClient = adminClient;
+  const element = await ExpertDetail({ params: Promise.resolve({ slug: demoPublicSlug }) });
+  return { element, html: renderToStaticMarkup(element), publicClient, adminClient };
 }
 
 test("visitors and signed-in non-admins see the original public profile without editing controls", async () => {
@@ -171,6 +204,43 @@ test("verified portal admin gets the entry point while the public view stays unc
   assert.equal(admin.replace(/<button type="button"[^>]*>Profil bearbeiten<\/button>/, ""), visitor);
 });
 
+test("Demo uses its real Supabase media and blocks for the admin editor while public views stay neutral", async () => {
+  const visitor = await renderDemoPage();
+  for (const options of [{ authenticated: false }, { authenticated: true, admin: false }]) {
+    const { html, adminClient } = await renderDemoPage(options);
+    assert.match(html, /Demo GmbH|Demo\/Testprofil/);
+    assert.match(html, /Google Maps/);
+    assert.match(html, /class="gallery"/);
+    assert.doesNotMatch(html, /Profil bearbeiten|Energieheld|Photovoltaik|Elektrotechnik|Energiesysteme|Gebäudetechnik/);
+    assert.ok(adminClient.calls.every((call) => call.table === "portal_admins"));
+  }
+  const { element, html, adminClient } = await renderDemoPage({ authenticated: true, admin: true });
+  assert.match(html, /Profil bearbeiten/);
+  assert.equal(html.replace(/<button type="button"[^>]*>Profil bearbeiten<\/button>/, ""), visitor.html);
+  assert.doesNotMatch(html, /Energieheld|Photovoltaik|Elektrotechnik|Energiesysteme|Gebäudetechnik|Bearbeitungsmodus aktiv/);
+  const editor = element.props.children.find((child) => child?.type === InlineProfileEditor);
+  assert.ok(editor);
+  assert.equal(editor.props.listing.id, demoProfileId);
+  assert.equal(editor.props.values.display_name, demoProfile.display_name);
+  assert.deepEqual(editor.props.contentBlocks, demoBlocks);
+  assert.deepEqual(editor.props.publicContentBlocks, []);
+  assert.equal(editor.props.media.images.length, 1);
+  assert.equal(editor.props.allowDemoMap, true);
+  assert.ok(adminClient.calls.some((call) => call.table === "profile_content_blocks"));
+
+  const editing = renderToStaticMarkup(createElement(InlineProfileEditor, { ...editor.props, initialEditing: true }));
+  assert.match(editing, /Bearbeitungsmodus aktiv|Rückgängig|Wiederholen/);
+  assert.match(editing, /Unsere Energiesysteme|Logo ändern|Bild löschen|Speichern/);
+});
+
+test("static legacy previews never receive the admin editor or a profile mutation target", async () => {
+  globalThis.__inlineAdminClient = client({ authenticated: true, admin: true, profile: demoProfile });
+  const element = await ExpertDetail({ params: Promise.resolve({ slug: "bayerischer-wald" }) });
+  const html = renderToStaticMarkup(element);
+  assert.doesNotMatch(html, /Profil bearbeiten|Bearbeitungsmodus aktiv/);
+  assert.equal(globalThis.__inlineAdminClient.calls.length, 0);
+});
+
 test("inline mutations require matching displayed ID, slug and approved state after admin auth", async () => {
   for (const options of [{ authenticated: false }, { authenticated: true, admin: false }]) {
     const db = client(options);
@@ -186,6 +256,43 @@ test("inline mutations require matching displayed ID, slug and approved state af
   assert.equal(result.error, undefined);
   const targetCall = db.calls.at(-1);
   assert.deepEqual(targetCall.filters, [["id", profileId], ["slug", publicProfile.slug], ["status", "approved"]]);
+});
+
+test("the public Demo alias authorizes only its exact stored profile after admin verification", async () => {
+  const demoProfile = { ...publicProfile, id: demoProfileId, slug: demoSourceSlug };
+  assert.equal(publicSlugForStoredProfile(demoProfile), demoPublicSlug);
+  assert.equal(publicSlugForStoredProfile(publicProfile), publicProfile.slug);
+  const db = client({ profile: demoProfile });
+  const target = await checkInlineProfileTarget(db, demoProfileId, demoPublicSlug);
+  assert.equal(target.access, "admin");
+  assert.equal(target.error, undefined);
+  assert.deepEqual(db.calls.at(-1).filters, [["id", demoProfileId], ["slug", demoSourceSlug], ["status", "approved"]]);
+  const callsBeforeForgery = db.calls.length;
+  assert.ok((await checkInlineProfileTarget(db, profileId, demoPublicSlug)).error);
+  assert.equal(db.calls.length, callsBeforeForgery + 1); // Admin check only; no profile query.
+  const guest = client({ authenticated: false, profile: demoProfile });
+  assert.equal((await checkInlineProfileTarget(guest, demoProfileId, demoPublicSlug)).access, "unauthenticated");
+  assert.ok(guest.calls.every((call) => call.table === "portal_admins"));
+
+  globalThis.__inlineAdminClient = db;
+  const profileForm = new FormData();
+  for (const field of ["display_name", "tagline", "description", "business_areas", "phone", "public_email", "website", "street", "postal_code", "city", "region"])
+    profileForm.set(field, demoProfile[field] ?? "");
+  profileForm.set("profile_id", profileId);
+  assert.ok((await saveInlineProfile(demoProfileId, demoPublicSlug, profileForm)).success);
+  const update = db.calls.find((call) => call.payload);
+  assert.deepEqual(update.filters, [["id", demoProfileId]]);
+  assert.equal(update.payload.profile_id, undefined);
+  assert.ok((await saveInlineProfile(profileId, demoPublicSlug, profileForm)).error);
+  assert.equal(db.calls.filter((call) => call.payload).length, 1);
+
+  const mediaForm = new FormData();
+  mediaForm.set("intent", "prepare-gallery");
+  mediaForm.set("file_type", "image/png");
+  mediaForm.set("file_size", "128");
+  assert.match((await saveInlineMedia(demoProfileId, demoPublicSlug, mediaForm)).uploadPath, new RegExp(`^profiles/${demoProfileId}/gallery/`));
+  assert.match((await saveInlineContent(demoProfileId, demoPublicSlug, new FormData())).error, /Inhaltsblock gehört nicht/);
+  assert.match((await saveInlineBlockImage(demoProfileId, demoPublicSlug, new FormData())).error, /Bildblock oder das Bild gehört nicht/);
 });
 
 test("inline mode exposes normal fields and existing media actions in the public layout", () => {

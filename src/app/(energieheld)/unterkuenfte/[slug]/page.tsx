@@ -4,7 +4,7 @@ import { loadReiseportalListingBySlug } from "@/lib/reiseportal-directory";
 import { ListingDetail } from "@/components/portal/listing-detail";
 import { InquiryDialog } from "@/components/leads/inquiry-dialog";
 import { createClient } from "@/lib/supabase/server";
-import { checkAdmin, loadReviewProfile } from "@/lib/admin-review";
+import { checkAdmin, isProfileId, loadReviewProfile } from "@/lib/admin-review";
 import { signCompanyMedia, type MediaRow, type SignedMedia } from "@/lib/company-media";
 import { profileFields, type ProfileValues } from "@/lib/company-profile";
 import { InlineProfileEditor } from "@/components/admin/inline-profile-editor";
@@ -14,6 +14,7 @@ import { saveInlineBlockImage } from "@/app/(energieheld)/experten/[slug]/block-
 import { createPublicClient } from "@/lib/supabase/public";
 import { loadPublicProfileContent, splitProfileContent } from "@/lib/profile-content";
 import { ProfileContentBlocks } from "@/components/portal/profile-content-blocks";
+import { isLiveDemoProfile } from "@/lib/reiseportal-demo";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
@@ -45,12 +46,15 @@ export default async function AccommodationDetail({
     );
   const listing = result.data;
   if (!listing) notFound();
-  const content = !listing.isDemo && !listing.isPreview
+  const liveDemo = isLiveDemoProfile(listing);
+  const storedProfile = !listing.isPreview && isProfileId(listing.id) && (!listing.isDemo || liveDemo);
+  const content = storedProfile && !liveDemo
     ? await loadPublicProfileContent(createPublicClient(), listing.id)
     : { blocks: [], available: false, imagesAvailable: false };
   const presentedContent = splitProfileContent(content.blocks, listing.name);
   let editorData: { values: ProfileValues; media: SignedMedia; rows: MediaRow[] } | null = null;
-  if (!listing.isDemo && !listing.isPreview) {
+  let editorContent = content;
+  if (storedProfile) {
     try {
       const client = await createClient();
       if (await checkAdmin(client) === "admin") {
@@ -58,6 +62,7 @@ export default async function AccommodationDetail({
         const profile = review.profile;
         if (review.access === "admin" && !review.error && profile?.status === "approved") {
           const media = await signCompanyMedia(client, profile);
+          if (liveDemo) editorContent = await loadPublicProfileContent(client, listing.id);
           const values = Object.fromEntries(
             profileFields.map((field) => [field, profile[field] ?? ""]),
           ) as ProfileValues;
@@ -84,14 +89,17 @@ export default async function AccommodationDetail({
         values={editorData.values}
         media={editorData.media}
         rows={editorData.rows}
-        contactAction={<InquiryDialog profileId={listing.id} companyName={listing.name} />}
+        contactAction={!listing.isDemo ? <InquiryDialog profileId={listing.id} companyName={listing.name} /> : undefined}
         saveProfile={saveInlineProfile.bind(null, listing.id, slug)}
         saveMedia={saveInlineMedia.bind(null, listing.id, slug)}
-        contentBlocks={content.blocks}
-        contentAvailable={content.available}
-        imagesAvailable={content.imagesAvailable}
+        contentBlocks={editorContent.blocks}
+        publicContentBlocks={liveDemo ? content.blocks : undefined}
+        contentAvailable={editorContent.available}
+        imagesAvailable={editorContent.imagesAvailable}
         saveContent={saveInlineContent.bind(null, listing.id, slug)}
         saveBlockImage={saveInlineBlockImage.bind(null, listing.id, slug)}
+        allowDemoMap={liveDemo}
+        originalDemoMedia={liveDemo}
       /> : <ListingDetail
         listing={listing}
         categories={[]}
