@@ -21,8 +21,9 @@ export type Listing = {
   tagline: string;
   description: string;
   businessAreas?: string;
-  // Temporary presentation/demo data until the commercial package model is finalized.
+  // Public directory layout; legacy Complete/Basic evidence is stored separately.
   directoryPackage?: "basic" | "premium";
+  directoryImage?: PortalImage;
   categoryIds: string[];
   /** Present when the travel taxonomy has been loaded from Supabase. */
   travelTermKeys?: string[];

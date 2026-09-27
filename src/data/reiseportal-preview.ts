@@ -7,7 +7,7 @@ export const reiseportalPreview: Listing[] = [
   {
     id: "legacy:443", slug: "bayerischer-wald", name: "Bayerischer Wald", initials: "BW",
     tagline: "Endlose Wiesen, grüne Wälder und Natur soweit das Auge reicht.",
-    description: "", directoryPackage: "premium", categoryIds: [], services: [], images: [
+    description: "", categoryIds: [], services: [], images: [
       { src: "/reiseportal/unterkuenfte/bayerischer-wald/01.jpg", alt: "Ferienanlage am Nationalpark Bayerischer Wald" },
       { src: "/reiseportal/unterkuenfte/bayerischer-wald/02.jpg", alt: "Ferienanlage im Bayerischen Wald" },
       { src: "/reiseportal/unterkuenfte/bayerischer-wald/03.jpg", alt: "Unterkunft im Bayerischen Wald" },
@@ -20,7 +20,7 @@ export const reiseportalPreview: Listing[] = [
   {
     id: "legacy:464", slug: "hoeflehner", name: "Höflehner", initials: "H",
     tagline: "Erleben Sie kulinarische Highlights und ein umfangreiches Angebot an Aktivitäten und Entspannungsmöglichkeiten.",
-    description: "", directoryPackage: "premium", categoryIds: [], services: [], images: [
+    description: "", categoryIds: [], services: [], images: [
       { src: "/reiseportal/unterkuenfte/hoeflehner/01.jpg", alt: "Wandern beim Höflehner" },
       { src: "/reiseportal/unterkuenfte/hoeflehner/02.jpg", alt: "Familienurlaub beim Höflehner" },
       { src: "/reiseportal/unterkuenfte/hoeflehner/03.jpg", alt: "Wellness beim Höflehner" },
@@ -32,7 +32,7 @@ export const reiseportalPreview: Listing[] = [
   {
     id: "legacy:470", slug: "pension-sonnenhof", name: "Pension Sonnenhof", initials: "PS",
     tagline: "Der Sonnenhof am Logenplatz in Meransen. Urlaub in der Ski- & Almenregion Gitschberg Jochtal.",
-    description: "", directoryPackage: "premium", categoryIds: [], services: [], images: [
+    description: "", categoryIds: [], services: [], images: [
       { src: "/reiseportal/unterkuenfte/pension-sonnenhof/01.jpg", alt: "Pension Sonnenhof in Meransen" },
       { src: "/reiseportal/unterkuenfte/pension-sonnenhof/02.jpg", alt: "Eindrücke aus der Pension Sonnenhof" },
       { src: "/reiseportal/unterkuenfte/pension-sonnenhof/03.jpg", alt: "Unterkunft in der Pension Sonnenhof" },
@@ -44,7 +44,7 @@ export const reiseportalPreview: Listing[] = [
   {
     id: "legacy:465", slug: "schafhuber", name: "Schafhuber", initials: "S",
     tagline: "Viele Wege führen ins Salzburgerland, dort wo der Himmel die Erde berührt …",
-    description: "", directoryPackage: "premium", categoryIds: [], services: [], images: [
+    description: "", categoryIds: [], services: [], images: [
       { src: "/reiseportal/unterkuenfte/schafhuber/01.jpg", alt: "Berglandschaft beim Schafhuber" },
       { src: "/reiseportal/unterkuenfte/schafhuber/02.jpg", alt: "Eindrücke vom Schafhuber" },
       { src: "/reiseportal/unterkuenfte/schafhuber/03.jpg", alt: "Unterkunft beim Schafhuber" },
@@ -57,7 +57,7 @@ export const reiseportalPreview: Listing[] = [
   {
     id: "legacy:480", slug: "villner-hof", name: "Villner Hof", initials: "VH",
     tagline: "Der „Villner Hof“ befindet sich inmitten von Obst- und Weingärten, in sonniger Lage.",
-    description: "", directoryPackage: "basic", categoryIds: [], services: [], images: [],
+    description: "", categoryIds: [], services: [], images: [],
     location: { street: "Villnerstraße 30", postalCode: "39044", city: "Vill bei Neumarkt", region: "", country: "Italien" },
     contact: { email: "", phone: "+39 0471 812 039", website: "" },
     isDemo: false, isPreview: true,

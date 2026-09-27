@@ -1,12 +1,15 @@
 import "server-only";
 import { reiseportalPreview } from "@/data/reiseportal-preview";
 import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
+import legacyDirectoryMedia from "../data/reiseportal-legacy-directory-media.json" with { type: "json" };
+import verifiedProviderMedia from "../data/reiseportal-legacy-provider-media.json" with { type: "json" };
 import type { Listing } from "@/types/portal";
 import { directoryItemKey } from "./company-directory-order";
 import { loadPublicCompanyBySlug, loadPublicCompanyDirectory } from "./public-companies";
 import { demoProfileId, demoPublicSlug, demoSourceSlug } from "./reiseportal-demo";
 import { loadPublicTravelAssignments } from "./public-travel-taxonomy";
 import { filterTravelDiscovery } from "./reiseportal-search";
+import { createPublicClient } from "./supabase/public";
 
 const oldEnergyContent = /energieheld|energieberatung|photovoltaik|heizung|dämmung|dachsanierung|smart home|fachbetrieb|sanierung/i;
 
@@ -47,15 +50,43 @@ export function withLegacyImages(listing: Listing): Listing {
   }
   const source = reiseportalPreview.find((item) => item.slug === listing.slug);
   const imported = importedJoomlaMedia[listing.slug];
-  if (!source && !imported) return listing;
-  const fallback = imported ?? source;
+  const verified = (verifiedProviderMedia as Record<string, { logo?: Listing["logo"]; images: Listing["images"] }>)[listing.slug];
+  const directoryImage = (legacyDirectoryMedia as Record<string, { src: string; alt: string }>)[listing.slug];
+  if (!source && !imported && !verified && !directoryImage) return listing;
+  const historicImage = directoryImage ? { src: directoryImage.src, alt: directoryImage.alt } : undefined;
   return { ...listing,
-    directoryPackage: source?.directoryPackage ?? listing.directoryPackage,
-    logo: listing.logo ?? fallback.logo,
-    images: listing.images.length ? listing.images : fallback.images };
+    directoryImage: listing.logo ?? listing.images[0] ?? listing.directoryImage ??
+      historicImage,
+    logo: listing.logo ?? verified?.logo ?? imported?.logo ?? source?.logo ?? historicImage,
+    images: listing.images.length ? listing.images : verified?.images.length ? verified.images :
+      imported?.images.length ? imported.images : source?.images.length ? source.images :
+      historicImage ? [historicImage] : [] };
+}
+
+async function loadDirectoryPackages() {
+  const client = createPublicClient();
+  const packages = new Map<string, "basic" | "premium">();
+  const pageSize = 500;
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await client.from("company_profile_directory_packages")
+      .select("profile_id,package").order("profile_id").range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    for (const row of data ?? []) {
+      if (row.package === "basic" || row.package === "premium") packages.set(row.profile_id, row.package);
+    }
+    if ((data?.length ?? 0) < pageSize) break;
+  }
+  return packages;
 }
 
 export async function loadReiseportalDirectory() {
+  let packages: Map<string, "basic" | "premium">;
+  try {
+    packages = await loadDirectoryPackages();
+  } catch {
+    return { preview: [] as Listing[], database: [] as Listing[], hiddenOrderKeys: [] as string[],
+      error: "Die Unterkunftsdarstellung konnte nicht geladen werden." };
+  }
   const result = await loadPublicCompanyDirectory();
   if (result.error !== null) return {
     preview: [] as Listing[],
@@ -73,6 +104,7 @@ export async function loadReiseportalDirectory() {
   }
   const database = result.data.listings.filter(travelVisible).map((listing) => withLegacyImages({
     ...listing,
+    directoryPackage: packages.get(listing.id) ?? "basic",
     ...(assignments ? { travelTermKeys: assignments.get(listing.id) ?? [] } : {}),
   }));
   const shown = new Set(database.map(directoryItemKey));
