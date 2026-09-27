@@ -27,6 +27,10 @@ registerHooks({
       url: 'data:text/javascript,export async function loadPublicTravelAssignments(){return globalThis.__travelAssignments ?? null}',
       shortCircuit: true,
     };
+    if (specifier.endsWith("/supabase/public")) return {
+      url: 'data:text/javascript,export function createPublicClient(){return {from(){return {select(){return this},order(){return this},async range(){return {data:globalThis.__travelPackages ?? [],error:null}}}}}}',
+      shortCircuit: true,
+    };
     if (specifier.startsWith("@/") || specifier.startsWith(".")) {
       const base = specifier.startsWith("@/")
         ? new URL("../src/" + specifier.slice(2), import.meta.url)
@@ -140,9 +144,7 @@ test("preview contains the five sourced legacy accommodations; the demo comes fr
     "Bayerischer Wald", "Höflehner", "Pension Sonnenhof",
     "Schafhuber", "Villner Hof",
   ]);
-  assert.deepEqual(reiseportalPreview.map((item) => item.directoryPackage), [
-    "premium", "premium", "premium", "premium", "basic",
-  ]);
+  assert.ok(reiseportalPreview.every((item) => item.directoryPackage === undefined));
   assert.ok(reiseportalPreview.every((item) =>
     item.isPreview && item.categoryIds.length === 0 && !item.logo));
   assert.ok(reiseportalPreview.slice(0, 4).every((item) => item.images.length > 0));

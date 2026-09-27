@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Listing, Category } from "@/types/portal";
-import { CompanyLogo } from "./company-image";
+import { CompanyImage } from "./company-image";
 import { QualitySeal } from "@/components/quality/quality-seal";
 import { Icon } from "./icon";
 
@@ -26,7 +26,8 @@ export function ListingRow({
   href: string;
   showVerification?: boolean;
 }) {
-  const premium = listing.directoryPackage === "premium";
+  const cardImage = listing.directoryImage ?? listing.logo ?? listing.images[0];
+  const premium = listing.directoryPackage === "premium" && Boolean(cardImage);
   const address = [
     listing.location.street,
     [listing.location.postalCode, listing.location.city].filter(Boolean).join(" "),
@@ -36,9 +37,9 @@ export function ListingRow({
   const phoneHref = listing.contact.phone.replace(/[^\d+]/g, "");
   return (
     <article className={`listing-row listing-row--${premium ? "premium" : "basic"}`}>
-      {premium && (
-        <div className="row-logo" aria-label={listing.logo ? `Logo von ${listing.name}` : `Initialen ${listing.name}`}>
-          <CompanyLogo key={listing.logo?.src ?? listing.initials} image={listing.logo} initials={listing.initials} />
+      {premium && cardImage && (
+        <div className="row-logo">
+          <CompanyImage key={cardImage.src} image={cardImage} width={160} height={160} />
         </div>
       )}
       <div className="row-content">

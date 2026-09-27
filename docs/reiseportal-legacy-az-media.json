@@ -1,0 +1,250 @@
+[
+  {
+    "slug": "golfhotel-andreus",
+    "joomla_id": 452,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/andreus/Vorschaubild.jpg",
+    "local_source": "images unterkuenfte andreus Vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/golfhotel-andreus.jpg",
+    "sha256": "e2132a0422f1b79ee515e8af003a38d9d3716e90ae4d3bc6dc1003030932bf18"
+  },
+  {
+    "slug": "anni-romantikhaeuschen",
+    "joomla_id": 450,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/annis-romantikhaeuschen/Annis-Romantikhaeuschen.jpg",
+    "local_source": "images unterkuenfte annis-romantikhaeuschen Annis-Romantikhaeuschen.jpg",
+    "target": "/reiseportal/legacy-directory/anni-romantikhaeuschen.jpg",
+    "sha256": "a3c3eb51216099c256d267323f53f5a249af3759bc7900286cf19c2223efb050"
+  },
+  {
+    "slug": "apartbauernhof-valrunzhof",
+    "joomla_id": 506,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/valrunzhof/vorschaubild-400x400.jpg",
+    "local_source": "images unterkuenfte valrunzhof vorschaubild-400x400.jpg",
+    "target": "/reiseportal/legacy-directory/apartbauernhof-valrunzhof.jpg",
+    "sha256": "8648d762d411d4ddb5eb2eac108ca41fa130b0907f9a35d0b2c1e069ec50043a"
+  },
+  {
+    "slug": "appartementhaus-salzburg",
+    "joomla_id": 507,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/haus-salzburg/kontaktbild-vorschaubild.jpg",
+    "local_source": "images unterkuenfte haus-salzburg kontaktbild-vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/appartementhaus-salzburg.jpg",
+    "sha256": "9faea5b98f6789d74ab344f6dd26ebdf8e8f5b553cef77aeb0b0d42f7c2f0130"
+  },
+  {
+    "slug": "bayerischer-wald",
+    "joomla_id": 443,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/bayerischer-wald/logo.jpg",
+    "local_source": "images unterkuenfte bayerischer-wald logo.jpg",
+    "target": "/reiseportal/legacy-directory/bayerischer-wald.jpg",
+    "sha256": "8d7f527595ca1369b6766474abe15d3ecb5e8203c9ade6fdfda0b1c6c1d2b30f"
+  },
+  {
+    "slug": "blausee",
+    "joomla_id": 473,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Blausee/Vorschau.jpg",
+    "local_source": "images unterkuenfte Blausee Vorschau.jpg",
+    "target": "/reiseportal/legacy-directory/blausee.jpg",
+    "sha256": "2cd63f4f46e0689b4c29bc6f781f1875b80cf51d105f69cb96333fd6573c208d"
+  },
+  {
+    "slug": "camping-resort-allweglehen",
+    "joomla_id": 467,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Camping%20Resort%20Allweglehen/Vorschaubild.jpg",
+    "local_source": "images unterkuenfte Camping Resort Allweglehen Vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/camping-resort-allweglehen.jpg",
+    "sha256": "b4f81a5f9ba0ade891a7fa6381a40b3fa50017d21dff9634877c9c8e5010b555"
+  },
+  {
+    "slug": "city-apart-dresden",
+    "joomla_id": 447,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/city-apart/Vorschaubild.jpg",
+    "local_source": "images unterkuenfte city-apart Vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/city-apart-dresden.jpg",
+    "sha256": "5b4da774dc758c6603862f0b907a7a49b6442a9cc4025e9b27828eb1c355919d"
+  },
+  {
+    "slug": "das-5-sterne-wellness-hotel-stock-resort",
+    "joomla_id": 451,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/stock/Vorschaubild.jpg",
+    "local_source": "images unterkuenfte stock Vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/das-5-sterne-wellness-hotel-stock-resort.jpg",
+    "sha256": "d6cd865cf860df0a73a8bbb66627ebce2beca13ee4db7da0a3e670f63e679acc"
+  },
+  {
+    "slug": "der-koenigsleitner-romantik-zu-zweit",
+    "joomla_id": 504,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Der%20Konigsleitner/Vorschaubild%20320x320.jpg",
+    "local_source": "images unterkuenfte Der Konigsleitner Vorschaubild 320x320.jpg",
+    "target": "/reiseportal/legacy-directory/der-koenigsleitner-romantik-zu-zweit.jpg",
+    "sha256": "0bfd71c7d21258cd67cb02764aea7074239e0f597b821515cdcd10904311c6de"
+  },
+  {
+    "slug": "feldhof-dolcevita-resort",
+    "joomla_id": 460,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Feldhof/Vorschaubild-Feldhof-350x350.jpg",
+    "local_source": "images unterkuenfte Feldhof Vorschaubild-Feldhof-350x350.jpg",
+    "target": "/reiseportal/legacy-directory/feldhof-dolcevita-resort.jpg",
+    "sha256": "8f55ea7a84f14f7eded351feb8692eb9b328f83900d72ec9f3d67725ba00d789"
+  },
+  {
+    "slug": "ferienwohnung-sieber",
+    "joomla_id": 446,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/ferienwohnung-siebert/details.jpg",
+    "local_source": "images unterkuenfte ferienwohnung-siebert details.jpg",
+    "target": "/reiseportal/legacy-directory/ferienwohnung-sieber.jpg",
+    "sha256": "0f997d1c597f841ea7c416f61c60519481435d45ffdd2b6b6c82e752efcdd6d8"
+  },
+  {
+    "slug": "hoeflehner",
+    "joomla_id": 464,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Hoflehner/Vorschaubild-350x350-Hoflehner.jpg",
+    "local_source": "images unterkuenfte Hoflehner Vorschaubild-350x350-Hoflehner.jpg",
+    "target": "/reiseportal/legacy-directory/hoeflehner.jpg",
+    "sha256": "86cf60f58eab7ca76477519ca9f6307a5c545a2e58aabedbff367a4456aee88e"
+  },
+  {
+    "slug": "hotel-ravelli-luxury-spa",
+    "joomla_id": 505,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/hotel-ravelli/vorschaubild-400x400.jpg",
+    "local_source": "images unterkuenfte hotel-ravelli vorschaubild-400x400.jpg",
+    "target": "/reiseportal/legacy-directory/hotel-ravelli-luxury-spa.jpg",
+    "sha256": "2a987db97f9ae94a67e012e6a59a514648c24e62e490239a05df807d12d7eead"
+  },
+  {
+    "slug": "hotel-salzburger-hof",
+    "joomla_id": 502,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Hotel%20Salzburger%20Hof%20-%20Familienurlaub/Logo-320x320-1.jpg",
+    "local_source": "images unterkuenfte Hotel Salzburger Hof - Familienurlaub Logo-320x320-1.jpg",
+    "target": "/reiseportal/legacy-directory/hotel-salzburger-hof.jpg",
+    "sha256": "aa0f4689fe53016ab2954e255a8a8ec59cb873379eee8d528945522e572b98ce"
+  },
+  {
+    "slug": "hotel-zur-post",
+    "joomla_id": 457,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Hotel%20zur%20Post%20Altotting/Vorschaubild.jpg",
+    "local_source": "images unterkuenfte Hotel zur Post Altotting Vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/hotel-zur-post.jpg",
+    "sha256": "2672539b8eb3ba6c49c3ac761ec88d4631138d1408a009fbb783fe44ef23de3c"
+  },
+  {
+    "slug": "jaegeralpe",
+    "joomla_id": 463,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Jageralpe/Screenshot%202024-06-12%20091147.jpg",
+    "local_source": "images unterkuenfte Jageralpe Screenshot 2024-06-12 091147.jpg",
+    "target": "/reiseportal/legacy-directory/jaegeralpe.jpg",
+    "sha256": "ef73251574c3fac8316541be67d7cb0450325191d1d98a19985d1e28bc0c2494"
+  },
+  {
+    "slug": "kemmeriboden-bad",
+    "joomla_id": 472,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Kemmeriboden/Screenshot%202024-06-14%20132307.jpg",
+    "local_source": "images unterkuenfte Kemmeriboden Screenshot 2024-06-14 132307.jpg",
+    "target": "/reiseportal/legacy-directory/kemmeriboden-bad.jpg",
+    "sha256": "9bb3b19f210bd2fb836dc3cef81e9ec5f812db135fb60d451da67c19e9aa548f"
+  },
+  {
+    "slug": "landgasthof-neue-schaenke",
+    "joomla_id": 442,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/neue-schaenke/Haus.jpg",
+    "local_source": "images unterkuenfte neue-schaenke Haus.jpg",
+    "target": "/reiseportal/legacy-directory/landgasthof-neue-schaenke.jpg",
+    "sha256": "583d4bba9f5bed6dd0e74b20f2c3e72e33fe4ff247ab5090838993ed4afe95d6"
+  },
+  {
+    "slug": "ostsee-barfusspark",
+    "joomla_id": 449,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/barfuss/intro.jpg",
+    "local_source": "images unterkuenfte barfuss intro.jpg",
+    "target": "/reiseportal/legacy-directory/ostsee-barfusspark.jpg",
+    "sha256": "f2e5208c2b6fbc7fbb621583de9fb73b96a637f40cdd0e152bcff742c5484c00"
+  },
+  {
+    "slug": "oversum-vital-resort-im-hochsauerland",
+    "joomla_id": 453,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/oversum/intro.jpg",
+    "local_source": "images unterkuenfte oversum intro.jpg",
+    "target": "/reiseportal/legacy-directory/oversum-vital-resort-im-hochsauerland.jpg",
+    "sha256": "b27663ae1f32bd3698be470659cb51c2a4f899140bec0c1f43df3477ef50d376"
+  },
+  {
+    "slug": "pension-sonnenhof",
+    "joomla_id": 470,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Pension%20Sonnenhof/Vorschaubild.jpg",
+    "local_source": "images unterkuenfte Pension Sonnenhof Vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/pension-sonnenhof.jpg",
+    "sha256": "5395e90df5bddc724072c9aa26c1dd2d8815c87acc36d14198a085cf599f129d"
+  },
+  {
+    "slug": "platzl-hotel",
+    "joomla_id": 456,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Platzl%20Hotel/Vorschaubild.jpg",
+    "local_source": "images unterkuenfte Platzl Hotel Vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/platzl-hotel.jpg",
+    "sha256": "21c4355bdda4439e1f300883179a8ba3d6b7436c61a8e48f4b3ff54fb71cf1e1"
+  },
+  {
+    "slug": "rue-blanch",
+    "joomla_id": 471,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/RU%20Blanch/Vorschaubild.jpg",
+    "local_source": "images unterkuenfte RU Blanch Vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/rue-blanch.jpg",
+    "sha256": "f48b22b44ddfcf6fc7f580dcb7542f4e45b3b18c9834e2b736c24faaef2f9162"
+  },
+  {
+    "slug": "schafhuber",
+    "joomla_id": 465,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Schafhuber/vorschau.jpg",
+    "local_source": "images unterkuenfte Schafhuber vorschau.jpg",
+    "target": "/reiseportal/legacy-directory/schafhuber.jpg",
+    "sha256": "6cd03b13d0cd402e3b0427390839ba1411081c76c3eb965f55b65aeba9b958d4"
+  },
+  {
+    "slug": "schwarzwaelderhof",
+    "joomla_id": 469,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Schwarzwalder%20Hof/vorschau.jpg",
+    "local_source": "images unterkuenfte Schwarzwalder Hof vorschau.jpg",
+    "target": "/reiseportal/legacy-directory/schwarzwaelderhof.jpg",
+    "sha256": "5d709b4c460e021434d195248054b899049d9a6bbd867e17da1a212755db1154"
+  },
+  {
+    "slug": "sub-aqua-tauchreisen",
+    "joomla_id": 459,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/SUB%20Aqua%20Tauchreisen/Vorschaubild.jpg",
+    "local_source": "images unterkuenfte SUB Aqua Tauchreisen Vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/sub-aqua-tauchreisen.jpg",
+    "sha256": "4fb3ab92954565b451252e6dd3aca54dbb6e3a3db586e63707bb5955b14d5fd8"
+  },
+  {
+    "slug": "the-chedi",
+    "joomla_id": 466,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/The%20Chedi/Vorschaubild.jpg",
+    "local_source": "images unterkuenfte The Chedi Vorschaubild.jpg",
+    "target": "/reiseportal/legacy-directory/the-chedi.jpg",
+    "sha256": "4a19e8b0481ec913dfa99d52e58d0d18ed2ebec0f065785460d378a5c61b6d59"
+  },
+  {
+    "slug": "urlaub-auf-borkum",
+    "joomla_id": 448,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/borkum/intro.jpg",
+    "local_source": "images unterkuenfte borkum intro.jpg",
+    "target": "/reiseportal/legacy-directory/urlaub-auf-borkum.jpg",
+    "sha256": "e4a745da0c53539a25bace59706a5ad15c855948b8b69d175b640708b4a6bc19"
+  },
+  {
+    "slug": "wirodive-tauchreisen",
+    "joomla_id": 458,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/wiro-dive/VB.jpg",
+    "local_source": "images unterkuenfte wiro-dive VB.jpg",
+    "target": "/reiseportal/legacy-directory/wirodive-tauchreisen.jpg",
+    "sha256": "0b4da3fef5b66a5bfecc854a32bb163ac49f57f55a8fcfadd54df4bbd5fb8b33"
+  },
+  {
+    "slug": "wirthshof",
+    "joomla_id": 468,
+    "source_url": "https://das-reiseportal.com/images/unterkuenfte/Wirtshof/Screenshot%202024-06-13%20125044.jpg",
+    "local_source": "images unterkuenfte Wirtshof Screenshot 2024-06-13 125044.jpg",
+    "target": "/reiseportal/legacy-directory/wirthshof.jpg",
+    "sha256": "85587fc270ac6b13f2f28d95ecca7b765c7b619bb359b5191e8af0f9c22067f9"
+  }
+]

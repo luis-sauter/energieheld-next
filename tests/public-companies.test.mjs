@@ -75,7 +75,9 @@ const { default: HomePage } =
   await import("../src/app/(energieheld)/page.tsx");
 const { reiseportalPreview } = await import("../src/data/reiseportal-preview.ts");
 const { importedJoomlaMedia } = await import("../src/data/reiseportal-import-media.ts");
-const { withLegacyImages } = await import("../src/lib/reiseportal-directory.ts");
+const verifiedJoomlaMedia = JSON.parse(source("src/data/reiseportal-legacy-provider-media.json"));
+const { withLegacyImages, loadReiseportalDirectory } = await import("../src/lib/reiseportal-directory.ts");
+const { ListingRow } = await import("../src/components/portal/listing-row.tsx");
 const { energieheld } = await import("../src/config/energieheld.ts");
 const { listings: demos } = await import("../src/data/listings.ts");
 const { combinePortalCompanies, loadPortalCompanies, loadPortalCompanyBySlug } =
@@ -148,7 +150,7 @@ const originalFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = originalFetch;
 });
-function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((item) => item.status === "approved").map((item, sort_order) => ({ profile_id: item.id, sort_order })), sidebarRows = null) {
+function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((item) => item.status === "approved").map((item, sort_order) => ({ profile_id: item.id, sort_order })), sidebarRows = null, packageRows = []) {
   const requests = [];
   globalThis.fetch = async (input, init) => {
     const url = new URL(input),
@@ -225,6 +227,15 @@ function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((i
       const offset = Number(url.searchParams.get("offset") || 0);
       const limit = Number(url.searchParams.get("limit") || 500);
       return new Response(JSON.stringify((orderRows?.legacy ? orderRows.rows : orderRows).slice(offset, offset + limit)), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+    if (url.pathname === "/rest/v1/company_profile_directory_packages") {
+      assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
+      assert.equal(headers.get("cookie"), null);
+      const offset = Number(url.searchParams.get("offset") || 0);
+      const limit = Number(url.searchParams.get("limit") || 500);
+      return new Response(JSON.stringify(packageRows.slice(offset, offset + limit)), {
         headers: { "content-type": "application/json" },
       });
     }
@@ -391,12 +402,54 @@ test("selected Joomla media are presentation fallbacks and uploaded media remain
     ...reiseportalPreview[0], slug: "wirthshof", logo: undefined, images: [],
   };
   const fallback = withLegacyImages(listing);
-  assert.deepEqual(fallback.logo, media.logo);
-  assert.deepEqual(fallback.images, media.images);
+  assert.deepEqual(fallback.logo, verifiedJoomlaMedia.wirthshof.logo ?? media.logo);
+  assert.deepEqual(fallback.images, verifiedJoomlaMedia.wirthshof.images);
   const uploaded = { src: "https://example.test/signed-image", alt: "Redaktioneller Upload" };
   const updated = withLegacyImages({ ...listing, logo: uploaded, images: [uploaded] });
   assert.deepEqual(updated.logo, uploaded);
   assert.deepEqual(updated.images, [uploaded]);
+});
+
+test("public travel packages come from approved profile IDs and Premium cards have real media", async () => {
+  api([...legacyRows, row, demoRow], false, [], undefined, null, [
+    { profile_id: legacyRows[0].id, package: "premium" },
+    { profile_id: legacyRows[4].id, package: "basic" },
+  ]);
+  const result = await loadReiseportalDirectory();
+  assert.equal(result.error, null);
+  const premium = result.database.find((listing) => listing.slug === "bayerischer-wald");
+  const basic = result.database.find((listing) => listing.slug === "villner-hof");
+  const unrelated = result.database.find((listing) => listing.slug === "hoeflehner");
+  assert.equal(premium.directoryPackage, "premium");
+  assert.match(premium.directoryImage.src, /legacy-directory\/bayerischer-wald\.jpg$/);
+  assert.equal(basic.directoryPackage, "basic");
+  assert.equal(unrelated.directoryPackage, "basic");
+  const picture = renderToStaticMarkup(createElement(ListingRow, { listing: premium, categories: [], href: "/unterkuenfte/bayerischer-wald" }));
+  assert.match(picture, /listing-row--premium/);
+  assert.match(picture, /<img[^>]*bayerischer-wald/);
+  assert.doesNotMatch(picture, /Initialen/);
+  const compact = renderToStaticMarkup(createElement(ListingRow, { listing: basic, categories: [], href: "/unterkuenfte/villner-hof" }));
+  assert.match(compact, /listing-row--basic/);
+  assert.doesNotMatch(compact, /row-logo/);
+  const missingImage = renderToStaticMarkup(createElement(ListingRow, {
+    listing: { ...premium, logo: undefined, directoryImage: undefined, images: [] }, categories: [], href: "/unterkuenfte/bayerischer-wald",
+  }));
+  assert.match(missingImage, /listing-row--basic/);
+  assert.doesNotMatch(missingImage, /row-logo|Initialen/);
+});
+
+test("newly reconciled Complete profiles use their original picture on detail pages", () => {
+  for (const slug of ["appartementhaus-salzburg", "hotel-salzburger-hof"]) {
+    const listing = withLegacyImages({ ...reiseportalPreview[4], slug, logo: undefined, images: [] });
+    assert.match(listing.directoryImage.src, new RegExp(`/legacy-directory/${slug}\\.jpg$`));
+    assert.ok(listing.logo.src.startsWith("/reiseportal/"));
+    assert.deepEqual(listing.images, verifiedJoomlaMedia[slug].images);
+    const detail = renderToStaticMarkup(createElement(ListingDetail, {
+      listing, categories: [], showVerification: false,
+    }));
+    assert.match(detail, new RegExp(`/legacy-directory/${slug}\\.jpg`));
+    assert.doesNotMatch(detail, /Initialen/);
+  }
 });
 
 test("legacy travel cards use the recorded foreign country instead of the Bayern default", () => {
