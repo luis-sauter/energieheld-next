@@ -144,6 +144,17 @@ test("active company editor gives demo rows the same drag and arrow controls as 
   assert.doesNotMatch(html, /nicht Teil der redaktionellen Reihenfolge/);
 });
 
+test("travel order controls disable arrows across the Premium/Basic boundary", () => {
+  const html = renderToStaticMarkup(createElement(DirectoryOrderRows, {
+    listings: [{ ...realA, name: "Premium A", directoryPackage: "premium" },
+      { ...realA, id: "basic-b", name: "Basic B", directoryPackage: "basic" }],
+    premiumFirst: true, editing: true, busy: false, dragged: null, target: null,
+    onPointerDown() {}, onPointerMove() {}, onPointerUp() {}, onMove() {},
+  }));
+  assert.match(html, /aria-label="Firma Premium A nach unten" disabled/);
+  assert.match(html, /aria-label="Firma Basic B nach oben" disabled/);
+});
+
 test("active sidebar editor gives all twelve slots drag and arrow controls", () => {
   const html = renderToStaticMarkup(createElement(SidebarOrderSlots, {
     ads: [], slots: [...defaultSidebarOrder], editing: true,

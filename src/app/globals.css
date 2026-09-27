@@ -208,9 +208,10 @@ button {
 .brand {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 .brand img {
-  width: 207px;
+  width: 280px;
   height: auto;
   object-fit: contain;
 }
@@ -1288,7 +1289,7 @@ button {
     font-size: 0.73rem;
   }
   .brand img {
-    width: 200px;
+    width: 250px;
   }
   .header-cta {
     font-size: 0.68rem;
@@ -1840,7 +1841,7 @@ button {
     padding-inline: 8px;
   }
   .brand img {
-    width: 195px;
+    width: 220px;
   }
   .mobile-menu summary {
     padding-right: 0;
@@ -2997,7 +2998,7 @@ h6 {
 }
 @media (max-width: 620px) {
   .header-inner { gap: 10px; }
-  .brand img { width: 145px; }
+  .brand img { width: 180px; }
   .header-inner > .header-cta { display: none; }
   .account-menu { margin-left: auto; }
   .account-trigger { width: 42px; height: 42px; }

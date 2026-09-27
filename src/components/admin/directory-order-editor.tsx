@@ -14,6 +14,7 @@ export function DirectoryOrderRows({
   categories = energieheld.categories,
   basePath = "/experten",
   showVerification = true,
+  premiumFirst = false,
   editing,
   busy,
   dragged,
@@ -27,6 +28,7 @@ export function DirectoryOrderRows({
   categories?: Category[];
   basePath?: string;
   showVerification?: boolean;
+  premiumFirst?: boolean;
   editing: boolean;
   busy: boolean;
   dragged: string | null;
@@ -48,9 +50,9 @@ export function DirectoryOrderRows({
                 onPointerDown={(event) => onPointerDown(event, directoryItemKey(listing))}
                 onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
                 disabled={busy}>↕</button>
-              <button type="button" aria-label={`Firma ${listing.name} nach oben`} disabled={busy || index === 0}
+              <button type="button" aria-label={`Firma ${listing.name} nach oben`} disabled={busy || index === 0 || (premiumFirst && (listing.directoryPackage === "premium") !== (listings[index - 1]?.directoryPackage === "premium"))}
                 onClick={() => onMove(index, index - 1)}>↑</button>
-              <button type="button" aria-label={`Firma ${listing.name} nach unten`} disabled={busy || index === listings.length - 1}
+              <button type="button" aria-label={`Firma ${listing.name} nach unten`} disabled={busy || index === listings.length - 1 || (premiumFirst && (listing.directoryPackage === "premium") !== (listings[index + 1]?.directoryPackage === "premium"))}
                 onClick={() => onMove(index, index + 1)}>↓</button>
             </div>
             <ListingRow listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} />
@@ -70,6 +72,7 @@ export function DirectoryOrderEditor({
   categories = energieheld.categories,
   basePath = "/experten",
   showVerification = true,
+  premiumFirst = false,
 }: {
   listings: Listing[];
   hiddenDemoKeys?: string[];
@@ -77,6 +80,7 @@ export function DirectoryOrderEditor({
   categories?: Category[];
   basePath?: string;
   showVerification?: boolean;
+  premiumFirst?: boolean;
 }) {
   const router = useRouter();
   const { mode, setMode } = useDirectoryEditMode();
@@ -95,6 +99,8 @@ export function DirectoryOrderEditor({
   const dragRef = useRef<string | null>(null);
 
   const byId = new Map(listings.map((listing) => [directoryItemKey(listing), listing]));
+  const groups = premiumFirst ? new Map(listings.map((listing) =>
+    [directoryItemKey(listing), listing.directoryPackage === "premium"])) : undefined;
   const shown = (editing ? draft : savedIds)
     .map((id) => byId.get(id))
     .filter((listing): listing is Listing => Boolean(listing));
@@ -157,9 +163,9 @@ export function DirectoryOrderEditor({
       "[data-directory-id]",
     );
     const over = hit?.dataset.directoryId;
-    if (!over || over === id || !byId.has(over)) return;
+    if (!over || over === id || !byId.has(over) || (groups && groups.get(id) !== groups.get(over))) return;
     setTarget(over);
-    setDraft((ids) => moveDirectoryId(ids, ids.indexOf(id), ids.indexOf(over)));
+    setDraft((ids) => moveDirectoryId(ids, ids.indexOf(id), ids.indexOf(over), groups));
   }
 
   function onPointerUp() {
@@ -191,10 +197,10 @@ export function DirectoryOrderEditor({
       )}
       {message && !editing && <p className={styles.success} role="status">{message}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <DirectoryOrderRows listings={shown} categories={categories} basePath={basePath} showVerification={showVerification}
+      <DirectoryOrderRows listings={shown} categories={categories} basePath={basePath} showVerification={showVerification} premiumFirst={premiumFirst}
         editing={editing} busy={busy} dragged={dragged} target={target}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
-        onMove={(from, to) => setDraft((ids) => moveDirectoryId(ids, from, to))} />
+        onMove={(from, to) => setDraft((ids) => moveDirectoryId(ids, from, to, groups))} />
     </div>
   );
 }

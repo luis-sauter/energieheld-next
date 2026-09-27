@@ -50,6 +50,29 @@ test("arrow and pointer preview move locally without changing the source array",
   assert.equal(moveDirectoryId(source, 0, -1), source);
 });
 
+test("Premium priority preserves each selected order without changing packages or source rows", () => {
+  const items = profiles.map((item) => ({ ...item, directoryPackage: ["b", "d"].includes(item.id) ? "premium" : "basic" }));
+  const before = structuredClone(items);
+  for (const sort of ["", "name", "city"]) {
+    for (const criteria of [{}, { query: "solar" }, { location: "augsburg" }, { query: "solar", location: "augsburg" }]) {
+      const ordinary = filterListings(items, { ...filters, ...criteria, sort });
+      const prioritized = filterListings(items, { ...filters, ...criteria, sort }, true);
+      assert.deepEqual(prioritized, [...ordinary.filter(x => x.directoryPackage === "premium"), ...ordinary.filter(x => x.directoryPackage !== "premium")]);
+      assert.equal(prioritized.length, ordinary.length);
+    }
+  }
+  assert.deepEqual(items, before);
+});
+
+test("manual moves stay within package groups when Premium priority is active", () => {
+  const source = ["p1", "p2", "b1", "b2"];
+  const groups = new Map(source.map(id => [id, id.startsWith("p")]));
+  assert.deepEqual(moveDirectoryId(source, 0, 1, groups), ["p2", "p1", "b1", "b2"]);
+  assert.deepEqual(moveDirectoryId(source, 3, 2, groups), ["p1", "p2", "b2", "b1"]);
+  assert.equal(moveDirectoryId(source, 1, 2, groups), source);
+  assert.equal(moveDirectoryId(source, 3, 0, groups), source);
+});
+
 test("only real profile IDs become the reorder payload", () => {
   assert.deepEqual(realDirectoryIds([
     { id: "real-a", isDemo: false },
