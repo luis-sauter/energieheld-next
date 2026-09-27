@@ -2577,8 +2577,9 @@
       "preferred_source_id": 455,
       "evidence": ["raw/articles.json#455", "normalized/company-candidates.json#455", "normalized/banner-inventory.json#353,#354,#397,#398", "https://www.ferienbauernhof-buechele.de/"],
       "reason": "Der veröffentlichte Joomla-Artikel belegt Name, Anschrift, Telefon und fünf strukturierte Themen. Vier veröffentlichte Anbieterbanner belegen die Homepage; die Anbieterwebsite bestätigt Name, Anschrift und Telefonnummer. Beschreibung, E-Mail und Profilbilder bleiben leer.",
-      "import_decision": "PENDING_EXPLICIT_APPROVAL",
-      "planned_slug": "ferienbauernhof-buechele"
+      "import_decision": "IMPORTED",
+      "cloud_slug": "ferienbauernhof-buechele",
+      "cloud_migration_version": "20260927071244"
     }
   },
   {

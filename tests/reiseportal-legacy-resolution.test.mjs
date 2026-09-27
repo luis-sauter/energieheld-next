@@ -28,8 +28,9 @@ test("Joomla 455 has a published article and four matching provider banner desti
   assert.equal(article.text?.trim() ?? "", "");
   assert.equal(row.review.previous_classification, "INSUFFICIENT_DATA");
   assert.equal(row.review.classification, "SAFE_IMPORT");
-  assert.equal(row.review.planned_slug, "ferienbauernhof-buechele");
-  assert.equal(row.review.import_decision, "PENDING_EXPLICIT_APPROVAL");
+  assert.equal(row.review.cloud_slug, "ferienbauernhof-buechele");
+  assert.equal(row.review.cloud_migration_version, "20260927071244");
+  assert.equal(row.review.import_decision, "IMPORTED");
   const providerBanners = banners.filter((item) => [353, 354, 397, 398].includes(Number(item.LegacyId)));
   assert.equal(providerBanners.length, 4);
   assert.ok(providerBanners.every((item) => Number(item.Published) === 1 &&
