@@ -61,14 +61,13 @@ export async function DirectoryPage({
   const travelOptions = availableTravelFilters(database, publicTerms);
   const activeTravelFilters = travel ? activeTravelFilterLabels(travelValues, travelOptions) : [];
   const travelFilter = (items: typeof database) => filterTravelDiscovery(
-    filterListings(items, filters), destination, theme, audience, accommodation, feature,
+    filterListings(items, filters, travel), destination, theme, audience, accommodation, feature,
   );
   const previewResults = travelFilter(preview);
   const databaseResults = travel
     ? travelFilter(database)
     : filterListings(database, filters);
-  const sortedTravel = travel && Boolean(filters.sort);
-  const results = sortedTravel
+  const results = travel
     ? travelFilter([...preview, ...database])
     : [...previewResults, ...databaseResults];
   const showOrderEditor = Boolean(
@@ -231,21 +230,16 @@ export async function DirectoryPage({
             <p>{loaded.error}</p>
           </div>
         )}
-        {travel && !sortedTravel && previewResults.length > 0 && <div className="listing-rows">
-          {previewResults.map((listing) => <ListingRow key={listing.id} listing={listing} categories={categories}
-            href={`${profilePath}/${listing.slug}`} showVerification={false} />)}
-        </div>}
-        {sortedTravel ? (
-          <div className="listing-rows">
-            {results.map((listing) => <ListingRow key={listing.id} listing={listing} categories={categories}
-              href={`${profilePath}/${listing.slug}`} showVerification={false} />)}
-          </div>
-        ) : !loaded.error && OrderEditor && saveOrder ? (
+        {!loaded.error && OrderEditor && saveOrder ? (<>
           <OrderEditor listings={databaseResults} hiddenDemoKeys={"hiddenOrderKeys" in loaded ? loaded.hiddenOrderKeys : "hiddenDemoKeys" in loaded ? loaded.hiddenDemoKeys : []}
-            saveOrder={saveOrder} categories={categories} basePath={profilePath} showVerification={!travel} />
-        ) : databaseResults.length ? (
+            saveOrder={saveOrder} categories={categories} basePath={profilePath} showVerification={!travel} premiumFirst={travel} />
+          {travel && previewResults.length > 0 && <div className="listing-rows">
+            {previewResults.map((listing) => <ListingRow key={listing.id} listing={listing} categories={categories}
+              href={`${profilePath}/${listing.slug}`} showVerification={false} />)}
+          </div>}
+        </>) : results.length ? (
           <div className="listing-rows">
-            {databaseResults.map((listing) => (
+            {results.map((listing) => (
               <ListingRow
                 key={listing.id}
                 listing={listing}

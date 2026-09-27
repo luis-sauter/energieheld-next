@@ -478,6 +478,19 @@ test("public accommodations directory shows five stored legacy profiles once and
   assert.doesNotMatch(html, /Test Firma|Müller Haustechnik|Energieheld Demo GmbH|Gewerke|Fachbetriebe/);
 });
 
+test("travel directory groups Premium before Basic across filters, search and explicit sorts", async () => {
+  const packageRows = [legacyRows[1], legacyRows[2]].map(x => ({ profile_id: x.id, package: "premium" }));
+  for (const params of [{}, { thema: "wanderurlaub" }, { q: "a" },
+    { ziel: "oesterreich", thema: "wanderurlaub" }, { sort: "name" }, { sort: "city" }]) {
+    api([...legacyRows, demoRow], false, [], undefined, null, packageRows);
+    const html = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve(params) }));
+    const rows = [...html.matchAll(/<article class="listing-row listing-row--(premium|basic)"/g)].map(x => x[1]);
+    assert.ok(rows.includes("premium") && rows.includes("basic"), JSON.stringify(params));
+    assert.deepEqual(rows, [...rows].sort((a, b) => Number(b === "premium") - Number(a === "premium")), JSON.stringify(params));
+    assert.match(html, new RegExp(`${rows.length} Unterk`));
+  }
+});
+
 test("travel search submits supported destination and theme filters to the real directory", async () => {
   api([...legacyRows, demoRow]);
   const html = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({

@@ -38,9 +38,10 @@ export function sortByDirectoryOrder<T extends { id: string; slug?: string; isDe
   }).map(({ item }) => item);
 }
 
-export function moveDirectoryId(ids: string[], from: number, to: number) {
+export function moveDirectoryId(ids: string[], from: number, to: number, groups?: ReadonlyMap<string, boolean>) {
   if (from < 0 || to < 0 || from >= ids.length || to >= ids.length || from === to)
     return ids;
+  if (groups && groups.get(ids[from]) !== groups.get(ids[to])) return ids;
   const next = [...ids];
   next.splice(to, 0, ...next.splice(from, 1));
   return next;

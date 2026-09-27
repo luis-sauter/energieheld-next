@@ -18,6 +18,7 @@ const normalize = (value: string) =>
 export function filterListings(
   items: Listing[],
   filters: ListingFilters,
+  premiumFirst = false,
 ): Listing[] {
   const words = normalize(filters.query).split(/\s+/).filter(Boolean);
   const result = items.filter((item) => {
@@ -45,6 +46,9 @@ export function filterListings(
     result.sort((a, b) => a.name.localeCompare(b.name, "de"));
   if (filters.sort === "city")
     result.sort((a, b) => a.location.city.localeCompare(b.location.city, "de"));
+  // Stable grouping preserves the selected or stored order within each package.
+  if (premiumFirst)
+    result.sort((a, b) => Number(b.directoryPackage === "premium") - Number(a.directoryPackage === "premium"));
   return result;
 }
 
