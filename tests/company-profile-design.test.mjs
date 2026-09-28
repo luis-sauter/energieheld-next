@@ -255,8 +255,8 @@ test("editor gallery shares the public position and preserves contain logo and a
   assert.match(html, /<dialog[^>]*aria-labelledby="profile-upload-title"/);
   assert.doesNotMatch(html, /<dialog[^>]*\sopen/);
   assert.match(html, /Bildbeschreibung \(optional\)/);
-  assert.ok(html.indexOf("profile-information") < html.indexOf("Über Bauwerk"));
-  assert.ok(html.indexOf("gallery-main") < html.indexOf("profile-information"));
+  assert.ok(html.indexOf("profile-head-grid") < html.indexOf("Über Bauwerk"));
+  assert.ok(html.indexOf("gallery-main") < html.indexOf("contact-card"));
   assert.match(html, /aria-label="Standort"/);
   const publicHtml = renderToStaticMarkup(
     createElement(ListingDetail, {
@@ -296,7 +296,7 @@ test("a real video source takes the profile-head slot; otherwise sorted gallery 
   const gallery = renderToStaticMarkup(createElement(ListingDetail, {
     listing, categories: [], presentation: "company",
   }));
-  assert.ok(gallery.indexOf("gallery-main") < gallery.indexOf("profile-information"));
+  assert.ok(gallery.indexOf("gallery-main") < gallery.indexOf("contact-card"));
   assert.ok(gallery.indexOf("Erstes Bild") < gallery.indexOf("Zweites Bild"));
   assert.match(gallery, /Vorheriges Bild/);
   assert.match(gallery, /Nächstes Bild/);
@@ -572,10 +572,10 @@ test("profile contact and location precede description; no invented precise map 
   });
   assert.ok(
     real.indexOf('class="contact-card"') <
-      real.indexOf('class="location-module"'),
+      real.indexOf('class="location-module profile-location"'),
   );
   assert.ok(
-    real.indexOf('class="location-module"') < real.indexOf("Über Bauwerk"),
+    real.indexOf('class="location-module profile-location"') < real.indexOf("Über Bauwerk"),
   );
   assert.match(real, /google.com\/maps\/search/);
   assert.match(real, /Ortsübersicht · keine genaue Firmenposition/);

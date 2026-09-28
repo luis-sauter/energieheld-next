@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { CompanyLogo } from "@/components/portal/company-image";
 import { ImageGallery } from "@/components/portal/image-gallery";
@@ -8,6 +8,8 @@ import { uploadAdminMedia } from "@/lib/admin-media-upload";
 import { GALLERY_LIMIT, type MediaRow, type MediaState, type SignedMedia } from "@/lib/company-media";
 import styles from "./admin-media.module.css";
 import inline from "./inline-profile.module.css";
+import { squareMediaFile } from "@/lib/square-media";
+import { DEFAULT_IMAGE_CROP, panImageCrop, type ImageCrop } from "@/lib/image-crop";
 
 export function useInlineAdminMedia({ saveAction, media, rows, profileName, initials }: {
   saveAction: (form: FormData) => Promise<MediaState>;
@@ -22,6 +24,13 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
   const [kind, setKind] = useState<"logo" | "gallery">("gallery");
   const [busy, setBusy] = useState("");
   const [feedback, setFeedback] = useState<MediaState>({});
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [crop, setCrop] = useState<ImageCrop>({ ...DEFAULT_IMAGE_CROP });
+  const drag = useRef<{ x: number; y: number; crop: ImageCrop } | null>(null);
+  useEffect(() => {
+    if (previewUrl) return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
   const rowById = new Map(rows.map((row) => [row.id, row]));
 
   function begin(label: string) {
@@ -39,6 +48,9 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
     if (busyRef.current) return;
     setFeedback({});
     setKind(next);
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setCrop({ ...DEFAULT_IMAGE_CROP });
     dialog.current?.showModal();
   }
   async function mutate(intent: string, imageId?: string, alt?: string) {
@@ -62,12 +74,18 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
     if (!begin("Upload wird vorbereitet …")) return;
     const form = new FormData(event.currentTarget);
     try {
-      const result = await uploadAdminMedia(saveAction, kind, form.get("file"), String(form.get("alt_text") ?? ""), setBusy);
+      const file = selectedFile ?? form.get("file");
+      if (!(file instanceof File)) { setFeedback({ error: "Bitte wählen Sie eine Bilddatei." }); return; }
+      setBusy("Bildausschnitt wird erstellt …");
+      const cropped = await squareMediaFile(file, kind, crop);
+      const result = await uploadAdminMedia(saveAction, kind, cropped, String(form.get("alt_text") ?? ""), setBusy);
       setFeedback(result);
       if (result.success) {
         dialog.current?.close();
         router.refresh();
       }
+    } catch (error) {
+      setFeedback({ error: error instanceof Error ? error.message : "Das Bild konnte nicht verarbeitet werden." });
     } finally {
       end();
     }
@@ -122,14 +140,34 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
           <h2>{kind === "logo" ? "Logo auswählen" : "Bild hinzufügen"}</h2>
           <button type="button" disabled={Boolean(busy)} aria-label="Dialog schließen" onClick={() => dialog.current?.close()}>×</button>
         </div>
-        <p>JPG, PNG oder WebP · Original bis 30 MB · wird vor dem Upload optimiert</p>
-        <label className={styles.uploadField}>Bilddatei<input type="file" name="file" required accept="image/jpeg,image/png,image/webp" disabled={Boolean(busy)} /></label>
+        <p>JPG, PNG oder WebP · Original bis 30 MB · quadratischer Ausschnitt für die Vorschau</p>
+        <label className={styles.uploadField}>Bilddatei<input type="file" name="file" required accept="image/jpeg,image/png,image/webp" disabled={Boolean(busy)}
+          onChange={(event) => { const file = event.target.files?.[0] ?? null;
+            setSelectedFile(file); setPreviewUrl(file ? URL.createObjectURL(file) : "");
+            setCrop({ ...DEFAULT_IMAGE_CROP }); setFeedback({}); }} /></label>
+        {previewUrl && <div className={inline.squareCropEditor}>
+          <p>{kind === "logo" ? "Logo vollständig im Rahmen positionieren. Transparenz bleibt erhalten." : "Bildausschnitt im Rahmen positionieren."}</p>
+          <div className={inline.squareCropFrame} role="img" aria-label="Quadratischer Bildausschnitt"
+            onPointerDown={(event: PointerEvent<HTMLDivElement>) => { event.currentTarget.setPointerCapture(event.pointerId); drag.current = { x: event.clientX, y: event.clientY, crop }; }}
+            onPointerMove={(event: PointerEvent<HTMLDivElement>) => { if (!drag.current) return; const rect = event.currentTarget.getBoundingClientRect();
+              setCrop(panImageCrop(drag.current.crop, event.clientX - drag.current.x, event.clientY - drag.current.y, rect.width, rect.height)); }}
+            onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}>
+            {/* Blob URLs are local preview data; the saved image goes through the existing secure media upload. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={previewUrl} alt="" style={{ objectFit: kind === "logo" ? "contain" : "cover",
+              objectPosition: `${crop.focus_x}% ${crop.focus_y}%`, transform: `scale(${crop.zoom})`,
+              transformOrigin: `${crop.focus_x}% ${crop.focus_y}%` }} />
+          </div>
+          <label>Zoom {Math.round(crop.zoom * 100)} %<input type="range" min="1" max="3" step="0.05" value={crop.zoom}
+            onChange={(event) => setCrop((old) => ({ ...old, zoom: Number(event.target.value) }))} /></label>
+          <button type="button" className="button" onClick={() => setCrop({ ...DEFAULT_IMAGE_CROP })}>Ausschnitt zurücksetzen</button>
+        </div>}
         {kind === "gallery" && <label className={styles.uploadField}>Bildbeschreibung (optional)<input type="text" name="alt_text" maxLength={500} disabled={Boolean(busy)} placeholder="Was ist auf dem Bild zu sehen?" /></label>}
         {busy && <p role="status" className={styles.feedback}><span className={styles.spinner} aria-hidden="true" />{busy}</p>}
         {feedback.error && <p role="alert" className={styles.error}>{feedback.error}</p>}
         <div className={styles.actions}>
           <button type="button" className="button" disabled={Boolean(busy)} onClick={() => dialog.current?.close()}>Abbrechen</button>
-          <button className="button button-primary" disabled={Boolean(busy)}>{busy ? "Bild wird hochgeladen …" : "Bild hochladen"}</button>
+          <button className="button button-primary" disabled={Boolean(busy) || !selectedFile}>{busy ? "Bild wird hochgeladen …" : "Ausschnitt übernehmen & hochladen"}</button>
         </div>
       </form>
     </dialog>

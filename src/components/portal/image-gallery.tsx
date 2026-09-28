@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { PortalImage } from "@/types/portal";
 
+export function scheduleGalleryAdvance(advance: () => void) {
+  const timer = window.setTimeout(advance, 8000);
+  return () => window.clearTimeout(timer);
+}
+
 export function ImageGallery({
   images,
   isDemo = true,
@@ -35,8 +40,7 @@ export function ImageGallery({
   }, []);
   useEffect(() => {
     if (!autoplay || reducedMotion || paused || images.length < 2) return;
-    const timer = window.setTimeout(() => setSelected((index) => (index + 1) % images.length), 8000);
-    return () => window.clearTimeout(timer);
+    return scheduleGalleryAdvance(() => setSelected((index) => (index + 1) % images.length));
   }, [autoplay, reducedMotion, paused, images.length, selected, interaction]);
   function select(index: number) {
     setSelected((index + images.length) % images.length);
