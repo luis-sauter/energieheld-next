@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { ABOUT_SECTION, BUSINESS_SECTION, editorialOrder, type HeadingSlot, type ProfileContentBlock } from "./profile-content";
+import { ABOUT_SECTION, BUSINESS_SECTION, contentText, editorialOrder, type HeadingSlot, type ProfileContentBlock } from "./profile-content";
 import { normalizeTextBlockLayout, validOffset, validSpacing, validTextAlignment, validWidth } from "./content-block-layout";
 import { isProfileId } from "./admin-review";
 
@@ -10,7 +10,7 @@ export function sectionSlot(key: unknown): HeadingSlot | null {
   return key === ABOUT_SECTION ? "about_heading" : key === BUSINESS_SECTION ? "business_areas_heading" : null;
 }
 
-async function ensureSection(client: SupabaseClient, profileId: string, slot: HeadingSlot) {
+export async function ensureSection(client: SupabaseClient, profileId: string, slot: HeadingSlot) {
   const existing = await client.from("profile_content_blocks").select("id,content")
     .eq("profile_id", profileId).eq("slot", slot).maybeSingle();
   if (existing.error) return null;
@@ -31,10 +31,97 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
   key: unknown, intent: unknown, form: FormData): Promise<Result> {
   const slot = sectionSlot(key);
   if (!slot) return { error: "Der Abschnitt wurde nicht gefunden." };
-  if (intent !== "layout" && intent !== "section-toggle") return { error: "Die Aktion ist ungültig." };
+  if (!["layout", "section-toggle", "section-delete", "section-restore", "section-duplicate"].includes(String(intent)))
+    return { error: "Die Aktion ist ungültig." };
   const row = await ensureSection(client, profileId, slot);
   if (!row) return { error: failed };
   const content = { ...row.content };
+  const metadata = await ensureSection(client, profileId, "about_heading");
+  if (!metadata) return { error: failed };
+  const deleted = new Set(metadata.content.deleted_sections ?? []);
+  if (intent === "section-delete") {
+    if (deleted.has(key as string)) return { error: "Der Abschnitt wurde bereits gelöscht." };
+    const field = slot === "about_heading" ? "description" : "business_areas";
+    const prior = await client.from("company_profiles").select("description,business_areas")
+      .eq("id", profileId).maybeSingle();
+    if (prior.error || !prior.data) return { error: failed };
+    const cleared = await client.from("company_profiles").update({ [field]: null })
+      .eq("id", profileId).select("id").maybeSingle();
+    if (cleared.error || cleared.data?.id !== profileId) return { error: failed };
+    deleted.add(key as string);
+    const saved = await client.from("profile_content_blocks").update({ content: {
+      ...metadata.content, deleted_sections: [...deleted],
+      order: (metadata.content.order ?? []).filter((item) => item !== key),
+    } }).eq("profile_id", profileId).eq("id", metadata.id).eq("slot", "about_heading").select("id").maybeSingle();
+    if (saved.error || saved.data?.id !== metadata.id) {
+      await client.from("company_profiles").update({ [field]: prior.data[field] })
+        .eq("id", profileId);
+      return { error: failed };
+    }
+    if (slot === "business_areas_heading" && row.id !== metadata.id) {
+      const removed = await client.from("profile_content_blocks").delete().eq("profile_id", profileId)
+        .eq("id", row.id).eq("slot", slot).select("id").maybeSingle();
+      if (removed.error || removed.data?.id !== row.id) return { error: "Der Inhalt wurde entfernt, die Überschrift konnte nicht gelöscht werden. Bitte laden Sie die Seite neu." };
+    }
+    return { success: "Der Abschnitt und sein Inhalt wurden gelöscht." };
+  }
+  if (intent === "section-restore") {
+    if (!deleted.has(key as string)) return { error: "Der Abschnitt ist bereits vorhanden." };
+    deleted.delete(key as string);
+    const saved = await client.from("profile_content_blocks").update({ content: {
+      ...metadata.content, deleted_sections: [...deleted],
+      order: [...(metadata.content.order ?? []), key as string],
+    } }).eq("profile_id", profileId).eq("id", metadata.id).eq("slot", "about_heading").select("id").maybeSingle();
+    return saved.error || saved.data?.id !== metadata.id ? { error: failed } : { success: "Der leere Abschnitt wurde wieder hinzugefügt." };
+  }
+  if (deleted.has(key as string)) return { error: "Der Abschnitt wurde bereits gelöscht." };
+  if (intent === "section-duplicate") {
+    const field = slot === "about_heading" ? "description" : "business_areas";
+    const source = await client.from("company_profiles").select("description,business_areas").eq("id", profileId).maybeSingle();
+    if (source.error || !source.data) return { error: failed };
+    const body = source.data[field];
+    const text = typeof body === "string" && body.trim() ? contentText(body, "text") : null;
+    if (body && !text) return { error: "Der Abschnittstext ist für eine Kopie zu lang." };
+    const created: string[] = [];
+    for (const [type, value] of [["heading", row.content.text], ...(text ? [["text", text]] : [])]) {
+      const result = await client.rpc("insert_profile_content_block", {
+        p_profile_id: profileId, p_type: type, p_text: value, p_before_block_id: null,
+      });
+      if (result.error || !isProfileId(result.data)) {
+        for (const id of created) await client.from("profile_content_blocks").delete()
+          .eq("profile_id", profileId).eq("id", id).is("slot", null);
+        return { error: failed };
+      }
+      created.push(result.data);
+    }
+    for (const id of created) {
+      const laidOut = await client.from("profile_content_blocks")
+        .update({ config: normalizeTextBlockLayout(row.content.layout) })
+        .eq("profile_id", profileId).eq("id", id).is("slot", null).select("id").maybeSingle();
+      if (laidOut.error || laidOut.data?.id !== id) {
+        for (const newId of created) await client.from("profile_content_blocks").delete()
+          .eq("profile_id", profileId).eq("id", newId).is("slot", null);
+        return { error: failed };
+      }
+    }
+    const read = await client.from("profile_content_blocks").select("id,profile_id,type,slot,sort_order,content")
+      .eq("profile_id", profileId).order("sort_order").order("id");
+    if (read.error) {
+      for (const id of created) await client.from("profile_content_blocks").delete()
+        .eq("profile_id", profileId).eq("id", id).is("slot", null);
+      return { error: failed };
+    }
+    const order = editorialOrder(read.data as ProfileContentBlock[]).filter((item) => !created.includes(item));
+    order.splice(order.indexOf(key as string) + 1, 0, ...created);
+    const saved = await client.from("profile_content_blocks").update({ content: { ...metadata.content, order } })
+      .eq("profile_id", profileId).eq("id", metadata.id).eq("slot", "about_heading").select("id").maybeSingle();
+    if (saved.error || saved.data?.id !== metadata.id) {
+      for (const id of created) await client.from("profile_content_blocks").delete()
+        .eq("profile_id", profileId).eq("id", id).is("slot", null);
+      return { error: failed };
+    }
+    return { success: "Der Abschnitt wurde darunter dupliziert." };
+  }
   if (intent === "section-toggle") content.hidden = content.hidden !== true;
   else {
     const old = normalizeTextBlockLayout(content.layout);
@@ -60,6 +147,34 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
     .eq("profile_id", profileId).eq("slot", slot).eq("id", row.id).select("id").maybeSingle();
   return saved.error || saved.data?.id !== row.id ? { error: failed }
     : { success: intent === "section-toggle" ? content.hidden ? "Abschnitt ausgeblendet." : "Abschnitt eingeblendet." : "Layout gespeichert." };
+}
+
+export async function changeEditorialBlockVisibility(client: SupabaseClient, profileId: string, blockId: string): Promise<Result> {
+  const block = await client.from("profile_content_blocks").select("id")
+    .eq("profile_id", profileId).eq("id", blockId).is("slot", null).maybeSingle();
+  if (block.error || !block.data) return { error: "Der Block wurde nicht gefunden." };
+  const metadata = await ensureSection(client, profileId, "about_heading");
+  if (!metadata) return { error: failed };
+  const hidden = new Set(metadata.content.hidden_blocks ?? []);
+  if (hidden.has(blockId)) hidden.delete(blockId); else hidden.add(blockId);
+  const saved = await client.from("profile_content_blocks").update({ content: { ...metadata.content, hidden_blocks: [...hidden] } })
+    .eq("profile_id", profileId).eq("id", metadata.id).eq("slot", "about_heading").select("id").maybeSingle();
+  return saved.error || saved.data?.id !== metadata.id ? { error: failed }
+    : { success: hidden.has(blockId) ? "Block ausgeblendet." : "Block eingeblendet." };
+}
+
+export async function forgetEditorialBlock(client: SupabaseClient, profileId: string, blockId: string): Promise<void> {
+  const row = await client.from("profile_content_blocks").select("id,content")
+    .eq("profile_id", profileId).eq("slot", "about_heading").maybeSingle();
+  if (!row.data?.content) return;
+  const pairLayouts = { ...row.data.content.pair_layouts };
+  delete pairLayouts[blockId];
+  await client.from("profile_content_blocks").update({ content: {
+    ...row.data.content,
+    hidden_blocks: (row.data.content.hidden_blocks ?? []).filter((id: string) => id !== blockId),
+    order: (row.data.content.order ?? []).filter((id: string) => id !== blockId),
+    pair_layouts: pairLayouts,
+  } }).eq("profile_id", profileId).eq("id", row.data.id).eq("slot", "about_heading");
 }
 
 export async function changeEditorialOrder(client: SupabaseClient, profileId: string,

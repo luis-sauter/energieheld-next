@@ -92,16 +92,18 @@
   position: relative;
   margin: 0 0 28px;
 }
-.company-profile .profile-head-grid { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(300px, 1fr); gap: 24px; align-items: start; margin-bottom: 24px; }
+.company-profile .profile-head-grid { display: grid; grid-template-columns: minmax(0, 2.5fr) minmax(280px, 1fr); gap: 20px; align-items: stretch; margin-bottom: 24px; }
 .company-profile .profile-head-grid > * { min-width: 0; }
-.company-profile .profile-header-media { margin: 0; }
+.company-profile .profile-header-media { display: flex; flex-direction: column; min-height: 0; margin: 0; }
 .company-profile .profile-location { margin-bottom: 40px; }
-.company-profile .profile-header-media .gallery { margin-bottom: 0; }
-.company-profile .profile-header-media .gallery-main { aspect-ratio: 1; max-width: none; max-height: none; }
-.company-profile .profile-location .location-map { min-height: clamp(380px, 43vw, 560px); }
-.company-profile .profile-location > div:last-child { padding: 16px 20px; }
+.company-profile .profile-header-media .gallery { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; }
+.company-profile .profile-header-media .gallery-editor { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; }
+.company-profile .profile-header-media .gallery-empty { flex: 1; }
+.company-profile .profile-header-media .gallery-main { flex: 1; aspect-ratio: 2.2; max-width: none; max-height: none; min-height: 0; }
+.company-profile .profile-location .location-map { min-height: clamp(240px, 25vw, 340px); }
+.company-profile .profile-location > div:last-child { padding: 12px 18px; }
 .company-profile .profile-location h2 { font-size: 19px; margin-bottom: 6px; }
-.company-profile .profile-video { display: block; width: 100%; max-height: 620px; aspect-ratio: 16 / 9; object-fit: contain; background: #111; border-radius: 10px; }
+.company-profile .profile-video { display: block; width: 100%; height: 100%; min-height: 300px; aspect-ratio: 2.2; object-fit: contain; background: #111; border-radius: 10px; }
 .company-profile .gallery-open { position: absolute; inset: 0; display: block; }
 .company-profile .gallery-open:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: -3px; z-index: 2; }
 .company-profile .gallery-navigation { position: absolute; inset: 50% 10px auto; display: flex; justify-content: space-between; transform: translateY(-50%); pointer-events: none; }
@@ -188,22 +190,24 @@
   box-shadow: none;
   background: var(--white);
   border-radius: 10px;
-  padding: 26px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 18px;
 }
 .company-profile .contact-card h2 {
-  font-size: 21px;
-  margin-bottom: 16px;
+  font-size: 19px;
+  margin-bottom: 8px;
 }
 .company-profile .contact-card hr {
   border: 0;
   border-top: 1px solid var(--line);
-  margin: 18px 0;
+  margin: 10px 0;
 }
 .company-profile .contact-card dt {
   color: var(--muted);
   font-size: 12px;
   font-weight: 500;
-  margin-top: 12px;
+  margin-top: 7px;
 }
 .company-profile .contact-card dd {
   font-size: 14px;
@@ -211,9 +215,9 @@
   overflow-wrap: anywhere;
 }
 .company-profile .contact-card dl {
-  margin: 0 0 20px;
+  margin: 0 0 10px;
 }
-.company-profile .contact-logo { width: 120px; height: 120px; aspect-ratio: 1; background: var(--surface); border-radius: 8px; overflow: hidden; }
+.company-profile .contact-logo { width: 88px; height: 88px; aspect-ratio: 1; background: var(--surface); border-radius: 8px; overflow: hidden; }
 .company-profile .contact-logo img { object-fit: contain; }
 .company-profile .inline-location-fields {
   display: grid;
@@ -589,6 +593,8 @@
 }
 @media (max-width: 820px) {
   .company-profile .profile-head-grid { grid-template-columns: minmax(0, 1fr); }
+  .company-profile .profile-header-media .gallery-main { aspect-ratio: 16 / 9; }
+  .company-profile .profile-video { height: auto; aspect-ratio: 16 / 9; }
   .company-profile .detail-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
@@ -598,7 +604,7 @@
   }
 }
 @media (max-width: 600px) {
-  .company-profile .profile-location .location-map { min-height: 320px; }
+  .company-profile .profile-location .location-map { min-height: 220px; }
 }
 @media (max-width: 600px) {
   .company-profile .detail-heading {
@@ -660,7 +666,7 @@
     min-height: 32px;
   }
   .company-profile .contact-card {
-    padding: 24px;
+    padding: 18px;
   }
   .profile-upload-dialog {
     padding: 20px;

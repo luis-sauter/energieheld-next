@@ -55,19 +55,56 @@ test("editor text follows live section alignment and paired columns stack on mob
   assert.match(css, /\.layoutBlock \.blockForm input, \.layoutBlock \.blockForm textarea[^}]*text-align: inherit/);
   assert.match(rowCss, /@media \(max-width: 640px\)[\s\S]*\.contentColumn \{ grid-column: 1 \/ -1 !important/);
   const profileCss = source("src/components/portal/company-profile.css");
-  assert.match(profileCss, /\.profile-head-grid \{ display: grid; grid-template-columns: minmax\(0, 2\.1fr\) minmax\(300px, 1fr\)/);
+  assert.match(profileCss, /\.profile-head-grid \{ display: grid; grid-template-columns: minmax\(0, 2\.5fr\) minmax\(280px, 1fr\);[^}]*align-items: stretch/);
   assert.match(profileCss, /@media \(max-width: 820px\)[\s\S]*\.profile-head-grid \{ grid-template-columns: minmax\(0, 1fr\)/);
   assert.match(profileCss, /\.profile-head-grid > \* \{ min-width: 0/);
-  assert.match(profileCss, /\.profile-location \.location-map \{ min-height: clamp\(380px, 43vw, 560px\)/);
-  assert.match(profileCss, /\.profile-location > div:last-child \{ padding: 16px 20px/);
+  assert.match(profileCss, /\.profile-location \.location-map \{ min-height: clamp\(240px, 25vw, 340px\)/);
+  assert.match(profileCss, /\.profile-location > div:last-child \{ padding: 12px 18px/);
   assert.match(source("src/components/admin/inline-profile.module.css"), /\.adjacentPreview \{[^}]*grid-template-columns: repeat\(100, minmax\(0, 1fr\)\)/);
   assert.match(source("src/components/admin/inline-profile.module.css"), /@media \(max-width: 640px\)[\s\S]*\.adjacentPreviewText, \.adjacentPreviewImage \{ grid-column: 1 \/ -1 !important/);
-  assert.match(profileCss, /\.profile-header-media \.gallery-main \{ aspect-ratio: 1/);
-  assert.match(profileCss, /\.contact-logo \{ width: 120px; height: 120px; aspect-ratio: 1/);
+  assert.match(profileCss, /\.profile-header-media \.gallery-main \{[^}]*aspect-ratio: 2\.2/);
+  assert.match(profileCss, /\.contact-card \{[^}]*height: 100%/);
+  assert.match(profileCss, /\.contact-logo \{ width: 88px; height: 88px; aspect-ratio: 1/);
 });
 
 test("country save has only the missing column privilege, preserving existing RLS", () => {
   const migration = source("supabase/migrations/20260928160000_grant_profile_country_edit.sql");
   assert.match(migration, /GRANT UPDATE \(country\) ON public\.company_profiles TO authenticated/);
   assert.doesNotMatch(migration, /CREATE POLICY|ALTER POLICY|TO anon|GRANT UPDATE ON/);
+});
+
+test("one wrapper exposes layout, visibility and confirmed deletion for every editorial block", () => {
+  const wrapper = source("src/components/admin/inline-block-layout.tsx");
+  const editor = source("src/components/admin/inline-content-editor.tsx");
+  const actions = source("src/lib/admin-profile-content.ts");
+  assert.match(wrapper, /\[25, 50, 75, 100\]/);
+  assert.match(wrapper, /Blockposition/);
+  assert.match(wrapper, /Textausrichtung/);
+  assert.match(wrapper, /Abstand/);
+  assert.match(wrapper, /Block nach oben verschieben/);
+  assert.match(wrapper, /Block nach unten verschieben/);
+  assert.match(wrapper, /section-duplicate/);
+  assert.match(wrapper, /block-toggle/);
+  assert.match(wrapper, /window\.confirm\("Diesen Abschnitt wirklich löschen\? Der Inhalt wird dauerhaft entfernt\."\)/);
+  assert.match(wrapper, /styles\.destructiveAction/);
+  assert.match(editor, /Bild daneben hinzufügen/);
+  assert.match(editor, /pair-delete/);
+  assert.match(actions, /checkInlineProfileTarget/);
+  assert.match(actions, /findEditorialPair/);
+});
+
+test("profile head stays wide and shallow across desktop and mobile breakpoints", () => {
+  const css = source("src/components/portal/company-profile.css");
+  for (const viewport of [1440, 1280, 1024]) {
+    const usable = Math.min(viewport, 1240) - 40;
+    const media = Math.max(0, usable - 20 - 280);
+    const right = Math.max(280, (usable - 20) / 3.5);
+    assert.ok(media > right, `${viewport}px desktop media should be wider`);
+  }
+  assert.match(css, /\.profile-head-grid \{[^}]*align-items: stretch/);
+  assert.match(css, /\.profile-header-media \.gallery-main \{[^}]*aspect-ratio: 2\.2/);
+  assert.match(css, /\.gallery-main img \{[^}]*object-fit: cover/);
+  assert.match(css, /\.profile-location \.location-map \{ min-height: clamp\(240px, 25vw, 340px\)/);
+  for (const viewport of [768, 390, 360]) assert.ok(viewport <= 820);
+  assert.match(css, /@media \(max-width: 820px\)[\s\S]*\.profile-head-grid \{ grid-template-columns: minmax\(0, 1fr\)/);
 });

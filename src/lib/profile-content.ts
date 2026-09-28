@@ -23,9 +23,11 @@ export type ProfileContentBlock = {
   type: ContentBlockType;
   slot: HeadingSlot | null;
   sort_order: number;
-  content: { text: string; layout?: Partial<TextBlockLayout>; hidden?: boolean; order?: string[] };
+  content: { text: string; layout?: Partial<TextBlockLayout>; hidden?: boolean; order?: string[];
+    hidden_blocks?: string[]; deleted_sections?: string[]; pair_layouts?: Record<string, Partial<TextBlockLayout>> };
   config?: Partial<ImageGridConfig & TextBlockLayout>;
   images?: ProfileBlockImage[];
+  pair_layout?: Partial<TextBlockLayout>;
 };
 
 export function contentText(value: unknown, type: TextBlockType) {
@@ -36,14 +38,17 @@ export function contentText(value: unknown, type: TextBlockType) {
 }
 
 export function splitProfileContent(blocks: ProfileContentBlock[], profileName: string) {
+  const pairLayouts = blocks.find((block) => block.slot === "about_heading")?.content.pair_layouts ?? {};
+  const prepared = blocks.map((block) => block.slot === null && block.type === "text"
+    ? { ...block, pair_layout: pairLayouts[block.id] } : block);
   const about = blocks.find((block) => block.slot === "about_heading")?.content.text;
   const business = blocks.find((block) => block.slot === "business_areas_heading")?.content.text;
   return {
     aboutHeading: about || `Über ${profileName}`,
     businessHeading: business || "Tätigkeitsbereiche",
-    blocks: blocks.filter((block) => block.slot === null)
+    blocks: prepared.filter((block) => block.slot === null)
       .sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id)),
-    items: editorialItems(blocks, profileName),
+    items: editorialItems(prepared, profileName),
   };
 }
 
@@ -61,14 +66,17 @@ export function editorialItems(blocks: ProfileContentBlock[], profileName: strin
     .sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id));
   const about = blocks.find((block) => block.slot === "about_heading");
   const business = blocks.find((block) => block.slot === "business_areas_heading");
+  const hiddenBlocks = new Set(about?.content.hidden_blocks ?? []);
+  const deleted = new Set(about?.content.deleted_sections ?? []);
   const map = new Map<string, EditorialItem>([
     [ABOUT_SECTION, { key: ABOUT_SECTION, kind: "about", heading: about?.content.text || `Über ${profileName}`,
       hidden: about?.content.hidden === true, layout: normalizeTextBlockLayout(about?.content.layout) }],
     [BUSINESS_SECTION, { key: BUSINESS_SECTION, kind: "business", heading: business?.content.text || "Tätigkeitsbereiche",
       hidden: business?.content.hidden === true, layout: normalizeTextBlockLayout(business?.content.layout) }],
     ...normal.map((block): [string, EditorialItem] => [block.id, { key: block.id, kind: "block",
-      heading: "", hidden: false, layout: normalizeTextBlockLayout(block.config), block }]),
+      heading: "", hidden: hiddenBlocks.has(block.id), layout: normalizeTextBlockLayout(block.config), block }]),
   ]);
+  for (const key of deleted) map.delete(key);
   const order = editorialOrder(blocks);
   return order.map((key) => map.get(key)).filter((item): item is EditorialItem => Boolean(item));
 }
@@ -76,12 +84,19 @@ export function editorialItems(blocks: ProfileContentBlock[], profileName: strin
 export function editorialOrder(blocks: ProfileContentBlock[]): string[] {
   const normal = blocks.filter((block) => block.slot === null)
     .sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id));
-  const saved = blocks.find((block) => block.slot === "about_heading")?.content.order;
-  if (!Array.isArray(saved)) return [ABOUT_SECTION, ...normal.map((block) => block.id), BUSINESS_SECTION];
-  const allowed = new Set([ABOUT_SECTION, BUSINESS_SECTION, ...normal.map((block) => block.id)]);
+  const metadata = blocks.find((block) => block.slot === "about_heading")?.content;
+  const deleted = new Set(metadata?.deleted_sections ?? []);
+  const sections = [ABOUT_SECTION, BUSINESS_SECTION].filter((key) => !deleted.has(key));
+  const saved = metadata?.order;
+  if (!Array.isArray(saved)) return [
+    ...(sections.includes(ABOUT_SECTION) ? [ABOUT_SECTION] : []),
+    ...normal.map((block) => block.id),
+    ...(sections.includes(BUSINESS_SECTION) ? [BUSINESS_SECTION] : []),
+  ];
+  const allowed = new Set([...sections, ...normal.map((block) => block.id)]);
   const order = saved.filter((key): key is string => typeof key === "string" && allowed.delete(key));
-  if (!order.includes(ABOUT_SECTION)) order.unshift(ABOUT_SECTION);
-  if (!order.includes(BUSINESS_SECTION)) order.push(BUSINESS_SECTION);
+  if (sections.includes(ABOUT_SECTION) && !order.includes(ABOUT_SECTION)) order.unshift(ABOUT_SECTION);
+  if (sections.includes(BUSINESS_SECTION) && !order.includes(BUSINESS_SECTION)) order.push(BUSINESS_SECTION);
   for (const block of normal) {
     if (!allowed.has(block.id)) continue;
     const next = normal.find((candidate) => candidate.sort_order > block.sort_order && order.includes(candidate.id));

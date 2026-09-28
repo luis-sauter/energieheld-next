@@ -116,7 +116,8 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       const result = await saveAction(form);
       setFeedback(result);
       if (result.success) {
-        if (["insert", "duplicate", "delete"].includes(String(form.get("intent")))) history.clear();
+        if (["insert", "duplicate", "delete", "section-delete", "section-duplicate", "section-restore",
+          "pair-delete", "pair-duplicate"].includes(String(form.get("intent")))) history.clear();
         onSuccess?.();
         router.refresh();
       }
@@ -248,6 +249,10 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
           if (before) form.set("before_block_id", before);
           void run(form, () => setPickerBefore(undefined));
         }}>Bilder</button>}
+        {!items.some((item) => item.kind === "about") && <button type="button" className="button" disabled={busy || history.busy}
+          onClick={() => void run(formFor("section-restore", "section:about"), () => setPickerBefore(undefined))}>Beschreibung wieder hinzufügen</button>}
+        {!items.some((item) => item.kind === "business") && <button type="button" className="button" disabled={busy || history.busy}
+          onClick={() => void run(formFor("section-restore", "section:business"), () => setPickerBefore(undefined))}>Tätigkeitsbereiche wieder hinzufügen</button>}
       </div>}
       {activeDraft && <form className={styles.blockForm} onSubmit={(event) => {
         event.preventDefault();
@@ -275,7 +280,8 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
     return <div key={block.id}>
       {addControl(block.id)}
       <InlineBlockLayout block={block} busy={busy || history.busy} first={index === 0} last={index === items.length - 1}
-        save={saveBlock}>
+        save={saveBlock} sectionHidden={items[index]?.hidden}>
+        {items[index]?.hidden && <p role="status">Dieser Block ist öffentlich ausgeblendet.</p>}
         {block.type === "image_grid" ? <InlineImageGridEditor block={block} saveAction={saveImage} />
           : <form key={`${block.id}-${block.content.text}`} className={styles.blockForm} onSubmit={(event) => {
           event.preventDefault();
@@ -338,18 +344,18 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
     </div>;
   }
 
-  function renderNormalRun(run: ProfileContentBlock[]) {
-    let displayed = run;
+  function renderNormalRun(runBlocks: ProfileContentBlock[]) {
+    let displayed = runBlocks;
     if (pairPreview) {
       const layout = adjacentImageLayout(pairPreview.side, pairPreview.share);
-      const textAt = run.findIndex((block) => block.id === pairPreview.textId);
-      const image = run.find((block) => block.id === pairPreview.imageId);
+      const textAt = runBlocks.findIndex((block) => block.id === pairPreview.textId);
+      const image = runBlocks.find((block) => block.id === pairPreview.imageId);
       if (layout && textAt >= 0 && image) {
-        const heading = run[textAt - 1]?.type === "heading" &&
-          normalizeBlockLayout(run[textAt - 1].config).width_percent === normalizeBlockLayout(run[textAt].config).width_percent &&
-          normalizeBlockLayout(run[textAt - 1].config).offset_percent === normalizeBlockLayout(run[textAt].config).offset_percent
-          ? run[textAt - 1] : null;
-        displayed = run.filter((block) => block.id !== image.id).map((block) => {
+        const heading = runBlocks[textAt - 1]?.type === "heading" &&
+          normalizeBlockLayout(runBlocks[textAt - 1].config).width_percent === normalizeBlockLayout(runBlocks[textAt].config).width_percent &&
+          normalizeBlockLayout(runBlocks[textAt - 1].config).offset_percent === normalizeBlockLayout(runBlocks[textAt].config).offset_percent
+          ? runBlocks[textAt - 1] : null;
+        displayed = runBlocks.filter((block) => block.id !== image.id).map((block) => {
           const position = block.id === image.id ? { width_percent: layout.imageWidth, offset_percent: layout.imageOffset }
             : block.id === pairPreview.textId || block.id === heading?.id
               ? { width_percent: layout.textWidth, offset_percent: layout.textOffset } : null;
@@ -371,7 +377,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       const side = imageLayout && textLayout && imageLayout.offset_percent < textLayout.offset_percent ? "left" : "right";
       const share = imageLayout && ([25, 50, 75] as number[]).includes(imageLayout.width_percent)
         ? imageLayout.width_percent as ImageShare : 50;
-      return <div key={row.left[0].id}>
+      const pairContent = <>
         {image && text && imageLayout && <div className={styles.pairControls} aria-label="Text und Bild anordnen">
           <strong>Text + Bild nebeneinander</strong>
           <div className={styles.adjacentOptions} role="group" aria-label="Bildposition">
@@ -392,7 +398,27 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
             {column.map((block) => renderEditableBlock(block, true))}
           </div>)}
         </div>
-      </div>;
+      </>;
+      if (!image || !text) return <div key={row.left[0].id}>{pairContent}</div>;
+      const pairMembers = columns.flat();
+      const indices = pairMembers.map((block) => items.findIndex((item) => item.key === block.id));
+      const pairBlock: ProfileContentBlock = { ...text, id: `pair:${text.id}:${image.id}`,
+        config: normalizeTextBlockLayout({ width_percent: 100, offset_percent: 0,
+          text_align: normalizeTextBlockLayout(text.config).text_align, ...text.pair_layout }) };
+      async function savePair(intent: string, _blockId: string, values: Record<string, string> = {}) {
+        const form = new FormData();
+        form.set("intent", ({ layout: "pair-frame", move: "pair-move", duplicate: "pair-duplicate",
+          "block-toggle": "pair-toggle", delete: "pair-delete" } as Record<string, string>)[intent] ?? intent);
+        form.set("text_block_id", text!.id);
+        form.set("image_block_id", image!.id);
+        for (const [key, value] of Object.entries(values)) form.set(key, value);
+        return run(form);
+      }
+      return <InlineBlockLayout key={row.left[0].id} block={pairBlock} save={savePair}
+        busy={busy || history.busy} first={Math.min(...indices) === 0} last={Math.max(...indices) === items.length - 1}
+        sectionHidden={pairMembers.every((block) => items.find((item) => item.key === block.id)?.hidden)}>
+        {pairContent}
+      </InlineBlockLayout>;
     });
   }
 

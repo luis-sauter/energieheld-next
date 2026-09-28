@@ -12,6 +12,7 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
   children: ReactNode; sectionHidden?: boolean; sectionLabel?: string;
 }) {
   const special = block.id.startsWith("section:");
+  const pair = block.id.startsWith("pair:");
   const layout = normalizeBlockLayout(block.config);
   const persisted = hasPersistedBlockLayout(block.config);
   const textAlign = normalizeTextBlockLayout(block.config).text_align;
@@ -112,9 +113,9 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
   const spacings: { value: BlockSpacing; label: string }[] = [
     { value: "small", label: "klein" }, { value: "normal", label: "normal" }, { value: "large", label: "groß" },
   ];
-  return <div className={styles.layoutBlock}>
+  return <div className={styles.layoutBlock} data-pair={pair || undefined}>
     <div className={styles.blockToolbar} aria-label="Block bearbeiten">
-      <strong className={styles.blockType}>Blocktyp: {special ? sectionLabel ?? "Redaktioneller Abschnitt" : block.type === "heading" ? "Überschrift" : block.type === "text" ? "Text" : "Bild"}</strong>
+      <strong className={styles.blockType}>Blocktyp: {pair ? "Text + Bild" : special ? sectionLabel ?? "Redaktioneller Abschnitt" : block.type === "heading" ? "Überschrift" : block.type === "text" ? "Text" : "Bild"}</strong>
       <button type="button" className={styles.moveGrip} aria-label="Block horizontal ziehen"
         title={preview.width === 100 ? "Bei 100 % Breite ist keine horizontale Bewegung möglich." : "Block horizontal ziehen"}
         disabled={busy || !persisted || preview.width === 100}
@@ -158,14 +159,15 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
           onClick={() => void save("move", block.id, { direction: "up" })}>↑</button>
         <button type="button" className="button" aria-label="Block nach unten verschieben" disabled={busy || last}
           onClick={() => void save("move", block.id, { direction: "down" })}>↓</button>
-        {!special && <button type="button" className="button" disabled={busy || !persisted}
-          onClick={() => void save("duplicate", block.id)}>Duplizieren</button>}
-        {special ? <button type="button" className="button" disabled={busy}
-          onClick={() => void save("section-toggle", block.id)}>{sectionHidden ? "Abschnitt einblenden" : "Abschnitt ausblenden"}</button>
-          : <button type="button" className="button" disabled={busy} onClick={() => {
-            if (window.confirm(block.type === "image_grid" ? "Diesen Bildblock samt Bildern wirklich löschen?" : "Diesen Inhaltsblock wirklich löschen?"))
-              void save("delete", block.id);
-          }}>Löschen</button>}
+        <button type="button" className="button" disabled={busy || !persisted}
+          onClick={() => void save(special ? "section-duplicate" : "duplicate", block.id)}>Duplizieren</button>
+        <button type="button" className="button" disabled={busy}
+          onClick={() => void save(special ? "section-toggle" : "block-toggle", block.id)}>
+          {sectionHidden ? "Abschnitt einblenden" : "Abschnitt ausblenden"}</button>
+        <button type="button" className={`button ${styles.destructiveAction}`} disabled={busy} onClick={() => {
+          if (window.confirm("Diesen Abschnitt wirklich löschen? Der Inhalt wird dauerhaft entfernt."))
+            void save(special ? "section-delete" : "delete", block.id);
+        }}>Abschnitt löschen</button>
       </div>
       {!persisted && <span role="status">Layoutsteuerung nach Datenbankaktualisierung verfügbar.</span>}
       {snap && <span role="status">{snap === "center" ? "Mitte" : snap === "left" ? "Links" : "Rechts"}</span>}
