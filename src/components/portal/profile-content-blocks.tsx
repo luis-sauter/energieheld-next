@@ -1,4 +1,5 @@
-import type { ProfileContentBlock, ProfileBlockImage } from "@/lib/profile-content";
+import type { ProfileContentBlock, ProfileBlockImage, EditorialItem } from "@/lib/profile-content";
+import type { Listing } from "@/types/portal";
 import Image from "next/image";
 import { normalizeImageGridConfig, publicImageGridColumns } from "@/lib/image-grid-layout";
 import { normalizeBlockLayout, normalizeTextBlockLayout } from "@/lib/content-block-layout";
@@ -45,4 +46,30 @@ export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[]
         style={{ gridColumn: contentColumn(column[0]) }}>{column.map((block) => renderBlock(block, true))}</div>)}
     </div> : row.left.map((block) => renderBlock(block, false)))}
   </>;
+}
+
+export function ProfileEditorialContent({ items, listing }: { items: EditorialItem[]; listing: Listing }) {
+  const sections: React.ReactNode[] = [];
+  let pending: ProfileContentBlock[] = [];
+  function flush() {
+    if (!pending.length) return;
+    sections.push(<ProfileContentBlocks key={`blocks-${pending[0].id}`} blocks={pending} />);
+    pending = [];
+  }
+  for (const item of items) {
+    if (item.kind === "block") {
+      if (item.block) pending.push(item.block);
+      continue;
+    }
+    flush();
+    const body = item.kind === "about" ? listing.description : listing.businessAreas;
+    if (item.hidden || !body) continue;
+    sections.push(<section key={item.key} className="detail-section profile-content-block profile-editorial-section"
+      data-spacing-top={item.layout.spacing_top} data-spacing-bottom={item.layout.spacing_bottom}
+      style={{ width: `${item.layout.width_percent}%`, marginLeft: `${item.layout.offset_percent}%`, textAlign: item.layout.text_align }}>
+      <h2>{item.heading}</h2><p style={item.kind === "business" ? { whiteSpace: "pre-wrap" } : undefined}>{body}</p>
+    </section>);
+  }
+  flush();
+  return <>{sections}</>;
 }

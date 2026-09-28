@@ -487,10 +487,51 @@ test("public blocks use the full canvas and keep block position separate from te
   assert.match(html, /style="width:50%;margin-left:25%;text-align:center"/);
   assert.match(html, /style="width:50%;margin-left:50%;text-align:left"/);
   assert.match(html, /data-spacing-top="large" data-spacing-bottom="small"/);
-  assert.ok(html.indexOf("profile-content-canvas") > html.indexOf("Öffentliche Beschreibung"));
+  assert.ok(html.indexOf("profile-content-canvas") < html.indexOf("Öffentliche Beschreibung"));
   assert.doesNotMatch(html, /Block horizontal ziehen|Duplizieren|Breite 50 %/);
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   assert.match(css, /\.company-profile \.profile-content-canvas \.profile-content-block \{[\s\S]*max-width: 100%/);
+});
+
+test("description and business areas are separate editable sections below Maps while the profile name stays fixed above", async () => {
+  const rows = [{ id: "11111111-1111-4111-8111-111111111111", profile_id: profileId,
+    type: "heading", slot: "about_heading", sort_order: 0,
+    content: { text: "Über das Haus", layout: { width_percent: 50, offset_percent: 50, text_align: "right",
+      spacing_top: "normal", spacing_bottom: "normal" },
+      order: ["section:about", "22222222-2222-4222-8222-222222222222", "section:business"] }, config: {} },
+  { id: "22222222-2222-4222-8222-222222222222", profile_id: profileId,
+    type: "text", slot: null, sort_order: 0, content: { text: "Weitere Empfehlung" },
+    config: { width_percent: 100, offset_percent: 0, text_align: "left", spacing_top: "normal", spacing_bottom: "normal" } },
+  { id: "33333333-3333-4333-8333-333333333333", profile_id: profileId,
+    type: "heading", slot: "business_areas_heading", sort_order: 0,
+    content: { text: "Unsere Tätigkeiten", hidden: true }, config: {} }];
+  const publicHtml = await renderPage({ authenticated: false }, rows);
+  assert.ok(publicHtml.indexOf("Redaktionelle Firma</h1>") < publicHtml.indexOf("location-module"));
+  assert.ok(publicHtml.indexOf("location-module") < publicHtml.indexOf("Über das Haus"));
+  assert.match(publicHtml, /style="width:50%;margin-left:50%;text-align:right"/);
+  assert.match(publicHtml, /Weitere Empfehlung/);
+  assert.doesNotMatch(publicHtml, /Unsere Tätigkeiten|Reiseberatung/);
+
+  const listing = companyProfileListing(publicProfile, { images: [] });
+  const values = Object.fromEntries(["display_name", "tagline", "description", "business_areas", "phone",
+    "public_email", "website", "street", "postal_code", "city", "region", "country"]
+    .map((field) => [field, publicProfile[field] ?? ""]));
+  const editorHtml = renderToStaticMarkup(createElement(InlineProfileEditor, {
+    listing, categories: [], values, media: { images: [] }, rows: [], contentBlocks: rows,
+    contentAvailable: true, imagesAvailable: true, initialEditing: true,
+    saveProfile: async () => ({ success: "Gespeichert" }), saveMedia: async () => ({}),
+    saveContent: async () => ({}), saveBlockImage: async () => ({}),
+  }));
+  assert.match(editorHtml, /Blocktyp: Beschreibung/);
+  assert.match(editorHtml, /Blocktyp: Tätigkeitsbereiche/);
+  assert.match(editorHtml, /Abschnitt ausgeblendet|öffentlich ausgeblendet/);
+  assert.match(editorHtml, /Abschnitt einblenden/);
+  assert.match(editorHtml, /Abschnitt ausblenden/);
+  assert.match(editorHtml, /Breite 25 %|Breite 50 %/);
+  assert.match(editorHtml, /Block nach oben verschieben/);
+  assert.match(editorHtml, /Block nach unten verschieben/);
+  assert.match(editorHtml, /Beschreibung speichern|Tätigkeitsbereiche speichern/);
+  assert.match(editorHtml, /required="" name="display_name"/);
 });
 
 test("public, inline grid and large crop preview share the same saved image framing", () => {

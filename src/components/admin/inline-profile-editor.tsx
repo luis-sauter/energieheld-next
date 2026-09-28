@@ -10,6 +10,7 @@ import type { MediaRow, MediaState, SignedMedia } from "@/lib/company-media";
 import styles from "./inline-profile.module.css";
 import { splitProfileContent, type ProfileContentBlock } from "@/lib/profile-content";
 import { FixedHeadingEditor, InlineContentEditor } from "./inline-content-editor";
+import type { EditorialItem } from "@/lib/profile-content";
 import { InlineEditorHistoryContext, useInlineEditorHistoryController } from "./inline-editor-history";
 
 const formId = "inline-admin-profile-form";
@@ -70,6 +71,18 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
     country: field("country", "Land"),
   };
 
+  function renderSpecial(item: EditorialItem) {
+    const about = item.kind === "about";
+    return <div className={styles.specialSection}>
+      <FixedHeadingEditor key={`${item.key}-${item.heading}`} slot={about ? "about_heading" : "business_areas_heading"}
+        value={item.heading} defaultText={about ? `Über ${listing.name}` : "Tätigkeitsbereiche"} saveAction={saveContent} />
+      {about ? inlineFields.description : inlineFields.business_areas}
+      <button type="submit" form={formId} className="button" disabled={busy || history.busy}>
+        {busy ? "Wird gespeichert …" : about ? "Beschreibung speichern" : "Tätigkeitsbereiche speichern"}
+      </button>
+    </div>;
+  }
+
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busyRef.current || mediaEditor.busy || history.busy) return;
@@ -122,13 +135,11 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       inlineFields={editing ? inlineFields : undefined}
       aboutHeading={content.aboutHeading}
       businessHeading={content.businessHeading}
-      aboutHeadingEditor={editing && contentAvailable
-        ? <FixedHeadingEditor key={content.aboutHeading} slot="about_heading" value={content.aboutHeading} defaultText={`Über ${listing.name}`} saveAction={saveContent} /> : undefined}
-      businessHeadingEditor={editing && contentAvailable
-        ? <FixedHeadingEditor key={content.businessHeading} slot="business_areas_heading" value={content.businessHeading} defaultText="Tätigkeitsbereiche" saveAction={saveContent} /> : undefined}
-      contentBlocks={editing || content.blocks.length
-        ? <InlineContentEditor key={editing ? "edit" : "view"} blocks={content.blocks} editing={editing} available={contentAvailable} imagesAvailable={imagesAvailable} saveAction={saveContent} saveImage={saveBlockImage} />
-        : undefined}
+      editorialContent={contentAvailable && (editing || listing.description || listing.businessAreas || content.blocks.length)
+        ? <InlineContentEditor key={editing ? "edit" : "view"}
+        blocks={content.blocks} items={content.items} listing={listing} renderSpecial={renderSpecial}
+        editing={editing} available={contentAvailable} imagesAvailable={imagesAvailable}
+        saveAction={saveContent} saveImage={saveBlockImage} /> : undefined}
       logoEditor={editing ? mediaEditor.logoEditor : undefined}
       galleryEditor={editing ? mediaEditor.galleryEditor : undefined}
     />

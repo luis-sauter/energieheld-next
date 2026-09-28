@@ -1,11 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isProfileId, type AdminAccess } from "./admin-review";
 import { checkInlineProfileTarget } from "./inline-admin-profile";
-import { contentText, type ContentBlockType, type HeadingSlot } from "./profile-content";
+import { contentText, type ContentBlockType, type HeadingSlot, type ProfileContentBlock } from "./profile-content";
 import { MEDIA_BUCKET } from "./company-media";
 import { hasPersistedBlockLayout, normalizeBlockLayout, normalizeTextBlockLayout,
   validOffset, validSpacing, validTextAlignment, validWidth } from "./content-block-layout";
 import { normalizeImageGridConfig } from "./image-grid-layout";
+import { changeEditorialOrder, changeEditorialSection, sectionSlot } from "./editorial-section-actions";
 
 export type ContentActionResult = { access: AdminAccess; error?: string; success?: string };
 const missing = "Der Inhaltsblock gehört nicht zu diesem Profil oder wurde bereits entfernt.";
@@ -33,20 +34,31 @@ export async function changeAdminProfileContent(
     if (value && !contentText(value, "heading"))
       return { access: "admin", error: "Die Überschrift darf höchstens 200 Zeichen lang sein." };
     const { data: current, error: readError } = await client.from("profile_content_blocks")
-      .select("id").eq("profile_id", id).eq("slot", headingSlot).maybeSingle();
+      .select("id,content").eq("profile_id", id).eq("slot", headingSlot).maybeSingle();
     if (readError) return { access: "admin", error: failed };
     if (!value) {
       if (current) {
-        const { data, error } = await client.from("profile_content_blocks")
-          .delete().eq("profile_id", id).eq("id", current.id).eq("slot", headingSlot)
-          .select("id").maybeSingle();
+        const metadata = current.content?.layout || current.content?.hidden || current.content?.order;
+        let replacement: ProfileContentBlock["content"] | null = null;
+        if (metadata) {
+          const profile = await client.from("company_profiles").select("display_name").eq("id", id).maybeSingle();
+          if (profile.error || !profile.data?.display_name) return { access: "admin", error: failed };
+          const fallback = headingSlot === "about_heading"
+            ? `Über ${profile.data.display_name}`.slice(0, 200) : "Tätigkeitsbereiche";
+          replacement = { ...current.content, text: fallback };
+        }
+        const { data, error } = replacement
+          ? await client.from("profile_content_blocks").update({ content: replacement })
+            .eq("profile_id", id).eq("id", current.id).eq("slot", headingSlot).select("id").maybeSingle()
+          : await client.from("profile_content_blocks").delete()
+            .eq("profile_id", id).eq("id", current.id).eq("slot", headingSlot).select("id").maybeSingle();
         if (error || data?.id !== current.id) return { access: "admin", error: failed };
       }
       return { access: "admin", success: "Die Standardüberschrift ist wiederhergestellt." };
     }
     if (current) {
       const { data, error } = await client.from("profile_content_blocks")
-        .update({ content: { text: value } }).eq("profile_id", id).eq("id", current.id)
+        .update({ content: { ...current.content, text: value } }).eq("profile_id", id).eq("id", current.id)
         .eq("slot", headingSlot).select("id").maybeSingle();
       return error || data?.id !== current.id
         ? { access: "admin", error: failed }
@@ -80,23 +92,14 @@ export async function changeAdminProfileContent(
   }
 
   if (intent === "reorder") {
-    const ids = form.getAll("block_ids");
-    const { data, error } = await client.from("profile_content_blocks")
-      .select("id").eq("profile_id", id).is("slot", null);
-    if (error) return { access: "admin", error: failed };
-    const current = new Set((data ?? []).map((row) => row.id));
-    if (ids.length !== current.size || new Set(ids).size !== current.size ||
-      ids.some((item) => typeof item !== "string" || !current.has(item)))
-      return { access: "admin", error: "Die Blöcke haben sich geändert. Bitte laden Sie die Seite neu." };
-    const result = await client.rpc("reorder_profile_content_blocks", {
-      p_profile_id: id, p_block_ids: ids,
-    });
-    return result.error
-      ? { access: "admin", error: failed }
-      : { access: "admin", success: "Die Reihenfolge wurde gespeichert." };
+    return { access: "admin", ...await changeEditorialOrder(client, id, intent, form) };
   }
 
   const blockId = form.get("block_id");
+  if (intent === "move")
+    return { access: "admin", ...await changeEditorialOrder(client, id, intent, form) };
+  if (sectionSlot(blockId))
+    return { access: "admin", ...await changeEditorialSection(client, id, blockId, intent, form) };
   if (!isProfileId(blockId)) return { access: "admin", error: missing };
   if (intent === "duplicate") {
     const { data: source, error: sourceError } = await client.from("profile_content_blocks")
@@ -152,29 +155,6 @@ export async function changeAdminProfileContent(
       ? { access: "admin", error: failed }
       : { access: "admin", success: "Das Layout wurde gespeichert." };
   }
-  if (intent === "move") {
-    const direction = form.get("direction");
-    if (direction !== "up" && direction !== "down")
-      return { access: "admin", error: "Die Sortieraktion ist ungültig." };
-    const { data, error } = await client.from("profile_content_blocks")
-      .select("id").eq("profile_id", id).is("slot", null)
-      .order("sort_order").order("id");
-    if (error) return { access: "admin", error: failed };
-    const ids = (data ?? []).map((row) => row.id);
-    const index = ids.indexOf(blockId);
-    const swap = index + (direction === "up" ? -1 : 1);
-    if (index < 0) return { access: "admin", error: missing };
-    if (swap < 0 || swap >= ids.length)
-      return { access: "admin", error: "Der Block kann nicht weiter verschoben werden." };
-    [ids[index], ids[swap]] = [ids[swap], ids[index]];
-    const result = await client.rpc("reorder_profile_content_blocks", {
-      p_profile_id: id, p_block_ids: ids,
-    });
-    return result.error
-      ? { access: "admin", error: failed }
-      : { access: "admin", success: "Die Reihenfolge wurde gespeichert." };
-  }
-
   if (intent !== "update" && intent !== "delete")
     return { access: "admin", error: "Die Aktion ist ungültig." };
   const { data: block, error: readError } = await client.from("profile_content_blocks")
