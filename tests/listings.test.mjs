@@ -33,6 +33,11 @@ test("maps use only available addresses and distinguish locality from complete a
     address.query,
   );
   assert.equal(new URL(address.embedUrl).searchParams.get("z"), "16");
+  const moved = googleMapsLocation({
+    ...location, street: "Neue Straße 7", postalCode: "10115", city: "Berlin", region: "Berlin",
+  });
+  assert.equal(new URL(moved.embedUrl).searchParams.get("q"), "Neue Straße 7, 10115 Berlin, Berlin, Deutschland");
+  assert.notEqual(moved.embedUrl, address.embedUrl);
   assert.equal(
     googleMapsLocation({ ...location, street: "Teststraße" }).precise,
     false,

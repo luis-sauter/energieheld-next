@@ -36,6 +36,7 @@ const fields: {
   { name: "postal_code", label: "PLZ", autoComplete: "postal-code" },
   { name: "city", label: "Ort", autoComplete: "address-level2" },
   { name: "region", label: "Region", autoComplete: "address-level1" },
+  { name: "country", label: "Land", autoComplete: "country-name" },
 ];
 
 type SaveAction = (

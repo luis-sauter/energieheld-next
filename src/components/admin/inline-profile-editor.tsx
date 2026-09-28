@@ -39,12 +39,17 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   const [editing, setEditing] = useState(initialEditing);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<ProfileFormState>({});
+  const [mapLocation, setMapLocation] = useState(listing.location);
   const history = useInlineEditorHistoryController(saveContent, saveBlockImage, editing);
   const mediaEditor = useInlineAdminMedia({ saveAction: saveMedia, media, rows, profileName: listing.name, initials: listing.initials });
   const content = splitProfileContent(editing ? contentBlocks : publicContentBlocks ?? contentBlocks, listing.name);
 
   function field(name: keyof ProfileValues, label: string, multiline = false) {
-    const common = { id: `inline-${name}`, name, form: formId, defaultValue: values[name], disabled: busy || history.busy, "aria-label": label, onChange: () => setFeedback({}) };
+    const common = { id: `inline-${name}`, name, form: formId, defaultValue: values[name], disabled: busy || history.busy, "aria-label": label, onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFeedback({});
+      const key = ({ street: "street", postal_code: "postalCode", city: "city", region: "region", country: "country" } as const)[name as "street" | "postal_code" | "city" | "region" | "country"];
+      if (key) setMapLocation((current) => ({ ...current, [key]: event.target.value }));
+    } };
     return <label className={styles.field} htmlFor={common.id}>
       <span>{label}</span>
       {multiline ? <textarea {...common} rows={name === "description" ? 7 : 3} /> : <input {...common} type={name === "public_email" ? "email" : name === "website" ? "url" : name === "phone" ? "tel" : "text"} required={name === "display_name"} />}
@@ -62,6 +67,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
     postal_code: field("postal_code", "PLZ"),
     city: field("city", "Ort"),
     region: field("region", "Region"),
+    country: field("country", "Land"),
   };
 
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
@@ -109,6 +115,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       presentation="company"
       showMap
       allowDemoMap={allowDemoMap}
+      mapLocation={editing ? mapLocation : undefined}
       originalDemoMedia={originalDemoMedia}
       contactAction={editing ? undefined : contactAction}
       adminAction={editing ? undefined : <button type="button" className={`button ${styles.editButton}`} onClick={() => { setFeedback({}); setEditing(true); }}>Profil bearbeiten</button>}

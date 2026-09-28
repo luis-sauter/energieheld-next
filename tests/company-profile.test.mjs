@@ -75,6 +75,14 @@ test("profile name is required; optional fields may be empty", () => {
   assert.equal(validateProfile(form()).error, undefined);
   assert.equal(validateProfile(form()).values.display_name, "Meine Firma");
 });
+test("owner address form saves supplied country without clearing an omitted legacy country", async () => {
+  const updated = client();
+  await updateOwnCompanyProfile(updated, form({ country: "Österreich", city: "Wien" }));
+  assert.equal(updated.queries.find((query) => query.payload).payload.country, "Österreich");
+  const legacy = client();
+  await updateOwnCompanyProfile(legacy, form());
+  assert.equal("country" in legacy.queries.find((query) => query.payload).payload, false);
+});
 
 test("company can save business areas as text without assigning categories", async () => {
   const db = client({ status: "approved" });
@@ -168,7 +176,7 @@ test("invalid input never starts a database write", async () => {
 test("own profile fields are saved and empty optional fields cleared", async () => {
   const db = client();
   assert.ok(
-    (await updateOwnCompanyProfile(db, form({ city: " München " }))).success,
+    (await updateOwnCompanyProfile(db, form({ city: " München ", country: "Deutschland" }))).success,
   );
   assert.deepEqual(db.queries[0].filters, [
     ["owner_user_id", "verified-owner"],

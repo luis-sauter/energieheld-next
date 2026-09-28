@@ -2,6 +2,7 @@
 
 import { createClient } from "./supabase/client";
 import { MEDIA_BUCKET, MEDIA_MAX_BYTES, type MediaState } from "./company-media";
+import { optimizeProfileImage } from "./client-image-optimization";
 
 // Shared by the legacy admin media page and the inline profile editor.
 export async function uploadAdminMedia(
@@ -26,11 +27,12 @@ export async function uploadPreparedAdminMedia(
   finish: FormData,
   onProgress: (label: string) => void,
 ): Promise<MediaState> {
-  if (!(file instanceof File) || !file.size || file.size > MEDIA_MAX_BYTES ||
-    !["image/jpeg", "image/png", "image/webp"].includes(file.type))
-    return { error: "Bitte wählen Sie JPG, PNG oder WebP mit maximal 5 MB." };
+  if (!(file instanceof File)) return { error: "Bitte wählen Sie eine Bilddatei." };
   let path: string | undefined;
   try {
+    onProgress("Bild wird optimiert …");
+    file = await optimizeProfileImage(file);
+    if (file.size > MEDIA_MAX_BYTES) return { error: "Das Bild ist nach der Optimierung noch zu groß." };
     prepare.set("file_type", file.type);
     prepare.set("file_size", String(file.size));
     const prepared = await saveAction(prepare);
@@ -45,7 +47,7 @@ export async function uploadPreparedAdminMedia(
     const result = await saveAction(finish);
     if (result.error) await storage.remove([path]);
     return result;
-  } catch {
+  } catch (error) {
     if (path) {
       try {
         await createClient().storage.from(MEDIA_BUCKET).remove([path]);
@@ -53,6 +55,7 @@ export async function uploadPreparedAdminMedia(
         // An orphan remains private if cleanup also fails.
       }
     }
-    return { error: "Das Bild konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut." };
+    return { error: error instanceof Error && /^(Das Bild|Bitte)/.test(error.message)
+      ? error.message : "Das Bild konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut." };
   }
 }

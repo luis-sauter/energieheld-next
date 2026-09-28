@@ -39,7 +39,7 @@ export function ListingRow({
     <article className={`listing-row listing-row--${premium ? "premium" : "basic"}`}>
       {premium && cardImage && (
         <div className="row-logo">
-          <CompanyImage key={cardImage.src} image={cardImage} width={160} height={160} />
+          <CompanyImage key={cardImage.src} image={cardImage} cover />
         </div>
       )}
       <div className="row-content">

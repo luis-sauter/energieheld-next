@@ -1,4 +1,4 @@
-import type { Category, Listing } from "@/types/portal";
+import type { Category, Listing, Location } from "@/types/portal";
 import { formatLocation, googleMapsLocation } from "@/lib/listings";
 import { Badge } from "./listings";
 import { CompanyLogo } from "./company-image";
@@ -9,7 +9,7 @@ import { QualitySeal } from "@/components/quality/quality-seal";
 export type InlineProfileFields = Partial<Record<
   "display_name" | "tagline" | "description" | "business_areas" |
   "phone" | "public_email" | "website" | "street" |
-  "postal_code" | "city" | "region", React.ReactNode
+  "postal_code" | "city" | "region" | "country", React.ReactNode
 >>;
 
 function safeWebsite(value: string): string | null {
@@ -60,7 +60,7 @@ export function ContactSection({
       {inlineFields?.street ?? (listing.location.street && <p>{listing.location.street}</p>)}
       {inlineFields ? (
         <div className="inline-location-fields">
-          {inlineFields.postal_code}{inlineFields.city}{inlineFields.region}
+          {inlineFields.postal_code}{inlineFields.city}{inlineFields.region}{inlineFields.country}
         </div>
       ) : location && (
         <p className="location">
@@ -170,6 +170,7 @@ export function ListingDetail({
   contentBlocks,
   contactAction,
   showMap = false,
+  mapLocation,
   allowDemoMap = false,
   originalDemoMedia = false,
   showVerification = true,
@@ -177,6 +178,7 @@ export function ListingDetail({
   listing: Listing;
   categories: Category[];
   showMap?: boolean;
+  mapLocation?: Location;
   allowDemoMap?: boolean;
   originalDemoMedia?: boolean;
   showVerification?: boolean;
@@ -195,8 +197,9 @@ export function ListingDetail({
   contactAction?: React.ReactNode;
 }) {
   const Heading = headingLevel === 1 ? "h1" : "h2";
+  const location = mapLocation ?? listing.location;
   const map = showMap && (!listing.isDemo || allowDemoMap)
-    ? googleMapsLocation(listing.location) : null;
+    ? googleMapsLocation(location) : null;
   const content = (
     <>
       <div className="detail-heading">
@@ -228,6 +231,11 @@ export function ListingDetail({
           )}
         {adminAction}
       </div>
+      {(listing.video || galleryEditor || listing.images.length > 0) && <div className="profile-header-media">
+        {listing.video ? <video className="profile-video" src={listing.video.src} poster={listing.video.poster}
+          controls playsInline preload="metadata" aria-label={`Video von ${listing.name}`} />
+          : galleryEditor ?? <ImageGallery images={listing.images} isDemo={listing.isDemo && !originalDemoMedia} />}
+      </div>}
       <div className="profile-information">
         <ContactSection
           listing={listing}
@@ -254,7 +262,7 @@ export function ListingDetail({
             <p className="eyebrow">Standort</p>
             <h2>
               {map?.query ||
-                formatLocation(listing.location) ||
+                formatLocation(location) ||
                 "Standort noch nicht angegeben"}
             </h2>
             <p>
@@ -277,7 +285,7 @@ export function ListingDetail({
               </a>
             ) : (
               !listing.isDemo &&
-              listing.location.city && (
+              location.city && (
                 <a
                   className="text-link"
                   target="_blank"
@@ -286,9 +294,9 @@ export function ListingDetail({
                     "https://www.google.com/maps/search/?api=1&query=" +
                     encodeURIComponent(
                       [
-                        listing.location.postalCode,
-                        listing.location.city,
-                        listing.location.country,
+                        location.postalCode,
+                        location.city,
+                        location.country,
                       ]
                         .filter(Boolean)
                         .join(" "),
@@ -318,14 +326,6 @@ export function ListingDetail({
       {contentBlocks && <div className="profile-content-canvas">{contentBlocks}</div>}
       <div className="detail-grid">
         <div>
-          {galleryEditor ??
-            (listing.images.length > 0 && (
-              <ImageGallery
-                key={listing.images.map((image) => image.src).join("|")}
-                images={listing.images}
-                isDemo={listing.isDemo && !originalDemoMedia}
-              />
-            ))}
           {(listing.businessAreas || inlineFields?.business_areas) && (
             <section className="detail-section">
               {businessHeadingEditor ?? <h2>

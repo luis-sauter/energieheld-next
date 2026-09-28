@@ -9,6 +9,7 @@ import { ListingDetail } from "@/components/portal/listing-detail";
 import { energieheld } from "@/config/energieheld";
 import type { Listing } from "@/types/portal";
 import type { SignedMedia } from "@/lib/company-media";
+import { optimizeProfileImage } from "@/lib/client-image-optimization";
 
 export function CompanyProfileDesigner({
   listing,
@@ -28,12 +29,12 @@ export function CompanyProfileDesigner({
       const intent = form.get("intent");
       if (intent !== "logo-upload" && intent !== "gallery-upload")
         return saveCompanyMedia({}, form);
-      const file = form.get("file");
-      if (!(file instanceof File) || !file.size || file.size > 5242880)
-        return { error: "Bitte wählen Sie eine Bilddatei mit maximal 5 MB." };
+      let file = form.get("file");
+      if (!(file instanceof File)) return { error: "Bitte wählen Sie eine Bilddatei." };
       let path: string | undefined;
       const storage = createClient().storage.from("company-media");
       try {
+        file = await optimizeProfileImage(file);
         const prepare = new FormData();
         prepare.set(
           "intent",
@@ -57,7 +58,7 @@ export function CompanyProfileDesigner({
         if (result.error) await storage.remove([path]);
         if (result.success) dialog.current?.close();
         return result;
-      } catch {
+      } catch (error) {
         if (path) {
           try {
             await storage.remove([path]);
@@ -66,8 +67,8 @@ export function CompanyProfileDesigner({
           }
         }
         return {
-          error:
-            "Das Bild konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+          error: error instanceof Error && /^(Bitte|Das Bild)/.test(error.message)
+            ? error.message : "Das Bild konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
         };
       }
     },
@@ -236,7 +237,7 @@ export function CompanyProfileDesigner({
             </button>
           </div>
           <p id="upload-file-help">
-            JPG, PNG oder WebP · maximal 5 MB
+            JPG, PNG oder WebP · Original bis 30 MB · wird vor dem Upload optimiert
             {uploadKind === "gallery-upload" ? " · bis zu 8 Bilder" : ""}
           </p>
           <input type="hidden" name="intent" value={uploadKind} />

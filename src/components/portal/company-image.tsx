@@ -8,10 +8,12 @@ export function CompanyImage({
   image,
   width = 160,
   height = 120,
+  cover = false,
 }: {
   image: PortalImage;
   width?: number;
   height?: number;
+  cover?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   if (failed) return <span>Bild nicht verfügbar</span>;
@@ -19,11 +21,10 @@ export function CompanyImage({
     <Image
       src={image.src}
       alt={image.alt}
-      width={width}
-      height={height}
+      {...(cover ? { fill: true, sizes: "(max-width: 700px) 100vw, 200px" } : { width, height })}
       unoptimized
       onError={() => setFailed(true)}
-      style={{ objectFit: "contain", maxWidth: "100%", height: "auto" }}
+      style={cover ? { objectFit: "cover" } : { objectFit: "contain", maxWidth: "100%", height: "auto" }}
     />
   );
 }

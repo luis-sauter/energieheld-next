@@ -109,6 +109,7 @@ test("admin updates only validated normal fields on the verified profile row", a
     status: "approved",
     submitted_at: "2000-01-01",
     approved_at: "2000-01-01",
+    country: "Deutschland",
   }));
   assert.ok(result.success);
   assert.deepEqual(db.calls[1].filters, [["id", profileId]]);
@@ -118,6 +119,14 @@ test("admin updates only validated normal fields on the verified profile row", a
   assert.equal(db.calls[2].payload.business_areas, "Reiseberatung");
   assert.equal(db.calls[2].payload.city, "Berlin");
   assert.equal(db.calls[2].payload.phone, null);
+});
+test("admin address save includes country only when the editor submits it", async () => {
+  const withCountry = client();
+  await updateAdminCompanyProfile(withCountry, profileId, form({ street: "Bahnhofstraße 4", postal_code: "10115", country: "Deutschland" }));
+  assert.equal(withCountry.calls.find((call) => call.payload).payload.country, "Deutschland");
+  const oldForm = client();
+  await updateAdminCompanyProfile(oldForm, profileId, form());
+  assert.equal("country" in oldForm.calls.find((call) => call.payload).payload, false);
 });
 
 test("missing profile, read error, failed update and stale update never report success", async () => {

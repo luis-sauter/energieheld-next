@@ -91,6 +91,7 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
           key={media.images.map((image) => image.id).join("|")}
           images={media.images}
           isDemo={false}
+          autoplay={false}
           detailControls={media.images.map((image) => (
             <div key={image.id} className={inline.galleryControls}>
               <form key={`${image.id}-${rowById.get(image.id)?.alt_text ?? ""}`} onSubmit={(event) => {
@@ -121,7 +122,7 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
           <h2>{kind === "logo" ? "Logo auswählen" : "Bild hinzufügen"}</h2>
           <button type="button" disabled={Boolean(busy)} aria-label="Dialog schließen" onClick={() => dialog.current?.close()}>×</button>
         </div>
-        <p>JPG, PNG oder WebP · maximal 5 MB</p>
+        <p>JPG, PNG oder WebP · Original bis 30 MB · wird vor dem Upload optimiert</p>
         <label className={styles.uploadField}>Bilddatei<input type="file" name="file" required accept="image/jpeg,image/png,image/webp" disabled={Boolean(busy)} /></label>
         {kind === "gallery" && <label className={styles.uploadField}>Bildbeschreibung (optional)<input type="text" name="alt_text" maxLength={500} disabled={Boolean(busy)} placeholder="Was ist auf dem Bild zu sehen?" /></label>}
         {busy && <p role="status" className={styles.feedback}><span className={styles.spinner} aria-hidden="true" />{busy}</p>}

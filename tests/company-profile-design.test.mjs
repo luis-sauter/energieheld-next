@@ -256,7 +256,7 @@ test("editor gallery shares the public position and preserves contain logo and a
   assert.doesNotMatch(html, /<dialog[^>]*\sopen/);
   assert.match(html, /Bildbeschreibung \(optional\)/);
   assert.ok(html.indexOf("profile-information") < html.indexOf("Über Bauwerk"));
-  assert.ok(html.indexOf("Über Bauwerk") < html.indexOf("gallery-main"));
+  assert.ok(html.indexOf("gallery-main") < html.indexOf("profile-information"));
   assert.match(html, /aria-label="Standort"/);
   const publicHtml = renderToStaticMarkup(
     createElement(ListingDetail, {
@@ -286,6 +286,27 @@ test("editor gallery shares the public position and preserves contain logo and a
       `<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profilgestaltung – lokale Testdaten</title><style>${css}</style><body><main class="container detail-page"><div class="profile-editor-toolbar"><div><h1>Profil gestalten</h1><p>Schritt 2 von 2 · Ihre Profilvorschau</p></div><a href="#">Stammdaten bearbeiten</a></div>${html}</main></body></html>`,
     );
   }
+});
+test("a real video source takes the profile-head slot; otherwise sorted gallery remains there", () => {
+  const media = { images: [
+    { id: "first", src: "/images/house.jpg", alt: "Erstes Bild" },
+    { id: "second", src: "/images/home.jpg", alt: "Zweites Bild" },
+  ] };
+  const listing = companyProfileListing(profile, media);
+  const gallery = renderToStaticMarkup(createElement(ListingDetail, {
+    listing, categories: [], presentation: "company",
+  }));
+  assert.ok(gallery.indexOf("gallery-main") < gallery.indexOf("profile-information"));
+  assert.ok(gallery.indexOf("Erstes Bild") < gallery.indexOf("Zweites Bild"));
+  assert.match(gallery, /Vorheriges Bild/);
+  assert.match(gallery, /Nächstes Bild/);
+  assert.match(gallery, /in voller Größe öffnen/);
+  const withVideo = renderToStaticMarkup(createElement(ListingDetail, {
+    listing: { ...listing, video: { src: "https://example.org/real.mp4" } },
+    categories: [], presentation: "company",
+  }));
+  assert.match(withVideo, /<video[^>]*real\.mp4/);
+  assert.doesNotMatch(withVideo, /gallery-main|gallery-thumbs/);
 });
 test("only new or rejected profiles can request initial publication; pending and approved do not repeat review", () => {
   for (const status of ["draft", "rejected", "pending", "approved"]) {

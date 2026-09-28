@@ -38,6 +38,8 @@ export function InlineImageGridEditor({ block, saveAction }: {
   const activeImage = images.find((image) => image.id === activeCropId);
   const config = normalizeImageGridConfig(block.config);
   const columns = config.columns;
+  const [columnOverride, setColumnOverride] = useState<{ base: number; value: number } | null>(null);
+  const previewColumns = columnOverride?.base === columns ? columnOverride.value : columns;
   const resizeAvailable = hasPersistedImageGridSize(block.config);
   const [size, setSize] = useState(() => ({ width: config.width_percent, ratio: config.aspect_ratio }));
   const sizeRef = useRef(size);
@@ -188,16 +190,16 @@ export function InlineImageGridEditor({ block, saveAction }: {
   return <div className={styles.imageBlock}>
     <div className={styles.layoutButtons} role="group" aria-label="Bildlayout">
       {[1, 2, 3, 4].map((count) => <button key={count} type="button" className="button"
-        aria-pressed={columns === count} disabled={busy || history.busy || count < images.length}
+        aria-pressed={previewColumns === count} disabled={busy || history.busy || count < images.length}
         title={count < images.length ? "Bitte zuerst Bilder entfernen" : `${count} ${count === 1 ? "Bild" : "Bilder"}`}
-        onClick={() => { const data = form("layout"); data.set("columns", String(count));
-          void run(data, { kind: "image-layout", blockId: block.id, before: columns, after: count }); }}>
+        onClick={() => { setColumnOverride({ base: columns, value: count }); const data = form("layout"); data.set("columns", String(count));
+          void run(data, { kind: "image-layout", blockId: block.id, before: columns, after: count }).then((ok) => { if (!ok) setColumnOverride(null); }); }}>
         {count} {count === 1 ? "Bild" : "Bilder"}
       </button>)}
     </div>
     <div ref={frameRef} className={`${gridStyles.frame} ${styles.resizableImageFrame}`}>
-    <div ref={gridRef} className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={columns}>
-      {imageGridSlots(columns, images).map((image, index) => image ? <figure key={image.id} className={styles.imageTile}
+    <div ref={gridRef} className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={previewColumns}>
+      {imageGridSlots(previewColumns, images).map((image, index) => image ? <figure key={image.id} className={styles.imageTile}
         onDragOver={(event) => { if (dragId.current && dragId.current !== image.id) event.preventDefault(); }}
         onDrop={(event) => { event.preventDefault(); dropOn(image.id); }}>
         <div className={gridStyles.tile} style={{ aspectRatio: size.ratio }}><ProfileBlockImage image={image} /></div>
