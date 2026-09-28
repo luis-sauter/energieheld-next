@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProfileEditorialContent } from "@/components/portal/profile-content-blocks";
 import type { Listing } from "@/types/portal";
@@ -13,9 +13,14 @@ import { normalizeBlockLayout, normalizeTextBlockLayout } from "@/lib/content-bl
 import { useInlineEditorHistory } from "./inline-editor-history";
 import { contentBlockRows, contentColumn } from "@/lib/content-block-rows";
 import rowStyles from "@/components/portal/profile-content-blocks.module.css";
+import { adjacentImageLayout, type ImageShare, type ImageSide } from "@/lib/adjacent-image-layout";
+import { uploadPreparedAdminMedia } from "@/lib/admin-media-upload";
+import { AdjacentImagePreview } from "./adjacent-image-preview";
 
-type ContentState = { error?: string; success?: string };
+type ContentState = { error?: string; success?: string; blockId?: string };
 type SaveContent = (form: FormData) => Promise<ContentState>;
+type AdjacentDraft = { textId: string; side: ImageSide; share: ImageShare; file?: File; previewUrl?: string };
+type PairPreview = { textId: string; imageId: string; side: ImageSide; share: ImageShare };
 
 export function FixedHeadingEditor({ slot, value, defaultText, saveAction }: {
   slot: HeadingSlot;
@@ -79,6 +84,26 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
   const [feedback, setFeedback] = useState<ContentState>({});
   const [pickerBefore, setPickerBefore] = useState<string | null | undefined>();
   const [draft, setDraft] = useState<{ type: ContentBlockType; before: string | null } | null>(null);
+  const [adjacentDraft, setAdjacentDraft] = useState<AdjacentDraft | null>(null);
+  const [pairPreview, setPairPreview] = useState<PairPreview | null>(null);
+  const [progress, setProgress] = useState("");
+  const previewUrl = useRef<string | null>(null);
+  useEffect(() => () => { if (previewUrl.current) URL.revokeObjectURL(previewUrl.current); }, []);
+  useEffect(() => {
+    if (!pairPreview) return;
+    const layout = adjacentImageLayout(pairPreview.side, pairPreview.share);
+    const image = blocks.find((block) => block.id === pairPreview.imageId);
+    const text = blocks.find((block) => block.id === pairPreview.textId);
+    if (layout && image && text && normalizeBlockLayout(image.config).width_percent === layout.imageWidth &&
+      normalizeBlockLayout(image.config).offset_percent === layout.imageOffset &&
+      normalizeBlockLayout(text.config).width_percent === layout.textWidth &&
+      normalizeBlockLayout(text.config).offset_percent === layout.textOffset &&
+      (items.findIndex((item) => item.key === image.id) < items.findIndex((item) => item.key === text.id)) ===
+        (pairPreview.side === "left")) {
+      const frame = window.requestAnimationFrame(() => setPairPreview(null));
+      return () => window.cancelAnimationFrame(frame);
+    }
+  }, [blocks, items, pairPreview]);
   if (!editing) return <ProfileEditorialContent items={items} listing={listing} />;
   if (!available) return <p role="status" className={styles.contentUnavailable}>Inhaltsblöcke werden verfügbar, sobald die neue Datenbankmigration angewendet ist.</p>;
 
@@ -109,6 +134,71 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
     form.set("intent", intent);
     if (blockId) form.set("block_id", blockId);
     return form;
+  }
+  function clearAdjacentDraft() {
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+    previewUrl.current = null;
+    setAdjacentDraft(null);
+  }
+  async function createAdjacentImage(event: React.SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!adjacentDraft?.file || busyRef.current || history.busy) return;
+    busyRef.current = true;
+    setBusy(true);
+    setFeedback({});
+    const form = new FormData();
+    form.set("intent", "pair-image");
+    form.set("text_block_id", adjacentDraft.textId);
+    form.set("image_side", adjacentDraft.side);
+    form.set("image_width", String(adjacentDraft.share));
+    let createdBlockId: string | undefined;
+    async function removeIncompleteBlock() {
+      if (!createdBlockId) return true;
+      return Boolean((await saveAction(formFor("delete", createdBlockId))).success);
+    }
+    try {
+      const created = await saveAction(form);
+      if (!created.success || !created.blockId) {
+        setFeedback({ error: created.error ?? "Der Bildblock konnte nicht angelegt werden." });
+        return;
+      }
+      createdBlockId = created.blockId;
+      const prepare = formFor("prepare", created.blockId);
+      const finish = formFor("upload", created.blockId);
+      finish.set("alt_text", "");
+      const uploaded = await uploadPreparedAdminMedia(saveImage, adjacentDraft.file, prepare, finish, setProgress);
+      if (!uploaded.success) {
+        const removed = await removeIncompleteBlock();
+        setFeedback({ error: `${uploaded.error ?? "Das Bild konnte nicht hochgeladen werden."}${removed ? "" : " Bitte entfernen Sie den unvollständigen Bildblock im Editor."}` });
+        router.refresh();
+        return;
+      }
+      const arrangement = new FormData();
+      arrangement.set("intent", "pair-layout");
+      arrangement.set("text_block_id", adjacentDraft.textId);
+      arrangement.set("image_block_id", created.blockId);
+      arrangement.set("image_side", adjacentDraft.side);
+      arrangement.set("image_width", String(adjacentDraft.share));
+      const arranged = await saveAction(arrangement);
+      if (!arranged.success) {
+        const removed = await removeIncompleteBlock();
+        setFeedback({ error: `${arranged.error ?? "Text und Bild konnten nicht angeordnet werden."}${removed ? "" : " Bitte entfernen Sie den Bildblock im Editor."}` });
+        router.refresh();
+        return;
+      }
+      history.clear();
+      setFeedback({ success: "Bild und Text stehen jetzt nebeneinander." });
+      clearAdjacentDraft();
+      router.refresh();
+    } catch {
+      try { await removeIncompleteBlock(); } catch { /* A failed cleanup remains scoped to this profile. */ }
+      setFeedback({ error: "Das Bild konnte nicht hinzugefügt werden. Bitte versuchen Sie es erneut." });
+      router.refresh();
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+      setProgress("");
+    }
   }
   async function saveBlock(intent: string, blockId: string, values: Record<string, string> = {}) {
     const form = formFor(intent, blockId);
@@ -180,7 +270,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
     </div>;
   }
 
-  function renderEditableBlock(block: ProfileContentBlock) {
+  function renderEditableBlock(block: ProfileContentBlock, paired = false) {
     const index = items.findIndex((item) => item.key === block.id);
     return <div key={block.id}>
       {addControl(block.id)}
@@ -206,17 +296,116 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
             <button className="button" disabled={busy || history.busy}>{busy ? "Wird gespeichert …" : "Block speichern"}</button>
           </div>
         </form>}
+        {block.type === "text" && imagesAvailable && !paired && <div className={styles.adjacentAction}>
+          {adjacentDraft?.textId !== block.id && <button type="button" className="button" disabled={busy || history.busy}
+            onClick={() => { clearAdjacentDraft(); setAdjacentDraft({ textId: block.id, side: "right", share: 50 }); }}>Bild daneben hinzufügen</button>}
+          {adjacentDraft?.textId === block.id && <form className={styles.adjacentSetup} onSubmit={createAdjacentImage}>
+            <strong>Bild neben diesem Text</strong>
+            <label>Bild auswählen
+              <input type="file" accept="image/jpeg,image/png,image/webp" required disabled={busy}
+                onChange={(event) => {
+                  if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+                  const file = event.target.files?.[0];
+                  previewUrl.current = file ? URL.createObjectURL(file) : null;
+                  setAdjacentDraft((current) => current ? { ...current, file, previewUrl: previewUrl.current ?? undefined } : null);
+                }} />
+            </label>
+            <div className={styles.adjacentOptions} role="group" aria-label="Bildposition">
+              <span>Bildposition</span>
+              {(["left", "right"] as const).map((side) => <button key={side} type="button" className="button"
+                aria-pressed={adjacentDraft.side === side} disabled={busy}
+                onClick={() => setAdjacentDraft((current) => current ? { ...current, side } : null)}>
+                Bild {side === "left" ? "links" : "rechts"}
+              </button>)}
+            </div>
+            <div className={styles.adjacentOptions} role="group" aria-label="Breitenverhältnis">
+              <span>Bild / Text</span>
+              {([25, 50, 75] as const).map((share) => <button key={share} type="button" className="button"
+                aria-pressed={adjacentDraft.share === share} disabled={busy}
+                onClick={() => setAdjacentDraft((current) => current ? { ...current, share } : null)}>
+                {share} / {100 - share}
+              </button>)}
+            </div>
+            <AdjacentImagePreview text={block.content.text} side={adjacentDraft.side}
+              share={adjacentDraft.share} previewUrl={adjacentDraft.previewUrl} />
+            <div className={styles.blockActions}>
+              <button className="button button-primary" disabled={busy || !adjacentDraft.file}>{busy ? "Wird hinzugefügt …" : "Bild und Text anordnen"}</button>
+              <button type="button" className="button" disabled={busy} onClick={clearAdjacentDraft}>Abbrechen</button>
+            </div>
+          </form>}
+        </div>}
       </InlineBlockLayout>
     </div>;
   }
 
   function renderNormalRun(run: ProfileContentBlock[]) {
-    return contentBlockRows(run).map((row) => row.right ? <div className={rowStyles.contentRow} key={row.left[0].id}>
-      {[row.left, row.right].map((column) => <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
-        key={column[0].id} style={{ gridColumn: contentColumn(column[0]) }}>
-        {column.map(renderEditableBlock)}
-      </div>)}
-    </div> : row.left.map(renderEditableBlock));
+    let displayed = run;
+    if (pairPreview) {
+      const layout = adjacentImageLayout(pairPreview.side, pairPreview.share);
+      const textAt = run.findIndex((block) => block.id === pairPreview.textId);
+      const image = run.find((block) => block.id === pairPreview.imageId);
+      if (layout && textAt >= 0 && image) {
+        const heading = run[textAt - 1]?.type === "heading" &&
+          normalizeBlockLayout(run[textAt - 1].config).width_percent === normalizeBlockLayout(run[textAt].config).width_percent &&
+          normalizeBlockLayout(run[textAt - 1].config).offset_percent === normalizeBlockLayout(run[textAt].config).offset_percent
+          ? run[textAt - 1] : null;
+        displayed = run.filter((block) => block.id !== image.id).map((block) => {
+          const position = block.id === image.id ? { width_percent: layout.imageWidth, offset_percent: layout.imageOffset }
+            : block.id === pairPreview.textId || block.id === heading?.id
+              ? { width_percent: layout.textWidth, offset_percent: layout.textOffset } : null;
+          return position ? { ...block, config: { ...block.config, ...position } } : block;
+        });
+        const imagePreview = { ...image, config: { ...image.config,
+          width_percent: layout.imageWidth, offset_percent: layout.imageOffset } };
+        const target = displayed.findIndex((block) => block.id === (pairPreview.side === "left" ? heading?.id ?? pairPreview.textId : pairPreview.textId));
+        displayed.splice(pairPreview.side === "left" ? target : target + 1, 0, imagePreview);
+      }
+    }
+    return contentBlockRows(displayed).map((row) => {
+      if (!row.right) return row.left.map((block) => renderEditableBlock(block));
+      const columns = [row.left, row.right];
+      const image = columns.flat().find((block) => block.type === "image_grid");
+      const text = columns.flat().find((block) => block.type === "text");
+      const imageLayout = image ? normalizeBlockLayout(image.config) : null;
+      const textLayout = text ? normalizeBlockLayout(text.config) : null;
+      const side = imageLayout && textLayout && imageLayout.offset_percent < textLayout.offset_percent ? "left" : "right";
+      const share = imageLayout && ([25, 50, 75] as number[]).includes(imageLayout.width_percent)
+        ? imageLayout.width_percent as ImageShare : 50;
+      return <div key={row.left[0].id}>
+        {image && text && imageLayout && <div className={styles.pairControls} aria-label="Text und Bild anordnen">
+          <strong>Text + Bild nebeneinander</strong>
+          <div className={styles.adjacentOptions} role="group" aria-label="Bildposition">
+            {(["left", "right"] as const).map((choice) => <button key={choice} type="button" className="button"
+              aria-pressed={side === choice} disabled={busy || history.busy}
+              onClick={() => void setPairLayout(text.id, image.id, choice, share)}>
+              Bild {choice === "left" ? "links" : "rechts"}</button>)}
+          </div>
+          <div className={styles.adjacentOptions} role="group" aria-label="Breitenverhältnis">
+            {([25, 50, 75] as const).map((share) => <button key={share} type="button" className="button"
+              aria-pressed={imageLayout.width_percent === share} disabled={busy || history.busy}
+              onClick={() => void setPairLayout(text.id, image.id, side, share)}>{share} % Bild / {100 - share} % Text</button>)}
+          </div>
+        </div>}
+        <div className={rowStyles.contentRow}>
+          {columns.map((column) => <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
+            key={column[0].id} style={{ gridColumn: contentColumn(column[0]) }}>
+            {column.map((block) => renderEditableBlock(block, true))}
+          </div>)}
+        </div>
+      </div>;
+    });
+  }
+
+  async function setPairLayout(textId: string, imageId: string, side: ImageSide, share: ImageShare) {
+    setPairPreview({ textId, imageId, side, share });
+    const form = new FormData();
+    form.set("intent", "pair-layout");
+    form.set("text_block_id", textId);
+    form.set("image_block_id", imageId);
+    form.set("image_side", side);
+    form.set("image_width", String(share));
+    if (await run(form)) history.clear();
+    else setPairPreview(null);
   }
 
   const editorial: React.ReactNode[] = [];
@@ -240,6 +429,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
   return <div className={styles.contentEditor} aria-label="Profilinhalte bearbeiten">
     {feedback.error && <p role="alert" className={styles.error}>{feedback.error}</p>}
     {feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
+    {progress && <p role="status">{progress}</p>}
     {editorial}
     {addControl(null)}
   </div>;

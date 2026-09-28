@@ -57,6 +57,20 @@
 .headingForm > button { justify-self: start; }
 .specialSection { display: grid; gap: 10px; min-width: 0; }
 .specialSection > button { justify-self: start; }
+.adjacentAction { display: grid; gap: 12px; margin-top: 16px; }
+.adjacentAction > button { justify-self: start; }
+.adjacentSetup { display: grid; gap: 12px; padding: 14px; border: 1px dashed var(--brand-primary); border-radius: 8px; background: var(--surface); }
+.adjacentSetup label { display: grid; gap: 6px; min-width: 0; }
+.adjacentSetup input[type="file"] { max-width: 100%; }
+.adjacentOptions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.adjacentOptions > span { font-weight: 600; margin-right: 4px; }
+.adjacentOptions button[aria-pressed="true"] { border-color: var(--brand-primary); color: var(--brand-primary); font-weight: 700; }
+.adjacentPreview { display: grid; grid-template-columns: repeat(100, minmax(0, 1fr)); min-width: 0; gap: 0; }
+.adjacentPreviewText, .adjacentPreviewImage { min-width: 0; padding: 12px; overflow-wrap: anywhere; border: 1px solid var(--line); }
+.adjacentPreviewImage { position: relative; min-height: 150px; background: var(--white); }
+.adjacentPreviewImage img { object-fit: cover; }
+.pairControls { display: grid; gap: 8px; padding: 12px; margin: 18px 0 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.pairControls strong { color: var(--brand-primary); }
 .contentEditor { width: 100%; min-width: 0; margin-bottom: 28px; }
 .contentUnavailable { max-width: 750px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; }
 .insertArea { margin: 10px 0 18px; }
@@ -134,6 +148,8 @@
 .squareCropFrame { position: relative; width: min(100%, 400px); aspect-ratio: 1; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; cursor: grab; touch-action: none; }
 .squareCropFrame img { display: block; width: 100%; height: 100%; pointer-events: none; user-select: none; }
 @media (max-width: 640px) {
+  .adjacentPreview { grid-template-columns: minmax(0, 1fr); }
+  .adjacentPreviewText, .adjacentPreviewImage { grid-column: 1 / -1 !important; }
   .toolbar { position: static; align-items: stretch; }
   .toolbar form { width: 100%; }
   .toolbar form button { flex: 1 1 130px; }

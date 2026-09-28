@@ -7,8 +7,9 @@ import { hasPersistedBlockLayout, normalizeBlockLayout, normalizeTextBlockLayout
   validOffset, validSpacing, validTextAlignment, validWidth } from "./content-block-layout";
 import { normalizeImageGridConfig } from "./image-grid-layout";
 import { changeEditorialOrder, changeEditorialSection, sectionSlot } from "./editorial-section-actions";
+import { changeAdminAdjacentImage } from "./admin-adjacent-image";
 
-export type ContentActionResult = { access: AdminAccess; error?: string; success?: string };
+export type ContentActionResult = { access: AdminAccess; error?: string; success?: string; blockId?: string };
 const missing = "Der Inhaltsblock gehört nicht zu diesem Profil oder wurde bereits entfernt.";
 const failed = "Die Änderung konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.";
 
@@ -22,6 +23,9 @@ export async function changeAdminProfileContent(
   if (target.access !== "admin" || target.error) return target;
   const id = profileId as string;
   const intent = form.get("intent");
+
+  if (intent === "pair-image" || intent === "pair-layout")
+    return { access: "admin", ...await changeAdminAdjacentImage(client, id, intent, form) };
 
   if (intent === "heading") {
     const slot = form.get("slot");

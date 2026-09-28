@@ -47,6 +47,7 @@ const { InlineProfileEditor } = await import("../src/components/admin/inline-pro
 const { InlineImageGridEditor } = await import("../src/components/admin/inline-image-grid-editor.tsx");
 const { InlineEditorHistoryContext } = await import("../src/components/admin/inline-editor-history.tsx");
 const { InlineImageCropEditor } = await import("../src/components/admin/inline-image-crop-editor.tsx");
+const { AdjacentImagePreview } = await import("../src/components/admin/adjacent-image-preview.tsx");
 const { ProfileContentBlocks } = await import("../src/components/portal/profile-content-blocks.tsx");
 const { companyProfileListing } = await import("../src/lib/company-presentation.ts");
 const { saveInlineProfile, saveInlineMedia } = await import("../src/app/(energieheld)/experten/[slug]/inline-actions.ts");
@@ -532,6 +533,54 @@ test("description and business areas are separate editable sections below Maps w
   assert.match(editorHtml, /Block nach unten verschieben/);
   assert.match(editorHtml, /Beschreibung speichern|Tätigkeitsbereiche speichern/);
   assert.match(editorHtml, /required="" name="display_name"/);
+});
+
+test("text blocks expose image-beside-text setup and paired blocks expose live side and ratio controls", () => {
+  const listing = companyProfileListing(publicProfile, { images: [] });
+  const values = Object.fromEntries(["display_name", "tagline", "description", "business_areas", "phone",
+    "public_email", "website", "street", "postal_code", "city", "region", "country"]
+    .map((field) => [field, publicProfile[field] ?? ""]));
+  const textBlock = { id: "22222222-2222-4222-8222-222222222222", profile_id: profileId,
+    type: "text", slot: null, sort_order: 0, content: { text: "Reisetext" },
+    config: { width_percent: 100, offset_percent: 0, text_align: "left", spacing_top: "normal", spacing_bottom: "normal" } };
+  const common = { listing, categories: [], values, media: { images: [] }, rows: [],
+    contentAvailable: true, imagesAvailable: true, initialEditing: true,
+    saveProfile: async () => ({ success: "Gespeichert" }), saveMedia: async () => ({}),
+    saveContent: async () => ({}), saveBlockImage: async () => ({}) };
+  const plain = renderToStaticMarkup(createElement(InlineProfileEditor, { ...common, contentBlocks: [textBlock] }));
+  assert.match(plain, /Bild daneben hinzufügen/);
+  assert.doesNotMatch(plain, /Text \+ Bild nebeneinander/);
+  const imageBlock = { id: "44444444-4444-4444-8444-444444444444", profile_id: profileId,
+    type: "image_grid", slot: null, sort_order: 1, content: {}, images: [],
+    config: { columns: 1, width_percent: 25, offset_percent: 75, aspect_ratio: 1.5,
+      spacing_top: "normal", spacing_bottom: "normal" } };
+  const paired = renderToStaticMarkup(createElement(InlineProfileEditor, { ...common, contentBlocks: [
+    { ...textBlock, config: { ...textBlock.config, width_percent: 75 } }, imageBlock,
+  ] }));
+  assert.match(paired, /Text \+ Bild nebeneinander/);
+  assert.match(paired, /Bild links/);
+  assert.match(paired, /Bild rechts/);
+  assert.match(paired, /25 % Bild \/ 75 % Text/);
+  assert.match(paired, /50 % Bild \/ 50 % Text/);
+  assert.match(paired, /75 % Bild \/ 25 % Text/);
+  assert.doesNotMatch(paired, /Bild daneben hinzufügen/);
+  const editor = readFileSync(new URL("../src/components/admin/inline-content-editor.tsx", import.meta.url), "utf8");
+  assert.match(editor, /setAdjacentDraft\(\(current\) => current \? \{ \.\.\.current, side \}/);
+  assert.match(editor, /setPairPreview\(\{ textId, imageId, side, share \}\)/);
+  assert.match(editor, /uploadPreparedAdminMedia\(saveImage/);
+});
+
+test("the editor image preview follows side and width selections immediately", () => {
+  for (const share of [25, 50, 75]) for (const side of ["left", "right"]) {
+    const html = renderToStaticMarkup(createElement(AdjacentImagePreview, {
+      text: "Reisetext", side, share, previewUrl: "blob:preview",
+    }));
+    const imageOffset = side === "left" ? 0 : 100 - share;
+    const textOffset = side === "left" ? share : 0;
+    assert.match(html, new RegExp(`grid-column:${imageOffset + 1} / span ${share}`));
+    assert.match(html, new RegExp(`grid-column:${textOffset + 1} / span ${100 - share}`));
+    assert.match(html, /Ausgewähltes Bild/);
+  }
 });
 
 test("public, inline grid and large crop preview share the same saved image framing", () => {

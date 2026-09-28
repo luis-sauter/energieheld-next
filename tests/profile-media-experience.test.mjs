@@ -91,24 +91,33 @@ test("editor, directory and gallery keep local preview, square framing and reduc
   assert.match(directory, /\.row-logo\s*\{[^}]*aspect-ratio:\s*1;/s);
   assert.match(source("src/components/portal/company-image.tsx"), /objectFit: "cover"/);
   assert.match(gallery, /prefers-reduced-motion: reduce/);
-  assert.match(gallery, /window\.setTimeout\(advance, 8000\)/);
+  assert.match(gallery, /window\.setTimeout\(advance, 4000\)/);
 });
 
-test("public gallery timer advances after eight seconds and can be cancelled", async () => {
-  const { scheduleGalleryAdvance } = await import("../src/components/portal/image-gallery.tsx");
+test("public gallery advances after four seconds, resets on interaction and respects reduced motion", async () => {
+  const { scheduleGalleryAdvance, galleryAutoplayEnabled } = await import("../src/components/portal/image-gallery.tsx");
   const oldWindow = globalThis.window;
-  let scheduled;
-  let cleared;
-  globalThis.window = { setTimeout(callback, delay) { scheduled = { callback, delay }; return 42; },
-    clearTimeout(id) { cleared = id; } };
+  let nextId = 0;
+  const pending = new Map();
+  globalThis.window = { setTimeout(callback, delay) { const id = ++nextId; pending.set(id, { callback, delay }); return id; },
+    clearTimeout(id) { pending.delete(id); } };
   try {
     let advances = 0;
     const cancel = scheduleGalleryAdvance(() => advances++);
-    assert.equal(scheduled.delay, 8000);
-    scheduled.callback();
-    assert.equal(advances, 1);
+    assert.equal(pending.get(1).delay, 4000);
+    // A manual selection cancels the old countdown and starts a fresh one.
     cancel();
-    assert.equal(cleared, 42);
+    assert.equal(pending.has(1), false);
+    const again = scheduleGalleryAdvance(() => advances++);
+    assert.equal(pending.get(2).delay, 4000);
+    pending.get(2).callback();
+    assert.equal(advances, 1);
+    again();
+    assert.equal(pending.size, 0);
+    assert.equal(galleryAutoplayEnabled(true, false, false, 2), true);
+    assert.equal(galleryAutoplayEnabled(true, true, false, 2), false);
+    assert.equal(galleryAutoplayEnabled(true, false, true, 2), false);
+    assert.equal(galleryAutoplayEnabled(true, false, false, 1), false);
   } finally { globalThis.window = oldWindow; }
 });
 
