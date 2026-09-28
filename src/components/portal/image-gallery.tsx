@@ -5,8 +5,12 @@ import Image from "next/image";
 import type { PortalImage } from "@/types/portal";
 
 export function scheduleGalleryAdvance(advance: () => void) {
-  const timer = window.setTimeout(advance, 8000);
+  const timer = window.setTimeout(advance, 4000);
   return () => window.clearTimeout(timer);
+}
+
+export function galleryAutoplayEnabled(autoplay: boolean, reducedMotion: boolean, paused: boolean, imageCount: number) {
+  return autoplay && !reducedMotion && !paused && imageCount > 1;
 }
 
 export function ImageGallery({
@@ -39,7 +43,7 @@ export function ImageGallery({
     return () => preference.removeEventListener("change", sync);
   }, []);
   useEffect(() => {
-    if (!autoplay || reducedMotion || paused || images.length < 2) return;
+    if (!galleryAutoplayEnabled(autoplay, reducedMotion, paused, images.length)) return;
     return scheduleGalleryAdvance(() => setSelected((index) => (index + 1) % images.length));
   }, [autoplay, reducedMotion, paused, images.length, selected, interaction]);
   function select(index: number) {

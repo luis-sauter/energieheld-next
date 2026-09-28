@@ -17,5 +17,5 @@ export async function saveInlineContent(profileId: string, slug: string, form: F
     revalidatePath(`/experten/${slug}`);
     revalidatePath(`/unterkuenfte/${slug}`);
   }
-  return { error: result.error, success: result.success };
+  return { error: result.error, success: result.success, blockId: result.blockId };
 }

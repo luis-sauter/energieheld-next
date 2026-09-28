@@ -9,6 +9,7 @@ registerHooks({ resolve(specifier, context, next) {
   return next(specifier, context);
 } });
 const { contentBlockRows, contentColumn } = await import("../src/lib/content-block-rows.ts");
+const { adjacentImageLayout } = await import("../src/lib/adjacent-image-layout.ts");
 
 const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const block = (id, type, width, offset) => ({ id, type, config: {
@@ -31,6 +32,21 @@ test("text and image columns share a row on either side, with heading above text
   assert.equal(contentBlockRows([block("full", "text", 100, 0), image]).length, 2);
 });
 
+test("image beside text supports both sides and all three width ratios", () => {
+  for (const share of [25, 50, 75]) for (const side of ["left", "right"]) {
+    const layout = adjacentImageLayout(side, share);
+    assert.equal(layout.imageWidth + layout.textWidth, 100);
+    const text = block("text", "text", layout.textWidth, layout.textOffset);
+    const image = block("image", "image_grid", layout.imageWidth, layout.imageOffset);
+    const row = contentBlockRows(side === "left" ? [image, text] : [text, image]);
+    assert.equal(row.length, 1);
+    assert.deepEqual(row[0].left, side === "left" ? [image] : [text]);
+    assert.deepEqual(row[0].right, side === "left" ? [text] : [image]);
+  }
+  assert.equal(adjacentImageLayout("above", 50), null);
+  assert.equal(adjacentImageLayout("left", 30), null);
+});
+
 test("editor text follows live section alignment and paired columns stack on mobile", () => {
   const editor = source("src/components/admin/inline-block-layout.tsx");
   const css = source("src/components/admin/inline-profile.module.css");
@@ -39,7 +55,13 @@ test("editor text follows live section alignment and paired columns stack on mob
   assert.match(css, /\.layoutBlock \.blockForm input, \.layoutBlock \.blockForm textarea[^}]*text-align: inherit/);
   assert.match(rowCss, /@media \(max-width: 640px\)[\s\S]*\.contentColumn \{ grid-column: 1 \/ -1 !important/);
   const profileCss = source("src/components/portal/company-profile.css");
-  assert.match(profileCss, /\.profile-head-grid \{ display: grid; grid-template-columns: minmax\(0, 1\.6fr\) minmax\(300px, 1fr\)/);
+  assert.match(profileCss, /\.profile-head-grid \{ display: grid; grid-template-columns: minmax\(0, 2\.1fr\) minmax\(300px, 1fr\)/);
+  assert.match(profileCss, /@media \(max-width: 820px\)[\s\S]*\.profile-head-grid \{ grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(profileCss, /\.profile-head-grid > \* \{ min-width: 0/);
+  assert.match(profileCss, /\.profile-location \.location-map \{ min-height: clamp\(380px, 43vw, 560px\)/);
+  assert.match(profileCss, /\.profile-location > div:last-child \{ padding: 16px 20px/);
+  assert.match(source("src/components/admin/inline-profile.module.css"), /\.adjacentPreview \{[^}]*grid-template-columns: repeat\(100, minmax\(0, 1fr\)\)/);
+  assert.match(source("src/components/admin/inline-profile.module.css"), /@media \(max-width: 640px\)[\s\S]*\.adjacentPreviewText, \.adjacentPreviewImage \{ grid-column: 1 \/ -1 !important/);
   assert.match(profileCss, /\.profile-header-media \.gallery-main \{ aspect-ratio: 1/);
   assert.match(profileCss, /\.contact-logo \{ width: 120px; height: 120px; aspect-ratio: 1/);
 });

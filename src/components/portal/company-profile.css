@@ -92,12 +92,15 @@
   position: relative;
   margin: 0 0 28px;
 }
-.company-profile .profile-head-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: 24px; align-items: start; margin-bottom: 24px; }
+.company-profile .profile-head-grid { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(300px, 1fr); gap: 24px; align-items: start; margin-bottom: 24px; }
 .company-profile .profile-head-grid > * { min-width: 0; }
 .company-profile .profile-header-media { margin: 0; }
 .company-profile .profile-location { margin-bottom: 40px; }
 .company-profile .profile-header-media .gallery { margin-bottom: 0; }
-.company-profile .profile-header-media .gallery-main { aspect-ratio: 1; max-width: 600px; max-height: none; }
+.company-profile .profile-header-media .gallery-main { aspect-ratio: 1; max-width: none; max-height: none; }
+.company-profile .profile-location .location-map { min-height: clamp(380px, 43vw, 560px); }
+.company-profile .profile-location > div:last-child { padding: 16px 20px; }
+.company-profile .profile-location h2 { font-size: 19px; margin-bottom: 6px; }
 .company-profile .profile-video { display: block; width: 100%; max-height: 620px; aspect-ratio: 16 / 9; object-fit: contain; background: #111; border-radius: 10px; }
 .company-profile .gallery-open { position: absolute; inset: 0; display: block; }
 .company-profile .gallery-open:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: -3px; z-index: 2; }
@@ -593,6 +596,9 @@
   .company-profile .contact-card {
     position: static;
   }
+}
+@media (max-width: 600px) {
+  .company-profile .profile-location .location-map { min-height: 320px; }
 }
 @media (max-width: 600px) {
   .company-profile .detail-heading {
