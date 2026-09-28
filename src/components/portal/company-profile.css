@@ -92,6 +92,14 @@
   position: relative;
   margin: 0 0 28px;
 }
+.company-profile .profile-header-media { margin: 0 0 28px; }
+.company-profile .profile-header-media .gallery { margin-bottom: 0; }
+.company-profile .profile-video { display: block; width: 100%; max-height: 620px; aspect-ratio: 16 / 9; object-fit: contain; background: #111; border-radius: 10px; }
+.company-profile .gallery-open { position: absolute; inset: 0; display: block; }
+.company-profile .gallery-open:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: -3px; z-index: 2; }
+.company-profile .gallery-navigation { position: absolute; inset: 50% 10px auto; display: flex; justify-content: space-between; transform: translateY(-50%); pointer-events: none; }
+.company-profile .gallery-navigation button { pointer-events: auto; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; background: color-mix(in srgb, var(--white) 88%, transparent); color: var(--brand-primary); font-size: 25px; line-height: 1; cursor: pointer; }
+.company-profile .gallery-navigation button:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
 .company-profile .gallery-main {
   position: relative;
   width: 100%;
@@ -204,7 +212,7 @@
   gap: 10px;
   margin: 12px 0;
 }
-.company-profile .inline-location-fields > :last-child { grid-column: 1 / -1; }
+.company-profile .inline-location-fields > :nth-child(n + 3) { grid-column: 1 / -1; }
 .company-profile .button {
   font-size: 14px;
   padding: 10px 14px;

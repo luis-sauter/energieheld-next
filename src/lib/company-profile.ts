@@ -12,6 +12,7 @@ export const profileFields = [
   "postal_code",
   "city",
   "region",
+  "country",
 ] as const;
 export type ProfileValues = Record<(typeof profileFields)[number], string>;
 export type ProfileFormState = {
@@ -111,7 +112,8 @@ export async function updateOwnCompanyProfile(
       : profile.status;
   const update = {
     ...Object.fromEntries(
-      profileFields.map((key) => [key, values[key] || null]),
+      profileFields.filter((key) => key !== "country" || form.has("country"))
+        .map((key) => [key, values[key] || null]),
     ),
     status,
     ...(intent === "submit" && profile.status !== "approved"

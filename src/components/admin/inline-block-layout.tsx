@@ -15,6 +15,13 @@ export function InlineBlockLayout({ block, busy, first, last, save, children }: 
   const persisted = hasPersistedBlockLayout(block.config);
   const textAlign = normalizeTextBlockLayout(block.config).text_align;
   const [preview, setPreview] = useState({ width: layout.width_percent, offset: layout.offset_percent });
+  const [textOverride, setTextOverride] = useState<{ base: TextAlignment; value: TextAlignment } | null>(null);
+  const [spacingOverride, setSpacingOverride] = useState<{
+    baseTop: BlockSpacing; baseBottom: BlockSpacing; top: BlockSpacing; bottom: BlockSpacing;
+  } | null>(null);
+  const previewTextAlign = textOverride?.base === textAlign ? textOverride.value : textAlign;
+  const previewSpacing = spacingOverride?.baseTop === layout.spacing_top && spacingOverride.baseBottom === layout.spacing_bottom
+    ? spacingOverride : { top: layout.spacing_top, bottom: layout.spacing_bottom };
   const current = useRef(preview);
   const drag = useRef<{ pointerId: number; x: number; width: number; offset: number; canvasWidth: number } | null>(null);
   const resize = useRef<{ pointerId: number; x: number; width: number; offset: number; canvasWidth: number } | null>(null);
@@ -32,8 +39,18 @@ export function InlineBlockLayout({ block, busy, first, last, save, children }: 
   }
   async function setLayout(values: Record<string, string>, width?: number, offset?: number) {
     if (width !== undefined && offset !== undefined) show(width, offset);
+    if (values.text_align) setTextOverride({ base: textAlign, value: values.text_align as TextAlignment });
+    if (values.spacing_top || values.spacing_bottom) setSpacingOverride({
+      baseTop: layout.spacing_top, baseBottom: layout.spacing_bottom,
+      top: (values.spacing_top as BlockSpacing) ?? previewSpacing.top,
+      bottom: (values.spacing_bottom as BlockSpacing) ?? previewSpacing.bottom,
+    });
     const ok = await save("layout", block.id, values);
-    if (!ok) show(layout.width_percent, layout.offset_percent);
+    if (!ok) {
+      show(layout.width_percent, layout.offset_percent);
+      setTextOverride(null);
+      setSpacingOverride(null);
+    }
   }
   function start(event: PointerEvent<HTMLButtonElement>) {
     if (busy || !persisted || event.pointerType === "mouse" && event.button !== 0) return;
@@ -119,7 +136,7 @@ export function InlineBlockLayout({ block, busy, first, last, save, children }: 
       {block.type !== "image_grid" && <div className={styles.controlGroup} role="group" aria-label="Textausrichtung">
         {positions.map(({ value, label }) => <button key={value} type="button" className="button"
           aria-label={`Text ${label === "Mitte" ? "mittig" : label.toLowerCase()}`}
-          aria-pressed={textAlign === value} disabled={busy || !persisted}
+          aria-pressed={previewTextAlign === value} disabled={busy || !persisted}
           onClick={() => void setLayout({ text_align: value })}>Text {label === "Mitte" ? "mittig" : label.toLowerCase()}</button>)}
       </div>}
       <details className={styles.spacingControls}><summary>Abstand</summary>
@@ -128,7 +145,7 @@ export function InlineBlockLayout({ block, busy, first, last, save, children }: 
           <span>{field === "spacing_top" ? "Oben" : "Unten"}</span>
           {spacings.map(({ value, label }) => <button key={value} type="button" className="button"
             aria-label={`Abstand ${field === "spacing_top" ? "oben" : "unten"} ${label}`}
-            aria-pressed={layout[field] === value} disabled={busy || !persisted}
+            aria-pressed={(field === "spacing_top" ? previewSpacing.top : previewSpacing.bottom) === value} disabled={busy || !persisted}
             onClick={() => void setLayout({ [field]: value })}>{label}</button>)}
         </div>)}
       </details>
@@ -148,9 +165,9 @@ export function InlineBlockLayout({ block, busy, first, last, save, children }: 
       {snap && <span role="status">{snap === "center" ? "Mitte" : snap === "left" ? "Links" : "Rechts"}</span>}
     </div>
     <section className={`detail-section profile-content-block ${styles.editableBlock}`}
-      data-spacing-top={layout.spacing_top} data-spacing-bottom={layout.spacing_bottom}
+      data-spacing-top={previewSpacing.top} data-spacing-bottom={previewSpacing.bottom}
       style={{ width: `${preview.width}%`, marginLeft: `${preview.offset}%`,
-        textAlign: block.type === "image_grid" ? undefined : textAlign }}>
+        textAlign: block.type === "image_grid" ? undefined : previewTextAlign }}>
       {children}
       {persisted && <button type="button" className={styles.blockResizeGrip} aria-label="Blockbreite durch Ziehen ändern"
         title="Blockbreite ändern" disabled={busy}
