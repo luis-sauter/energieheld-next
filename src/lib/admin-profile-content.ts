@@ -6,8 +6,10 @@ import { MEDIA_BUCKET } from "./company-media";
 import { hasPersistedBlockLayout, normalizeBlockLayout, normalizeTextBlockLayout,
   validOffset, validSpacing, validTextAlignment, validWidth } from "./content-block-layout";
 import { normalizeImageGridConfig } from "./image-grid-layout";
-import { changeEditorialOrder, changeEditorialSection, sectionSlot } from "./editorial-section-actions";
+import { changeEditorialBlockVisibility, changeEditorialOrder, changeEditorialSection,
+  forgetEditorialBlock, sectionSlot } from "./editorial-section-actions";
 import { changeAdminAdjacentImage } from "./admin-adjacent-image";
+import { changeEditorialPair, findEditorialPair } from "./editorial-pair-actions";
 
 export type ContentActionResult = { access: AdminAccess; error?: string; success?: string; blockId?: string };
 const missing = "Der Inhaltsblock gehört nicht zu diesem Profil oder wurde bereits entfernt.";
@@ -23,6 +25,22 @@ export async function changeAdminProfileContent(
   if (target.access !== "admin" || target.error) return target;
   const id = profileId as string;
   const intent = form.get("intent");
+
+  if (intent === "pair-delete") {
+    const pair = await findEditorialPair(client, id, form.get("text_block_id"), form.get("image_block_id"));
+    if (!pair) return { access: "admin", error: missing };
+    for (const member of [...pair.members].sort((a, b) =>
+      Number(b.type === "image_grid") - Number(a.type === "image_grid"))) {
+      const deletion = new FormData();
+      deletion.set("intent", "delete");
+      deletion.set("block_id", member.id);
+      const result = await changeAdminProfileContent(client, id, slug, deletion);
+      if (!result.success) return { access: "admin", error: result.error ?? failed };
+    }
+    return { access: "admin", success: "Text und Bild wurden gelöscht." };
+  }
+  if (["pair-frame", "pair-toggle", "pair-move", "pair-duplicate"].includes(String(intent)))
+    return { access: "admin", ...await changeEditorialPair(client, id, String(intent), form) };
 
   if (intent === "pair-image" || intent === "pair-layout")
     return { access: "admin", ...await changeAdminAdjacentImage(client, id, intent, form) };
@@ -105,6 +123,8 @@ export async function changeAdminProfileContent(
   if (sectionSlot(blockId))
     return { access: "admin", ...await changeEditorialSection(client, id, blockId, intent, form) };
   if (!isProfileId(blockId)) return { access: "admin", error: missing };
+  if (intent === "block-toggle")
+    return { access: "admin", ...await changeEditorialBlockVisibility(client, id, blockId) };
   if (intent === "duplicate") {
     const { data: source, error: sourceError } = await client.from("profile_content_blocks")
       .select("id,type,slot").eq("profile_id", id).eq("id", blockId).is("slot", null).maybeSingle();
@@ -196,9 +216,9 @@ export async function changeAdminProfileContent(
     const { data, error } = await client.from("profile_content_blocks")
       .delete().eq("profile_id", id).eq("id", blockId).is("slot", null)
       .select("id").maybeSingle();
-    return error || data?.id !== blockId
-      ? { access: "admin", error: failed }
-      : { access: "admin", success: "Der Block wurde gelöscht." };
+    if (error || data?.id !== blockId) return { access: "admin", error: failed };
+    await forgetEditorialBlock(client, id, blockId);
+    return { access: "admin", success: "Der Block wurde gelöscht." };
   }
   if (block.type === "image_grid")
     return { access: "admin", error: "Dieser Bildblock wird über seine Bildsteuerung bearbeitet." };

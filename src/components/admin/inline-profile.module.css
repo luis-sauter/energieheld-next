@@ -126,6 +126,8 @@
 .controlGroup > span { margin-right: 3px; font-weight: 600; }
 .controlGroup button { min-height: 34px; padding: 5px 8px; font-size: 12px; }
 .controlGroup button[aria-pressed="true"] { border-color: var(--brand-primary); color: var(--brand-primary); background: var(--white); }
+.controlGroup .destructiveAction { margin-left: 12px; border-color: #a73524; color: #8e2c1e; background: #fff5f2; }
+.controlGroup .destructiveAction:hover, .controlGroup .destructiveAction:focus-visible { background: #ffe8e1; }
 .moveGrip, .blockResizeGrip {
   display: grid; place-items: center; min-width: 38px; min-height: 38px;
   border: 1px solid var(--brand-primary); border-radius: 6px;
@@ -142,6 +144,7 @@
 .layoutBlock .blockForm input, .layoutBlock .blockForm textarea,
 .layoutBlock .headingForm input, .layoutBlock .field textarea { width: 100%; min-width: 0; box-sizing: border-box; text-align: inherit; }
 .pairedEditorColumn .editableBlock { width: 100% !important; margin-left: 0 !important; }
+.layoutBlock[data-pair="true"] .pairedEditorColumn .editableBlock { text-align: inherit !important; }
 .squareCropEditor { display: grid; gap: 10px; }
 .squareCropEditor p { margin: 0; }
 .squareCropEditor label { display: grid; gap: 4px; }

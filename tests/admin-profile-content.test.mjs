@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import "./helpers/load-ts.mjs";
 const { changeAdminProfileContent } = await import("../src/lib/admin-profile-content.ts");
+const { splitProfileContent } = await import("../src/lib/profile-content.ts");
 
 const profileId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const foreignProfile = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
@@ -21,9 +22,12 @@ function client({ authenticated = true, admin = true, blocks = [
   { id: foreignBlock, profile_id: foreignProfile, type: "heading", slot: null, sort_order: 0, content: { text: "Fremd" } },
 ] } = {}) {
   const calls = [];
+  const profile = { id: profileId, display_name: "Sichtbares Profil", description: "Beschreibung", business_areas: "Bereiche" };
   return {
     calls,
     auth: { getUser: async () => ({ data: { user: authenticated ? { id: "editor" } : null }, error: null }) },
+    storage: { from: () => ({ list: async () => ({ data: [], error: null }),
+      remove: async () => ({ data: [], error: null }) }) },
     from(table) {
       const call = { table, filters: [] };
       calls.push(call);
@@ -39,8 +43,10 @@ function client({ authenticated = true, admin = true, blocks = [
           if (table === "portal_admins") return { data: admin ? { user_id: "editor" } : null, error: null };
           if (table === "company_profiles") {
             const valid = call.filters.some(([key, value]) => key === "id" && value === profileId) &&
-              (call.columns === "display_name" || call.filters.some(([key, value]) => key === "slug" && value === slug));
-            return { data: valid ? { id: profileId, display_name: "Sichtbares Profil" } : null, error: null };
+              (call.operation === "update" || call.columns === "display_name" ||
+                call.columns === "description,business_areas" || call.filters.some(([key, value]) => key === "slug" && value === slug));
+            if (valid && call.operation === "update") Object.assign(profile, call.payload);
+            return { data: valid ? { ...profile } : null, error: null };
           }
           const selected = blocks.find((block) => call.filters.every(([key, value]) => block[key] === value));
           if (call.operation === "insert") {
@@ -52,11 +58,14 @@ function client({ authenticated = true, admin = true, blocks = [
             return { data: { id: first }, error: null };
           }
           if (call.operation === "update" && selected?.slot) Object.assign(selected, call.payload);
+          if (call.operation === "delete" && selected) blocks.splice(blocks.indexOf(selected), 1);
           if (call.operation) return { data: selected ? { id: selected.id } : null, error: null };
           return { data: selected ?? null, error: null };
         },
         then(resolve) {
           const selected = blocks.filter((block) => call.filters.every(([key, value]) => block[key] === value));
+          if (call.operation === "update") selected.forEach((block) => Object.assign(block, call.payload));
+          if (call.operation === "delete") selected.forEach((block) => blocks.splice(blocks.indexOf(block), 1));
           return resolve({ data: selected.sort((a, b) => a.sort_order - b.sort_order), error: null });
         },
       };
@@ -252,4 +261,161 @@ test("a section can move across free blocks without changing their data or anoth
   assert.ok(orderWrite.filters.some(([key, value]) => key === "profile_id" && value === profileId));
   assert.ok((await changeAdminProfileContent(client({ admin: false }), profileId, slug,
     form({ intent: "move", block_id: "section:about", direction: "down" }))).access !== "admin");
+});
+
+test("free text and image blocks retain content when hidden and return on show", async () => {
+  const about = { id: "ffffffff-ffff-4fff-8fff-ffffffffffff", profile_id: profileId,
+    type: "heading", slot: "about_heading", sort_order: 0, content: { text: "Über das Haus" } };
+  const blocks = [about,
+    { id: first, profile_id: profileId, type: "text", slot: null, sort_order: 0, content: { text: "Sichtbar" } },
+    { id: second, profile_id: profileId, type: "image_grid", slot: null, sort_order: 1,
+      content: {}, config: { columns: 1, width_percent: 100, offset_percent: 0 } }];
+  const db = client({ blocks });
+  for (const id of [first, second]) assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "block-toggle", block_id: id }))).success);
+  assert.deepEqual(new Set(about.content.hidden_blocks), new Set([first, second]));
+  assert.equal(blocks.find((block) => block.id === first).content.text, "Sichtbar");
+  assert.equal(splitProfileContent(blocks, "Haus").items.find((item) => item.key === first).hidden, true);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "block-toggle", block_id: first }))).success);
+  assert.equal(splitProfileContent(blocks, "Haus").items.find((item) => item.key === first).hidden, false);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "block-toggle", block_id: foreignBlock }))).error);
+});
+
+test("deleting a field-backed section clears only its profile field and removes it from saved order", async () => {
+  const about = { id: first, profile_id: profileId, type: "heading", slot: "about_heading", sort_order: 0,
+    content: { text: "Über das Haus", order: ["section:about", second, "section:business"] } };
+  const text = { id: second, profile_id: profileId, type: "text", slot: null, sort_order: 0,
+    content: { text: "Anderer Inhalt" } };
+  const db = client({ blocks: [about, text] });
+  const deleted = await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "section-delete", block_id: "section:about", profile_id: foreignProfile }));
+  assert.ok(deleted.success);
+  const clear = db.calls.find((call) => call.table === "company_profiles" && call.operation === "update");
+  assert.deepEqual(clear.payload, { description: null });
+  assert.ok(clear.filters.some(([key, value]) => key === "id" && value === profileId));
+  assert.deepEqual(about.content.order, [second, "section:business"]);
+  assert.ok(!splitProfileContent([about, text], "Haus").items.some((item) => item.key === "section:about"));
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "section-restore", block_id: "section:about" }))).success);
+  assert.ok(splitProfileContent([about, text], "Haus").items.some((item) => item.key === "section:about"));
+  assert.ok((await changeAdminProfileContent(client({ admin: false }), profileId, slug,
+    form({ intent: "section-delete", block_id: "section:business" }))).access !== "admin");
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "section-delete", block_id: "section:foreign" }))).error);
+});
+
+test("paired text and image share a scoped frame and move together", async () => {
+  const about = { id: "ffffffff-ffff-4fff-8fff-ffffffffffff", profile_id: profileId,
+    type: "heading", slot: "about_heading", sort_order: 0,
+    content: { text: "Über das Haus", order: ["section:about", first, second, "section:business"] } };
+  const text = { id: first, profile_id: profileId, type: "text", slot: null, sort_order: 0,
+    content: { text: "Text" }, config: { width_percent: 75, offset_percent: 0 } };
+  const image = { id: second, profile_id: profileId, type: "image_grid", slot: null, sort_order: 1,
+    content: {}, config: { columns: 1, width_percent: 25, offset_percent: 75 } };
+  const blocks = [about, text, image];
+  const db = client({ blocks });
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "pair-frame",
+    text_block_id: first, image_block_id: second, width_percent: "50", offset_percent: "25", text_align: "center" }))).success);
+  assert.equal(about.content.pair_layouts[first].width_percent, 50);
+  assert.equal(splitProfileContent([about, text, image], "Haus").blocks.find((block) => block.id === first).pair_layout.offset_percent, 25);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "pair-move",
+    text_block_id: first, image_block_id: second, direction: "down" }))).success);
+  assert.deepEqual(about.content.order, ["section:about", "section:business", first, second]);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "pair-toggle",
+    text_block_id: first, image_block_id: second }))).success);
+  assert.deepEqual(new Set(about.content.hidden_blocks), new Set([first, second]));
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "pair-frame",
+    text_block_id: first, image_block_id: foreignBlock, width_percent: "50" }))).error);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "pair-delete",
+    text_block_id: first, image_block_id: foreignBlock }))).error);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "pair-delete",
+    text_block_id: first, image_block_id: second }))).success);
+  assert.ok(!blocks.some((block) => block.id === first || block.id === second));
+  assert.deepEqual(about.content.order, ["section:about", "section:business"]);
+});
+
+test("deleting a free block removes its row and stale order metadata while preserving neighbors", async () => {
+  const about = { id: "ffffffff-ffff-4fff-8fff-ffffffffffff", profile_id: profileId,
+    type: "heading", slot: "about_heading", sort_order: 0,
+    content: { text: "Über das Haus", order: ["section:about", first, second, "section:business"],
+      hidden_blocks: [second] } };
+  const blocks = [about,
+    { id: first, profile_id: profileId, type: "heading", slot: null, sort_order: 0, content: { text: "Bleibt" } },
+    { id: second, profile_id: profileId, type: "text", slot: null, sort_order: 1, content: { text: "Wird gelöscht" } }];
+  const db = client({ blocks });
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "delete", block_id: second }))).success);
+  assert.ok(!blocks.some((block) => block.id === second));
+  assert.deepEqual(about.content.order, ["section:about", first, "section:business"]);
+  assert.deepEqual(about.content.hidden_blocks, []);
+  assert.deepEqual(splitProfileContent(blocks, "Haus").items.map((item) => item.key),
+    ["section:about", first, "section:business"]);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "delete", block_id: second }))).error);
+});
+
+test("business areas can be hidden, duplicated, deleted and restored without clearing other fields", async () => {
+  const about = { id: first, profile_id: profileId, type: "heading", slot: "about_heading", sort_order: 0,
+    content: { text: "Über das Haus", order: ["section:about", "section:business"] } };
+  const business = { id: second, profile_id: profileId, type: "heading", slot: "business_areas_heading", sort_order: 0,
+    content: { text: "Tätigkeitsbereiche" } };
+  const blocks = [about, business];
+  const db = client({ blocks });
+  let inserted = 0;
+  db.rpc = async (name, args) => {
+    db.calls.push({ rpc: name, args });
+    const id = inserted++ ? "99999999-9999-4999-8999-999999999999" : "88888888-8888-4888-8888-888888888888";
+    blocks.push({ id, profile_id: profileId, type: args.p_type, slot: null, sort_order: inserted,
+      content: { text: args.p_text }, config: {} });
+    return { data: id, error: null };
+  };
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "section-toggle", block_id: "section:business" }))).success);
+  assert.equal(business.content.hidden, true);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "section-toggle", block_id: "section:business" }))).success);
+  assert.equal(business.content.hidden, false);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "section-duplicate", block_id: "section:business" }))).success);
+  assert.ok(db.calls.some((call) => call.rpc === "insert_profile_content_block" && call.args.p_type === "heading"));
+  assert.ok(db.calls.some((call) => call.rpc === "insert_profile_content_block" && call.args.p_type === "text"));
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "section-delete", block_id: "section:business" }))).success);
+  const fieldWrite = db.calls.find((call) => call.table === "company_profiles" && call.operation === "update");
+  assert.deepEqual(fieldWrite.payload, { business_areas: null });
+  assert.ok(!blocks.some((block) => block.slot === "business_areas_heading"));
+  assert.ok(!splitProfileContent(blocks, "Haus").items.some((item) => item.kind === "business"));
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "section-restore", block_id: "section:business" }))).success);
+  assert.ok(splitProfileContent(blocks, "Haus").items.some((item) => item.kind === "business"));
+});
+
+test("duplicating a text-image pair preserves its frame while the new image slot starts empty", async () => {
+  const about = { id: "ffffffff-ffff-4fff-8fff-ffffffffffff", profile_id: profileId,
+    type: "heading", slot: "about_heading", sort_order: 0,
+    content: { text: "Über das Haus", order: ["section:about", first, second, "section:business"],
+      pair_layouts: { [first]: { width_percent: 50, offset_percent: 25, text_align: "center" } } } };
+  const blocks = [about,
+    { id: first, profile_id: profileId, type: "text", slot: null, sort_order: 0,
+      content: { text: "Text" }, config: { width_percent: 75, offset_percent: 0 } },
+    { id: second, profile_id: profileId, type: "image_grid", slot: null, sort_order: 1,
+      content: {}, config: { columns: 1, width_percent: 25, offset_percent: 75 } }];
+  const db = client({ blocks });
+  const copies = ["88888888-8888-4888-8888-888888888888", "99999999-9999-4999-8999-999999999999"];
+  db.rpc = async (name, args) => {
+    db.calls.push({ rpc: name, args });
+    const source = blocks.find((block) => block.id === args.p_block_id);
+    const id = copies.shift();
+    blocks.push({ ...source, id, sort_order: blocks.length, content: source.type === "image_grid" ? {} : { ...source.content } });
+    return { data: id, error: null };
+  };
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "pair-duplicate", text_block_id: first, image_block_id: second }))).success);
+  const textCopy = "88888888-8888-4888-8888-888888888888";
+  assert.deepEqual(about.content.pair_layouts[textCopy], about.content.pair_layouts[first]);
+  assert.deepEqual(about.content.order, ["section:about", first, second, textCopy,
+    "99999999-9999-4999-8999-999999999999", "section:business"]);
+  assert.ok(db.calls.every((call) => !call.operation || call.table !== "company_profiles"));
 });

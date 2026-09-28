@@ -375,7 +375,7 @@ test("inline mode exposes normal fields and existing media actions in the public
   assert.match(html, /fixed-business_areas_heading/);
   assert.match(html, /\+ Inhalt hinzufügen/);
   assert.match(html, /Duplizieren/);
-  assert.match(html, /Löschen/);
+  assert.match(html, /Abschnitt löschen/);
   assert.doesNotMatch(html, /storage_path|profile_id|company_id|profiles\/aaaaaaaa/);
 });
 

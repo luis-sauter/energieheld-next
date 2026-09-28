@@ -2,7 +2,7 @@ import type { ProfileContentBlock, ProfileBlockImage, EditorialItem } from "@/li
 import type { Listing } from "@/types/portal";
 import Image from "next/image";
 import { normalizeImageGridConfig, publicImageGridColumns } from "@/lib/image-grid-layout";
-import { normalizeBlockLayout, normalizeTextBlockLayout } from "@/lib/content-block-layout";
+import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment } from "@/lib/content-block-layout";
 import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";
 import { imageCaptionPresentation } from "@/lib/image-caption";
 import styles from "./profile-content-blocks.module.css";
@@ -30,21 +30,30 @@ export function BlockImageGrid({ block }: { block: ProfileContentBlock }) {
 
 export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[] }) {
   const visible = blocks.filter((block) => block.type !== "image_grid" || block.images?.length);
-  function renderBlock(block: ProfileContentBlock, paired: boolean) {
+  function renderBlock(block: ProfileContentBlock, paired: boolean, groupAlign?: TextAlignment) {
     const layout = normalizeBlockLayout(block.config);
     const align = block.type === "image_grid" ? undefined : normalizeTextBlockLayout(block.config).text_align;
     return <section className="detail-section profile-content-block" key={block.id}
       data-spacing-top={layout.spacing_top} data-spacing-bottom={layout.spacing_bottom}
-      style={{ width: paired ? "100%" : `${layout.width_percent}%`, marginLeft: paired ? 0 : `${layout.offset_percent}%`, textAlign: align }}>
+      style={{ width: paired ? "100%" : `${layout.width_percent}%`, marginLeft: paired ? 0 : `${layout.offset_percent}%`, textAlign: groupAlign ?? align }}>
       {block.type === "heading" ? <h2>{block.content.text}</h2>
         : block.type === "text" ? <p>{block.content.text}</p> : <BlockImageGrid block={block} />}
     </section>;
   }
   return <>
-    {contentBlockRows(visible).map((row) => row.right ? <div className={styles.contentRow} key={row.left[0].id}>
-      {[row.left, row.right].map((column) => <div className={styles.contentColumn} key={column[0].id}
-        style={{ gridColumn: contentColumn(column[0]) }}>{column.map((block) => renderBlock(block, true))}</div>)}
-    </div> : row.left.map((block) => renderBlock(block, false)))}
+    {contentBlockRows(visible).map((row) => {
+      if (!row.right) return row.left.map((block) => renderBlock(block, false));
+      const text = [...row.left, ...row.right].find((block) => block.type === "text");
+      const frame = normalizeTextBlockLayout({ width_percent: 100, offset_percent: 0,
+        text_align: normalizeTextBlockLayout(text?.config).text_align, ...text?.pair_layout });
+      return <div key={row.left[0].id} className="profile-content-block" data-spacing-top={frame.spacing_top} data-spacing-bottom={frame.spacing_bottom}
+        style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
+        <div className={styles.contentRow}>
+          {[row.left, row.right].map((column) => <div className={styles.contentColumn} key={column[0].id}
+            style={{ gridColumn: contentColumn(column[0]) }}>{column.map((block) => renderBlock(block, true, frame.text_align))}</div>)}
+        </div>
+      </div>;
+    })}
   </>;
 }
 
@@ -58,7 +67,8 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
   }
   for (const item of items) {
     if (item.kind === "block") {
-      if (item.block) pending.push(item.block);
+      if (item.hidden) flush();
+      else if (item.block) pending.push(item.block);
       continue;
     }
     flush();
