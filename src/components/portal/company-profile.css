@@ -92,8 +92,12 @@
   position: relative;
   margin: 0 0 28px;
 }
-.company-profile .profile-header-media { margin: 0 0 28px; }
+.company-profile .profile-head-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: 24px; align-items: start; margin-bottom: 24px; }
+.company-profile .profile-head-grid > * { min-width: 0; }
+.company-profile .profile-header-media { margin: 0; }
+.company-profile .profile-location { margin-bottom: 40px; }
 .company-profile .profile-header-media .gallery { margin-bottom: 0; }
+.company-profile .profile-header-media .gallery-main { aspect-ratio: 1; max-width: 600px; max-height: none; }
 .company-profile .profile-video { display: block; width: 100%; max-height: 620px; aspect-ratio: 16 / 9; object-fit: contain; background: #111; border-radius: 10px; }
 .company-profile .gallery-open { position: absolute; inset: 0; display: block; }
 .company-profile .gallery-open:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: -3px; z-index: 2; }
@@ -206,6 +210,8 @@
 .company-profile .contact-card dl {
   margin: 0 0 20px;
 }
+.company-profile .contact-logo { width: 120px; height: 120px; aspect-ratio: 1; background: var(--surface); border-radius: 8px; overflow: hidden; }
+.company-profile .contact-logo img { object-fit: contain; }
 .company-profile .inline-location-fields {
   display: grid;
   grid-template-columns: minmax(90px, 0.65fr) minmax(0, 1.35fr);
@@ -579,6 +585,7 @@
   }
 }
 @media (max-width: 820px) {
+  .company-profile .profile-head-grid { grid-template-columns: minmax(0, 1fr); }
   .company-profile .detail-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;

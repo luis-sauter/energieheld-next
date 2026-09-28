@@ -10,6 +10,8 @@ import type { ContentBlockType, HeadingSlot, ProfileContentBlock } from "@/lib/p
 import styles from "./inline-profile.module.css";
 import { normalizeBlockLayout, normalizeTextBlockLayout } from "@/lib/content-block-layout";
 import { useInlineEditorHistory } from "./inline-editor-history";
+import { contentBlockRows, contentColumn } from "@/lib/content-block-rows";
+import rowStyles from "@/components/portal/profile-content-blocks.module.css";
 
 type ContentState = { error?: string; success?: string };
 type SaveContent = (form: FormData) => Promise<ContentState>;
@@ -174,10 +176,9 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
     </div>;
   }
 
-  return <div className={styles.contentEditor} aria-label="Profilinhalte bearbeiten">
-    {feedback.error && <p role="alert" className={styles.error}>{feedback.error}</p>}
-    {feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
-    {blocks.map((block, index) => <div key={block.id}>
+  function renderEditableBlock(block: ProfileContentBlock) {
+    const index = blocks.findIndex((item) => item.id === block.id);
+    return <div key={block.id}>
       {addControl(block.id)}
       <InlineBlockLayout block={block} busy={busy || history.busy} first={index === 0} last={index === blocks.length - 1}
         save={saveBlock}>
@@ -202,7 +203,18 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
           </div>
         </form>}
       </InlineBlockLayout>
-    </div>)}
+    </div>;
+  }
+
+  return <div className={styles.contentEditor} aria-label="Profilinhalte bearbeiten">
+    {feedback.error && <p role="alert" className={styles.error}>{feedback.error}</p>}
+    {feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
+    {contentBlockRows(blocks).map((row) => row.right ? <div className={rowStyles.contentRow} key={row.left[0].id}>
+      {[row.left, row.right].map((column) => <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
+        key={column[0].id} style={{ gridColumn: contentColumn(column[0]) }}>
+        {column.map(renderEditableBlock)}
+      </div>)}
+    </div> : row.left.map(renderEditableBlock))}
     {addControl(null)}
   </div>;
 }

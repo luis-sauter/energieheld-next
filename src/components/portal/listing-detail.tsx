@@ -231,19 +231,22 @@ export function ListingDetail({
           )}
         {adminAction}
       </div>
-      {(listing.video || galleryEditor || listing.images.length > 0) && <div className="profile-header-media">
+      <div className="profile-head-grid">
+      <div className="profile-header-media">
         {listing.video ? <video className="profile-video" src={listing.video.src} poster={listing.video.poster}
           controls playsInline preload="metadata" aria-label={`Video von ${listing.name}`} />
-          : galleryEditor ?? <ImageGallery images={listing.images} isDemo={listing.isDemo && !originalDemoMedia} />}
-      </div>}
-      <div className="profile-information">
+          : galleryEditor ?? (listing.images.length
+            ? <ImageGallery images={listing.images} isDemo={listing.isDemo && !originalDemoMedia} />
+            : <div className="gallery-empty"><p>Noch keine Profilbilder vorhanden.</p></div>)}
+      </div>
         <ContactSection
           listing={listing}
           contactAction={contactAction}
           logoEditor={logoEditor}
           inlineFields={inlineFields}
         />
-        <section className="location-module" aria-label="Standort">
+      </div>
+      <section className="location-module profile-location" aria-label="Standort">
           {map ? (
             <iframe
               className="location-map"
@@ -308,8 +311,7 @@ export function ListingDetail({
               )
             )}
           </div>
-        </section>
-      </div>
+      </section>
       <div className="detail-grid">
         <div>
           {(listing.description || inlineFields?.description) && (
