@@ -39,11 +39,19 @@ function client({ authenticated = true, admin = true, blocks = [
           if (table === "portal_admins") return { data: admin ? { user_id: "editor" } : null, error: null };
           if (table === "company_profiles") {
             const valid = call.filters.some(([key, value]) => key === "id" && value === profileId) &&
-              call.filters.some(([key, value]) => key === "slug" && value === slug);
-            return { data: valid ? { id: profileId } : null, error: null };
+              (call.columns === "display_name" || call.filters.some(([key, value]) => key === "slug" && value === slug));
+            return { data: valid ? { id: profileId, display_name: "Sichtbares Profil" } : null, error: null };
           }
           const selected = blocks.find((block) => call.filters.every(([key, value]) => block[key] === value));
-          if (call.operation === "insert") return { data: { id: first }, error: null };
+          if (call.operation === "insert") {
+            if (call.payload.slot) {
+              const inserted = { id: "ffffffff-ffff-4fff-8fff-ffffffffffff", ...call.payload };
+              blocks.push(inserted);
+              return { data: inserted, error: null };
+            }
+            return { data: { id: first }, error: null };
+          }
+          if (call.operation === "update" && selected?.slot) Object.assign(selected, call.payload);
           if (call.operation) return { data: selected ? { id: selected.id } : null, error: null };
           return { data: selected ?? null, error: null };
         },
@@ -161,7 +169,7 @@ test("forged target ID, slug, block ID and order never mutate another profile", 
   assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "insert", type: "text", text: "Text", before_block_id: "bad" }))).error);
 });
 
-test("heading overrides use fixed slots and block moves submit an exact same-profile permutation", async () => {
+test("heading overrides keep fixed slots and moves save a unified same-profile order", async () => {
   const db = client();
   const heading = await changeAdminProfileContent(db, profileId, slug, form({ intent: "heading", slot: "about_heading", text: "Über das Team" }));
   assert.ok(heading.success);
@@ -172,9 +180,8 @@ test("heading overrides use fixed slots and block moves submit an exact same-pro
   assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "heading", slot: "foreign_slot", text: "Nein" }))).error);
   const moved = await changeAdminProfileContent(db, profileId, slug, form({ intent: "move", block_id: second, direction: "up", sort_order: "9999" }));
   assert.ok(moved.success);
-  assert.deepEqual(db.calls.find((call) => call.rpc === "reorder_profile_content_blocks")?.args, {
-    p_profile_id: profileId, p_block_ids: [second, first],
-  });
+  assert.deepEqual(db.calls.find((call) => call.operation === "update" && call.payload?.content?.order)?.payload.content.order,
+    ["section:about", second, first, "section:business"]);
 });
 
 test("history reorder accepts only the complete displayed block permutation", async () => {
@@ -185,8 +192,8 @@ test("history reorder accepts only the complete displayed block permutation", as
   };
   const db = client();
   assert.ok((await changeAdminProfileContent(db, profileId, slug, order([second, first]))).success);
-  assert.deepEqual(db.calls.find((call) => call.rpc === "reorder_profile_content_blocks")?.args,
-    { p_profile_id: profileId, p_block_ids: [second, first] });
+  assert.deepEqual(db.calls.find((call) => call.operation === "update" && call.payload?.content?.order)?.payload.content.order,
+    ["section:about", second, first, "section:business"]);
   for (const ids of [[first], [first, first], [first, foreignBlock]]) {
     const denied = client();
     assert.ok((await changeAdminProfileContent(denied, profileId, slug, order(ids))).error);
@@ -211,4 +218,38 @@ test("existing heading override can be edited or cleared without touching profil
   assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "heading", slot: "about_heading", text: "" }))).success);
   assert.ok(db.calls.find((call) => call.operation === "delete")?.filters.some(([key, value]) => key === "slot" && value === "about_heading"));
   assert.ok(db.calls.every((call) => !call.payload?.description));
+});
+
+test("field-backed editorial sections keep their heading, layout and visibility in existing slot content", async () => {
+  const about = { id: first, profile_id: profileId, type: "heading", slot: "about_heading", sort_order: 0,
+    content: { text: "Über das Haus", hidden: false, order: ["section:about", "section:business"] }, config: {} };
+  const db = client({ blocks: [about] });
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "layout", block_id: "section:about",
+    width_percent: "50", offset_percent: "50", text_align: "right" }))).success);
+  assert.deepEqual(about.content.layout, { width_percent: 50, offset_percent: 50, text_align: "right",
+    spacing_top: "normal", spacing_bottom: "normal" });
+  assert.deepEqual(about.config, {});
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "section-toggle", block_id: "section:about" }))).success);
+  assert.equal(about.content.hidden, true);
+  assert.deepEqual(about.content.order, ["section:about", "section:business"]);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "heading", slot: "about_heading", text: "Neu" }))).success);
+  assert.equal(about.content.text, "Neu");
+  assert.equal(about.content.hidden, true);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "heading", slot: "about_heading", text: "" }))).success);
+  assert.equal(about.content.text, "Über Sichtbares Profil");
+  assert.equal(about.content.hidden, true);
+  assert.equal(about.content.layout.width_percent, 50);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "section-toggle", block_id: "section:foreign" }))).error);
+  assert.ok(db.calls.every((call) => !call.payload?.description && !call.payload?.business_areas));
+});
+
+test("a section can move across free blocks without changing their data or another profile", async () => {
+  const db = client();
+  assert.ok((await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "move", block_id: "section:about", direction: "down" }))).success);
+  const orderWrite = db.calls.find((call) => call.operation === "update" && call.payload?.content?.order);
+  assert.deepEqual(orderWrite.payload.content.order, [first, "section:about", second, "section:business"]);
+  assert.ok(orderWrite.filters.some(([key, value]) => key === "profile_id" && value === profileId));
+  assert.ok((await changeAdminProfileContent(client({ admin: false }), profileId, slug,
+    form({ intent: "move", block_id: "section:about", direction: "down" }))).access !== "admin");
 });

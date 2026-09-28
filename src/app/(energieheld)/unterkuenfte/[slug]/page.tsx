@@ -13,7 +13,7 @@ import { saveInlineContent } from "@/app/(energieheld)/experten/[slug]/content-a
 import { saveInlineBlockImage } from "@/app/(energieheld)/experten/[slug]/block-image-actions";
 import { createPublicClient } from "@/lib/supabase/public";
 import { loadPublicProfileContent, splitProfileContent } from "@/lib/profile-content";
-import { ProfileContentBlocks } from "@/components/portal/profile-content-blocks";
+import { ProfileEditorialContent } from "@/components/portal/profile-content-blocks";
 import { isLiveDemoProfile } from "@/lib/reiseportal-demo";
 
 export const dynamic = "force-dynamic";
@@ -110,8 +110,8 @@ export default async function AccommodationDetail({
         originalDemoMedia={listing.slug === "demo-gmbh"}
         aboutHeading={presentedContent.aboutHeading}
         businessHeading={presentedContent.businessHeading}
-        contentBlocks={presentedContent.blocks.length
-          ? <ProfileContentBlocks blocks={presentedContent.blocks} /> : undefined}
+        editorialContent={content.available && (listing.description || listing.businessAreas || presentedContent.blocks.length)
+          ? <ProfileEditorialContent items={presentedContent.items} listing={listing} /> : undefined}
         contactAction={
           !listing.isDemo && !listing.isPreview ? (
             <InquiryDialog profileId={listing.id} companyName={listing.name} />

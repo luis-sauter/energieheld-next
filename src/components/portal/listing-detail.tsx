@@ -168,6 +168,7 @@ export function ListingDetail({
   aboutHeadingEditor,
   businessHeadingEditor,
   contentBlocks,
+  editorialContent,
   contactAction,
   showMap = false,
   mapLocation,
@@ -194,6 +195,7 @@ export function ListingDetail({
   aboutHeadingEditor?: React.ReactNode;
   businessHeadingEditor?: React.ReactNode;
   contentBlocks?: React.ReactNode;
+  editorialContent?: React.ReactNode;
   contactAction?: React.ReactNode;
 }) {
   const Heading = headingLevel === 1 ? "h1" : "h2";
@@ -312,23 +314,27 @@ export function ListingDetail({
             )}
           </div>
       </section>
-      <div className="detail-grid">
-        <div>
-          {(listing.description || inlineFields?.description) && (
-            <section className="detail-section">
-              {!presentation && (
-                <p className="eyebrow">Ein guter erster Eindruck</p>
+      {editorialContent ? (
+        <div className="profile-content-canvas">{editorialContent}</div>
+      ) : (
+        <>
+          <div className="detail-grid">
+            <div>
+              {(listing.description || inlineFields?.description) && (
+                <section className="detail-section">
+                  {!presentation && <p className="eyebrow">Ein guter erster Eindruck</p>}
+                  {aboutHeadingEditor ?? <h2>{aboutHeading ?? `Über ${listing.name}`}</h2>}
+                  {inlineFields?.description ?? <p>{listing.description}</p>}
+                </section>
               )}
-              {aboutHeadingEditor ?? <h2>{aboutHeading ?? `Über ${listing.name}`}</h2>}
-              {inlineFields?.description ?? <p>{listing.description}</p>}
-            </section>
-          )}
-        </div>
-      </div>
-      {contentBlocks && <div className="profile-content-canvas">{contentBlocks}</div>}
+            </div>
+          </div>
+          {contentBlocks && <div className="profile-content-canvas">{contentBlocks}</div>}
+        </>
+      )}
       <div className="detail-grid">
         <div>
-          {(listing.businessAreas || inlineFields?.business_areas) && (
+          {!editorialContent && (listing.businessAreas || inlineFields?.business_areas) && (
             <section className="detail-section">
               {businessHeadingEditor ?? <h2>
                 {presentation === "company"

@@ -2,11 +2,12 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ProfileContentBlocks } from "@/components/portal/profile-content-blocks";
+import { ProfileEditorialContent } from "@/components/portal/profile-content-blocks";
+import type { Listing } from "@/types/portal";
 import { InlineImageGridEditor } from "./inline-image-grid-editor";
 import { InlineBlockLayout } from "./inline-block-layout";
 import type { MediaState } from "@/lib/company-media";
-import type { ContentBlockType, HeadingSlot, ProfileContentBlock } from "@/lib/profile-content";
+import type { ContentBlockType, EditorialItem, HeadingSlot, ProfileContentBlock } from "@/lib/profile-content";
 import styles from "./inline-profile.module.css";
 import { normalizeBlockLayout, normalizeTextBlockLayout } from "@/lib/content-block-layout";
 import { useInlineEditorHistory } from "./inline-editor-history";
@@ -60,8 +61,11 @@ export function FixedHeadingEditor({ slot, value, defaultText, saveAction }: {
   </form>;
 }
 
-export function InlineContentEditor({ blocks, editing, available, imagesAvailable, saveAction, saveImage }: {
+export function InlineContentEditor({ blocks, items, listing, renderSpecial, editing, available, imagesAvailable, saveAction, saveImage }: {
   blocks: ProfileContentBlock[];
+  items: EditorialItem[];
+  listing: Listing;
+  renderSpecial: (item: EditorialItem) => React.ReactNode;
   editing: boolean;
   available: boolean;
   imagesAvailable: boolean;
@@ -75,7 +79,7 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
   const [feedback, setFeedback] = useState<ContentState>({});
   const [pickerBefore, setPickerBefore] = useState<string | null | undefined>();
   const [draft, setDraft] = useState<{ type: ContentBlockType; before: string | null } | null>(null);
-  if (!editing) return blocks.length ? <ProfileContentBlocks blocks={blocks} /> : null;
+  if (!editing) return <ProfileEditorialContent items={items} listing={listing} />;
   if (!available) return <p role="status" className={styles.contentUnavailable}>Inhaltsblöcke werden verfügbar, sobald die neue Datenbankmigration angewendet ist.</p>;
 
   async function run(form: FormData, onSuccess?: () => void) {
@@ -110,7 +114,7 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
     const form = formFor(intent, blockId);
     for (const [key, value] of Object.entries(values)) form.set(key, value);
     const block = blocks.find((item) => item.id === blockId);
-    const beforeOrder = blocks.map((item) => item.id);
+    const beforeOrder = items.map((item) => item.key);
     const saved = await run(form);
     if (!saved || !block) return saved;
     if (intent === "layout") {
@@ -177,10 +181,10 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
   }
 
   function renderEditableBlock(block: ProfileContentBlock) {
-    const index = blocks.findIndex((item) => item.id === block.id);
+    const index = items.findIndex((item) => item.key === block.id);
     return <div key={block.id}>
       {addControl(block.id)}
-      <InlineBlockLayout block={block} busy={busy || history.busy} first={index === 0} last={index === blocks.length - 1}
+      <InlineBlockLayout block={block} busy={busy || history.busy} first={index === 0} last={index === items.length - 1}
         save={saveBlock}>
         {block.type === "image_grid" ? <InlineImageGridEditor block={block} saveAction={saveImage} />
           : <form key={`${block.id}-${block.content.text}`} className={styles.blockForm} onSubmit={(event) => {
@@ -206,15 +210,37 @@ export function InlineContentEditor({ blocks, editing, available, imagesAvailabl
     </div>;
   }
 
-  return <div className={styles.contentEditor} aria-label="Profilinhalte bearbeiten">
-    {feedback.error && <p role="alert" className={styles.error}>{feedback.error}</p>}
-    {feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
-    {contentBlockRows(blocks).map((row) => row.right ? <div className={rowStyles.contentRow} key={row.left[0].id}>
+  function renderNormalRun(run: ProfileContentBlock[]) {
+    return contentBlockRows(run).map((row) => row.right ? <div className={rowStyles.contentRow} key={row.left[0].id}>
       {[row.left, row.right].map((column) => <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
         key={column[0].id} style={{ gridColumn: contentColumn(column[0]) }}>
         {column.map(renderEditableBlock)}
       </div>)}
-    </div> : row.left.map(renderEditableBlock))}
+    </div> : row.left.map(renderEditableBlock));
+  }
+
+  const editorial: React.ReactNode[] = [];
+  let pendingBlocks: ProfileContentBlock[] = [];
+  function flush() { if (pendingBlocks.length) editorial.push(...renderNormalRun(pendingBlocks)); pendingBlocks = []; }
+  for (const item of items) {
+    if (item.kind === "block") { if (item.block) pendingBlocks.push(item.block); continue; }
+    flush();
+    const synthetic: ProfileContentBlock = { id: item.key, profile_id: listing.id, type: "heading", slot: null,
+      sort_order: 0, content: { text: item.heading }, config: item.layout };
+    const index = items.indexOf(item);
+    editorial.push(<InlineBlockLayout key={item.key} block={synthetic} sectionHidden={item.hidden}
+      sectionLabel={item.kind === "about" ? "Beschreibung" : "Tätigkeitsbereiche"}
+      busy={busy || history.busy} first={index === 0} last={index === items.length - 1} save={saveBlock}>
+      {item.hidden && <p role="status">Dieser Abschnitt ist öffentlich ausgeblendet.</p>}
+      {renderSpecial(item)}
+    </InlineBlockLayout>);
+  }
+  flush();
+
+  return <div className={styles.contentEditor} aria-label="Profilinhalte bearbeiten">
+    {feedback.error && <p role="alert" className={styles.error}>{feedback.error}</p>}
+    {feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
+    {editorial}
     {addControl(null)}
   </div>;
 }
