@@ -103,14 +103,14 @@ test("editor text follows live section alignment and paired columns stack on mob
   assert.match(css, /\.layoutBlock \.blockForm input, \.layoutBlock \.blockForm textarea[^}]*text-align: inherit/);
   assert.match(rowCss, /@media \(max-width: 640px\)[\s\S]*\.contentColumn \{ grid-column: 1 \/ -1 !important/);
   const profileCss = source("src/components/portal/company-profile.css");
-  assert.match(profileCss, /\.profile-head-grid \{ display: grid; grid-template-columns: minmax\(0, 2\.5fr\) minmax\(280px, 1fr\);[^}]*align-items: stretch/);
+  assert.match(profileCss, /\.profile-head-grid \{ display: grid; grid-template-columns: minmax\(0, 2\.1fr\) minmax\(280px, 1fr\);[^}]*align-items: stretch/);
   assert.match(profileCss, /@media \(max-width: 820px\)[\s\S]*\.profile-head-grid \{ grid-template-columns: minmax\(0, 1fr\)/);
   assert.match(profileCss, /\.profile-head-grid > \* \{ min-width: 0/);
   assert.match(profileCss, /\.profile-location \.location-map \{ min-height: clamp\(240px, 25vw, 340px\)/);
   assert.match(profileCss, /\.profile-location > div:last-child \{ padding: 12px 18px/);
   assert.match(source("src/components/admin/inline-profile.module.css"), /\.adjacentPreview \{[^}]*grid-template-columns: repeat\(100, minmax\(0, 1fr\)\)/);
   assert.match(source("src/components/admin/inline-profile.module.css"), /@media \(max-width: 640px\)[\s\S]*\.adjacentPreviewText, \.adjacentPreviewImage \{ grid-column: 1 \/ -1 !important/);
-  assert.match(profileCss, /\.profile-header-media \.gallery-main \{[^}]*aspect-ratio: 2\.2/);
+  assert.match(profileCss, /\.profile-header-media \.gallery-main \{[^}]*height: 100%; aspect-ratio: auto/);
   assert.match(profileCss, /\.contact-card \{[^}]*height: 100%/);
   assert.match(profileCss, /\.contact-logo \{ width: 88px; height: 88px; aspect-ratio: 1/);
 });
@@ -150,7 +150,7 @@ test("profile head stays wide and shallow across desktop and mobile breakpoints"
     assert.ok(media > right, `${viewport}px desktop media should be wider`);
   }
   assert.match(css, /\.profile-head-grid \{[^}]*align-items: stretch/);
-  assert.match(css, /\.profile-header-media \.gallery-main \{[^}]*aspect-ratio: 2\.2/);
+  assert.match(css, /\.profile-header-media \.gallery-main \{[^}]*height: 100%; aspect-ratio: auto/);
   assert.match(css, /\.gallery-main img \{[^}]*object-fit: cover/);
   assert.match(css, /\.profile-location \.location-map \{ min-height: clamp\(240px, 25vw, 340px\)/);
   for (const viewport of [768, 390, 360]) assert.ok(viewport <= 820);

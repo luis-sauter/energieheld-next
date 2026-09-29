@@ -283,9 +283,29 @@ test("editor gallery shares the public position and preserves contain logo and a
       );
     writeFileSync(
       process.env.PROFILE_PREVIEW_FILE,
-      `<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profilgestaltung – lokale Testdaten</title><style>${css}</style><body><main class="container detail-page"><div class="profile-editor-toolbar"><div><h1>Profil gestalten</h1><p>Schritt 2 von 2 · Ihre Profilvorschau</p></div><a href="#">Stammdaten bearbeiten</a></div>${html}</main></body></html>`,
+      `<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Öffentliches Profil – lokale Testdaten</title><style>${css}</style><body><main class="container detail-page">${publicHtml}</main></body></html>`,
     );
   }
+});
+
+test("public gallery thumbnails are clickable overlays inside the full-height hero image", () => {
+  const listing = companyProfileListing(profile, { images: [
+    { id: "one", src: "/images/house.jpg", alt: "Erstes Bild" },
+    { id: "two", src: "/images/home.jpg", alt: "Zweites Bild" },
+  ] });
+  const html = renderToStaticMarkup(createElement(ListingDetail, {
+    listing, categories: energieheld.categories, presentation: "company",
+  }));
+  assert.match(html, /class="gallery-main"[^>]*data-has-thumbs="true"[\s\S]*class="gallery-thumbs"/);
+  assert.match(html, /class="gallery-thumbs"[^>]*>[\s\S]*aria-label="Bild 1: Erstes Bild"[\s\S]*aria-label="Bild 2: Zweites Bild"/);
+  const gallery = readFileSync(new URL("../src/components/portal/image-gallery.tsx", import.meta.url), "utf8");
+  assert.ok(gallery.indexOf('className="gallery-thumbs"') < gallery.indexOf('className="gallery-edit-actions"'));
+  const css = readFileSync(new URL("../src/components/portal/company-profile.css", import.meta.url), "utf8");
+  assert.match(css, /\.profile-header-media \.gallery-main \{[^}]*flex: 1; height: 100%; aspect-ratio: auto/);
+  assert.match(css, /\.contact-card \{[^}]*height: 100%/);
+  assert.match(css, /\.gallery-thumbs \{[^}]*position: absolute;[^}]*bottom: 10px;[^}]*background: rgb\(0 0 0 \/ 0\.24\);[^}]*opacity: \.72/);
+  assert.match(css, /@media \(max-width: 820px\)[\s\S]*\.profile-head-grid \{ grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(gallery, /window\.setTimeout\(advance, 4000\)/);
 });
 test("a real video source takes the profile-head slot; otherwise sorted gallery remains there", () => {
   const media = { images: [

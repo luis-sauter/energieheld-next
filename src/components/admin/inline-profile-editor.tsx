@@ -9,7 +9,7 @@ import type { ProfileValues, ProfileFormState } from "@/lib/company-profile";
 import type { MediaRow, MediaState, SignedMedia } from "@/lib/company-media";
 import styles from "./inline-profile.module.css";
 import { splitProfileContent, type ProfileContentBlock } from "@/lib/profile-content";
-import { FixedHeadingEditor, InlineContentEditor } from "./inline-content-editor";
+import { FixedHeadingEditor, InlineContentEditor, SectionPartFrame } from "./inline-content-editor";
 import type { EditorialItem } from "@/lib/profile-content";
 import { InlineEditorHistoryContext, useInlineEditorHistoryController } from "./inline-editor-history";
 
@@ -74,12 +74,18 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   function renderSpecial(item: EditorialItem) {
     const about = item.kind === "about";
     return <div className={styles.specialSection}>
-      <FixedHeadingEditor key={`${item.key}-${item.heading}`} slot={about ? "about_heading" : "business_areas_heading"}
-        value={item.heading} defaultText={about ? `Über ${listing.name}` : "Tätigkeitsbereiche"} saveAction={saveContent} />
-      {about ? inlineFields.description : inlineFields.business_areas}
-      <button type="submit" form={formId} className="button" disabled={busy || history.busy}>
-        {busy ? "Wird gespeichert …" : about ? "Beschreibung speichern" : "Tätigkeitsbereiche speichern"}
-      </button>
+      <FixedHeadingEditor key={`${item.key}-${item.heading}-${item.headingHidden}-${item.headingAlign}`}
+        slot={about ? "about_heading" : "business_areas_heading"} sectionKey={item.key}
+        value={item.heading} align={item.headingAlign} hidden={item.headingHidden}
+        defaultText={about ? `Über ${listing.name}` : "Tätigkeitsbereiche"} saveAction={saveContent} />
+      <SectionPartFrame key={`${item.key}-text-${item.bodyAlign}-${about ? values.description : values.business_areas}`}
+        sectionKey={item.key} part="text" align={item.bodyAlign}
+        missing={!(about ? values.description : values.business_areas)?.trim()} saveAction={saveContent}>
+        {about ? inlineFields.description : inlineFields.business_areas}
+        <button type="submit" form={formId} className="button" disabled={busy || history.busy}>
+          {busy ? "Wird gespeichert …" : about ? "Beschreibung speichern" : "Tätigkeitsbereiche speichern"}
+        </button>
+      </SectionPartFrame>
     </div>;
   }
 
