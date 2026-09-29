@@ -3088,6 +3088,8 @@ h6 {
   background: var(--portal-accent);
   color: var(--portal-ink);
 }
+.reiseportal-shell .company-profile .detail-title { color: var(--portal-primary-deep); }
+.reiseportal-shell .company-profile .button-primary { color: var(--portal-ink); }
 .reiseportal-shell .button-primary:hover:not(:disabled),
 .reiseportal-shell .header-cta:hover {
   border-color: var(--brand-accent-hover);
