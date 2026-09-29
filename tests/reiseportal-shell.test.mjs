@@ -81,6 +81,7 @@ test("Reiseportal palette keeps coral for actions and all quicklink symbols blue
   assert.match(css, /\.reiseportal-shell \.button-primary,[\s\S]*?color: var\(--portal-ink\)/);
   assert.match(css, /\.reiseportal-shell \.company-profile \.button-primary \{ color: var\(--portal-ink\); \}/);
   assert.match(css, /\.reiseportal-shell \.company-profile \.detail-title \{ color: var\(--portal-primary-deep\); \}/);
+  assert.match(css, /\.motto-intro-image \{ width: 100%; min-width: 0; min-height: 0; \}/);
   assert.match(css, /\.travel-quicklink-icon\s*\{[^}]*color: var\(--portal-primary\)/);
   for (const slug of ["wellnessangebote", "familienurlaub", "wanderurlaub", "romantik-zu-zweit", "campingurlaub", "radwandern", "urlaub-am-wasser", "golfurlaub"]) {
     const icon = renderToStaticMarkup(createElement(TravelThemeIcon, { slug }));
