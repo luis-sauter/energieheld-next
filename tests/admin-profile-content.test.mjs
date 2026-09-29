@@ -206,6 +206,48 @@ function client({ authenticated = true, admin = true, blocks = [
   };
 }
 
+test("heading and body of a field-backed section align and delete independently within the displayed profile", async () => {
+  const about = { id: first, profile_id: profileId, type: "heading", slot: "about_heading",
+    sort_order: 0, content: { text: "Über das Haus", adjacent_image_id: second,
+      layout: { width_percent: 75, offset_percent: 0 } } };
+  const image = { id: second, profile_id: profileId, type: "image_grid", slot: null,
+    sort_order: 1, content: { text: "" }, config: { columns: 1 } };
+  const db = client({ blocks: [about, image] });
+  const action = (part, operation, extra = {}) => changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "section-part", block_id: "section:about", part, action: operation, ...extra }));
+  assert.ok((await action("heading", "align", { text_align: "center", profile_id: foreignProfile })).success);
+  assert.ok((await action("text", "align", { text_align: "right" })).success);
+  assert.equal(about.content.heading_align, "center");
+  assert.equal(about.content.body_align, "right");
+  assert.equal(about.content.adjacent_image_id, second);
+  assert.ok((await action("heading", "delete")).success);
+  assert.equal(about.content.heading_hidden, true);
+  assert.ok(!db.calls.some((call) => call.table === "company_profiles" && call.operation));
+  assert.ok((await action("heading", "restore")).success);
+  assert.equal(about.content.heading_hidden, false);
+  assert.ok((await action("text", "delete")).success);
+  const profileWrite = db.calls.find((call) => call.table === "company_profiles" && call.operation === "update");
+  assert.deepEqual(profileWrite.payload, { description: null });
+  assert.deepEqual(profileWrite.filters, [["id", profileId]]);
+  assert.equal(about.content.adjacent_image_id, second);
+  assert.ok((await action("text", "align", { text_align: "invalid" })).error);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "section-part",
+    block_id: foreignBlock, part: "heading", action: "delete" }))).error);
+  assert.ok((await changeAdminProfileContent(client({ admin: false, blocks: [about] }), profileId, slug,
+    form({ intent: "section-part", block_id: "section:about", part: "heading", action: "delete" }))).access !== "admin");
+});
+
+test("deleting business-area body preserves its heading and only clears the structured field", async () => {
+  const business = { id: second, profile_id: profileId, type: "heading", slot: "business_areas_heading",
+    sort_order: 0, content: { text: "Tätigkeitsbereiche" } };
+  const db = client({ blocks: [business] });
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({ intent: "section-part",
+    block_id: "section:business", part: "text", action: "delete" }))).success);
+  assert.equal(business.content.text, "Tätigkeitsbereiche");
+  assert.deepEqual(db.calls.find((call) => call.table === "company_profiles" && call.operation)?.payload,
+    { business_areas: null });
+});
+
 test("signed-out and non-admin callers cannot read or mutate editorial blocks", async () => {
   for (const options of [{ authenticated: false }, { admin: false }]) {
     const db = client(options);

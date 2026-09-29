@@ -73,12 +73,14 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
     }
     flush();
     const body = item.kind === "about" ? listing.description : listing.businessAreas;
-    if (item.hidden || !body) continue;
+    if (item.hidden || !body && (!item.hasHeadingRow || item.headingHidden) && !item.imageBlock?.images?.length) continue;
     const section = <section key={item.key} className="detail-section profile-content-block profile-editorial-section"
       data-spacing-top={item.layout.spacing_top} data-spacing-bottom={item.layout.spacing_bottom}
       style={{ width: item.imageBlock ? "100%" : `${item.layout.width_percent}%`,
         marginLeft: item.imageBlock ? 0 : `${item.layout.offset_percent}%`, textAlign: item.layout.text_align }}>
-      <h2>{item.heading}</h2><p style={item.kind === "business" ? { whiteSpace: "pre-wrap" } : undefined}>{body}</p>
+      {!item.headingHidden && <h2 style={{ textAlign: item.headingAlign }}>{item.heading}</h2>}
+      {body && <p style={{ textAlign: item.bodyAlign,
+        ...(item.kind === "business" ? { whiteSpace: "pre-wrap" } : {}) }}>{body}</p>}
     </section>;
     if (!item.imageBlock?.images?.length) { sections.push(section); continue; }
     const image = item.imageBlock;

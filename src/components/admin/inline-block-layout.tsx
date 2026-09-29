@@ -138,7 +138,7 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
           onClick={() => { const offset = blockPositionOffset(preview.width, value);
             void setLayout({ offset_percent: String(offset) }, preview.width, offset); }}>{label}</button>)}
       </div>
-      {block.type !== "image_grid" && <div className={styles.controlGroup} role="group" aria-label="Textausrichtung">
+      {!special && block.type !== "image_grid" && <div className={styles.controlGroup} role="group" aria-label="Textausrichtung">
         {positions.map(({ value, label }) => <button key={value} type="button" className="button"
           aria-label={`Text ${label === "Mitte" ? "mittig" : label.toLowerCase()}`}
           aria-pressed={previewTextAlign === value} disabled={busy || !persisted}

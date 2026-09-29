@@ -27,6 +27,39 @@ export async function ensureSection(client: SupabaseClient, profileId: string, s
   return inserted.error || !inserted.data ? null : inserted.data as { id: string; content: ProfileContentBlock["content"] };
 }
 
+export async function changeEditorialSectionPart(client: SupabaseClient, profileId: string,
+  key: unknown, form: FormData): Promise<Result> {
+  const slot = sectionSlot(key);
+  const part = form.get("part");
+  const action = form.get("action");
+  if (!slot || part !== "heading" && part !== "text" ||
+    action !== "align" && action !== "delete" && action !== "restore")
+    return { error: "Der Abschnittsteil wurde nicht gefunden." };
+  if (part === "text" && action === "restore") return { error: "Bitte geben Sie neuen Text ein." };
+  const row = await ensureSection(client, profileId, slot);
+  if (!row) return { error: failed };
+  if (action === "align") {
+    const align = form.get("text_align");
+    if (!validTextAlignment(align)) return { error: "Bitte wählen Sie eine gültige Textausrichtung." };
+    const field = part === "heading" ? "heading_align" : "body_align";
+    const saved = await client.from("profile_content_blocks")
+      .update({ content: { ...row.content, [field]: align } })
+      .eq("profile_id", profileId).eq("slot", slot).eq("id", row.id).select("id").maybeSingle();
+    return saved.error || saved.data?.id !== row.id ? { error: failed } : { success: "Ausrichtung gespeichert." };
+  }
+  if (part === "heading") {
+    const saved = await client.from("profile_content_blocks")
+      .update({ content: { ...row.content, heading_hidden: action === "delete" } })
+      .eq("profile_id", profileId).eq("slot", slot).eq("id", row.id).select("id").maybeSingle();
+    return saved.error || saved.data?.id !== row.id ? { error: failed }
+      : { success: action === "delete" ? "Überschrift entfernt." : "Überschrift wiederhergestellt." };
+  }
+  const field = slot === "about_heading" ? "description" : "business_areas";
+  const cleared = await client.from("company_profiles").update({ [field]: null })
+    .eq("id", profileId).select("id").maybeSingle();
+  return cleared.error || cleared.data?.id !== profileId ? { error: failed } : { success: "Text entfernt." };
+}
+
 export async function changeEditorialSection(client: SupabaseClient, profileId: string,
   key: unknown, intent: unknown, form: FormData): Promise<Result> {
   const slot = sectionSlot(key);
@@ -108,7 +141,14 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
       for (const id of created) await client.from("profile_content_blocks").delete()
         .eq("profile_id", profileId).eq("id", id).is("slot", null);
     };
-    for (const [type, value] of [["heading", row.content.text], ...(text ? [["text", text]] : [])]) {
+    const parts = [
+      ...(!row.content.heading_hidden ? [["heading", row.content.text]] : []),
+      ...(text ? [["text", text]] : []),
+    ];
+    if (!parts.length && !isProfileId(row.content.adjacent_image_id))
+      return { error: "Dieser Abschnitt enthält keinen Inhalt zum Duplizieren." };
+    let copiedTextId: string | null = null;
+    for (const [type, value] of parts) {
       const result = await client.rpc("insert_profile_content_block", {
         p_profile_id: profileId, p_type: type, p_text: value, p_before_block_id: null,
       });
@@ -118,10 +158,14 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
         return { error: failed };
       }
       created.push(result.data);
+      if (type === "text") copiedTextId = result.data;
     }
-    for (const id of created) {
+    for (let index = 0; index < created.length; index++) {
+      const id = created[index];
+      const layout = normalizeTextBlockLayout(row.content.layout);
       const laidOut = await client.from("profile_content_blocks")
-        .update({ config: normalizeTextBlockLayout(row.content.layout) })
+        .update({ config: { ...layout, text_align: parts[index][0] === "heading"
+          ? row.content.heading_align ?? layout.text_align : row.content.body_align ?? layout.text_align } })
         .eq("profile_id", profileId).eq("id", id).is("slot", null).select("id").maybeSingle();
       if (laidOut.error || laidOut.data?.id !== id) {
         for (const newId of created) await client.from("profile_content_blocks").delete()
@@ -160,8 +204,8 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
     order.splice(order.indexOf(key as string) + 1, 0,
       ...(imageLeft && copiedImage ? [copiedImage, ...created.filter((id) => id !== copiedImage)] : created));
     const pairLayouts = { ...metadata.content.pair_layouts };
-    if (copiedImage && created.length >= 3 && pairLayouts[key as string])
-      pairLayouts[created[1]] = pairLayouts[key as string];
+    if (copiedImage && copiedTextId && pairLayouts[key as string])
+      pairLayouts[copiedTextId] = pairLayouts[key as string];
     const saved = await client.from("profile_content_blocks").update({ content: {
       ...metadata.content, order, pair_layouts: pairLayouts,
     } })

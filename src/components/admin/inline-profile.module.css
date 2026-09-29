@@ -57,6 +57,11 @@
 .headingForm > button { justify-self: start; }
 .specialSection { display: grid; gap: 10px; min-width: 0; }
 .specialSection > button { justify-self: start; }
+.sectionPart { display: grid; gap: 10px; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+.sectionPart > strong { color: var(--brand-primary); font-size: 13px; }
+.sectionPart > button { justify-self: start; }
+.partControls { display: flex; flex-wrap: wrap; gap: 6px; }
+.partControls button[aria-pressed="true"] { border-color: var(--brand-primary); color: var(--brand-primary); font-weight: 700; }
 .adjacentAction { display: grid; gap: 12px; margin-top: 16px; }
 .adjacentAction > button { justify-self: start; }
 .adjacentSetup { display: grid; gap: 12px; padding: 14px; border: 1px dashed var(--brand-primary); border-radius: 8px; background: var(--surface); }
@@ -159,7 +164,7 @@
   .editButton { align-self: flex-start; }
   .galleryControls form, .galleryControls button { width: 100%; }
   .blockActions button { flex: 1 1 130px; }
-  .headingForm > button { width: 100%; }
+  .headingForm > button, .sectionPart > button { width: 100%; }
   .blockToolbar { align-items: flex-start; }
   .layoutBlock .editableBlock { width: 100% !important; margin-left: 0 !important; }
 }

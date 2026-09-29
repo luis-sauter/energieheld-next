@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ImageGridConfig } from "./image-grid-layout";
-import { normalizeTextBlockLayout, type TextBlockLayout } from "./content-block-layout";
+import { normalizeTextBlockLayout, type TextAlignment, type TextBlockLayout } from "./content-block-layout";
 import type { ImageCrop } from "./image-crop";
 
 export type ContentBlockType = "heading" | "text" | "image_grid";
@@ -25,7 +25,8 @@ export type ProfileContentBlock = {
   sort_order: number;
   content: { text: string; layout?: Partial<TextBlockLayout>; hidden?: boolean; order?: string[];
     hidden_blocks?: string[]; deleted_sections?: string[]; pair_layouts?: Record<string, Partial<TextBlockLayout>>;
-    adjacent_image_id?: string; pending_image_id?: string };
+    adjacent_image_id?: string; pending_image_id?: string; heading_align?: TextAlignment;
+    body_align?: TextAlignment; heading_hidden?: boolean };
   config?: Partial<ImageGridConfig & TextBlockLayout>;
   images?: ProfileBlockImage[];
   pair_layout?: Partial<TextBlockLayout>;
@@ -57,6 +58,10 @@ export type EditorialItem = {
   key: string;
   kind: "about" | "business" | "block";
   heading: string;
+  headingAlign: TextAlignment;
+  bodyAlign: TextAlignment;
+  headingHidden: boolean;
+  hasHeadingRow: boolean;
   hidden: boolean;
   layout: TextBlockLayout;
   block?: ProfileContentBlock;
@@ -73,11 +78,20 @@ export function editorialItems(blocks: ProfileContentBlock[], profileName: strin
   const deleted = new Set(about?.content.deleted_sections ?? []);
   const map = new Map<string, EditorialItem>([
     [ABOUT_SECTION, { key: ABOUT_SECTION, kind: "about", heading: about?.content.text || `Über ${profileName}`,
+      headingAlign: about?.content.heading_align ?? normalizeTextBlockLayout(about?.content.layout).text_align,
+      bodyAlign: about?.content.body_align ?? normalizeTextBlockLayout(about?.content.layout).text_align,
+      headingHidden: about?.content.heading_hidden === true,
+      hasHeadingRow: Boolean(about),
       hidden: about?.content.hidden === true, layout: normalizeTextBlockLayout(about?.content.layout) }],
     [BUSINESS_SECTION, { key: BUSINESS_SECTION, kind: "business", heading: business?.content.text || "Tätigkeitsbereiche",
+      headingAlign: business?.content.heading_align ?? normalizeTextBlockLayout(business?.content.layout).text_align,
+      bodyAlign: business?.content.body_align ?? normalizeTextBlockLayout(business?.content.layout).text_align,
+      headingHidden: business?.content.heading_hidden === true,
+      hasHeadingRow: Boolean(business),
       hidden: business?.content.hidden === true, layout: normalizeTextBlockLayout(business?.content.layout) }],
     ...normal.map((block): [string, EditorialItem] => [block.id, { key: block.id, kind: "block",
-      heading: "", hidden: hiddenBlocks.has(block.id), layout: normalizeTextBlockLayout(block.config), block }]),
+      heading: "", headingAlign: "left", bodyAlign: "left", headingHidden: false, hasHeadingRow: false,
+      hidden: hiddenBlocks.has(block.id), layout: normalizeTextBlockLayout(block.config), block }]),
   ]);
   for (const key of deleted) map.delete(key);
   const order = editorialOrder(blocks);

@@ -9,7 +9,7 @@ import { InlineBlockLayout } from "./inline-block-layout";
 import type { MediaState } from "@/lib/company-media";
 import type { ContentBlockType, EditorialItem, HeadingSlot, ProfileContentBlock } from "@/lib/profile-content";
 import styles from "./inline-profile.module.css";
-import { normalizeBlockLayout, normalizeTextBlockLayout } from "@/lib/content-block-layout";
+import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment } from "@/lib/content-block-layout";
 import { useInlineEditorHistory } from "./inline-editor-history";
 import { contentBlockRows, contentColumn } from "@/lib/content-block-rows";
 import rowStyles from "@/components/portal/profile-content-blocks.module.css";
@@ -22,10 +22,70 @@ type SaveContent = (form: FormData) => Promise<ContentState>;
 type AdjacentDraft = { textId: string; side: ImageSide; share: ImageShare; file?: File; previewUrl?: string };
 type PairPreview = { textId: string; imageId: string; side: ImageSide; share: ImageShare };
 
-export function FixedHeadingEditor({ slot, value, defaultText, saveAction }: {
+export function SectionPartFrame({ sectionKey, part, align, missing, saveAction, children }: {
+  sectionKey: string; part: "heading" | "text"; align: TextAlignment; missing: boolean;
+  saveAction: SaveContent; children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const [previewAlign, setPreviewAlign] = useState(align);
+  const [removed, setRemoved] = useState(missing);
+  const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState<ContentState>({});
+  async function change(action: "align" | "delete" | "restore", nextAlign?: TextAlignment) {
+    if (busy) return;
+    const previous = previewAlign;
+    if (nextAlign) setPreviewAlign(nextAlign);
+    setBusy(true);
+    setFeedback({});
+    const form = new FormData();
+    form.set("intent", "section-part");
+    form.set("block_id", sectionKey);
+    form.set("part", part);
+    form.set("action", action);
+    if (nextAlign) form.set("text_align", nextAlign);
+    try {
+      const result = await saveAction(form);
+      setFeedback(result);
+      if (!result.success) setPreviewAlign(previous);
+      else {
+        if (action === "delete") setRemoved(true);
+        if (action === "restore") setRemoved(false);
+        router.refresh();
+      }
+    } catch {
+      setPreviewAlign(previous);
+      setFeedback({ error: "Dieser Abschnittsteil konnte nicht gespeichert werden." });
+    } finally { setBusy(false); }
+  }
+  const label = part === "heading" ? "Überschrift" : "Text";
+  return <div className={styles.sectionPart} data-part={part} style={{ textAlign: previewAlign }}>
+    <strong>{label} separat bearbeiten</strong>
+    {!removed && <div className={styles.partControls} role="group" aria-label={`${label} ausrichten`}>
+      {(["left", "center", "right"] as const).map((choice) => <button key={choice} type="button" className="button"
+        aria-label={`${label} ${choice === "left" ? "links" : choice === "center" ? "mittig" : "rechts"}`}
+        aria-pressed={previewAlign === choice} disabled={busy} onClick={() => void change("align", choice)}>
+        {choice === "left" ? "Links" : choice === "center" ? "Mitte" : "Rechts"}
+      </button>)}
+    </div>}
+    {!removed ? children : <p role="status">{label} entfernt.</p>}
+    {part === "heading" || !removed ? <button type="button" className="button" disabled={busy}
+      onClick={() => {
+        if (removed) void change("restore");
+        else if (window.confirm(`Nur ${label.toLowerCase()} aus diesem Abschnitt entfernen?`)) void change("delete");
+      }}>{removed ? "Überschrift wiederherstellen" : `${label} löschen`}</button>
+      : <button type="button" className="button" disabled={busy} onClick={() => setRemoved(false)}>Text wieder hinzufügen</button>}
+    {feedback.error && <span role="alert" className={styles.error}>{feedback.error}</span>}
+    {feedback.success && <span role="status" className={styles.success}>{feedback.success}</span>}
+  </div>;
+}
+
+export function FixedHeadingEditor({ slot, sectionKey, value, defaultText, align, hidden, saveAction }: {
   slot: HeadingSlot;
+  sectionKey: string;
   value: string;
   defaultText: string;
+  align: TextAlignment;
+  hidden: boolean;
   saveAction: SaveContent;
 }) {
   const router = useRouter();
@@ -54,7 +114,8 @@ export function FixedHeadingEditor({ slot, value, defaultText, saveAction }: {
       setBusy(false);
     }
   }
-  return <form className={styles.headingForm} onSubmit={submit}>
+  return <SectionPartFrame sectionKey={sectionKey} part="heading" align={align} missing={hidden} saveAction={saveAction}>
+    <form className={styles.headingForm} onSubmit={submit}>
     <label htmlFor={`fixed-${slot}`}>
       <span>Überschrift</span>
       <input id={`fixed-${slot}`} value={text} maxLength={200} disabled={busy}
@@ -63,7 +124,8 @@ export function FixedHeadingEditor({ slot, value, defaultText, saveAction }: {
     <button className="button" disabled={busy}>{busy ? "Wird gespeichert …" : "Überschrift speichern"}</button>
     {feedback.error && <span role="alert" className={styles.error}>{feedback.error}</span>}
     {feedback.success && <span role="status" className={styles.success}>{feedback.success}</span>}
-  </form>;
+    </form>
+  </SectionPartFrame>;
 }
 
 export function InlineContentEditor({ blocks, items, listing, renderSpecial, editing, available, imagesAvailable, saveAction, saveImage }: {

@@ -6,7 +6,7 @@ import { MEDIA_BUCKET } from "./company-media";
 import { hasPersistedBlockLayout, normalizeBlockLayout, normalizeTextBlockLayout,
   validOffset, validSpacing, validTextAlignment, validWidth } from "./content-block-layout";
 import { normalizeImageGridConfig } from "./image-grid-layout";
-import { changeEditorialBlockVisibility, changeEditorialOrder, changeEditorialSection,
+import { changeEditorialBlockVisibility, changeEditorialOrder, changeEditorialSection, changeEditorialSectionPart,
   forgetEditorialBlock, sectionSlot } from "./editorial-section-actions";
 import { changeAdminAdjacentImage } from "./admin-adjacent-image";
 import { changeEditorialPair, findEditorialPair } from "./editorial-pair-actions";
@@ -121,6 +121,8 @@ export async function changeAdminProfileContent(
   if (intent === "move")
     return { access: "admin", ...await changeEditorialOrder(client, id, intent, form) };
   if (sectionSlot(blockId)) {
+    if (intent === "section-part")
+      return { access: "admin", ...await changeEditorialSectionPart(client, id, blockId, form) };
     if (intent === "section-delete") {
       const section = await client.from("profile_content_blocks").select("content")
         .eq("profile_id", id).eq("slot", sectionSlot(blockId)).maybeSingle();

@@ -614,6 +614,55 @@ test("About and business areas show independent image controls and public side-b
   }
 });
 
+test("field-bound heading, body and adjacent image keep independent editing and public presentation", () => {
+  const listing = companyProfileListing(publicProfile, { images: [] });
+  const values = Object.fromEntries(["display_name", "tagline", "description", "business_areas", "phone",
+    "public_email", "website", "street", "postal_code", "city", "region", "country"]
+    .map((field) => [field, publicProfile[field] ?? ""]));
+  const imageId = "22222222-2222-4222-8222-222222222222";
+  const blocks = [{ id: "44444444-4444-4444-8444-444444444444", profile_id: profileId,
+    type: "heading", slot: "about_heading", content: { text: "Über Redaktionelle Firma",
+      heading_align: "center", body_align: "right", adjacent_image_id: imageId,
+      layout: { width_percent: 75, offset_percent: 0 }, order: [ABOUT_SECTION, imageId, BUSINESS_SECTION] } },
+  { id: imageId, profile_id: profileId, type: "image_grid", slot: null, sort_order: 0,
+    content: {}, config: { columns: 1, width_percent: 25, offset_percent: 75 },
+    images: [{ id: "image-row", block_id: imageId, src: "https://example.test/image.jpg",
+      alt_text: "Bild", sort_order: 0 }] }];
+  const publicHtml = renderToStaticMarkup(createElement(ProfileEditorialContent, {
+    items: editorialItems(blocks, listing.name), listing,
+  }));
+  assert.match(publicHtml, /<h2 style="text-align:center">Über Redaktionelle Firma<\/h2>/);
+  assert.match(publicHtml, /<p style="text-align:right">Öffentliche Beschreibung<\/p>/);
+  assert.match(publicHtml, /grid-column:76 \/ span 25/);
+  const editorHtml = renderToStaticMarkup(createElement(InlineProfileEditor, { listing, categories: [], values,
+    media: { images: [] }, rows: [], contentBlocks: blocks, contentAvailable: true,
+    imagesAvailable: true, initialEditing: true, saveProfile: async () => ({}),
+    saveMedia: async () => ({}), saveContent: async () => ({}), saveBlockImage: async () => ({}) }));
+  for (const label of ["Überschrift links", "Überschrift mittig", "Überschrift rechts", "Überschrift löschen",
+    "Text links", "Text mittig", "Text rechts", "Text löschen", "Bild daneben entfernen"])
+    assert.ok(editorHtml.includes(label), `${label} control missing`);
+  assert.match(editorHtml, /data-part="heading" style="text-align:center"/);
+  assert.match(editorHtml, /data-part="text" style="text-align:right"/);
+  const hidden = structuredClone(blocks);
+  hidden[0].content.heading_hidden = true;
+  const withoutHeading = renderToStaticMarkup(createElement(ProfileEditorialContent, {
+    items: editorialItems(hidden, listing.name), listing,
+  }));
+  assert.doesNotMatch(withoutHeading, /Über Redaktionelle Firma/);
+  assert.match(withoutHeading, /Öffentliche Beschreibung/);
+  assert.match(withoutHeading, /image\.jpg/);
+  const withoutBody = renderToStaticMarkup(createElement(ProfileEditorialContent, {
+    items: editorialItems(blocks, listing.name), listing: { ...listing, description: "" },
+  }));
+  assert.match(withoutBody, /Über Redaktionelle Firma/);
+  assert.doesNotMatch(withoutBody, /Öffentliche Beschreibung/);
+  assert.match(withoutBody, /image\.jpg/);
+  const noBusiness = renderToStaticMarkup(createElement(ProfileEditorialContent, {
+    items: editorialItems(blocks, listing.name), listing: { ...listing, businessAreas: "" },
+  }));
+  assert.doesNotMatch(noBusiness, /Tätigkeitsbereiche/);
+});
+
 test("the editor image preview follows side and width selections immediately", () => {
   for (const share of [25, 50, 75]) for (const side of ["left", "right"]) {
     const html = renderToStaticMarkup(createElement(AdjacentImagePreview, {
