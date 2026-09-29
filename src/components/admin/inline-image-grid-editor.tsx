@@ -23,7 +23,8 @@ export function InlineImageGridEditor({ block, saveAction }: {
   const router = useRouter();
   const history = useInlineEditorHistory();
   const busyRef = useRef(false);
-  const dragId = useRef<string | null>(null);
+  const dragOrder = useRef<{ id: string; pointerId: number; before: string[]; lastTarget: string | null } | null>(null);
+  const orderRef = useRef<string[]>([]);
   const frameRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const resizeDrag = useRef<{
@@ -35,6 +36,11 @@ export function InlineImageGridEditor({ block, saveAction }: {
   const [feedback, setFeedback] = useState<MediaState>({});
   const [activeCropId, setActiveCropId] = useState<string | null>(null);
   const images = block.images ?? [];
+  const baseIds = images.map((image) => image.id);
+  const baseOrder = baseIds.join("|");
+  const [orderOverride, setOrderOverride] = useState<{ base: string; ids: string[] } | null>(null);
+  const visibleIds = orderOverride?.base === baseOrder ? orderOverride.ids : baseIds;
+  const visibleImages = visibleIds.map((id) => images.find((image) => image.id === id)!).filter(Boolean);
   const activeImage = images.find((image) => image.id === activeCropId);
   const config = normalizeImageGridConfig(block.config);
   const columns = config.columns;
@@ -165,26 +171,45 @@ export function InlineImageGridEditor({ block, saveAction }: {
       setProgress("");
     }
   }
-  function reorder(ids: string[]) {
+  async function reorder(ids: string[], before = visibleIds) {
+    if (busyRef.current || history.busy || ids.join("|") === before.join("|")) return;
+    setOrderOverride({ base: baseOrder, ids });
     const data = form("reorder");
     ids.forEach((id) => data.append("image_ids", id));
-    void run(data, { kind: "image-order", blockId: block.id,
-      before: images.map((image) => image.id), after: ids });
+    if (!await run(data, { kind: "image-order", blockId: block.id,
+      before, after: ids })) setOrderOverride({ base: baseOrder, ids: before });
   }
   function shift(id: string, offset: number) {
-    const ids = images.map((image) => image.id);
+    const ids = visibleIds;
     const current = ids.indexOf(id);
     const next = current + offset;
     if (current < 0 || next < 0 || next >= ids.length) return;
-    reorder(moveImageId(ids, id, ids[next]));
+    void reorder(moveImageId(ids, id, ids[next]));
   }
-  function dropOn(targetId: string) {
-    const sourceId = dragId.current;
-    dragId.current = null;
-    if (!sourceId || sourceId === targetId) return;
-    const ids = images.map((image) => image.id);
-    const next = moveImageId(ids, sourceId, targetId);
-    if (next !== ids) reorder(next);
+  function startOrderDrag(event: ReactPointerEvent<HTMLButtonElement>, id: string) {
+    if (busyRef.current || history.busy || event.pointerType === "mouse" && event.button !== 0) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    orderRef.current = visibleIds;
+    dragOrder.current = { id, pointerId: event.pointerId, before: visibleIds, lastTarget: null };
+  }
+  function moveOrderDrag(event: ReactPointerEvent<HTMLButtonElement>) {
+    const drag = dragOrder.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-block-image-id]");
+    const target = hit?.dataset.blockImageId;
+    if (!target || target === drag.id || target === drag.lastTarget || !orderRef.current.includes(target)) return;
+    drag.lastTarget = target;
+    orderRef.current = moveImageId(orderRef.current, drag.id, target);
+    setOrderOverride({ base: baseOrder, ids: orderRef.current });
+  }
+  function finishOrderDrag(event: ReactPointerEvent<HTMLButtonElement>, cancelled = false) {
+    const drag = dragOrder.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    dragOrder.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (cancelled) setOrderOverride({ base: baseOrder, ids: drag.before });
+    else void reorder(orderRef.current, drag.before);
   }
 
   return <div className={styles.imageBlock}>
@@ -199,16 +224,18 @@ export function InlineImageGridEditor({ block, saveAction }: {
     </div>
     <div ref={frameRef} className={`${gridStyles.frame} ${styles.resizableImageFrame}`}>
     <div ref={gridRef} className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={previewColumns}>
-      {imageGridSlots(previewColumns, images).map((image, index) => image ? <figure key={image.id} className={styles.imageTile}
-        onDragOver={(event) => { if (dragId.current && dragId.current !== image.id) event.preventDefault(); }}
-        onDrop={(event) => { event.preventDefault(); dropOn(image.id); }}>
+      {imageGridSlots(previewColumns, visibleImages).map((image, index) => image ? <figure key={image.id} className={styles.imageTile}
+        data-block-image-id={image.id}>
         <div className={gridStyles.tile} style={{ aspectRatio: size.ratio }}><ProfileBlockImage image={image} /></div>
         {imageCaptionPresentation(image).caption && <figcaption className={gridStyles.caption}>{imageCaptionPresentation(image).caption}</figcaption>}
         <div className={styles.imageTileActions}>
-          <span className={`${styles.dragHint} ${styles.imageReorderHandle}`}
-            draggable={!busy && !history.busy && images.length > 1}
-            onDragStart={(event) => { dragId.current = image.id; event.dataTransfer.effectAllowed = "move"; }}
-            onDragEnd={() => { dragId.current = null; }}>↔ Zum Sortieren ziehen</span>
+          <button type="button" className={`${styles.dragHint} ${styles.imageReorderHandle}`}
+            disabled={busy || history.busy || images.length < 2}
+            aria-label={`Bild ${index + 1} zum Sortieren ziehen`}
+            onPointerDown={(event) => startOrderDrag(event, image.id)}
+            onPointerMove={moveOrderDrag}
+            onPointerUp={finishOrderDrag}
+            onPointerCancel={(event) => finishOrderDrag(event, true)}>↔ Zum Sortieren ziehen</button>
           <button type="button" className="button" aria-label={`Bild ${index + 1} nach links`} disabled={busy || history.busy || index === 0}
             onClick={() => shift(image.id, -1)}>←</button>
           <button type="button" className="button" aria-label={`Bild ${index + 1} nach rechts`} disabled={busy || history.busy || index === images.length - 1}

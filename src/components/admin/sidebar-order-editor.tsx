@@ -85,6 +85,7 @@ export function SidebarOrderEditor({
   const [target, setTarget] = useState<SidebarSlot | null>(null);
   const busyRef = useRef(false);
   const dragRef = useRef<SidebarSlot | null>(null);
+  const lastTargetRef = useRef<SidebarSlot | null>(null);
   const editing = mode === "sidebar";
 
   function start() {
@@ -99,6 +100,7 @@ export function SidebarOrderEditor({
     setDraft(savedSlots);
     setError("");
     dragRef.current = null;
+    lastTargetRef.current = null;
     setDragged(null);
     setTarget(null);
     setMode(null);
@@ -132,6 +134,7 @@ export function SidebarOrderEditor({
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = slot;
+    lastTargetRef.current = null;
     setDragged(slot);
   }
 
@@ -141,12 +144,15 @@ export function SidebarOrderEditor({
     const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-sidebar-slot]");
     const over = hit?.dataset.sidebarSlot as SidebarSlot | undefined;
     if (!over || over === slot || !slots.includes(over)) return;
+    if (lastTargetRef.current === over) return;
+    lastTargetRef.current = over;
     setTarget(over);
     setDraft((current) => moveSidebarSlot(current, current.indexOf(slot), current.indexOf(over)));
   }
 
   function onPointerUp() {
     dragRef.current = null;
+    lastTargetRef.current = null;
     setDragged(null);
     setTarget(null);
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { uploadAdminMedia } from "@/lib/admin-media-upload";
 import { CompanyImage, CompanyLogo } from "@/components/portal/company-image";
@@ -23,6 +23,7 @@ export function AdminMediaEditor({ saveAction, profileName, logo, images, rows }
   const dialog = useRef<HTMLDialogElement>(null);
   const busyRef = useRef(false);
   const draggedRef = useRef<string | null>(null);
+  const pointerIdRef = useRef<number | null>(null);
   const lastTargetRef = useRef<string | null>(null);
   const sortedRows = [...rows].sort(
     (a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id),
@@ -87,7 +88,8 @@ export function AdminMediaEditor({ saveAction, profileName, logo, images, rows }
     try {
       const result = await saveAction(form);
       setFeedback(result);
-      if (result.error) {
+      if (!result.success) {
+        setFeedback({ error: result.error ?? "Die Reihenfolge konnte nicht gespeichert werden." });
         orderRef.current = committedRef.current;
         setOrder(committedRef.current);
       } else {
@@ -107,6 +109,38 @@ export function AdminMediaEditor({ saveAction, profileName, logo, images, rows }
     orderRef.current = next;
     setOrder(next);
     return next;
+  }
+  function startDrag(event: PointerEvent<HTMLButtonElement>, id: string) {
+    if (busyRef.current || event.pointerType === "mouse" && event.button !== 0) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    orderRef.current = visibleOrder;
+    committedRef.current = visibleOrder;
+    draggedRef.current = id;
+    pointerIdRef.current = event.pointerId;
+    lastTargetRef.current = null;
+    setDragging(id);
+  }
+  function moveDrag(event: PointerEvent<HTMLButtonElement>) {
+    const id = draggedRef.current;
+    if (!id || pointerIdRef.current !== event.pointerId) return;
+    const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-gallery-image-id]");
+    const target = hit?.dataset.galleryImageId;
+    if (!target || target === id || target === lastTargetRef.current || !orderRef.current.includes(target)) return;
+    lastTargetRef.current = target;
+    move(id, target);
+  }
+  function finishDrag(event: PointerEvent<HTMLButtonElement>, cancelled = false) {
+    if (!draggedRef.current || pointerIdRef.current !== event.pointerId) return;
+    draggedRef.current = null;
+    pointerIdRef.current = null;
+    lastTargetRef.current = null;
+    setDragging(null);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (cancelled) {
+      orderRef.current = committedRef.current;
+      setOrder(committedRef.current);
+    } else void persistOrder(orderRef.current);
   }
   async function upload(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -159,18 +193,17 @@ export function AdminMediaEditor({ saveAction, profileName, logo, images, rows }
                 const image = imageById.get(id);
                 if (!row || !image) return null;
                 return (
-                  <li key={id} className={`${styles.card} ${dragging === id ? styles.dragging : ""}`}
-                    onDragOver={(event) => event.preventDefault()}
-                    onDragEnter={() => { if (draggedRef.current && !busyRef.current && lastTargetRef.current !== id) { lastTargetRef.current = id; move(draggedRef.current, id); } }}
-                    onDrop={(event) => { event.preventDefault(); const dragged = draggedRef.current; draggedRef.current = null; lastTargetRef.current = null; setDragging(null); if (dragged) void persistOrder(orderRef.current); }}>
+                  <li key={id} data-gallery-image-id={id} className={`${styles.card} ${dragging === id ? styles.dragging : ""}`}>
                     <div className={styles.cardTop}>
-                      <div className={styles.dragHandle} draggable={!busy}
-                        onDragStart={(event) => { orderRef.current = visibleOrder; committedRef.current = visibleOrder; draggedRef.current = id; lastTargetRef.current = null; setDragging(id); event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", id); }}
-                        onDragEnd={() => { if (draggedRef.current) { orderRef.current = committedRef.current; setOrder(committedRef.current); } draggedRef.current = null; lastTargetRef.current = null; setDragging(null); }}
+                      <button type="button" className={styles.dragHandle} disabled={Boolean(busy)}
+                        onPointerDown={(event) => startDrag(event, id)}
+                        onPointerMove={moveDrag}
+                        onPointerUp={finishDrag}
+                        onPointerCancel={(event) => finishDrag(event, true)}
                         aria-label={`Bild ${index + 1} ziehen`} title="Zum Sortieren ziehen">
                         <CompanyImage image={image} width={112} height={76} />
                         <span aria-hidden="true">⠿ Ziehen</span>
-                      </div>
+                      </button>
                       <div className={styles.cardActions}>
                         <strong>Bild {index + 1}</strong>
                         <div className={styles.actions}>
