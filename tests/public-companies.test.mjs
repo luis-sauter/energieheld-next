@@ -368,11 +368,11 @@ test("homepage shows real travel cards beside the shared long rail and queries o
   const html = renderToStaticMarkup(await HomePage());
   assert.match(html, /Bayerischer Wald/);
   assert.match(html, /Finde deinen passenden Urlaub/);
-  assert.match(html, /Reise finden/);
+  assert.match(html, /\d+ (?:Unterkunft|Unterkünfte) anzeigen/);
   assert.match(html, /hero-loop\.mp4/);
   assert.doesNotMatch(html, /poster=|hero\.jpg/);
-  assert.match(html, /name="sort"/);
-  assert.equal((html.match(/href="\/mottoreisen\/[^\"]+"/g) ?? []).length, 12);
+  assert.match(html, /name="q"/);
+  assert.match(html, /href="\/mottoreisen\/natur-pur"/);
   assert.match(html, /Ausgewählte Unterkünfte/);
   assert.doesNotMatch(html, /Demo GmbH/);
   assert.match(html, /href="\/unterkuenfte\/bayerischer-wald"/);
@@ -491,13 +491,14 @@ test("travel directory groups Premium before Basic across filters, search and ex
   }
 });
 
-test("travel search submits supported destination and theme filters to the real directory", async () => {
+test("travel directory keeps old destination and theme URLs without inventing unassigned choices", async () => {
   api([...legacyRows, demoRow]);
   const html = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({
     ziel: "oesterreich", thema: "wanderurlaub",
   }) }));
   assert.match(html, /name="ziel"/);
-  assert.match(html, /name="thema"/);
+  assert.doesNotMatch(html, /<select name="thema"/);
+  assert.match(html, /Reiseart: Nicht verfügbar/);
   assert.match(html, /2 Unterkünfte/);
   assert.match(html, /Höflehner|Schafhuber/);
   assert.doesNotMatch(html, /Demo GmbH|Pension Sonnenhof|Villner Hof|Energieheld Demo GmbH/);

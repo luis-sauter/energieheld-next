@@ -1,5 +1,6 @@
 import { destinations, travelThemes } from "@/data/reiseportal-discovery";
 import type { Listing } from "@/types/portal";
+import { filterTravelDiscovery } from "./reiseportal-search";
 
 export type PublicTravelTerm = {
   term_key: string;
@@ -16,6 +17,8 @@ export function availableTravelFilters(listings: Listing[], terms: PublicTravelT
     .filter((term) => term.dimension === dimension && assigned.has(term.term_key))
     .map(({ slug, label }) => ({ slug, label }));
   return {
+    destinations: destinations.filter((entry) => filterTravelDiscovery(listings, entry.slug, "").length > 0)
+      .map(({ slug, title }) => ({ slug, label: title })),
     themes: travelThemes.filter((entry) => assigned.has(`theme:${entry.slug}`))
       .map(({ slug, title }) => ({ slug, label: title })),
     audiences: options("audience"),
@@ -52,7 +55,7 @@ export function activeTravelFilterLabels(
     choices.find((option) => option.slug === value)?.label ?? fallback;
   const active: string[] = [];
   if (values.destination) active.push(`Reiseziel: ${selected(values.destination,
-    destinations.map(({ slug, title }) => ({ slug, label: title })), "Nicht verfügbar")}`);
+    options.destinations, "Nicht verfügbar")}`);
   if (values.theme) active.push(`Reiseart: ${selected(values.theme, options.themes, "Nicht verfügbar")}`);
   if (values.audience) active.push(`Mit wem: ${selected(values.audience, options.audiences, "Nicht verfügbar")}`);
   if (values.accommodation) active.push(`Unterkunft: ${selected(values.accommodation, options.accommodations, "Nicht verfügbar")}`);

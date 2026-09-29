@@ -33,8 +33,10 @@ test("selected Joomla provider media refer only to existing local originals", ()
 
 test("the obsolete hero image is not a video poster or CSS fallback", () => {
   const home = readFileSync(new URL("../src/app/(energieheld)/page.tsx", import.meta.url), "utf8");
+  const finder = readFileSync(new URL("../src/components/portal/travel-finder.tsx", import.meta.url), "utf8");
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
-  assert.match(home, /<video autoPlay muted loop playsInline preload="metadata"/);
+  assert.match(home, /<HomeTravelFinder/);
+  assert.match(finder, /<video autoPlay muted loop playsInline preload="metadata"/);
   assert.doesNotMatch(home, /hero\.jpg|poster=/);
   assert.doesNotMatch(css, /hero\.jpg/);
 });

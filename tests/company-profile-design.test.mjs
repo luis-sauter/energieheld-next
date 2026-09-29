@@ -19,12 +19,17 @@ registerHooks({
       };
     if (s === "next/navigation")
       return {
-        url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")}',
+        url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")};export function useRouter(){return {push(){},refresh(){}}}',
         shortCircuit: true,
       };
     if (s.endsWith("/supabase/server"))
       return {
         url: "data:text/javascript,export async function createClient(){return globalThis.__profileTestClient}",
+        shortCircuit: true,
+      };
+    if (s.endsWith("/public-travel-taxonomy"))
+      return {
+        url: "data:text/javascript,export async function loadPublicTravelTerms(){return []};export async function loadPublicTravelAssignments(){return new Map()}",
         shortCircuit: true,
       };
     if (s.endsWith(".module.css"))
@@ -550,7 +555,7 @@ test("portal home follows the discovery wireframe with the shared advertising ra
   const html = renderToStaticMarkup(await Home());
   const ordered = [
     "travel-hero",
-    'class="travel-search"',
+    'class="reise-finder"',
     "travel-quicklinks",
     "Inspiration &amp; Themenwelten",
     'id="destinations-title"',
@@ -566,7 +571,7 @@ test("portal home follows the discovery wireframe with the shared advertising ra
   }
   assert.match(html, /DAS Reiseportal/);
   assert.match(html, /Finde deinen passenden Urlaub/);
-  assert.match(html, /name="ziel"|name="thema"/);
+  assert.match(html, /name="q"/);
   assert.doesNotMatch(html, /Expertensuche|Gewerke|Fachbetriebe|Photovoltaik|Sanieren mit Grips/);
 });
 
