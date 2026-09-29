@@ -50,6 +50,7 @@ const { InlineImageCropEditor } = await import("../src/components/admin/inline-i
 const { AdjacentImagePreview } = await import("../src/components/admin/adjacent-image-preview.tsx");
 const { ProfileContentBlocks } = await import("../src/components/portal/profile-content-blocks.tsx");
 const { ProfileEditorialContent } = await import("../src/components/portal/profile-content-blocks.tsx");
+const { ImageGallery } = await import("../src/components/portal/image-gallery.tsx");
 const { editorialItems, ABOUT_SECTION, BUSINESS_SECTION } = await import("../src/lib/profile-content.ts");
 const { companyProfileListing } = await import("../src/lib/company-presentation.ts");
 const { saveInlineProfile, saveInlineMedia } = await import("../src/app/(energieheld)/experten/[slug]/inline-actions.ts");
@@ -381,6 +382,37 @@ test("inline mode exposes normal fields and existing media actions in the public
   assert.doesNotMatch(html, /storage_path|profile_id|company_id|profiles\/aaaaaaaa/);
 });
 
+test("inline gallery keeps the public preview and edits the selected image at the gallery", () => {
+  const images = [
+    { id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", src: "https://example.org/one.png", alt: "Erstes Bild" },
+    { id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", src: "https://example.org/two.png", alt: "Zweites Bild" },
+  ];
+  const media = { images };
+  const listing = companyProfileListing(publicProfile, media);
+  const values = Object.fromEntries(["display_name", "tagline", "description", "business_areas", "phone",
+    "public_email", "website", "street", "postal_code", "city", "region", "country"]
+    .map((field) => [field, publicProfile[field] ?? ""]));
+  const html = renderToStaticMarkup(createElement(InlineProfileEditor, { listing, categories: [], values, media,
+    rows: images.map((image, sort_order) => ({ id: image.id,
+      storage_path: `profiles/${profileId}/gallery/${image.id}.png`, alt_text: image.alt, sort_order })),
+    contentBlocks: [], contentAvailable: true, initialEditing: true,
+    saveProfile: async () => ({}), saveMedia: async () => ({}), saveContent: async () => ({}),
+    saveBlockImage: async () => ({}) }));
+  assert.match(html, /class="gallery-main"[^>]*data-has-thumbs="true"[\s\S]*class="gallery-thumbs"/);
+  assert.match(html, /Bild 1 von 2 ausgewählt/);
+  for (const label of ["Vorheriges Bild", "Nächstes Bild", "Bild hinzufügen", "Bild ersetzen",
+    "Bild löschen", "Ausschnitt \/ Fokus \/ Zoom", "Alt-Text speichern", "← Zurück", "Weiter →"])
+    assert.ok(html.includes(label), `${label} missing from gallery editor`);
+  assert.ok(html.indexOf("gallery-thumbs") < html.indexOf("gallery-detail-controls"));
+  assert.doesNotMatch(html, /class="thumbnail-edit-actions"/);
+  const publicHtml = renderToStaticMarkup(createElement(ImageGallery, { images, isDemo: false }));
+  assert.match(publicHtml, /class="gallery-main"[^>]*data-has-thumbs="true"[\s\S]*class="gallery-thumbs"/);
+  assert.doesNotMatch(publicHtml, /Bild ersetzen|Ausschnitt \/ Fokus \/ Zoom/);
+  const selectedHtml = renderToStaticMarkup(createElement(ImageGallery, { images, isDemo: false, activeIndex: 1 }));
+  assert.match(selectedHtml, /class="gallery-open" href="https:\/\/example\.org\/two\.png"/);
+  assert.match(selectedHtml, /aria-label="Bild 2: Zweites Bild" aria-pressed="true"/);
+});
+
 test("editor renders one visible slot per chosen column, including partially filled grids", () => {
   const imageBlock = (columns, count) => ({
     id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", profile_id: profileId,
@@ -604,7 +636,10 @@ test("About and business areas show independent image controls and public side-b
       saveBlockImage: async () => ({}) }));
     assert.equal((html.match(/Abschnitt und Bild anordnen/g) ?? []).length, 2);
     assert.equal((html.match(/Bild daneben entfernen/g) ?? []).length, 2);
+    assert.equal((html.match(/Bild bearbeiten · Ausschnitt, Ersetzen und Beschreibung/g) ?? []).length, 2);
     assert.doesNotMatch(html, /Bild daneben hinzufügen/);
+    assert.match(html, new RegExp(`grid-column:${textOffset + 1} / span ${100 - share}`));
+    assert.match(html, new RegExp(`grid-column:${imageOffset + 1} / span ${share}`));
     const publicHtml = renderToStaticMarkup(createElement(ProfileEditorialContent, {
       items: editorialItems(blocks, listing.name), listing,
     }));

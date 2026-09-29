@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import "./helpers/load-ts.mjs";
 import { moveImageId } from "../src/lib/media-order.ts";
 const { changeAdminCompanyMedia } = await import("../src/lib/admin-company-media.ts");
@@ -125,6 +126,36 @@ test("logo replacement uses the selected profile and detaches the old file first
   assert.deepEqual(write.payload, { logo_path: logoPath });
   assert.ok(write.filters.some(([key, value]) => key === "id" && value === profileId));
   assert.deepEqual(db.calls.at(-1).paths, [`profiles/${profileId}/logo/${imageId}.png`]);
+});
+
+test("gallery replacement retains its row and order, validates the target and cleans only the old object", async () => {
+  const replacementPath = `profiles/${profileId}/gallery/${crypto.randomUUID()}.png`;
+  const fullRows = [...rows, ...Array.from({ length: 6 }, (_, index) => ({
+    id: crypto.randomUUID(), storage_path: `profiles/${profileId}/gallery/${crypto.randomUUID()}.png`,
+    alt_text: null, sort_order: index + 2,
+  }))];
+  const db = client({ profileRows: fullRows });
+  assert.ok((await changeAdminCompanyMedia(db, profileId, form({ intent: "prepare-gallery",
+    image_id: imageId, file_type: "image/png", file_size: "100" }))).uploadPath);
+  assert.ok((await changeAdminCompanyMedia(db, profileId, form({ intent: "prepare-gallery",
+    image_id: otherProfileId, file_type: "image/png", file_size: "100" }))).error);
+  const saved = await changeAdminCompanyMedia(db, profileId, form({ intent: "gallery-upload",
+    image_id: imageId, uploaded_path: replacementPath, alt_text: "Neue Ansicht" }));
+  assert.ok(saved.success);
+  const write = db.calls.find((call) => call.table === "company_profile_images" && call.action === "update");
+  assert.deepEqual(write.payload, { storage_path: replacementPath, alt_text: "Neue Ansicht" });
+  assert.deepEqual(write.filters, [["profile_id", profileId], ["id", imageId], ["storage_path", path]]);
+  assert.ok(!db.calls.some((call) => call.action === "insert" || call.action === "delete"));
+  assert.deepEqual(db.calls.at(-1), { action: "remove", paths: [path] });
+  const failed = client({ writeError: true });
+  assert.ok((await changeAdminCompanyMedia(failed, profileId, form({ intent: "gallery-upload",
+    image_id: imageId, uploaded_path: replacementPath }))).error);
+  assert.deepEqual(failed.calls.at(-1), { action: "remove", paths: [replacementPath] });
+  const migration = readFileSync(new URL("../supabase/migrations/20260929142000_replace_profile_gallery_image.sql", import.meta.url), "utf8");
+  assert.match(migration, /GRANT UPDATE \(storage_path\) ON public\.company_profile_images TO authenticated/);
+  assert.match(migration, /NEW\.profile_id <> OLD\.profile_id/);
+  assert.match(migration, /storage\.objects o WHERE o\.bucket_id = 'company-media' AND o\.name = NEW\.storage_path/);
+  assert.doesNotMatch(migration, /TO anon|DISABLE ROW LEVEL SECURITY|CREATE POLICY/);
 });
 
 test("alt-text update and delete stay scoped to selected profile and image", async () => {

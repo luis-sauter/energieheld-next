@@ -19,6 +19,7 @@ before(async () => {
     USING (EXISTS (SELECT 1 FROM portal_admins WHERE user_id = auth.uid()))
     WITH CHECK (EXISTS (SELECT 1 FROM portal_admins WHERE user_id = auth.uid()));`);
   await db.exec(await readFile(new URL("../supabase/migrations/20260924155258_admin_company_media_editor.sql", import.meta.url), "utf8"));
+  await db.exec(await readFile(new URL("../supabase/migrations/20260929142000_replace_profile_gallery_image.sql", import.meta.url), "utf8"));
   await db.query("insert into portal_admins values ($1)", [admin]);
   await db.query("insert into companies values ($1,$1,'Firma')", [owner]);
   await db.query("insert into company_profiles(id,company_id,display_name,status) values ($1,$2,'Firma','draft')", [profile, owner]);
@@ -95,4 +96,21 @@ test("admin Storage rights stay inside valid profile paths; referenced files can
   await blocked("insert into storage.objects(bucket_id,name) values ('company-media',$1)", [path(second)]);
   await actor("", "anon");
   await blocked("insert into storage.objects(bucket_id,name) values ('company-media',$1)", [path(second)]);
+});
+
+test("one gallery row can replace its own uploaded object without changing order or another profile", async () => {
+  await seedImages();
+  const nextPath = path("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee");
+  await actor(admin);
+  await db.query("insert into storage.objects(bucket_id,name) values ('company-media',$1)", [nextPath]);
+  const updated = await db.query("update company_profile_images set storage_path=$1 where id=$2 and profile_id=$3", [nextPath, first, profile]);
+  assert.equal(updated.affectedRows, 1);
+  assert.deepEqual((await db.query("select id,storage_path,sort_order from company_profile_images where id=$1", [first])).rows,
+    [{ id: first, storage_path: nextPath, sort_order: 0 }]);
+  await blocked("update company_profile_images set storage_path=$1 where id=$2", [`profiles/${outsider}/gallery/${first}.png`, first]);
+  await blocked("update company_profile_images set storage_path=$1 where id=$2", [path("ffffffff-ffff-4fff-8fff-ffffffffffff"), first]);
+  await actor(outsider);
+  assert.equal((await db.query("update company_profile_images set storage_path=$1 where id=$2", [path(second), first])).affectedRows, 0);
+  await actor("", "anon");
+  await blocked("update company_profile_images set storage_path=$1 where id=$2", [path(second), first]);
 });

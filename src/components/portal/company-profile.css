@@ -626,9 +626,9 @@
   .company-profile .profile-location .location-map { min-height: 220px; }
   .company-profile .gallery-thumbs { max-width: calc(100% - 16px); bottom: 7px; }
   .company-profile .gallery-thumbs > button:not(.gallery-add-tile),
-  .company-profile .gallery-thumbnail > button { width: 50px; height: 38px; flex-basis: 50px; }
+  .company-profile .gallery-thumbnail > button { width: 50px; height: 44px; flex-basis: 50px; }
   .company-profile .gallery-thumbnail { flex-basis: 50px; }
-  .company-profile .gallery-main[data-has-thumbs] .image-caption { bottom: 60px; }
+  .company-profile .gallery-main[data-has-thumbs] .image-caption { bottom: 66px; }
 }
 @media (max-width: 600px) {
   .company-profile .detail-heading {

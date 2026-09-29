@@ -11,12 +11,17 @@ export async function uploadAdminMedia(
   file: FormDataEntryValue | null,
   alt: string,
   onProgress: (label: string) => void,
+  replacementId?: string,
 ): Promise<MediaState> {
   const prepare = new FormData();
   prepare.set("intent", kind === "logo" ? "prepare-logo" : "prepare-gallery");
   const finish = new FormData();
   finish.set("intent", kind === "logo" ? "logo-upload" : "gallery-upload");
   finish.set("alt_text", alt);
+  if (replacementId && kind === "gallery") {
+    prepare.set("image_id", replacementId);
+    finish.set("image_id", replacementId);
+  }
   return uploadPreparedAdminMedia(saveAction, file, prepare, finish, onProgress);
 }
 

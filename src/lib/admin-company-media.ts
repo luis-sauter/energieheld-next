@@ -44,6 +44,10 @@ export async function changeAdminCompanyMedia(
     }
   };
   const intent = form.get("intent");
+  const replacementId = form.get("image_id");
+  const replacement = replacementId == null ? null : rows.find((row) => row.id === replacementId);
+  if ((intent === "prepare-gallery" || intent === "gallery-upload") && replacementId != null && !replacement)
+    return { access, error: "Das zu ersetzende Bild gehört nicht zu diesem Profil." };
 
   if (intent === "prepare-logo" || intent === "prepare-gallery") {
     const mime = form.get("file_type");
@@ -58,7 +62,7 @@ export async function changeAdminCompanyMedia(
             : null;
     if (!extension || !Number.isSafeInteger(size) || size <= 0 || size > MEDIA_MAX_BYTES)
       return { access, error: "Bitte wählen Sie JPG, PNG oder WebP mit maximal 5 MB." };
-    if (intent === "prepare-gallery" && rows.length >= GALLERY_LIMIT)
+    if (intent === "prepare-gallery" && !replacement && rows.length >= GALLERY_LIMIT)
       return { access, error: "Es sind maximal 8 Bilder möglich." };
     return {
       access,
@@ -67,7 +71,7 @@ export async function changeAdminCompanyMedia(
   }
 
   if (intent === "logo-upload" || intent === "gallery-upload") {
-    if (intent === "gallery-upload" && rows.length >= GALLERY_LIMIT)
+    if (intent === "gallery-upload" && !replacement && rows.length >= GALLERY_LIMIT)
       return { access, error: "Es sind maximal 8 Bilder möglich." };
     const path = form.get("uploaded_path");
     const kind = intent === "logo-upload" ? "logo" : "gallery";
@@ -107,6 +111,12 @@ export async function changeAdminCompanyMedia(
           : query.is("logo_path", null);
         const result = await query.select("id").maybeSingle();
         saved = !result.error && result.data?.id === profile.id;
+      } else if (replacement) {
+        const result = await client.from("company_profile_images")
+          .update({ storage_path: path, alt_text: typeof alt === "string" ? alt.trim() || null : replacement.alt_text })
+          .eq("profile_id", profile.id).eq("id", replacement.id)
+          .eq("storage_path", replacement.storage_path).select("id").maybeSingle();
+        saved = !result.error && result.data?.id === replacement.id;
       } else {
         const result = await client.from("company_profile_images")
           .insert({
@@ -127,7 +137,8 @@ export async function changeAdminCompanyMedia(
       return { access, error: saveError };
     }
     if (kind === "logo") await cleanup(profile.logo_path);
-    return { access, success: "✓ Bild hochgeladen" };
+    if (replacement) await cleanup(replacement.storage_path);
+    return { access, success: replacement ? "Das Bild wurde ersetzt." : "✓ Bild hochgeladen" };
   }
 
   if (intent === "logo-remove") {

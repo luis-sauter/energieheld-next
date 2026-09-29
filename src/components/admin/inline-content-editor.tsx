@@ -6,6 +6,7 @@ import { ProfileEditorialContent } from "@/components/portal/profile-content-blo
 import type { Listing } from "@/types/portal";
 import { InlineImageGridEditor } from "./inline-image-grid-editor";
 import { InlineBlockLayout } from "./inline-block-layout";
+import { BlockImageGrid } from "@/components/portal/profile-content-blocks";
 import type { MediaState } from "@/lib/company-media";
 import type { ContentBlockType, EditorialItem, HeadingSlot, ProfileContentBlock } from "@/lib/profile-content";
 import styles from "./inline-profile.module.css";
@@ -348,9 +349,9 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
   function renderEditableBlock(block: ProfileContentBlock, paired = false) {
     const index = items.findIndex((item) => item.key === block.id);
     return <div key={block.id}>
-      {addControl(block.id)}
+      {!paired && addControl(block.id)}
       <InlineBlockLayout block={block} busy={busy || history.busy} first={index === 0} last={index === items.length - 1}
-        save={saveBlock} sectionHidden={items[index]?.hidden}>
+        save={saveBlock} sectionHidden={items[index]?.hidden} pairedPart={paired}>
         {items[index]?.hidden && <p role="status">Dieser Block ist öffentlich ausgeblendet.</p>}
         {block.type === "image_grid" ? <InlineImageGridEditor block={block} saveAction={saveImage} />
           : <form key={`${block.id}-${block.content.text}`} className={styles.blockForm} onSubmit={(event) => {
@@ -374,6 +375,19 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
         </form>}
         {block.type === "text" && renderAdjacentAction(block.id, block.content.text, paired)}
       </InlineBlockLayout>
+    </div>;
+  }
+
+  function renderPairedImage(block: ProfileContentBlock) {
+    return <div key={block.id} className={styles.pairedImageEditor}>
+      {block.images?.length ? <BlockImageGrid block={block} /> : <p>Bild auswählen und hochladen.</p>}
+      <details className={styles.pairedImageTools} open={!block.images?.length}>
+        <summary>Bild bearbeiten · Ausschnitt, Ersetzen und Beschreibung</summary>
+        <InlineImageGridEditor block={block} saveAction={saveImage} />
+      </details>
+      <button type="button" className="button" disabled={busy || history.busy}
+        onClick={() => { if (window.confirm("Bild neben diesem Abschnitt wirklich entfernen?"))
+          void saveBlock("delete", block.id); }}>Bild daneben entfernen</button>
     </div>;
   }
 
@@ -469,7 +483,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
         <div className={rowStyles.contentRow}>
           {columns.map((column) => <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
             key={column[0].id} style={{ gridColumn: contentColumn(column[0]) }}>
-            {column.map((block) => renderEditableBlock(block, true))}
+            {column.map((block) => block.type === "image_grid" ? renderPairedImage(block) : renderEditableBlock(block, true))}
           </div>)}
         </div>
       </>;
@@ -559,10 +573,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
         </div>
         <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
           style={{ gridColumn: contentColumn(shownImage) }}>
-          <InlineImageGridEditor block={shownImage} saveAction={saveImage} />
-          <button type="button" className="button" disabled={busy || history.busy}
-            onClick={() => { if (window.confirm("Bild neben diesem Abschnitt wirklich entfernen?"))
-              void saveBlock("delete", shownImage.id); }}>Bild daneben entfernen</button>
+          {renderPairedImage(shownImage)}
         </div>
       </div> : <>{renderSpecial(item)}{renderAdjacentAction(item.key,
         item.kind === "about" ? listing.description ?? "" : listing.businessAreas ?? "")}</>}

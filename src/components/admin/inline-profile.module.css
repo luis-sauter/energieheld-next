@@ -37,6 +37,9 @@
 .galleryEditor { margin-bottom: 28px; }
 .galleryEditor :global(.gallery-detail-controls) { padding: 12px 0 4px; }
 .galleryControls { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin-bottom: 14px; }
+.galleryControls > strong { flex-basis: 100%; color: var(--brand-primary); }
+.galleryToolRow { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+.galleryToolRow button { min-height: 44px; }
 .galleryControls form { display: flex; flex: 1 1 340px; flex-wrap: wrap; align-items: end; gap: 8px; }
 .galleryControls label { flex: 1 1 220px; font-size: 13px; font-weight: 600; }
 .galleryControls input { display: block; margin-top: 4px; }
@@ -150,6 +153,10 @@
 .layoutBlock .headingForm input, .layoutBlock .field textarea { width: 100%; min-width: 0; box-sizing: border-box; text-align: inherit; }
 .pairedEditorColumn .editableBlock { width: 100% !important; margin-left: 0 !important; }
 .layoutBlock[data-pair="true"] .pairedEditorColumn .editableBlock { text-align: inherit !important; }
+.pairedImageEditor { display: grid; align-content: start; gap: 10px; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+.pairedImageEditor > button { justify-self: start; }
+.pairedImageTools { min-width: 0; }
+.pairedImageTools summary { cursor: pointer; color: var(--brand-primary); font-weight: 650; padding: 8px 0; }
 .squareCropEditor { display: grid; gap: 10px; }
 .squareCropEditor p { margin: 0; }
 .squareCropEditor label { display: grid; gap: 4px; }

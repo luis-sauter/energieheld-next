@@ -102,6 +102,8 @@ test("editor text follows live section alignment and paired columns stack on mob
   assert.match(editor, /textAlign: block\.type === "image_grid" \? undefined : previewTextAlign/);
   assert.match(css, /\.layoutBlock \.blockForm input, \.layoutBlock \.blockForm textarea[^}]*text-align: inherit/);
   assert.match(rowCss, /@media \(max-width: 640px\)[\s\S]*\.contentColumn \{ grid-column: 1 \/ -1 !important/);
+  assert.match(rowCss, /\.contentRow \{[^}]*grid-auto-flow: row dense/);
+  assert.match(source("src/components/admin/inline-content-editor.tsx"), /function renderPairedImage\([\s\S]*<BlockImageGrid block=\{block\}/);
   const profileCss = source("src/components/portal/company-profile.css");
   assert.match(profileCss, /\.profile-head-grid \{ display: grid; grid-template-columns: minmax\(0, 2\.1fr\) minmax\(280px, 1fr\);[^}]*align-items: stretch/);
   assert.match(profileCss, /@media \(max-width: 820px\)[\s\S]*\.profile-head-grid \{ grid-template-columns: minmax\(0, 1fr\)/);
