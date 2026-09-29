@@ -8,7 +8,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 registerHooks({
   resolve(specifier, context, next) {
-    if (specifier === "next/navigation") return { url: 'data:text/javascript,export function useRouter(){return {push(){}}}', shortCircuit: true };
     if (specifier.startsWith("@/") || specifier.startsWith(".")) {
       const base = specifier.startsWith("@/")
         ? new URL("../src/" + specifier.slice(2), import.meta.url) : new URL(specifier, context.parentURL);
@@ -59,6 +58,7 @@ test("both routes use the same video finder and show actual initial totals", () 
   assert.match(home, /<HomeTravelFinder listings=/);
   assert.match(home, /searchableThemes\.has\(entry\.slug\)/);
   assert.match(home, /href=\{`\/unterkuenfte-a-z\?thema=\$\{entry\.slug\}`\}/);
+  assert.match(source("src/components/portal/travel-finder.tsx"), /window\.location\.assign\(travelFilterUrl\(values\)\)/);
   assert.match(source("src/components/portal/travel-directory.tsx"), /<TravelFinder mode="directory"/);
   const html = render(readTravelFilterValues({}));
   assert.match(html, /hero-loop\.mp4/);
