@@ -58,6 +58,7 @@ test("both routes use the same video finder and show actual initial totals", () 
   assert.match(home, /<HomeTravelFinder listings=/);
   assert.match(home, /searchableThemes\.has\(entry\.slug\)/);
   assert.match(home, /href=\{`\/unterkuenfte-a-z\?thema=\$\{entry\.slug\}`\}/);
+  assert.match(home, /<a key=\{entry\.slug\} href=\{`\/unterkuenfte-a-z\?thema=/);
   assert.match(source("src/components/portal/travel-finder.tsx"), /window\.location\.assign\(travelFilterUrl\(values\)\)/);
   assert.match(source("src/components/portal/travel-directory.tsx"), /<TravelFinder mode="directory"/);
   const html = render(readTravelFilterValues({}));

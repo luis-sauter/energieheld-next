@@ -37,10 +37,10 @@ export default async function Home() {
     <nav className="container travel-quicklinks" aria-label="Schnell zu Reisethemen">
       {quickThemes.map((slug) => {
         const entry = travelThemes.find((theme) => theme.slug === slug);
-        return entry && searchableThemes.has(entry.slug) && <Link key={entry.slug} href={`/unterkuenfte-a-z?thema=${entry.slug}`}>
+        return entry && searchableThemes.has(entry.slug) && <a key={entry.slug} href={`/unterkuenfte-a-z?thema=${entry.slug}`}>
           <span className="travel-quicklink-image" style={{ backgroundImage: `url(${entry.image})` }} aria-hidden="true" />
           <span>{entry.title}</span>
-        </Link>;
+        </a>;
       })}
     </nav>
 
