@@ -23,7 +23,7 @@ function form(values) {
 }
 function client({ admin = true, authenticated = true, columns = 2, size = null, rows = [
   { id: imageId, block_id: block, storage_path: oldPath, sort_order: 0 },
-], download = png, writeError = false } = {}) {
+], download = png, writeError = false, remainingReferences = 0 } = {}) {
   const calls = [];
   const db = {
     calls,
@@ -32,7 +32,7 @@ function client({ admin = true, authenticated = true, columns = 2, size = null, 
       const call = { table, filters: [] };
       calls.push(call);
       const query = {
-        select(columns) { call.columns = columns; return this; },
+        select(columns, options) { call.columns = columns; call.head = options?.head; return this; },
         eq(key, value) { call.filters.push([key, value]); return this; },
         is(key, value) { call.filters.push([key, value]); return this; },
         order(key) { call.order = [...(call.order ?? []), key]; return this; },
@@ -54,6 +54,7 @@ function client({ admin = true, authenticated = true, columns = 2, size = null, 
           return { data: null, error: null };
         },
         then(resolve) {
+          if (call.head) return resolve({ count: remainingReferences, error: null });
           return resolve({ data: rows.filter((row) => call.filters.every(([key, value]) => row[key] === value)), error: null });
         },
       };
@@ -125,6 +126,14 @@ test("replacement preserves the image row, detaches old path and then cleans it"
   const rejected = client();
   assert.ok((await changeAdminBlockImages(rejected, profile, "sichtbar", form({ intent: "upload", block_id: block, image_id: foreignImage, uploaded_path: newPath, alt_text: "" }))).error);
   assert.ok(!rejected.calls.some((call) => call.operation === "download"));
+});
+
+test("replacement keeps a shared old file while another block still references it", async () => {
+  const db = client({ remainingReferences: 1 });
+  assert.ok((await changeAdminBlockImages(db, profile, "sichtbar", form({
+    intent: "upload", block_id: block, image_id: imageId, uploaded_path: newPath, alt_text: "Neu",
+  }))).success);
+  assert.ok(!db.calls.some((call) => call.operation === "remove" && call.paths.includes(oldPath)));
 });
 
 test("admin crop saves only validated per-image presentation values", async () => {

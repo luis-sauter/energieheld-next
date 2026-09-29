@@ -11,6 +11,130 @@ const first = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const second = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const foreignBlock = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 
+test("paired About keeps its inner ratio while general width and position change on the shared wrapper", async () => {
+  const about = { id: first, profile_id: profileId, type: "heading", slot: "about_heading",
+    sort_order: 0, content: { text: "Über Sichtbares Profil", adjacent_image_id: second,
+      layout: { width_percent: 75, offset_percent: 25, text_align: "left" },
+      pair_layouts: { "section:about": { width_percent: 100, offset_percent: 0 } } } };
+  const image = { id: second, profile_id: profileId, type: "image_grid", slot: null,
+    sort_order: 1, content: { text: "" }, config: { columns: 1, width_percent: 25, offset_percent: 0 } };
+  const db = client({ blocks: [about, image] });
+  const result = await changeAdminProfileContent(db, profileId, slug, form({
+    intent: "section-pair-frame", block_id: "section:about", width_percent: "50",
+    offset_percent: "25", text_align: "center",
+  }));
+  assert.ok(result.success);
+  assert.equal(about.content.layout.width_percent, 75);
+  assert.equal(about.content.layout.offset_percent, 25);
+  assert.equal(about.content.pair_layouts["section:about"].width_percent, 50);
+  assert.equal(about.content.pair_layouts["section:about"].offset_percent, 25);
+  assert.ok((await changeAdminProfileContent(client({ admin: false, blocks: [about, image] }),
+    profileId, slug, form({ intent: "section-pair-frame", block_id: "section:about", width_percent: "25" }))).access !== "admin");
+});
+
+test("About creates a scoped pending image before the existing upload flow can pair it", async () => {
+  const imageId = "77777777-7777-4777-8777-777777777777";
+  const about = { id: first, profile_id: profileId, type: "heading", slot: "about_heading",
+    sort_order: 0, content: { text: "Über Sichtbares Profil", order: ["section:about", "section:business"],
+      layout: { width_percent: 100, offset_percent: 0 } } };
+  const blocks = [about];
+  const db = client({ blocks });
+  db.rpc = async (name, args) => {
+    db.calls.push({ rpc: name, args });
+    if (name === "insert_profile_content_block") {
+      blocks.push({ id: imageId, profile_id: profileId, type: "image_grid", slot: null,
+        sort_order: 0, content: { text: "" }, config: { columns: 1, width_percent: 100,
+          offset_percent: 0, aspect_ratio: 1.5 } });
+      return { data: imageId, error: null };
+    }
+    return { data: null, error: null };
+  };
+  const created = await changeAdminProfileContent(db, profileId, slug, form({
+    intent: "pair-image", text_block_id: "section:about", image_side: "right", image_width: "25",
+  }));
+  assert.equal(created.blockId, imageId);
+  assert.equal(about.content.pending_image_id, imageId);
+  assert.equal(about.content.adjacent_image_id, undefined);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({
+    intent: "pair-layout", text_block_id: "section:about", image_block_id: second,
+    image_side: "right", image_width: "25",
+  }))).error);
+  const paired = await changeAdminProfileContent(db, profileId, slug, form({
+    intent: "pair-layout", text_block_id: "section:about", image_block_id: imageId,
+    image_side: "right", image_width: "25",
+  }));
+  assert.ok(paired.success);
+  assert.equal(about.content.pending_image_id, undefined);
+  assert.equal(about.content.adjacent_image_id, imageId);
+  assert.equal(about.content.layout.width_percent, 75);
+  assert.equal(about.content.pair_layouts["section:about"].width_percent, 100);
+});
+
+test("business areas use the same scoped image pairing without changing structured profile data", async () => {
+  const imageId = "77777777-7777-4777-8777-777777777777";
+  const about = { id: first, profile_id: profileId, type: "heading", slot: "about_heading",
+    sort_order: 0, content: { text: "Über Sichtbares Profil", order: ["section:about", "section:business"] } };
+  const business = { id: second, profile_id: profileId, type: "heading", slot: "business_areas_heading",
+    sort_order: 0, content: { text: "Tätigkeitsbereiche", layout: { width_percent: 100, offset_percent: 0 } } };
+  const blocks = [about, business];
+  const db = client({ blocks });
+  db.rpc = async (name, args) => {
+    db.calls.push({ rpc: name, args });
+    if (name === "insert_profile_content_block") {
+      blocks.push({ id: imageId, profile_id: profileId, type: "image_grid", slot: null,
+        sort_order: 0, content: { text: "" }, config: { columns: 1, width_percent: 100,
+          offset_percent: 0, aspect_ratio: 1.5 } });
+      return { data: imageId, error: null };
+    }
+    return { data: null, error: null };
+  };
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({
+    intent: "pair-image", text_block_id: "section:business", image_side: "left", image_width: "50",
+  }))).success);
+  assert.ok((await changeAdminProfileContent(db, profileId, slug, form({
+    intent: "pair-layout", text_block_id: "section:business", image_block_id: imageId,
+    image_side: "left", image_width: "50",
+  }))).success);
+  assert.equal(business.content.adjacent_image_id, imageId);
+  assert.equal(business.content.layout.offset_percent, 50);
+  assert.equal(about.content.pair_layouts["section:business"].width_percent, 100);
+  assert.ok(db.calls.every((call) => call.table !== "company_profiles" || !call.operation));
+});
+
+test("duplicating a field-backed text-image section reuses the image-copy RPC and preserves its frame", async () => {
+  const imageId = "77777777-7777-4777-8777-777777777777";
+  const ids = ["88888888-8888-4888-8888-888888888888",
+    "99999999-9999-4999-8999-999999999999", "66666666-6666-4666-8666-666666666666"];
+  const about = { id: first, profile_id: profileId, type: "heading", slot: "about_heading",
+    sort_order: 0, content: { text: "Über Sichtbares Profil",
+      order: ["section:about", "section:business", imageId],
+      pair_layouts: { "section:business": { width_percent: 75, offset_percent: 25 } } } };
+  const business = { id: second, profile_id: profileId, type: "heading", slot: "business_areas_heading",
+    sort_order: 0, content: { text: "Tätigkeitsbereiche", adjacent_image_id: imageId,
+      layout: { width_percent: 75, offset_percent: 0 } } };
+  const image = { id: imageId, profile_id: profileId, type: "image_grid", slot: null,
+    sort_order: 1, content: { text: "" }, config: { columns: 1, width_percent: 25, offset_percent: 75 } };
+  const blocks = [about, business, image];
+  const db = client({ blocks });
+  db.rpc = async (name, args) => {
+    db.calls.push({ rpc: name, args });
+    const id = ids.shift();
+    if (name === "insert_profile_content_block") blocks.push({ id, profile_id: profileId,
+      type: args.p_type, slot: null, sort_order: blocks.length, content: { text: args.p_text }, config: {} });
+    if (name === "duplicate_profile_content_block") blocks.push({ ...image, id, sort_order: blocks.length });
+    return { data: id, error: null };
+  };
+  const result = await changeAdminProfileContent(db, profileId, slug,
+    form({ intent: "section-duplicate", block_id: "section:business" }));
+  assert.ok(result.success);
+  assert.ok(db.calls.some((call) => call.rpc === "duplicate_profile_content_block" &&
+    call.args.p_profile_id === profileId && call.args.p_block_id === imageId));
+  assert.equal(about.content.pair_layouts["99999999-9999-4999-8999-999999999999"].width_percent, 75);
+  assert.deepEqual(about.content.order.slice(1, 5), ["section:business",
+    "88888888-8888-4888-8888-888888888888", "99999999-9999-4999-8999-999999999999",
+    "66666666-6666-4666-8666-666666666666"]);
+});
+
 function form(values) {
   const data = new FormData();
   for (const [key, value] of Object.entries(values)) data.set(key, value);
@@ -392,7 +516,7 @@ test("business areas can be hidden, duplicated, deleted and restored without cle
   assert.ok(splitProfileContent(blocks, "Haus").items.some((item) => item.kind === "business"));
 });
 
-test("duplicating a text-image pair preserves its frame while the new image slot starts empty", async () => {
+test("duplicating a text-image pair preserves its frame and delegates shared image rows to the scoped RPC", async () => {
   const about = { id: "ffffffff-ffff-4fff-8fff-ffffffffffff", profile_id: profileId,
     type: "heading", slot: "about_heading", sort_order: 0,
     content: { text: "Über das Haus", order: ["section:about", first, second, "section:business"],
@@ -417,5 +541,7 @@ test("duplicating a text-image pair preserves its frame while the new image slot
   assert.deepEqual(about.content.pair_layouts[textCopy], about.content.pair_layouts[first]);
   assert.deepEqual(about.content.order, ["section:about", first, second, textCopy,
     "99999999-9999-4999-8999-999999999999", "section:business"]);
+  assert.ok(db.calls.some((call) => call.rpc === "duplicate_profile_content_block" &&
+    call.args.p_block_id === second && call.args.p_profile_id === profileId));
   assert.ok(db.calls.every((call) => !call.operation || call.table !== "company_profiles"));
 });

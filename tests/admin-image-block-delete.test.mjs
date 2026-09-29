@@ -16,7 +16,7 @@ function client({ storageFails = false } = {}) {
       const call = { table, filters: [] };
       calls.push(call);
       return {
-        select() { return this; },
+        select(_columns, options) { call.head = options?.head; return this; },
         eq(key, value) { call.filters.push([key, value]); return this; },
         is(key, value) { call.filters.push([key, value]); return this; },
         delete() { call.operation = "delete"; return this; },
@@ -26,7 +26,8 @@ function client({ storageFails = false } = {}) {
           if (table === "profile_content_blocks") return { data: call.operation === "delete" ? { id: block } : { id: block, type: "image_grid", slot: null }, error: null };
           return { data: null, error: null };
         },
-        then(resolve) { return resolve({ data: [{ id: image, storage_path: path }], error: null }); },
+        then(resolve) { return resolve(call.head ? { count: 0, error: null }
+          : { data: [{ id: image, storage_path: path }], error: null }); },
       };
     },
     async rpc(name, args) { calls.push({ operation: "rpc", name, args }); return { data: path, error: null }; },

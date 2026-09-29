@@ -31,13 +31,32 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
   key: unknown, intent: unknown, form: FormData): Promise<Result> {
   const slot = sectionSlot(key);
   if (!slot) return { error: "Der Abschnitt wurde nicht gefunden." };
-  if (!["layout", "section-toggle", "section-delete", "section-restore", "section-duplicate"].includes(String(intent)))
+  if (!["layout", "section-pair-frame", "section-toggle", "section-delete", "section-restore", "section-duplicate"].includes(String(intent)))
     return { error: "Die Aktion ist ungültig." };
   const row = await ensureSection(client, profileId, slot);
   if (!row) return { error: failed };
   const content = { ...row.content };
   const metadata = await ensureSection(client, profileId, "about_heading");
   if (!metadata) return { error: failed };
+  if (intent === "section-pair-frame") {
+    if (!isProfileId(row.content.adjacent_image_id)) return { error: "Neben diesem Abschnitt steht kein Bild." };
+    const old = normalizeTextBlockLayout(metadata.content.pair_layouts?.[key as string]);
+    const width = form.get("width_percent") === null ? old.width_percent : Number(form.get("width_percent"));
+    const offset = form.get("offset_percent") === null ? Math.min(old.offset_percent, 100 - width) : Number(form.get("offset_percent"));
+    const align = form.get("text_align") ?? old.text_align;
+    const top = form.get("spacing_top") ?? old.spacing_top;
+    const bottom = form.get("spacing_bottom") ?? old.spacing_bottom;
+    if (!validWidth(width) || !validOffset(offset) || width + offset > 100 ||
+      !validTextAlignment(align) || !validSpacing(top) || !validSpacing(bottom))
+      return { error: "Bitte wählen Sie gültige Werte für Breite, Position und Ausrichtung." };
+    const saved = await client.from("profile_content_blocks").update({ content: {
+      ...metadata.content, pair_layouts: { ...metadata.content.pair_layouts,
+        [key as string]: { width_percent: width, offset_percent: offset, text_align: align,
+          spacing_top: top, spacing_bottom: bottom } },
+    } }).eq("profile_id", profileId).eq("id", metadata.id).eq("slot", "about_heading")
+      .select("id").maybeSingle();
+    return saved.error || saved.data?.id !== metadata.id ? { error: failed } : { success: "Layout gespeichert." };
+  }
   const deleted = new Set(metadata.content.deleted_sections ?? []);
   if (intent === "section-delete") {
     if (deleted.has(key as string)) return { error: "Der Abschnitt wurde bereits gelöscht." };
@@ -49,8 +68,10 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
       .eq("id", profileId).select("id").maybeSingle();
     if (cleared.error || cleared.data?.id !== profileId) return { error: failed };
     deleted.add(key as string);
+    const pairLayouts = { ...metadata.content.pair_layouts };
+    delete pairLayouts[key as string];
     const saved = await client.from("profile_content_blocks").update({ content: {
-      ...metadata.content, deleted_sections: [...deleted],
+      ...metadata.content, pair_layouts: pairLayouts, deleted_sections: [...deleted],
       order: (metadata.content.order ?? []).filter((item) => item !== key),
     } }).eq("profile_id", profileId).eq("id", metadata.id).eq("slot", "about_heading").select("id").maybeSingle();
     if (saved.error || saved.data?.id !== metadata.id) {
@@ -83,6 +104,10 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
     const text = typeof body === "string" && body.trim() ? contentText(body, "text") : null;
     if (body && !text) return { error: "Der Abschnittstext ist für eine Kopie zu lang." };
     const created: string[] = [];
+    const rollbackCreated = async () => {
+      for (const id of created) await client.from("profile_content_blocks").delete()
+        .eq("profile_id", profileId).eq("id", id).is("slot", null);
+    };
     for (const [type, value] of [["heading", row.content.text], ...(text ? [["text", text]] : [])]) {
       const result = await client.rpc("insert_profile_content_block", {
         p_profile_id: profileId, p_type: type, p_text: value, p_before_block_id: null,
@@ -104,6 +129,25 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
         return { error: failed };
       }
     }
+    let copiedImage: string | null = null;
+    if (isProfileId(row.content.adjacent_image_id)) {
+      const sourceImage = await client.from("profile_content_blocks").select("id,type,config")
+        .eq("profile_id", profileId).eq("id", row.content.adjacent_image_id)
+        .eq("type", "image_grid").is("slot", null).maybeSingle();
+      if (sourceImage.error || !sourceImage.data) {
+        await rollbackCreated();
+        return { error: failed };
+      }
+      const copy = await client.rpc("duplicate_profile_content_block", {
+        p_profile_id: profileId, p_block_id: sourceImage.data.id,
+      });
+      if (copy.error || !isProfileId(copy.data)) {
+        await rollbackCreated();
+        return { error: failed };
+      }
+      copiedImage = copy.data;
+      created.push(copy.data);
+    }
     const read = await client.from("profile_content_blocks").select("id,profile_id,type,slot,sort_order,content")
       .eq("profile_id", profileId).order("sort_order").order("id");
     if (read.error) {
@@ -112,8 +156,15 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
       return { error: failed };
     }
     const order = editorialOrder(read.data as ProfileContentBlock[]).filter((item) => !created.includes(item));
-    order.splice(order.indexOf(key as string) + 1, 0, ...created);
-    const saved = await client.from("profile_content_blocks").update({ content: { ...metadata.content, order } })
+    const imageLeft = copiedImage && normalizeTextBlockLayout(row.content.layout).offset_percent > 0;
+    order.splice(order.indexOf(key as string) + 1, 0,
+      ...(imageLeft && copiedImage ? [copiedImage, ...created.filter((id) => id !== copiedImage)] : created));
+    const pairLayouts = { ...metadata.content.pair_layouts };
+    if (copiedImage && created.length >= 3 && pairLayouts[key as string])
+      pairLayouts[created[1]] = pairLayouts[key as string];
+    const saved = await client.from("profile_content_blocks").update({ content: {
+      ...metadata.content, order, pair_layouts: pairLayouts,
+    } })
       .eq("profile_id", profileId).eq("id", metadata.id).eq("slot", "about_heading").select("id").maybeSingle();
     if (saved.error || saved.data?.id !== metadata.id) {
       for (const id of created) await client.from("profile_content_blocks").delete()
@@ -164,6 +215,18 @@ export async function changeEditorialBlockVisibility(client: SupabaseClient, pro
 }
 
 export async function forgetEditorialBlock(client: SupabaseClient, profileId: string, blockId: string): Promise<void> {
+  for (const slot of ["about_heading", "business_areas_heading"] as const) {
+    const section = await client.from("profile_content_blocks").select("id,content")
+      .eq("profile_id", profileId).eq("slot", slot).maybeSingle();
+    if (section.data?.content?.adjacent_image_id === blockId ||
+      section.data?.content?.pending_image_id === blockId) {
+      const content = { ...section.data.content };
+      delete content.adjacent_image_id;
+      delete content.pending_image_id;
+      await client.from("profile_content_blocks").update({ content })
+        .eq("profile_id", profileId).eq("id", section.data.id).eq("slot", slot);
+    }
+  }
   const row = await client.from("profile_content_blocks").select("id,content")
     .eq("profile_id", profileId).eq("slot", "about_heading").maybeSingle();
   if (!row.data?.content) return;
@@ -190,11 +253,25 @@ export async function changeEditorialOrder(client: SupabaseClient, profileId: st
     const direction = form.get("direction");
     if (typeof key !== "string" || !order.includes(key) ||
       direction !== "up" && direction !== "down") return { error: "Der Block wurde nicht gefunden." };
-    const at = order.indexOf(key);
-    const swap = at + (direction === "up" ? -1 : 1);
-    if (swap < 0 || swap >= order.length) return { error: "Der Block kann nicht weiter verschoben werden." };
+    const unit = (id: string) => {
+      for (const [sectionKey, slot] of [[ABOUT_SECTION, "about_heading"],
+        [BUSINESS_SECTION, "business_areas_heading"]] as const) {
+        const imageId = blocks.find((block) => block.slot === slot)?.content.adjacent_image_id;
+        if (imageId && (id === sectionKey || id === imageId) &&
+          Math.abs(order.indexOf(sectionKey) - order.indexOf(imageId)) === 1)
+          return [sectionKey, imageId].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+      }
+      return [id];
+    };
+    const moving = unit(key);
+    const start = order.indexOf(moving[0]);
+    const neighborAt = direction === "up" ? start - 1 : start + moving.length;
+    if (neighborAt < 0 || neighborAt >= order.length) return { error: "Der Block kann nicht weiter verschoben werden." };
+    const neighbor = unit(order[neighborAt]);
+    const from = Math.min(start, order.indexOf(neighbor[0]));
     next = [...order];
-    [next[at], next[swap]] = [next[swap], next[at]];
+    next.splice(from, moving.length + neighbor.length,
+      ...(direction === "up" ? [...moving, ...neighbor] : [...neighbor, ...moving]));
   } else if (intent === "reorder") {
     const submitted = form.getAll("block_ids");
     if (submitted.some((value) => typeof value !== "string")) return { error: "Die Blockreihenfolge ist ungültig." };
