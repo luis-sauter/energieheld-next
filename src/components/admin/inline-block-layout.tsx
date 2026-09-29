@@ -6,10 +6,10 @@ import { blockPositionOffset, dragBlockOffset, hasPersistedBlockLayout,
   normalizeBlockLayout, normalizeTextBlockLayout, type BlockSpacing, type TextAlignment } from "@/lib/content-block-layout";
 import styles from "./inline-profile.module.css";
 
-export function InlineBlockLayout({ block, busy, first, last, save, children, sectionHidden, sectionLabel }: {
+export function InlineBlockLayout({ block, busy, first, last, save, children, sectionHidden, sectionLabel, pairedPart = false }: {
   block: ProfileContentBlock; busy: boolean; first: boolean; last: boolean;
   save: (intent: string, blockId: string, values?: Record<string, string>) => Promise<boolean>;
-  children: ReactNode; sectionHidden?: boolean; sectionLabel?: string;
+  children: ReactNode; sectionHidden?: boolean; sectionLabel?: string; pairedPart?: boolean;
 }) {
   const special = block.id.startsWith("section:");
   const pair = block.id.startsWith("pair:");
@@ -116,6 +116,18 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
   return <div className={styles.layoutBlock} data-pair={pair || undefined}>
     <div className={styles.blockToolbar} aria-label="Block bearbeiten">
       <strong className={styles.blockType}>Blocktyp: {pair ? "Text + Bild" : special ? sectionLabel ?? "Redaktioneller Abschnitt" : block.type === "heading" ? "Überschrift" : block.type === "text" ? "Text" : "Bild"}</strong>
+      {pairedPart ? <>
+        <div className={styles.controlGroup} role="group" aria-label="Textausrichtung">
+          {positions.map(({ value, label }) => <button key={value} type="button" className="button"
+            aria-label={`Text ${label === "Mitte" ? "mittig" : label.toLowerCase()}`}
+            aria-pressed={previewTextAlign === value} disabled={busy || !persisted}
+            onClick={() => void setLayout({ text_align: value })}>{label}</button>)}
+        </div>
+        <button type="button" className={`button ${styles.destructiveAction}`} disabled={busy}
+          onClick={() => { if (window.confirm("Diesen Teil wirklich löschen?")) void save("delete", block.id); }}>
+          {block.type === "heading" ? "Überschrift löschen" : "Text löschen"}
+        </button>
+      </> : <>
       <button type="button" className={styles.moveGrip} aria-label="Block horizontal ziehen"
         title={preview.width === 100 ? "Bei 100 % Breite ist keine horizontale Bewegung möglich." : "Block horizontal ziehen"}
         disabled={busy || !persisted || preview.width === 100}
@@ -171,14 +183,15 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
       </div>
       {!persisted && <span role="status">Layoutsteuerung nach Datenbankaktualisierung verfügbar.</span>}
       {snap && <span role="status">{snap === "center" ? "Mitte" : snap === "left" ? "Links" : "Rechts"}</span>}
+      </>}
     </div>
     <section className={`detail-section profile-content-block ${styles.editableBlock}`}
       data-spacing-top={previewSpacing.top} data-spacing-bottom={previewSpacing.bottom}
       data-hidden={sectionHidden || undefined}
-      style={{ width: `${preview.width}%`, marginLeft: `${preview.offset}%`,
+      style={{ width: pairedPart ? "100%" : `${preview.width}%`, marginLeft: pairedPart ? 0 : `${preview.offset}%`,
         textAlign: block.type === "image_grid" ? undefined : previewTextAlign }}>
       {children}
-      {persisted && <button type="button" className={styles.blockResizeGrip} aria-label="Blockbreite durch Ziehen ändern"
+      {persisted && !pairedPart && <button type="button" className={styles.blockResizeGrip} aria-label="Blockbreite durch Ziehen ändern"
         title="Blockbreite ändern" disabled={busy}
         onPointerDown={startResize} onPointerMove={moveResize}
         onPointerUp={(event) => finishResize(event)} onPointerCancel={(event) => finishResize(event, true)}>↔</button>}

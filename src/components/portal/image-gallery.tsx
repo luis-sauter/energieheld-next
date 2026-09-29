@@ -21,6 +21,8 @@ export function ImageGallery({
   thumbnailControls,
   addControl,
   autoplay = true,
+  activeIndex,
+  onSelectIndex,
 }: {
   images: PortalImage[];
   isDemo?: boolean;
@@ -29,6 +31,8 @@ export function ImageGallery({
   thumbnailControls?: React.ReactNode[];
   addControl?: React.ReactNode;
   autoplay?: boolean;
+  activeIndex?: number;
+  onSelectIndex?: (index: number) => void;
 }) {
   const [selected, setSelected] = useState(0);
   const [failed, setFailed] = useState<Record<string, boolean>>({});
@@ -47,10 +51,12 @@ export function ImageGallery({
     return scheduleGalleryAdvance(() => setSelected((index) => (index + 1) % images.length));
   }, [autoplay, reducedMotion, paused, images.length, selected, interaction]);
   function select(index: number) {
-    setSelected((index + images.length) % images.length);
+    const next = (index + images.length) % images.length;
+    setSelected(next);
+    onSelectIndex?.(next);
     setInteraction((value) => value + 1);
   }
-  const selectedIndex = Math.min(selected, images.length - 1);
+  const selectedIndex = Math.min(activeIndex ?? selected, images.length - 1);
   const current = images[selectedIndex] ?? images[0];
   if (!current) return null;
   return (
