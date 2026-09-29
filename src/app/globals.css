@@ -3062,20 +3062,78 @@ h6 {
 
 /* Reiseportal discovery: original travel photography and functional directory search. */
 .reiseportal-shell {
-  --brand-primary: #29b6e0;
-  --brand-accent-hover: #a93618;
-  --brand-secondary: #29b6e0;
-  --category-blue: #d9f4fc;
-  --brand-beige: #efd0bd;
-  --white: #fffdfc;
-  --surface: #fff8f3;
-  --line: #e9d8ce;
-  --text: #26363d;
-  --muted: #52636a;
-  background: #fffdfc;
+  --portal-primary: #1e5a7a;
+  --portal-primary-deep: #174761;
+  --portal-accent: #ff8a4c;
+  --portal-surface: #faf7f2;
+  --portal-ink: #1a2731;
+  --portal-card: #ffffff;
+  --brand-accent-hover: #f47838;
+  --brand-secondary: var(--portal-primary-deep);
+  --category-blue: #eaf3f7;
+  --white: var(--portal-card);
+  --surface: var(--portal-surface);
+  --line: #dce6e9;
+  --text: var(--portal-ink);
+  --muted: #475b68;
+  background: var(--portal-surface);
 }
 .reiseportal-shell :is(a, button, input, select, summary):focus-visible {
-  outline-color: #087a99;
+  outline-color: var(--portal-primary);
+}
+.reiseportal-shell :is(h1, h2, h3) { color: var(--portal-primary-deep); }
+.reiseportal-shell .button-primary,
+.reiseportal-shell .header-cta {
+  border-color: var(--portal-accent);
+  background: var(--portal-accent);
+  color: var(--portal-ink);
+}
+.reiseportal-shell .button-primary:hover:not(:disabled),
+.reiseportal-shell .header-cta:hover {
+  border-color: var(--brand-accent-hover);
+  background: var(--brand-accent-hover);
+  color: var(--portal-ink);
+}
+.reiseportal-shell .site-header {
+  background: var(--portal-card);
+  box-shadow: 0 3px 18px rgb(23 71 97 / 6%);
+}
+.reiseportal-shell .desktop-nav,
+.reiseportal-shell .desktop-nav a,
+.reiseportal-shell .mobile-menu a,
+.reiseportal-shell .nav-chevron-button { color: var(--portal-primary-deep); }
+.reiseportal-shell .desktop-nav a:hover,
+.reiseportal-shell .desktop-nav a:focus-visible,
+.reiseportal-shell .desktop-nav-group:has(.nav-chevron-button[aria-expanded="true"]) > a {
+  color: var(--portal-primary);
+}
+.reiseportal-shell .account-trigger { background: var(--portal-card); color: var(--portal-primary-deep); }
+.reiseportal-shell .site-footer { background: var(--portal-surface); }
+.reiseportal-shell .site-footer .footer-brand { color: var(--portal-primary-deep); }
+.reiseportal-shell .listing-row,
+.reiseportal-shell .listing-card,
+.reiseportal-shell .contact-card,
+.reiseportal-shell .detail-section,
+.reiseportal-shell .filter-panel {
+  border-color: var(--line);
+  background: var(--portal-card);
+  box-shadow: 0 6px 22px rgb(23 71 97 / 5%);
+}
+.reiseportal-shell .listing-row--premium {
+  border-left: 3px solid var(--portal-primary);
+}
+.reiseportal-shell .row-category {
+  background: var(--category-blue);
+  color: var(--portal-primary-deep);
+}
+.reiseportal-shell .listing-row--premium .row-profile-link {
+  background: var(--portal-primary-deep);
+  color: var(--portal-card);
+}
+.reiseportal-shell .commercial-sidebar .ad-copy,
+.reiseportal-shell .commercial-sidebar .ad-side,
+.reiseportal-shell .advertising-rail-creatives [data-placement] {
+  border-color: var(--line);
 }
 .travel-hero {
   position: relative;
@@ -3084,7 +3142,7 @@ h6 {
   align-items: center;
   isolation: isolate;
   overflow: hidden;
-  background: #283033;
+  background: var(--portal-primary-deep) url('/reiseportal/hero.jpg') center 55% / cover no-repeat;
 }
 .travel-hero > video {
   position: absolute;
@@ -3104,7 +3162,7 @@ h6 {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(90deg, rgba(17, 36, 43, .78), rgba(17, 36, 43, .18));
+  background: linear-gradient(90deg, rgb(250 247 242 / 91%) 0%, rgb(250 247 242 / 72%) 38%, rgb(250 247 242 / 6%) 82%);
 }
 .travel-hero-content {
   padding-block: 72px;
@@ -3113,29 +3171,30 @@ h6 {
   .travel-hero-content { transform: translateY(30px); }
 }
 .travel-hero .eyebrow,
-.travel-hero h1,
 .travel-hero-content > p:not(.eyebrow) {
-  color: var(--white);
+  color: var(--portal-primary-deep);
 }
 .travel-hero h1 {
-  max-width: 700px;
-  font-size: clamp(2.25rem, 5vw, 4.6rem);
-  line-height: 1.05;
-  margin-bottom: 18px;
+  max-width: 620px;
+  color: var(--portal-primary-deep);
+  font-size: clamp(2.25rem, 4.3vw, 3.8rem);
+  line-height: 1.06;
+  margin-bottom: 14px;
 }
 .travel-hero-content > p:not(.eyebrow) {
-  max-width: 660px;
-  font-size: clamp(1rem, 1.7vw, 1.23rem);
-  margin-bottom: 32px;
+  max-width: 570px;
+  font-size: clamp(1rem, 1.5vw, 1.14rem);
+  margin-bottom: 28px;
 }
-.travel-hero:has(.reise-finder) { min-height: 620px; }
+.travel-hero:has(.reise-finder) { min-height: 600px; }
 .travel-hero:has(.reise-finder) .travel-hero-content { transform: none; }
 .reise-finder {
   width: 100%;
   padding: clamp(16px, 2.5vw, 28px);
-  border-radius: var(--radius);
+  border: 1px solid rgb(255 255 255 / 82%);
+  border-radius: 14px;
   background: var(--white);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, .2);
+  box-shadow: 0 18px 48px rgb(26 39 49 / 19%);
   color: var(--text);
 }
 .reise-finder-grid {
@@ -3144,7 +3203,7 @@ h6 {
   gap: 16px;
   align-items: end;
 }
-.reise-finder label { min-width: 0; font-size: .95rem; font-weight: 700; color: var(--brand-primary); }
+.reise-finder label { min-width: 0; font-size: .84rem; font-weight: 700; color: var(--portal-primary-deep); }
 .reise-finder input, .reise-finder select, .travel-results-heading select {
   display: block;
   width: 100%;
@@ -3158,6 +3217,8 @@ h6 {
   color: var(--text);
   font: inherit;
 }
+.reise-finder :is(input, select):hover,
+.reise-finder :is(input, select):focus-visible { border-color: var(--portal-primary); }
 .reise-finder-submit { min-height: 54px; width: 100%; font-size: 1rem; }
 .reise-finder-summary { margin-top: 15px; font-weight: 700; color: var(--text); }
 .reise-finder-active { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
@@ -3184,34 +3245,43 @@ h6 {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 12px;
-  padding-top: 24px;
+  padding-top: 26px;
 }
 .travel-quicklinks a {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 104px;
-  padding: 10px;
-  border: 1px solid var(--brand-beige);
-  border-radius: 6px;
-  background: #fffaf7;
-  color: var(--brand-primary);
+  gap: 9px;
+  min-height: 112px;
+  padding: 12px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--portal-card);
+  color: var(--portal-primary-deep);
   font-size: .77rem;
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
+  box-shadow: 0 5px 16px rgb(23 71 97 / 4%);
+  transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
 }
-.travel-quicklink-image {
+.travel-quicklink-icon {
+  display: grid;
+  place-items: center;
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
+  border-radius: 13px;
+  background: var(--category-blue);
+  color: var(--portal-primary);
 }
 .travel-quicklinks a:hover,
-.travel-quicklinks a:focus-visible { border-color: var(--brand-primary); background: #e7f8fd; }
+.travel-quicklinks a:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--portal-primary);
+  background: #f5fafc;
+  box-shadow: 0 10px 22px rgb(23 71 97 / 10%);
+}
 .discovery-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3229,7 +3299,7 @@ h6 {
 .discovery-card:hover,
 .discovery-card:focus-visible {
   transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(30, 110, 130, .12);
+  box-shadow: 0 12px 28px rgb(23 71 97 / 11%);
 }
 .discovery-card-image {
   position: relative;
@@ -3238,7 +3308,7 @@ h6 {
   overflow: hidden;
 }
 .discovery-card-image-fallback {
-  background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+  background: linear-gradient(135deg, var(--portal-primary), var(--portal-primary-deep));
 }
 .discovery-card-image img,
 .accommodation-card-image img { object-fit: cover; }
@@ -3248,7 +3318,7 @@ h6 {
   gap: 10px;
   align-items: center;
   padding: 15px 17px;
-  color: var(--brand-primary);
+  color: var(--portal-primary-deep);
   font-weight: 750;
 }
 .accommodation-grid {
@@ -3265,6 +3335,7 @@ h6 {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--white);
+  box-shadow: 0 6px 22px rgb(23 71 97 / 5%);
 }
 .accommodation-card-image {
   position: relative;
@@ -3294,7 +3365,9 @@ h6 {
 .accommodation-card-copy h3 { margin-bottom: 9px; }
 .accommodation-card-copy p:not(.eyebrow) { font-size: .85rem; margin-bottom: 15px; }
 .accommodation-card-copy .text-link { align-self: flex-start; margin-top: auto; }
-.discovery-home .section { padding-block: 44px; }
+.discovery-home .section { padding-block: clamp(46px, 5vw, 72px); }
+.discovery-home .section-heading { margin-bottom: 22px; }
+.discovery-home .section-heading h2 { margin-bottom: 3px; }
 .discovery-home .commercial-columns { margin-top: 0; }
 .discovery-page .discovery-grid { margin-top: 28px; }
 .motto-intro {
@@ -3310,12 +3383,12 @@ h6 {
 .motto-intro-image img { object-fit: cover; }
 .motto-page .section { padding-top: 38px; }
 .motto-page .discovery-grid { gap: 28px 22px; }
-.motto-page .discovery-card { border: 0; border-radius: 2px; box-shadow: none; background: #fffaf7; }
+.motto-page .discovery-card { border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 22px rgb(23 71 97 / 5%); background: var(--portal-card); }
 .motto-page .discovery-card:hover,
 .motto-page .discovery-card:focus-visible { box-shadow: 0 10px 24px rgba(30, 110, 130, .12); }
 .motto-page .discovery-card-image { aspect-ratio: 1.5; }
 .motto-page .discovery-card-title { padding: 20px 14px; font-size: 1.03rem; font-weight: 650; }
-.motto-page .discovery-card-title span { color: var(--brand-primary); }
+.motto-page .discovery-card-title span { color: var(--portal-primary); }
 .discovery-detail-hero {
   position: relative;
   display: flex;
@@ -3350,6 +3423,7 @@ h6 {
   .travel-results-heading label { width: 100%; }
   .travel-hero { min-height: 0; }
   .travel-hero-content { padding-block: 56px 36px; }
+  .travel-hero::after { background: linear-gradient(90deg, rgb(250 247 242 / 92%), rgb(250 247 242 / 69%)); }
   .travel-quicklinks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .travel-quicklinks a { min-height: 84px; }
   .motto-intro { grid-template-columns: 1fr; gap: 22px; }

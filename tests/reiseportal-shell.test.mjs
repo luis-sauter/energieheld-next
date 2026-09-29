@@ -53,6 +53,7 @@ registerHooks({
 });
 
 const { reiseportal } = await import("../src/config/reiseportal.ts");
+const { TravelThemeIcon } = await import("../src/components/portal/travel-theme-icon.tsx");
 const { reiseportalPreview } = await import("../src/data/reiseportal-preview.ts");
 const { reiseziele, mottoreisen } = await import("../src/data/reiseportal-overviews.ts");
 const { destinations, travelThemes } = await import("../src/data/reiseportal-discovery.ts");
@@ -71,6 +72,21 @@ const { loadReiseportalDirectory, loadReiseportalListingBySlug } =
 const { default: LegacyExperts } = await import("../src/app/(energieheld)/experten/page.tsx");
 const { default: LegacyDetail } = await import("../src/app/(energieheld)/experten/[slug]/page.tsx");
 const { default: LegacyTrades } = await import("../src/app/(energieheld)/gewerke/page.tsx");
+
+test("Reiseportal palette keeps coral for actions and all quicklink symbols blue", () => {
+  assert.deepEqual(reiseportal.colors, { primary: "#1E5A7A", accent: "#FF8A4C", surface: "#FAF7F2" });
+  const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+  for (const color of ["#1e5a7a", "#174761", "#ff8a4c", "#faf7f2", "#1a2731", "#ffffff"])
+    assert.ok(css.includes(color), `${color} must remain in the portal palette`);
+  assert.match(css, /\.reiseportal-shell \.button-primary,[\s\S]*?color: var\(--portal-ink\)/);
+  assert.match(css, /\.travel-quicklink-icon\s*\{[^}]*color: var\(--portal-primary\)/);
+  for (const slug of ["wellnessangebote", "familienurlaub", "wanderurlaub", "romantik-zu-zweit", "campingurlaub", "radwandern", "urlaub-am-wasser", "golfurlaub"]) {
+    const icon = renderToStaticMarkup(createElement(TravelThemeIcon, { slug }));
+    assert.match(icon, /^<svg /);
+    assert.match(icon, /stroke="currentColor"/);
+    assert.doesNotMatch(icon, /<img|#[0-9a-f]{3,8}/i);
+  }
+});
 
 test("public navigation has only the three travel entries and uses the untouched original logo", () => {
   assert.deepEqual(reiseportal.navigation, [
@@ -220,13 +236,13 @@ test("database travel terms take precedence over fallback slugs and combine all 
   assert.deepEqual(filterTravelDiscovery([reiseportalPreview[0]], "", "", "paar"), []);
 });
 
-test("public Reiseportal primary is turquoise while CTA and body text keep separate roles", () => {
+test("public Reiseportal uses blue hierarchy, dark body text and separate coral actions", () => {
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
-  assert.equal(reiseportal.colors.primary, "#29B6E0");
-  assert.equal(reiseportal.colors.accent, "#C3421C");
-  assert.match(css, /\.reiseportal-shell\s*\{[^}]*--text: #26363d;/);
-  assert.match(css, /\.reiseportal-shell :is\(a, button, input, select, summary\):focus-visible\s*\{\s*outline-color: #087a99;/);
-  assert.match(css, /\.motto-page \.discovery-card-title span \{ color: var\(--brand-primary\); \}/);
+  assert.equal(reiseportal.colors.primary, "#1E5A7A");
+  assert.equal(reiseportal.colors.accent, "#FF8A4C");
+  assert.match(css, /\.reiseportal-shell\s*\{[^}]*--text: var\(--portal-ink\);/);
+  assert.match(css, /\.reiseportal-shell :is\(a, button, input, select, summary\):focus-visible\s*\{\s*outline-color: var\(--portal-primary\);/);
+  assert.match(css, /\.motto-page \.discovery-card-title span \{ color: var\(--portal-primary\); \}/);
   assert.doesNotMatch(css.slice(css.indexOf(".reiseportal-shell")), /#5d040a|rgba\(93, 4, 10/i);
 });
 

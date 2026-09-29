@@ -10,6 +10,7 @@ import { HomeTravelFinder } from "@/components/portal/travel-finder";
 import { availableTravelFilters } from "@/lib/reiseportal-filter-options";
 import { loadPublicAds } from "@/lib/public-ads";
 import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
+import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
 
 const featuredThemes = ["natur-pur", "familienurlaub", "wanderurlaub", "wellnessangebote"];
 const quickThemes = ["wellnessangebote", "familienurlaub", "wanderurlaub", "romantik-zu-zweit", "campingurlaub", "radwandern", "urlaub-am-wasser", "golfurlaub"];
@@ -38,7 +39,7 @@ export default async function Home() {
       {quickThemes.map((slug) => {
         const entry = travelThemes.find((theme) => theme.slug === slug);
         return entry && searchableThemes.has(entry.slug) && <a key={entry.slug} href={`/unterkuenfte-a-z?thema=${entry.slug}`}>
-          <span className="travel-quicklink-image" style={{ backgroundImage: `url(${entry.image})` }} aria-hidden="true" />
+          <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.slug} /></span>
           <span>{entry.title}</span>
         </a>;
       })}
