@@ -57,7 +57,7 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
-  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
 }
 .card:has(.dragHandle:hover),
 .card:has(.dragHandle:active) {
@@ -74,6 +74,7 @@
 .dragHandle {
   flex: 0 0 120px;
   cursor: grab;
+  touch-action: none;
   text-align: center;
   border: 1px dashed var(--line);
   border-radius: 6px;

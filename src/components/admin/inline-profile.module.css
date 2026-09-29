@@ -93,8 +93,8 @@
 .editImageGrid { align-items: start; }
 .imageTile { min-width: 0; display: grid; gap: 8px; margin: 0; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); overflow-wrap: anywhere; }
 .imageTile button { min-width: 0; max-width: 100%; padding: 7px 8px; white-space: normal; overflow-wrap: anywhere; }
-.imageReorderHandle[draggable="true"] { cursor: grab; user-select: none; }
-.imageReorderHandle[draggable="true"]:active { cursor: grabbing; }
+.imageReorderHandle { cursor: grab; touch-action: none; user-select: none; }
+.imageReorderHandle:active { cursor: grabbing; }
 .imageTileActions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 .imageTileActions button { min-width: min(40px, 100%); }
 .dragHint { flex: 1 1 100%; color: var(--muted); font-size: 12px; }

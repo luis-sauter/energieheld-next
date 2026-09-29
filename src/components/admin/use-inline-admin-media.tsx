@@ -11,6 +11,7 @@ import styles from "./admin-media.module.css";
 import inline from "./inline-profile.module.css";
 import { squareMediaFile } from "@/lib/square-media";
 import { DEFAULT_IMAGE_CROP, panImageCrop, type ImageCrop } from "@/lib/image-crop";
+import { moveImageId } from "@/lib/media-order";
 
 export function useInlineAdminMedia({ saveAction, media, rows, profileName, initials }: {
   saveAction: (form: FormData) => Promise<MediaState>;
@@ -94,13 +95,12 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
       setFeedback({ error: "Der vorhandene Ausschnitt konnte nicht geladen werden. Bitte wählen Sie eine neue Bilddatei." });
     } finally { end(); }
   }
-  async function mutate(intent: string, imageId?: string, alt?: string, imageIds?: string[]) {
+  async function mutate(intent: string, imageId?: string, alt?: string) {
     if (!begin("Änderung wird gespeichert …")) return;
     const form = new FormData();
     form.set("intent", intent);
     if (imageId) form.set("image_id", imageId);
     if (alt !== undefined) form.set("alt_text", alt);
-    imageIds?.forEach((id) => form.append("image_ids", id));
     try {
       const result = await saveAction(form);
       setFeedback(result);
@@ -109,9 +109,6 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
           setOptimisticImages({ base: mediaVersion, images: galleryImages.filter((image) => image.id !== imageId) });
           if (activeId === imageId) setActiveId(galleryImages.find((image) => image.id !== imageId)?.id ?? null);
         }
-        if (intent === "gallery-reorder" && imageIds)
-          setOptimisticImages({ base: mediaVersion,
-            images: imageIds.map((id) => galleryImages.find((image) => image.id === id)!).filter(Boolean) });
         router.refresh();
       }
     } catch {
@@ -166,13 +163,30 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
       </div>
     </div>
   );
-  function shiftImage(id: string, direction: -1 | 1) {
+  async function shiftImage(id: string, direction: -1 | 1) {
     const ids = galleryImages.map((image) => image.id);
     const index = ids.indexOf(id);
     const next = index + direction;
     if (index < 0 || next < 0 || next >= ids.length) return;
-    [ids[index], ids[next]] = [ids[next], ids[index]];
-    void mutate("gallery-reorder", undefined, undefined, ids);
+    if (!begin("Reihenfolge wird gespeichert …")) return;
+    const nextIds = moveImageId(ids, id, ids[next]);
+    const currentImages = galleryImages;
+    setOptimisticImages({ base: mediaVersion,
+      images: nextIds.map((imageId) => currentImages.find((image) => image.id === imageId)!).filter(Boolean) });
+    const form = new FormData();
+    form.set("intent", "gallery-reorder");
+    nextIds.forEach((imageId) => form.append("image_ids", imageId));
+    try {
+      const result = await saveAction(form);
+      setFeedback(result);
+      if (result.success) router.refresh();
+      else setOptimisticImages({ base: mediaVersion, images: currentImages });
+    } catch {
+      setOptimisticImages({ base: mediaVersion, images: currentImages });
+      setFeedback({ error: "Die Reihenfolge konnte nicht gespeichert werden. Bitte versuchen Sie es erneut." });
+    } finally {
+      end();
+    }
   }
   const galleryEditor = (
     <section className={`${inline.galleryEditor} gallery-editor`} aria-label="Bildergalerie bearbeiten">
@@ -189,9 +203,9 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
               {image.id.startsWith("preview-") && <p role="status">Galerie wird aktualisiert …</p>}
               <div className={inline.galleryToolRow} role="group" aria-label={`Bild ${index + 1} bearbeiten`}>
                 <button type="button" className="button" disabled={Boolean(busy) || image.id.startsWith("preview-") || index === 0}
-                  onClick={() => shiftImage(image.id, -1)}>← Zurück</button>
+                  onClick={() => void shiftImage(image.id, -1)}>← Zurück</button>
                 <button type="button" className="button" disabled={Boolean(busy) || image.id.startsWith("preview-") || index === galleryImages.length - 1}
-                  onClick={() => shiftImage(image.id, 1)}>Weiter →</button>
+                  onClick={() => void shiftImage(image.id, 1)}>Weiter →</button>
                 <button type="button" className="button" disabled={Boolean(busy) || image.id.startsWith("preview-")} onClick={() => void cropExisting(image)}>Ausschnitt / Fokus / Zoom</button>
                 <button type="button" className="button" disabled={Boolean(busy) || image.id.startsWith("preview-")} onClick={() => openUpload("gallery", image.id)}>Bild ersetzen</button>
                 <button type="button" className="button" disabled={Boolean(busy) || image.id.startsWith("preview-")} onClick={() => {
