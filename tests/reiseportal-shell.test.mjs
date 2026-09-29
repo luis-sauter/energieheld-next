@@ -132,9 +132,11 @@ test("account button and dropdown groups use server-provided access without perm
 
 test("homepage uses the supplied MP4 as the hero background with search above it", () => {
   const source = readFileSync(new URL("../src/app/(energieheld)/page.tsx", import.meta.url), "utf8");
+  const finder = readFileSync(new URL("../src/components/portal/travel-finder.tsx", import.meta.url), "utf8");
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   assert.ok(existsSync(new URL("../public/reiseportal/hero-loop.mp4", import.meta.url)));
-  assert.match(source, /<section className="travel-hero"[\s\S]*?<video autoPlay muted loop playsInline preload="metadata"[\s\S]*?<source src="\/reiseportal\/hero-loop\.mp4"[\s\S]*?<h1 id="travel-hero-title">Finde deinen passenden Urlaub<\/h1>[\s\S]*?<form className="travel-search"/);
+  assert.match(source, /<HomeTravelFinder listings=/);
+  assert.match(finder, /<section className="travel-hero"[\s\S]*?<video autoPlay muted loop playsInline preload="metadata"[\s\S]*?<source src="\/reiseportal\/hero-loop\.mp4"[\s\S]*?<h1 id="travel-hero-title">Finde deinen passenden Urlaub<\/h1>[\s\S]*?className="reise-finder"/);
   assert.match(css, /\.travel-hero > video\s*\{[^}]*object-fit: cover;[^}]*pointer-events: none;/);
   assert.doesNotMatch(source, /<Image src="\/reiseportal\/hero\.jpg"/);
 });

@@ -30,6 +30,8 @@ const { availableTravelFilters, activeTravelFilterLabels, readTravelFilterValues
   await import("../src/lib/reiseportal-filter-options.ts");
 const { filterTravelDiscovery } = await import("../src/lib/reiseportal-search.ts");
 const { filterListings } = await import("../src/lib/listings.ts");
+const { filterTravelListings, travelFacetCount, travelFilterUrl } =
+  await import("../src/lib/reiseportal-facets.ts");
 
 const listing = (slug, name, city, country, termKeys) => ({
   id: slug, slug, name, tagline: "", description: "", businessAreas: "", services: [],
@@ -70,9 +72,45 @@ test("public filter options need an assigned approved listing and use editorial 
   assert.deepEqual(options.audiences.map((item) => item.slug), ["paar", "familie"]);
   assert.deepEqual(options.accommodations.map((item) => item.slug), ["hotel", "pension"]);
   assert.deepEqual(options.features.map((item) => item.label), ["Sauna", "Pool"]);
+  assert.deepEqual(options.destinations.map((item) => item.slug), ["deutschland", "oesterreich"]);
   assert.ok(!options.audiences.some((item) => item.slug === "gruppe"));
   assert.ok(!options.features.some((item) => item.slug === "wlan"));
   assert.deepEqual(availableTravelFilters([], terms).features, []);
+});
+
+test("shared finder counts each real facet against all other selected dimensions", () => {
+  const empty = readTravelFilterValues({});
+  assert.equal(filterTravelListings(approved, empty).length, 4);
+  assert.equal(travelFacetCount(approved, empty, "destination", "deutschland"), 3);
+  assert.equal(travelFacetCount(approved, empty, "destination", "oesterreich"), 1);
+  assert.equal(travelFacetCount(approved, empty, "theme", "wellnessangebote"), 2);
+  const germany = { ...empty, destination: "deutschland" };
+  assert.equal(travelFacetCount(approved, germany, "theme", "wellnessangebote"), 1);
+  assert.equal(travelFacetCount(approved, germany, "theme", "natur-pur"), 1);
+  const narrowed = { ...germany, theme: "wellnessangebote", audience: "paar", accommodation: "hotel" };
+  assert.equal(filterTravelListings(approved, narrowed).length, 1);
+  assert.equal(travelFacetCount(approved, narrowed, "feature", "pool"), 0);
+  assert.equal(travelFacetCount(approved, narrowed, "feature", "sauna"), 1);
+  assert.equal(filterTravelListings(approved, { ...narrowed, query: "Alpen", location: "Berlin" }).length, 1);
+  assert.equal(filterTravelListings(approved, { ...narrowed, query: "unpassend" }).length, 0);
+});
+
+test("filtered ordering keeps Premium ahead of Basic and respects sorting inside each group", () => {
+  const items = approved.map((item, index) => ({ ...item, directoryPackage: index === 1 || index === 2 ? "premium" : "basic" }));
+  const values = { ...readTravelFilterValues({}), sort: "name" };
+  assert.deepEqual(filterTravelListings(items, values).map((item) => item.slug),
+    ["city-pension", "family-hotel", "alpen-spa", "demo"]);
+  assert.deepEqual(filterTravelListings(items, { ...values, destination: "deutschland" }).map((item) => item.slug),
+    ["city-pension", "alpen-spa", "demo"]);
+});
+
+test("existing single-value URL parameters round-trip and reset together", () => {
+  const values = readTravelFilterValues({ ziel: "deutschland", thema: "wellnessangebote", zielgruppe: "paar",
+    unterkunftstyp: "hotel", besonderheit: "sauna", q: "Alpen Spa", ort: "Berlin", sort: "city" });
+  const url = travelFilterUrl(values);
+  assert.equal(url, "/unterkuenfte-a-z?ziel=deutschland&thema=wellnessangebote&zielgruppe=paar&unterkunftstyp=hotel&besonderheit=sauna&q=Alpen+Spa&ort=Berlin&sort=city");
+  assert.deepEqual(readTravelFilterValues(Object.fromEntries(new URL(url, "https://example.test").searchParams)), values);
+  assert.equal(travelFilterUrl(readTravelFilterValues({})), "/unterkuenfte-a-z");
 });
 
 test("every taxonomy dimension filters alone and combinations intersect with q, ort and ziel", () => {

@@ -3128,38 +3128,58 @@ h6 {
   font-size: clamp(1rem, 1.7vw, 1.23rem);
   margin-bottom: 32px;
 }
-.travel-search {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: end;
-  gap: 12px;
+.travel-hero:has(.reise-finder) { min-height: 620px; }
+.travel-hero:has(.reise-finder) .travel-hero-content { transform: none; }
+.reise-finder {
   width: 100%;
-  padding: 18px;
+  padding: clamp(16px, 2.5vw, 28px);
   border-radius: var(--radius);
   background: var(--white);
-  box-shadow: 0 15px 45px rgba(0, 0, 0, .16);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .2);
+  color: var(--text);
 }
-.travel-search label {
-  min-width: 0;
-  font-size: .75rem;
-  font-weight: 700;
-  color: var(--brand-primary);
+.reise-finder-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  align-items: end;
 }
-.travel-search input,
-.travel-search select {
+.reise-finder label { min-width: 0; font-size: .95rem; font-weight: 700; color: var(--brand-primary); }
+.reise-finder input, .reise-finder select, .travel-results-heading select {
   display: block;
   width: 100%;
   min-width: 0;
-  min-height: 46px;
-  margin-top: 6px;
-  padding: 9px 10px;
+  min-height: 54px;
+  margin-top: 8px;
+  padding: 11px 12px;
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: 7px;
   background: var(--white);
   color: var(--text);
-  font-size: .85rem;
+  font: inherit;
 }
-.travel-search .button { min-height: 46px; white-space: nowrap; }
+.reise-finder-submit { min-height: 54px; width: 100%; font-size: 1rem; }
+.reise-finder-summary { margin-top: 15px; font-weight: 700; color: var(--text); }
+.reise-finder-active { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.reise-finder-chip, .reise-finder-reset {
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--brand-surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.reise-finder-reset { background: var(--white); text-decoration: underline; }
+.travel-directory-content { padding-block: 28px 70px; }
+.travel-directory-content .breadcrumbs { margin-bottom: 20px; }
+.travel-results { scroll-margin-top: 24px; }
+.travel-results-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; }
+.travel-results-tools { display: flex; align-items: end; gap: 10px; }
+.travel-results-heading label { min-width: 180px; font-size: .9rem; font-weight: 700; color: var(--brand-primary); }
+.travel-results-heading select { min-height: 46px; }
+.travel-results-tools .reise-finder-reset { min-height: 46px; }
 .travel-quicklinks {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
@@ -3318,17 +3338,18 @@ h6 {
 .discovery-intro { max-width: 760px; font-size: 1.08rem; }
 .discovery-detail .accommodation-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 1050px) {
-  .travel-search { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .travel-search .button { grid-column: 1/-1; }
+  .reise-finder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .discovery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .travel-quicklinks { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .discovery-detail .accommodation-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 700px) {
+  .reise-finder-grid { grid-template-columns: minmax(0, 1fr); }
+  .travel-results-heading { align-items: stretch; flex-direction: column; }
+  .travel-results-tools { align-items: stretch; flex-direction: column; }
+  .travel-results-heading label { width: 100%; }
   .travel-hero { min-height: 0; }
   .travel-hero-content { padding-block: 56px 36px; }
-  .travel-search { grid-template-columns: 1fr; padding: 14px; }
-  .travel-search .button { grid-column: auto; }
   .travel-quicklinks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .travel-quicklinks a { min-height: 84px; }
   .motto-intro { grid-template-columns: 1fr; gap: 22px; }

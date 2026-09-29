@@ -4,7 +4,10 @@ import { AdvertisingRail } from "@/components/advertising/advertising-rail";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
 import { DiscoveryCard } from "@/components/portal/reise-overview";
 import { destinations, travelThemes } from "@/data/reiseportal-discovery";
-import { loadReiseportalFeatured } from "@/lib/reiseportal-directory";
+import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
+import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
+import { HomeTravelFinder } from "@/components/portal/travel-finder";
+import { availableTravelFilters } from "@/lib/reiseportal-filter-options";
 import { loadPublicAds } from "@/lib/public-ads";
 import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 
@@ -15,57 +18,26 @@ const featuredStays = ["bayerischer-wald", "hoeflehner", "pension-sonnenhof", "s
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [ads, sidebarOrder, featured] = await Promise.all([
+  const [ads, sidebarOrder, directory, terms] = await Promise.all([
     loadPublicAds(undefined, "homepage"),
     loadPublicSidebarOrder(),
-    loadReiseportalFeatured(featuredStays),
+    loadReiseportalDirectory(),
+    loadPublicTravelTerms(),
   ]);
+  const bySlug = new Map(directory.database.map((listing) => [listing.slug, listing]));
+  const featured = featuredStays.flatMap((slug) => {
+    const listing = bySlug.get(slug);
+    return listing ? [listing] : [];
+  });
+  const searchableThemes = new Set(availableTravelFilters(directory.database, terms).themes.map((entry) => entry.slug));
 
   return <main id="hauptinhalt" className="editorial-home discovery-home">
-    <section className="travel-hero" aria-labelledby="travel-hero-title">
-      <video autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1}>
-        <source src="/reiseportal/hero-loop.mp4" type="video/mp4" />
-      </video>
-      <div className="travel-hero-content container">
-        <p className="eyebrow">DAS Reiseportal</p>
-        <h1 id="travel-hero-title">Finde deinen passenden Urlaub</h1>
-        <p>Sag uns, wie du reisen möchtest – wir zeigen dir passende Orte, Unterkünfte und Erlebnisse.</p>
-        <form className="travel-search" action="/unterkuenfte-a-z" method="get" aria-label="Reise suchen">
-          <label>Wohin?
-            <select name="ziel" defaultValue="">
-              <option value="">Alle Reiseziele</option>
-              {destinations.map((entry) => <option key={entry.slug} value={entry.slug}>{entry.title}</option>)}
-            </select>
-          </label>
-          <label>Reiseart
-            <select name="thema" defaultValue="">
-              <option value="">Alle Reisearten</option>
-              {travelThemes.map((entry) =>
-                <option key={entry.slug} value={entry.slug}>{entry.title}</option>)}
-            </select>
-          </label>
-          <label>Unterkunft
-            <input name="q" type="search" placeholder="Name der Unterkunft" />
-          </label>
-          <label>Ort oder Postleitzahl
-            <input name="ort" type="search" placeholder="Ort oder PLZ" />
-          </label>
-          <label>Sortieren
-            <select name="sort" defaultValue="">
-              <option value="">Passende Ergebnisse</option>
-              <option value="name">Name A–Z</option>
-              <option value="city">Ort A–Z</option>
-            </select>
-          </label>
-          <button className="button button-primary" type="submit">Reise finden →</button>
-        </form>
-      </div>
-    </section>
+    <HomeTravelFinder listings={[...directory.preview, ...directory.database]} terms={terms} error={directory.error} />
 
     <nav className="container travel-quicklinks" aria-label="Schnell zu Reisethemen">
       {quickThemes.map((slug) => {
         const entry = travelThemes.find((theme) => theme.slug === slug);
-        return entry && <Link key={entry.slug} href={`/mottoreisen/${entry.slug}`}>
+        return entry && searchableThemes.has(entry.slug) && <Link key={entry.slug} href={`/unterkuenfte-a-z?thema=${entry.slug}`}>
           <span className="travel-quicklink-image" style={{ backgroundImage: `url(${entry.image})` }} aria-hidden="true" />
           <span>{entry.title}</span>
         </Link>;
