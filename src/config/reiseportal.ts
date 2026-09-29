@@ -4,7 +4,7 @@ export const reiseportal: BrandConfig = {
   id: "reiseportal",
   name: "DAS Reiseportal",
   tagline: "Neue Lieblingsorte entdecken.",
-  colors: { primary: "#29B6E0", accent: "#C3421C", surface: "#FFFDFC" },
+  colors: { primary: "#1E5A7A", accent: "#FF8A4C", surface: "#FAF7F2" },
   providerLabel: "Unterkünfte",
   searchLabel: "Unterkunft entdecken",
   cta: { label: "Unterkünfte A–Z", href: "/unterkuenfte-a-z" },
