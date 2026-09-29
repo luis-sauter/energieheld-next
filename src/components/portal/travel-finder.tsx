@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import type { Listing } from "@/types/portal";
 import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, type TravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { filterTravelListings, travelFacetCount, travelFilterParams, travelFilterUrl, type TravelFacet } from "@/lib/reiseportal-facets";
@@ -17,7 +16,6 @@ export function TravelFinder({ mode, listings, options, values, onChange, error 
   onChange: (values: TravelFilterValues) => void;
   error?: string | null;
 }) {
-  const router = useRouter();
   const count = filterTravelListings(listings, values).length;
   const update = (key: keyof TravelFilterValues, value: string) => onChange({ ...values, [key]: value });
   const facets: { key: TravelFacet; label: string; all: string; entries: FacetOptions }[] = [
@@ -47,7 +45,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error 
       <form className="reise-finder" role="search" aria-label="Reisefinder" onSubmit={(event) => {
         event.preventDefault();
         if (count === 0 || error) return;
-        if (mode === "home") router.push(travelFilterUrl(values));
+        if (mode === "home") window.location.assign(travelFilterUrl(values));
         else document.getElementById("unterkunft-ergebnisse")?.scrollIntoView({ behavior: "smooth" });
       }}>
         <div className="reise-finder-grid">
