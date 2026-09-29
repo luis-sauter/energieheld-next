@@ -175,7 +175,7 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
     void mutate("gallery-reorder", undefined, undefined, ids);
   }
   const galleryEditor = (
-    <section className={inline.galleryEditor} aria-label="Bildergalerie bearbeiten">
+    <section className={`${inline.galleryEditor} gallery-editor`} aria-label="Bildergalerie bearbeiten">
       {galleryImages.length ? (
         <ImageGallery
           images={galleryImages}

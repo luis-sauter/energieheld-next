@@ -113,6 +113,8 @@ test("editor text follows live section alignment and paired columns stack on mob
   assert.match(source("src/components/admin/inline-profile.module.css"), /\.adjacentPreview \{[^}]*grid-template-columns: repeat\(100, minmax\(0, 1fr\)\)/);
   assert.match(source("src/components/admin/inline-profile.module.css"), /@media \(max-width: 640px\)[\s\S]*\.adjacentPreviewText, \.adjacentPreviewImage \{ grid-column: 1 \/ -1 !important/);
   assert.match(profileCss, /\.profile-header-media \.gallery-main \{[^}]*height: 100%; aspect-ratio: auto/);
+  assert.match(profileCss, /\.profile-header-media \.gallery-editor \.gallery-main \{[^}]*height: auto; min-height: clamp\(320px, 33vw, 480px\); aspect-ratio: 16 \/ 10/);
+  assert.match(profileCss, /@media \(max-width: 820px\)[\s\S]*\.profile-header-media \.gallery-editor \.gallery-main \{ min-height: 240px; aspect-ratio: 16 \/ 9/);
   assert.match(profileCss, /\.contact-card \{[^}]*height: 100%/);
   assert.match(profileCss, /\.contact-logo \{ width: 88px; height: 88px; aspect-ratio: 1/);
 });
