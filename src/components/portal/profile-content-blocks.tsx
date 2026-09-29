@@ -74,11 +74,23 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
     flush();
     const body = item.kind === "about" ? listing.description : listing.businessAreas;
     if (item.hidden || !body) continue;
-    sections.push(<section key={item.key} className="detail-section profile-content-block profile-editorial-section"
+    const section = <section key={item.key} className="detail-section profile-content-block profile-editorial-section"
       data-spacing-top={item.layout.spacing_top} data-spacing-bottom={item.layout.spacing_bottom}
-      style={{ width: `${item.layout.width_percent}%`, marginLeft: `${item.layout.offset_percent}%`, textAlign: item.layout.text_align }}>
+      style={{ width: item.imageBlock ? "100%" : `${item.layout.width_percent}%`,
+        marginLeft: item.imageBlock ? 0 : `${item.layout.offset_percent}%`, textAlign: item.layout.text_align }}>
       <h2>{item.heading}</h2><p style={item.kind === "business" ? { whiteSpace: "pre-wrap" } : undefined}>{body}</p>
-    </section>);
+    </section>;
+    if (!item.imageBlock?.images?.length) { sections.push(section); continue; }
+    const image = item.imageBlock;
+    const frame = item.pairLayout ?? normalizeTextBlockLayout(undefined);
+    sections.push(<div key={item.key} className="profile-content-block"
+      data-spacing-top={frame.spacing_top} data-spacing-bottom={frame.spacing_bottom}
+      style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
+      <div className={styles.contentRow}>
+      <div className={styles.contentColumn} style={{ gridColumn: `${item.layout.offset_percent + 1} / span ${item.layout.width_percent}` }}>{section}</div>
+      <div className={styles.contentColumn} style={{ gridColumn: contentColumn(image) }}><BlockImageGrid block={image} /></div>
+      </div>
+    </div>);
   }
   flush();
   return <>{sections}</>;

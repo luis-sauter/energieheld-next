@@ -24,7 +24,8 @@ export type ProfileContentBlock = {
   slot: HeadingSlot | null;
   sort_order: number;
   content: { text: string; layout?: Partial<TextBlockLayout>; hidden?: boolean; order?: string[];
-    hidden_blocks?: string[]; deleted_sections?: string[]; pair_layouts?: Record<string, Partial<TextBlockLayout>> };
+    hidden_blocks?: string[]; deleted_sections?: string[]; pair_layouts?: Record<string, Partial<TextBlockLayout>>;
+    adjacent_image_id?: string; pending_image_id?: string };
   config?: Partial<ImageGridConfig & TextBlockLayout>;
   images?: ProfileBlockImage[];
   pair_layout?: Partial<TextBlockLayout>;
@@ -59,6 +60,8 @@ export type EditorialItem = {
   hidden: boolean;
   layout: TextBlockLayout;
   block?: ProfileContentBlock;
+  imageBlock?: ProfileContentBlock;
+  pairLayout?: TextBlockLayout;
 };
 
 export function editorialItems(blocks: ProfileContentBlock[], profileName: string): EditorialItem[] {
@@ -78,7 +81,19 @@ export function editorialItems(blocks: ProfileContentBlock[], profileName: strin
   ]);
   for (const key of deleted) map.delete(key);
   const order = editorialOrder(blocks);
-  return order.map((key) => map.get(key)).filter((item): item is EditorialItem => Boolean(item));
+  const paired = new Set<string>();
+  for (const [key, section] of [[ABOUT_SECTION, about], [BUSINESS_SECTION, business]] as const) {
+    const imageId = section?.content.adjacent_image_id;
+    const image = normal.find((block) => block.id === imageId && block.type === "image_grid");
+    const at = order.indexOf(key);
+    if (image && at >= 0 && Math.abs(order.indexOf(image.id) - at) === 1 && map.has(key)) {
+      map.get(key)!.imageBlock = image;
+      map.get(key)!.pairLayout = normalizeTextBlockLayout(about?.content.pair_layouts?.[key]);
+      paired.add(image.id);
+    }
+  }
+  return order.filter((key) => !paired.has(key)).map((key) => map.get(key))
+    .filter((item): item is EditorialItem => Boolean(item));
 }
 
 export function editorialOrder(blocks: ProfileContentBlock[]): string[] {
@@ -142,7 +157,8 @@ export async function loadPublicProfileContent(client: SupabaseClient, profileId
         for (const block of imageBlocks) block.images = (rows ?? [])
           .filter((row) => row.block_id === block.id &&
             typeof row.storage_path === "string" &&
-            row.storage_path.startsWith(`profiles/${profileId}/blocks/${block.id}/`) &&
+            /^profiles\/[0-9a-f-]{36}\/blocks\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp)$/.test(row.storage_path) &&
+            row.storage_path.startsWith(`profiles/${profileId}/blocks/`) &&
             urls.has(row.storage_path))
           .map((row) => ({
             id: row.id, block_id: row.block_id, alt_text: row.alt_text,

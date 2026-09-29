@@ -10,6 +10,7 @@ registerHooks({ resolve(specifier, context, next) {
 } });
 const { contentBlockRows, contentColumn } = await import("../src/lib/content-block-rows.ts");
 const { adjacentImageLayout } = await import("../src/lib/adjacent-image-layout.ts");
+const { editorialItems, ABOUT_SECTION, BUSINESS_SECTION } = await import("../src/lib/profile-content.ts");
 
 const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const block = (id, type, width, offset) => ({ id, type, config: {
@@ -45,6 +46,53 @@ test("image beside text supports both sides and all three width ratios", () => {
   }
   assert.equal(adjacentImageLayout("above", 50), null);
   assert.equal(adjacentImageLayout("left", 30), null);
+});
+
+test("both structured editorial sections attach their own adjacent image for every side and ratio", () => {
+  for (const share of [25, 50, 75]) for (const side of ["left", "right"]) {
+    const layout = adjacentImageLayout(side, share);
+    const aboutImage = { ...block("about-image", "image_grid", layout.imageWidth, layout.imageOffset),
+      slot: null, sort_order: 1 };
+    const businessImage = { ...block("business-image", "image_grid", layout.imageWidth, layout.imageOffset),
+      slot: null, sort_order: 2 };
+    const about = { id: "about-slot", slot: "about_heading", type: "heading", content: {
+      text: "Über das Profil", adjacent_image_id: aboutImage.id,
+      layout: { width_percent: layout.textWidth, offset_percent: layout.textOffset },
+      pair_layouts: { [ABOUT_SECTION]: { width_percent: 75, offset_percent: 25 },
+        [BUSINESS_SECTION]: { width_percent: 50, offset_percent: 0 } },
+      order: [ABOUT_SECTION, aboutImage.id, BUSINESS_SECTION, businessImage.id],
+    } };
+    const business = { id: "business-slot", slot: "business_areas_heading", type: "heading", content: {
+      text: "Tätigkeitsbereiche", adjacent_image_id: businessImage.id,
+      layout: { width_percent: layout.textWidth, offset_percent: layout.textOffset },
+    } };
+    const items = editorialItems([about, business, aboutImage, businessImage], "Profil");
+    assert.equal(items.length, 2);
+    assert.equal(items[0].imageBlock.id, aboutImage.id);
+    assert.equal(items[1].imageBlock.id, businessImage.id);
+    assert.equal(items[0].layout.width_percent, 100 - share);
+    assert.equal(items[0].layout.offset_percent, layout.textOffset);
+    assert.equal(items[0].pairLayout.width_percent, 75);
+    assert.equal(items[1].pairLayout.width_percent, 50);
+  }
+});
+
+test("shared image migration preserves admin boundaries and independent copied image rows", () => {
+  const migration = source("supabase/migrations/20260929120000_share_profile_block_images.sql");
+  assert.match(migration, /DROP CONSTRAINT profile_content_block_images_storage_path_key/);
+  assert.match(migration, /LANGUAGE plpgsql SECURITY INVOKER/);
+  assert.match(migration, /original\.type = 'image_grid'/);
+  assert.match(migration, /VALUES \(new_id,source_image\.storage_path,source_image\.alt_text,source_image\.sort_order\)/);
+  assert.match(migration, /focus_x = source_image\.focus_x, focus_y = source_image\.focus_y/);
+  assert.match(migration, /zoom = source_image\.zoom, caption = source_image\.caption/);
+  assert.match(migration, /b\.profile_id = parent\.profile_id/);
+  assert.match(migration, /p\.status = 'approved'/);
+  assert.match(migration, /NOT EXISTS \(SELECT 1 FROM public\.profile_content_block_images i WHERE i\.storage_path = name\)/);
+  assert.doesNotMatch(migration, /storage\.objects\s*\(|service_role|GRANT .*anon|INSERT INTO storage\.objects/i);
+  const images = source("src/lib/admin-block-images.ts");
+  assert.match(images, /references\.count !== 0\) return/);
+  const content = source("src/lib/admin-profile-content.ts");
+  assert.match(content, /if \(refs\.count === 0\) removable\.push\(path\)/);
 });
 
 test("editor text follows live section alignment and paired columns stack on mobile", () => {

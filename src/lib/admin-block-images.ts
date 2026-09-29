@@ -33,6 +33,9 @@ export async function changeAdminBlockImages(
   const storage = client.storage.from(MEDIA_BUCKET);
   const cleanup = async (path: string) => {
     try {
+      const references = await client.from("profile_content_block_images")
+        .select("id", { count: "exact", head: true }).eq("storage_path", path);
+      if (references.error || references.count !== 0) return;
       const removed = await storage.remove([path]);
       if (removed.error) console.error("Block image cleanup failed.");
     } catch { console.error("Block image cleanup failed."); }

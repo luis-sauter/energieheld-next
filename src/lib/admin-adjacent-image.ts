@@ -4,7 +4,7 @@ import { adjacentImageLayout } from "./adjacent-image-layout";
 import { normalizeImageGridConfig } from "./image-grid-layout";
 import { normalizeTextBlockLayout } from "./content-block-layout";
 import { ABOUT_SECTION, BUSINESS_SECTION, editorialOrder, type ProfileContentBlock } from "./profile-content";
-import { changeEditorialOrder } from "./editorial-section-actions";
+import { changeEditorialOrder, ensureSection, sectionSlot } from "./editorial-section-actions";
 
 type Result = { error?: string; success?: string; blockId?: string };
 const failed = "Text und Bild konnten nicht angeordnet werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.";
@@ -15,6 +15,96 @@ export async function changeAdminAdjacentImage(client: SupabaseClient, profileId
   const imageId = form.get("image_block_id");
   const layout = adjacentImageLayout(form.get("image_side"), Number(form.get("image_width")));
   if (!layout) return { error: "Bitte wählen Sie Bildposition und Breite (25, 50 oder 75 %)." };
+  const section = sectionSlot(textId);
+  if (section) {
+    const metadata = await ensureSection(client, profileId, section);
+    if (!metadata) return { error: failed };
+    const read = await client.from("profile_content_blocks")
+      .select("id,profile_id,type,slot,sort_order,content,config")
+      .eq("profile_id", profileId).order("sort_order").order("id");
+    if (read.error) return { error: failed };
+    const blocks = (read.data ?? []) as ProfileContentBlock[];
+    const order = editorialOrder(blocks);
+    if (!order.includes(textId as string)) return { error: failed };
+    let image = blocks.find((block) => block.id === imageId && block.slot === null && block.type === "image_grid");
+    if (intent === "pair-image") {
+      if (metadata.content.adjacent_image_id || metadata.content.pending_image_id)
+        return { error: "Neben diesem Abschnitt steht bereits ein Bild." };
+      const free = blocks.filter((block) => block.slot === null);
+      const inserted = await client.rpc("insert_profile_content_block", {
+        p_profile_id: profileId, p_type: "image_grid", p_text: "",
+        p_before_block_id: free.find((block) => order.indexOf(block.id) > order.indexOf(textId as string))?.id ?? null,
+      });
+      if (inserted.error || !isProfileId(inserted.data)) return { error: failed };
+      image = { id: inserted.data, profile_id: profileId, type: "image_grid", slot: null,
+        sort_order: 0, content: { text: "" }, config: { columns: 1, width_percent: 100, offset_percent: 0 } };
+    } else if (intent !== "pair-layout" || !isProfileId(imageId) || !image ||
+      Math.abs(order.indexOf(image.id) - order.indexOf(textId as string)) !== 1 ||
+      metadata.content.adjacent_image_id !== image.id && metadata.content.pending_image_id !== image.id) {
+      return { error: "Der Bildblock gehört nicht zu diesem Abschnitt." };
+    }
+    if (!image) return { error: failed };
+    const nextOrder = order.filter((key) => key !== image.id);
+    const at = nextOrder.indexOf(textId as string);
+    nextOrder.splice(layout.side === "left" ? at : at + 1, 0, image.id);
+    const reorder = new FormData();
+    for (const key of nextOrder) reorder.append("block_ids", key);
+    if (intent === "pair-image") {
+      const saved = await changeEditorialOrder(client, profileId, "reorder", reorder);
+      if (saved.error) {
+        await client.from("profile_content_blocks").delete().eq("profile_id", profileId).eq("id", image.id).is("slot", null);
+        return { error: failed };
+      }
+      const current = await ensureSection(client, profileId, section);
+      if (!current) return { error: failed };
+      const pending = await client.from("profile_content_blocks")
+        .update({ content: { ...current.content, pending_image_id: image.id } })
+        .eq("profile_id", profileId).eq("id", current.id).eq("slot", section)
+        .select("id").maybeSingle();
+      if (pending.error || pending.data?.id !== current.id) {
+        await client.from("profile_content_blocks").delete()
+          .eq("profile_id", profileId).eq("id", image.id).is("slot", null);
+        return { error: failed };
+      }
+      return { success: "Bildplatz angelegt.", blockId: image.id };
+    }
+    const oldConfig = image.config;
+    const configured = await client.from("profile_content_blocks")
+      .update({ config: { ...normalizeImageGridConfig(oldConfig), width_percent: layout.imageWidth,
+        offset_percent: layout.imageOffset } })
+      .eq("profile_id", profileId).eq("id", image.id).is("slot", null).select("id").maybeSingle();
+    if (configured.error || configured.data?.id !== image.id) return { error: failed };
+    const old = normalizeTextBlockLayout(metadata.content.layout);
+    const frame = await ensureSection(client, profileId, "about_heading");
+    if (!frame) return { error: failed };
+    const firstPair = !metadata.content.adjacent_image_id;
+    if (firstPair) {
+      const framed = await client.from("profile_content_blocks").update({ content: {
+        ...frame.content, pair_layouts: { ...frame.content.pair_layouts, [textId as string]: old },
+      } }).eq("profile_id", profileId).eq("id", frame.id).eq("slot", "about_heading")
+        .select("id").maybeSingle();
+      if (framed.error || framed.data?.id !== frame.id) return { error: failed };
+    }
+    const nextContent = { ...metadata.content };
+    delete nextContent.pending_image_id;
+    const updated = await client.from("profile_content_blocks")
+      .update({ content: { ...nextContent,
+        ...(firstPair && section === "about_heading"
+          ? { pair_layouts: { ...metadata.content.pair_layouts, [textId as string]: old } } : {}),
+        adjacent_image_id: image.id,
+        layout: { ...old, width_percent: layout.textWidth, offset_percent: layout.textOffset } } })
+      .eq("profile_id", profileId).eq("id", metadata.id).eq("slot", section).select("id").maybeSingle();
+    if (updated.error || updated.data?.id !== metadata.id) {
+      if (firstPair) await client.from("profile_content_blocks").update({ content: frame.content })
+        .eq("profile_id", profileId).eq("id", frame.id).eq("slot", "about_heading");
+      await client.from("profile_content_blocks").update({ config: oldConfig })
+        .eq("profile_id", profileId).eq("id", image.id).is("slot", null);
+      return { error: failed };
+    }
+    const saved = await changeEditorialOrder(client, profileId, "reorder", reorder);
+    if (saved.error) return { error: failed };
+    return { success: "Abschnitt und Bild angeordnet.", blockId: image.id };
+  }
   if (!isProfileId(textId) || intent === "pair-layout" && !isProfileId(imageId))
     return { error: "Der Text- oder Bildblock wurde nicht gefunden." };
   const read = await client.from("profile_content_blocks")

@@ -105,6 +105,6 @@ export async function changeEditorialPair(client: SupabaseClient, profileId: str
     return { error: failed };
   }
   return { success: intent === "pair-toggle" ? "Die Sichtbarkeit des Paars wurde geändert."
-    : intent === "pair-duplicate" ? "Text und Bildplatz wurden dupliziert. Das neue Bild kann jetzt ergänzt werden."
+    : intent === "pair-duplicate" ? "Text und Bild wurden mit derselben Bilddatei dupliziert."
       : intent === "pair-move" ? "Das Paar wurde verschoben." : "Das Paar-Layout wurde gespeichert." };
 }

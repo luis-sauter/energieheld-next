@@ -94,6 +94,14 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
     const layout = adjacentImageLayout(pairPreview.side, pairPreview.share);
     const image = blocks.find((block) => block.id === pairPreview.imageId);
     const text = blocks.find((block) => block.id === pairPreview.textId);
+    const section = items.find((item) => item.key === pairPreview.textId && item.kind !== "block");
+    if (layout && image && section?.imageBlock?.id === image.id &&
+      normalizeBlockLayout(image.config).width_percent === layout.imageWidth &&
+      normalizeBlockLayout(image.config).offset_percent === layout.imageOffset &&
+      section.layout.width_percent === layout.textWidth && section.layout.offset_percent === layout.textOffset) {
+      const frame = window.requestAnimationFrame(() => setPairPreview(null));
+      return () => window.cancelAnimationFrame(frame);
+    }
     if (layout && image && text && normalizeBlockLayout(image.config).width_percent === layout.imageWidth &&
       normalizeBlockLayout(image.config).offset_percent === layout.imageOffset &&
       normalizeBlockLayout(text.config).width_percent === layout.textWidth &&
@@ -302,10 +310,16 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
             <button className="button" disabled={busy || history.busy}>{busy ? "Wird gespeichert …" : "Block speichern"}</button>
           </div>
         </form>}
-        {block.type === "text" && imagesAvailable && !paired && <div className={styles.adjacentAction}>
-          {adjacentDraft?.textId !== block.id && <button type="button" className="button" disabled={busy || history.busy}
-            onClick={() => { clearAdjacentDraft(); setAdjacentDraft({ textId: block.id, side: "right", share: 50 }); }}>Bild daneben hinzufügen</button>}
-          {adjacentDraft?.textId === block.id && <form className={styles.adjacentSetup} onSubmit={createAdjacentImage}>
+        {block.type === "text" && renderAdjacentAction(block.id, block.content.text, paired)}
+      </InlineBlockLayout>
+    </div>;
+  }
+
+  function renderAdjacentAction(textId: string, text: string, paired = false) {
+    return imagesAvailable && !paired && <div className={styles.adjacentAction}>
+          {adjacentDraft?.textId !== textId && <button type="button" className="button" disabled={busy || history.busy}
+            onClick={() => { clearAdjacentDraft(); setAdjacentDraft({ textId, side: "right", share: 50 }); }}>Bild daneben hinzufügen</button>}
+          {adjacentDraft?.textId === textId && <form className={styles.adjacentSetup} onSubmit={createAdjacentImage}>
             <strong>Bild neben diesem Text</strong>
             <label>Bild auswählen
               <input type="file" accept="image/jpeg,image/png,image/webp" required disabled={busy}
@@ -332,16 +346,14 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
                 {share} / {100 - share}
               </button>)}
             </div>
-            <AdjacentImagePreview text={block.content.text} side={adjacentDraft.side}
+            <AdjacentImagePreview text={text} side={adjacentDraft.side}
               share={adjacentDraft.share} previewUrl={adjacentDraft.previewUrl} />
             <div className={styles.blockActions}>
               <button className="button button-primary" disabled={busy || !adjacentDraft.file}>{busy ? "Wird hinzugefügt …" : "Bild und Text anordnen"}</button>
               <button type="button" className="button" disabled={busy} onClick={clearAdjacentDraft}>Abbrechen</button>
             </div>
           </form>}
-        </div>}
-      </InlineBlockLayout>
-    </div>;
+        </div>;
   }
 
   function renderNormalRun(runBlocks: ProfileContentBlock[]) {
@@ -441,13 +453,57 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
     if (item.kind === "block") { if (item.block) pendingBlocks.push(item.block); continue; }
     flush();
     const synthetic: ProfileContentBlock = { id: item.key, profile_id: listing.id, type: "heading", slot: null,
-      sort_order: 0, content: { text: item.heading }, config: item.layout };
+      sort_order: 0, content: { text: item.heading }, config: item.imageBlock ? item.pairLayout : item.layout };
     const index = items.indexOf(item);
+    const specialImage = item.imageBlock;
+    const preview = specialImage && pairPreview?.textId === item.key && pairPreview.imageId === specialImage.id
+      ? adjacentImageLayout(pairPreview.side, pairPreview.share) : null;
+    const imageLayout = specialImage ? normalizeBlockLayout(specialImage.config) : null;
+    const textLayout = preview ? { ...item.layout, width_percent: preview.textWidth, offset_percent: preview.textOffset } : item.layout;
+    const shownImage = specialImage && preview ? { ...specialImage, config: { ...specialImage.config,
+      width_percent: preview.imageWidth, offset_percent: preview.imageOffset } } : specialImage;
+    const side = imageLayout && imageLayout.offset_percent < item.layout.offset_percent ? "left" : "right";
+    const share = imageLayout && ([25, 50, 75] as number[]).includes(imageLayout.width_percent)
+      ? imageLayout.width_percent as ImageShare : 50;
+    async function saveSpecial(intent: string, blockId: string, values: Record<string, string> = {}) {
+      if (intent !== "layout" || !specialImage) return saveBlock(intent, blockId, values);
+      const form = formFor("section-pair-frame", blockId);
+      for (const [key, value] of Object.entries(values)) form.set(key, value);
+      return run(form);
+    }
     editorial.push(<InlineBlockLayout key={item.key} block={synthetic} sectionHidden={item.hidden}
       sectionLabel={item.kind === "about" ? "Beschreibung" : "Tätigkeitsbereiche"}
-      busy={busy || history.busy} first={index === 0} last={index === items.length - 1} save={saveBlock}>
+      busy={busy || history.busy} first={index === 0} last={index === items.length - 1} save={saveSpecial}>
       {item.hidden && <p role="status">Dieser Abschnitt ist öffentlich ausgeblendet.</p>}
-      {renderSpecial(item)}
+      {specialImage && <div className={styles.pairControls} aria-label="Abschnitt und Bild anordnen">
+        <strong>Text + Bild nebeneinander</strong>
+        <div className={styles.adjacentOptions} role="group" aria-label="Bildposition">
+          {(["left", "right"] as const).map((choice) => <button key={choice} type="button" className="button"
+            aria-pressed={(preview?.side ?? side) === choice} disabled={busy || history.busy}
+            onClick={() => void setPairLayout(item.key, specialImage.id, choice, (preview?.imageWidth ?? share) as ImageShare)}>
+            Bild {choice === "left" ? "links" : "rechts"}</button>)}
+        </div>
+        <div className={styles.adjacentOptions} role="group" aria-label="Breitenverhältnis">
+          {([25, 50, 75] as const).map((choice) => <button key={choice} type="button" className="button"
+            aria-pressed={(preview?.imageWidth ?? imageLayout?.width_percent) === choice} disabled={busy || history.busy}
+            onClick={() => void setPairLayout(item.key, specialImage.id, (preview?.side ?? side) as ImageSide, choice)}>
+            {choice} % Bild / {100 - choice} % Text</button>)}
+        </div>
+      </div>}
+      {shownImage ? <div className={rowStyles.contentRow}>
+        <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
+          style={{ gridColumn: `${textLayout.offset_percent + 1} / span ${textLayout.width_percent}` }}>
+          {renderSpecial(item)}
+        </div>
+        <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
+          style={{ gridColumn: contentColumn(shownImage) }}>
+          <InlineImageGridEditor block={shownImage} saveAction={saveImage} />
+          <button type="button" className="button" disabled={busy || history.busy}
+            onClick={() => { if (window.confirm("Bild neben diesem Abschnitt wirklich entfernen?"))
+              void saveBlock("delete", shownImage.id); }}>Bild daneben entfernen</button>
+        </div>
+      </div> : <>{renderSpecial(item)}{renderAdjacentAction(item.key,
+        item.kind === "about" ? listing.description ?? "" : listing.businessAreas ?? "")}</>}
     </InlineBlockLayout>);
   }
   flush();

@@ -120,8 +120,21 @@ export async function changeAdminProfileContent(
   const blockId = form.get("block_id");
   if (intent === "move")
     return { access: "admin", ...await changeEditorialOrder(client, id, intent, form) };
-  if (sectionSlot(blockId))
+  if (sectionSlot(blockId)) {
+    if (intent === "section-delete") {
+      const section = await client.from("profile_content_blocks").select("content")
+        .eq("profile_id", id).eq("slot", sectionSlot(blockId)).maybeSingle();
+      if (section.error) return { access: "admin", error: failed };
+      const imageId = section.data?.content?.adjacent_image_id;
+      if (isProfileId(imageId)) {
+        const deletion = new FormData();
+        deletion.set("intent", "delete"); deletion.set("block_id", imageId);
+        const removed = await changeAdminProfileContent(client, id, slug, deletion);
+        if (!removed.success) return removed;
+      }
+    }
     return { access: "admin", ...await changeEditorialSection(client, id, blockId, intent, form) };
+  }
   if (!isProfileId(blockId)) return { access: "admin", error: missing };
   if (intent === "block-toggle")
     return { access: "admin", ...await changeEditorialBlockVisibility(client, id, blockId) };
@@ -208,7 +221,15 @@ export async function changeAdminProfileContent(
         ).map((item) => `${prefix}/${item.name}`);
         if (paths.length !== listed.data.length) return { access: "admin", error: failed };
         if (!paths.length) break;
-        const removed = await storage.remove(paths);
+        const removable: string[] = [];
+        for (const path of paths) {
+          const refs = await client.from("profile_content_block_images")
+            .select("id", { count: "exact", head: true }).eq("storage_path", path);
+          if (refs.error) return { access: "admin", error: failed };
+          if (refs.count === 0) removable.push(path);
+        }
+        if (!removable.length) break;
+        const removed = await storage.remove(removable);
         if (removed.error) return { access: "admin", error: failed };
         if (attempt === 9) return { access: "admin", error: failed };
       }

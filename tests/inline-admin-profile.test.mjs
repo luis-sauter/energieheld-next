@@ -49,6 +49,8 @@ const { InlineEditorHistoryContext } = await import("../src/components/admin/inl
 const { InlineImageCropEditor } = await import("../src/components/admin/inline-image-crop-editor.tsx");
 const { AdjacentImagePreview } = await import("../src/components/admin/adjacent-image-preview.tsx");
 const { ProfileContentBlocks } = await import("../src/components/portal/profile-content-blocks.tsx");
+const { ProfileEditorialContent } = await import("../src/components/portal/profile-content-blocks.tsx");
+const { editorialItems, ABOUT_SECTION, BUSINESS_SECTION } = await import("../src/lib/profile-content.ts");
 const { companyProfileListing } = await import("../src/lib/company-presentation.ts");
 const { saveInlineProfile, saveInlineMedia } = await import("../src/app/(energieheld)/experten/[slug]/inline-actions.ts");
 const { saveInlineContent } = await import("../src/app/(energieheld)/experten/[slug]/content-actions.ts");
@@ -549,6 +551,8 @@ test("text blocks expose image-beside-text setup and paired blocks expose live s
     saveContent: async () => ({}), saveBlockImage: async () => ({}) };
   const plain = renderToStaticMarkup(createElement(InlineProfileEditor, { ...common, contentBlocks: [textBlock] }));
   assert.match(plain, /Bild daneben hinzufügen/);
+  assert.equal((plain.match(/Bild daneben hinzufügen/g) ?? []).length, 3,
+    "free text, About, and business areas each expose the same action");
   assert.doesNotMatch(plain, /Text \+ Bild nebeneinander/);
   const imageBlock = { id: "44444444-4444-4444-8444-444444444444", profile_id: profileId,
     type: "image_grid", slot: null, sort_order: 1, content: {}, images: [],
@@ -563,11 +567,51 @@ test("text blocks expose image-beside-text setup and paired blocks expose live s
   assert.match(paired, /25 % Bild \/ 75 % Text/);
   assert.match(paired, /50 % Bild \/ 50 % Text/);
   assert.match(paired, /75 % Bild \/ 25 % Text/);
-  assert.doesNotMatch(paired, /Bild daneben hinzufügen/);
+  assert.equal((paired.match(/Bild daneben hinzufügen/g) ?? []).length, 2,
+    "the paired free text has no extra action; About and business areas still do");
   const editor = readFileSync(new URL("../src/components/admin/inline-content-editor.tsx", import.meta.url), "utf8");
   assert.match(editor, /setAdjacentDraft\(\(current\) => current \? \{ \.\.\.current, side \}/);
   assert.match(editor, /setPairPreview\(\{ textId, imageId, side, share \}\)/);
   assert.match(editor, /uploadPreparedAdminMedia\(saveImage/);
+});
+
+test("About and business areas show independent image controls and public side-by-side layouts", () => {
+  const listing = companyProfileListing(publicProfile, { images: [] });
+  const values = Object.fromEntries(["display_name", "tagline", "description", "business_areas", "phone",
+    "public_email", "website", "street", "postal_code", "city", "region", "country"]
+    .map((field) => [field, publicProfile[field] ?? ""]));
+  for (const share of [25, 50, 75]) for (const side of ["left", "right"]) {
+    const imageOffset = side === "left" ? 0 : 100 - share;
+    const textOffset = side === "left" ? share : 0;
+    const image = (id, order) => ({ id, profile_id: profileId, type: "image_grid", slot: null,
+      sort_order: order, content: {}, config: { columns: 1, width_percent: share,
+        offset_percent: imageOffset, aspect_ratio: 1.5 }, images: [{ id: `${id}-row`, block_id: id,
+        src: "https://example.test/image.jpg", alt_text: "Bild", sort_order: 0 }] });
+    const aboutImage = image("22222222-2222-4222-8222-222222222222", 0);
+    const businessImage = image("33333333-3333-4333-8333-333333333333", 1);
+    const about = { id: "44444444-4444-4444-8444-444444444444", profile_id: profileId,
+      type: "heading", slot: "about_heading", content: { text: "Über Redaktionelle Firma",
+        adjacent_image_id: aboutImage.id, layout: { width_percent: 100 - share, offset_percent: textOffset },
+        order: [ABOUT_SECTION, aboutImage.id, BUSINESS_SECTION, businessImage.id] } };
+    const business = { id: "55555555-5555-4555-8555-555555555555", profile_id: profileId,
+      type: "heading", slot: "business_areas_heading", content: { text: "Tätigkeitsbereiche",
+        adjacent_image_id: businessImage.id, layout: { width_percent: 100 - share, offset_percent: textOffset } } };
+    const blocks = [about, business, aboutImage, businessImage];
+    const html = renderToStaticMarkup(createElement(InlineProfileEditor, { listing, categories: [], values,
+      media: { images: [] }, rows: [], contentBlocks: blocks,
+      contentAvailable: true, imagesAvailable: true, initialEditing: true,
+      saveProfile: async () => ({}), saveMedia: async () => ({}), saveContent: async () => ({}),
+      saveBlockImage: async () => ({}) }));
+    assert.equal((html.match(/Abschnitt und Bild anordnen/g) ?? []).length, 2);
+    assert.equal((html.match(/Bild daneben entfernen/g) ?? []).length, 2);
+    assert.doesNotMatch(html, /Bild daneben hinzufügen/);
+    const publicHtml = renderToStaticMarkup(createElement(ProfileEditorialContent, {
+      items: editorialItems(blocks, listing.name), listing,
+    }));
+    assert.equal((publicHtml.match(/<img /g) ?? []).length, 2);
+    assert.match(publicHtml, new RegExp(`grid-column:${imageOffset + 1} / span ${share}`));
+    assert.match(publicHtml, new RegExp(`grid-column:${textOffset + 1} / span ${100 - share}`));
+  }
 });
 
 test("the editor image preview follows side and width selections immediately", () => {
