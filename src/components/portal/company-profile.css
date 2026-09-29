@@ -100,6 +100,7 @@
 .company-profile .profile-header-media .gallery-editor { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; }
 .company-profile .profile-header-media .gallery-empty { flex: 1; }
 .company-profile .profile-header-media .gallery-main { flex: 1; height: 100%; aspect-ratio: auto; max-width: none; max-height: none; min-height: 0; }
+.company-profile .profile-header-media .gallery-editor .gallery-main { flex: none; height: auto; min-height: clamp(320px, 33vw, 480px); aspect-ratio: 16 / 10; }
 .company-profile .profile-location .location-map { min-height: clamp(240px, 25vw, 340px); }
 .company-profile .profile-location > div:last-child { padding: 12px 18px; }
 .company-profile .profile-location h2 { font-size: 19px; margin-bottom: 6px; }
@@ -613,6 +614,7 @@
   .company-profile .profile-head-grid { grid-template-columns: minmax(0, 1fr); }
   .company-profile .profile-header-media { min-height: 0; }
   .company-profile .profile-header-media .gallery-main { height: auto; min-height: 240px; aspect-ratio: 16 / 9; }
+  .company-profile .profile-header-media .gallery-editor .gallery-main { min-height: 240px; aspect-ratio: 16 / 9; }
   .company-profile .profile-video { height: auto; aspect-ratio: 16 / 9; }
   .company-profile .detail-grid {
     grid-template-columns: minmax(0, 1fr);

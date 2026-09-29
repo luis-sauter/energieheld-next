@@ -399,6 +399,9 @@ test("inline gallery keeps the public preview and edits the selected image at th
     saveProfile: async () => ({}), saveMedia: async () => ({}), saveContent: async () => ({}),
     saveBlockImage: async () => ({}) }));
   assert.match(html, /class="gallery-main"[^>]*data-has-thumbs="true"[\s\S]*class="gallery-thumbs"/);
+  assert.match(html, /class="[^"]*gallery-editor"/);
+  assert.match(html, /class="gallery-open" href="https:\/\/example\.org\/one\.png"[\s\S]*<img[^>]*src="https:\/\/example\.org\/one\.png"/);
+  assert.match(html, /aria-label="Bild 2: Zweites Bild"[\s\S]*src="https:\/\/example\.org\/two\.png"/);
   assert.match(html, /Bild 1 von 2 ausgewählt/);
   for (const label of ["Vorheriges Bild", "Nächstes Bild", "Bild hinzufügen", "Bild ersetzen",
     "Bild löschen", "Ausschnitt \/ Fokus \/ Zoom", "Alt-Text speichern", "← Zurück", "Weiter →"])
