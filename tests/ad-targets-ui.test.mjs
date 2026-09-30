@@ -59,7 +59,7 @@ registerHooks({
   },
 });
 
-const { CampaignForm, AdminCampaignForm, addRequestScope, availableRequestScopes, addPortalArea, removeRequestScope, removePortalArea, changePortalArea, requestScopeIds, slotAvailabilityText } = await import(
+const { CampaignForm, AdminCampaignForm, addRequestScope, availableRequestScopes, addPortalArea, revealAddedPortalArea, removeRequestScope, removePortalArea, changePortalArea, requestScopeIds, slotAvailabilityText } = await import(
   "../src/components/advertising/campaign-form.tsx"
 );
 const { portalAdSections } = await import("../src/lib/ad-target-areas.ts");
@@ -172,6 +172,31 @@ test("outer picker keeps themes and destinations available until every concrete 
   assert.deepEqual(availableRequestScopes(scopes, [...removed, ...allDestinations]).map((scope) => scope.id), ["mottoreisen"]);
   assert.deepEqual(addPortalArea(removed, "mottoreisen/natur-pur"), [...removed, "mottoreisen/natur-pur"]);
   assert.deepEqual(availableRequestScopes([], []).map((scope) => scope.id), scopes);
+});
+test("new area is revealed at its beginning and focused without a second scroll, respecting reduced motion", () => {
+  for (const reducedMotion of [false, true]) {
+    const calls = [];
+    const card = {
+      querySelector(selector) {
+        assert.equal(selector, "select");
+        return { focus: (options) => calls.push(["focus", options]) };
+      },
+      scrollIntoView: (options) => calls.push(["scroll", options]),
+    };
+    revealAddedPortalArea(card, reducedMotion);
+    assert.deepEqual(calls, [
+      ["focus", { preventScroll: true }],
+      ["scroll", { behavior: reducedMotion ? "instant" : "smooth", block: "start" }],
+    ]);
+  }
+  for (const admin of [false, true]) {
+    const targets = ["mottoreisen/natur-pur", "mottoreisen/radwandern", "reiseziele/deutschland", "reiseziele/oesterreich"]
+      .map((target_key) => ({ target_type: "portal_area", category_id: null, target_key, placement: "top_banner" }));
+    const html = render(CampaignForm, { campaign: { ...campaign, targets }, categoryIds: [], admin });
+    assert.equal((html.match(/class="areaCard"[^>]*role="group"/g) ?? []).length, 4);
+    assert.match(html, /aria-label="Mottoreisen · Radwandern"/);
+    assert.match(html, /aria-label="Reiseziele · Österreich"/);
+  }
 });
 test("multiple theme and destination cards restore exact saved slots for owner and admin", () => {
   const keys = ["mottoreisen/natur-pur", "mottoreisen/wellnessangebote", "mottoreisen/wanderurlaub", "reiseziele/deutschland", "reiseziele/oesterreich"];
