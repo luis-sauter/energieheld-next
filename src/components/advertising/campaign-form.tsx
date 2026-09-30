@@ -2,6 +2,8 @@
 import { useActionState, useEffect, useState } from "react";
 import {
   adPlacements,
+  adTargetAvailabilityKey,
+  adTargetFormValue,
   type AdCampaign,
   type AdPlacementId,
   type AdTarget,
@@ -14,20 +16,26 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import type { AdFormState } from "@/lib/ad-values";
 import { reviewCampaign, saveAdminCampaign, prepareAdminCampaignImage, adminCampaignAvailability } from "@/app/(energieheld)/admin/werbung/actions";
+import { portalAdAreaLabel, portalAdSections, portalAdSection, requestAdScopes, type RequestAdScope } from "@/lib/ad-target-areas";
 import styles from "./advertising.module.css";
-const requestScopes = [
-  { id: "homepage", name: "Startseite" },
-  { id: "experts_directory", name: "Unterkünfte A–Z" },
-] as const;
-type RequestScope = (typeof requestScopes)[number]["id"];
-export function removeRequestScope(targets: AdTarget[], scope: RequestScope) {
-  return targets.filter((target) => target.target_type !== scope);
+export function removeRequestScope(targets: AdTarget[], scope: RequestAdScope) {
+  return targets.filter((target) => target.target_type === "portal_area"
+    ? portalAdSection(target.target_key ?? "") !== scope
+    : target.target_type !== scope);
 }
-export function addRequestScope(scopes: RequestScope[], scope: RequestScope) {
+export function removePortalArea(targets: AdTarget[], key: string) {
+  return targets.filter((target) => target.target_type !== "portal_area" || target.target_key !== key);
+}
+export function changePortalArea(targets: AdTarget[], oldKey: string, newKey: string) {
+  return targets.map((target) => target.target_type === "portal_area" && target.target_key === oldKey
+    ? { ...target, target_key: newKey } : target);
+}
+export function addRequestScope(scopes: RequestAdScope[], scope: RequestAdScope) {
   return scopes.includes(scope) ? scopes : [...scopes, scope];
 }
-export function requestScopeIds(targets: AdTarget[], pristine = false): RequestScope[] {
-  return pristine ? [] : requestScopes.filter((scope) => targets.some((target) => target.target_type === scope.id)).map((scope) => scope.id);
+export function requestScopeIds(targets: AdTarget[], pristine = false): RequestAdScope[] {
+  return pristine ? [] : requestAdScopes.filter((scope) => targets.some((target) => target.target_type === "portal_area"
+    ? portalAdSection(target.target_key ?? "") === scope.id : target.target_type === scope.id)).map((scope) => scope.id);
 }
 export function slotAvailabilityText(status: "Belegt" | "Angefragt" | undefined, checked: boolean, loading: boolean, error: string) {
   const label = loading ? "Wird geprüft …" : error ? "Derzeit nicht prüfbar" : status ?? "Verfügbar";
@@ -84,7 +92,12 @@ export function CampaignForm({
         requested_end_date: campaign.approved_end_date ?? campaign.requested_end_date };
     return pristine ? { ...campaign, targets: [] } : campaign;
   });
-  const [shownScopes, setShownScopes] = useState<RequestScope[]>(() => requestScopeIds(campaign.targets, pristine));
+  const [shownScopes, setShownScopes] = useState<RequestAdScope[]>(() => requestScopeIds(campaign.targets, pristine));
+  const [shownAreas, setShownAreas] = useState<string[]>(() => {
+    const areas = campaign.targets.filter((target) => target.target_type === "portal_area" && portalAdSection(target.target_key ?? ""))
+      .map((target) => target.target_key!);
+    return areas.filter((key, index) => areas.indexOf(key) === index);
+  });
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
   const [availabilityResult, setAvailabilityResult] = useState<{
     key: string; slots: Record<string, "Belegt" | "Angefragt">; error: string;
@@ -94,7 +107,7 @@ export function CampaignForm({
   const availability = availabilityLoading ? {} : availabilityResult.slots;
   const availabilityError = availabilityLoading ? "" : availabilityResult.error;
   const hasBookedSelection = values.targets.some((target) =>
-    availability[`${target.target_type}|${target.placement ?? campaign.placement}`] === "Belegt");
+    availability[adTargetAvailabilityKey({ ...target, placement: target.placement ?? campaign.placement })] === "Belegt");
   useEffect(() => {
     if (!values.requested_start_date || !values.requested_end_date) return;
     let current = true;
@@ -112,16 +125,29 @@ export function CampaignForm({
     setValues((current) => {
       const remaining = current.targets.filter(
         (item) =>
-          item.target_type !== target.target_type ||
-          item.category_id !== target.category_id ||
-          (item.placement ?? campaign.placement) !== target.placement,
+          adTargetAvailabilityKey({ ...item, placement: item.placement ?? campaign.placement }) !== adTargetAvailabilityKey(target),
       );
       return {
         ...current,
         targets: checked ? [...remaining, target] : remaining,
       };
     });
-  const availableScopes = requestScopes.filter((scope) => !shownScopes.includes(scope.id));
+  const availableScopes = requestAdScopes.filter((scope) => !shownScopes.includes(scope.id));
+  const renderPlacements = (base: Omit<AdTarget, "placement">) => <div className={styles.placements}>
+    {Object.entries(adPlacements).map(([slot, label]) => {
+      const target: AdTarget = { ...base, placement: slot as AdPlacementId };
+      const key = adTargetAvailabilityKey(target);
+      const checked = values.targets.some((item) => adTargetAvailabilityKey({ ...item, placement: item.placement ?? campaign.placement }) === key);
+      const slotStatus = slotAvailabilityText(availability[key], checked, availabilityLoading, availabilityError);
+      return <label className={styles.placement} key={key}>
+        <input type="checkbox" name="targets" value={adTargetFormValue(target)} checked={checked}
+          disabled={availabilityLoading || !!availabilityError || (availability[key] === "Belegt" && !checked)}
+          onChange={(event) => setTarget(target, event.target.checked)} />
+        <span className={styles.placementName}>{label}</span>
+        <small className={availability[key] === "Belegt" ? styles.slotBooked : styles.slotAvailability}>{slotStatus}</small>
+      </label>;
+    })}
+  </div>;
   return (
     <form action={action} className={`${styles.form} ${styles.requestForm}`}>
       <input type="hidden" name="campaign_id" value={campaign.id} />
@@ -164,7 +190,8 @@ export function CampaignForm({
         <legend>Wo möchten Sie werben?</legend>
         <p className={styles.sectionHint}>Wählen Sie zunächst einen Bereich und danach die passenden Bannerplätze. Weitere Bereiche können Sie jederzeit ergänzen.</p>
         {shownScopes.map((scopeId) => {
-          const scope = requestScopes.find((item) => item.id === scopeId)!;
+          const scope = requestAdScopes.find((item) => item.id === scopeId)!;
+          const portalSection = portalAdSections.find((section) => section.id === scope.id);
           return <section key={scope.id} className={styles.scopeGroup} aria-label={scope.name}>
             <div className={styles.scopeHeader}>
               <div><span className={styles.scopeEyebrow}>Werbebereich</span><h3>{scope.name}</h3></div>
@@ -172,23 +199,41 @@ export function CampaignForm({
                 onClick={() => {
                   setValues((current) => ({ ...current, targets: removeRequestScope(current.targets, scope.id) }));
                   setShownScopes((current) => current.filter((id) => id !== scope.id));
+                  setShownAreas((current) => current.filter((key) => portalAdSection(key) !== scope.id));
                 }}>Bereich entfernen</button>
             </div>
-            <div className={styles.placements}>
-              {Object.entries(adPlacements).map(([slot, label]) => {
-                const target: AdTarget = { target_type: scope.id, category_id: null, placement: slot as AdPlacementId };
-                const key = `${scope.id}|${slot}`;
-                const checked = values.targets.some((t) => t.target_type === scope.id && (t.placement ?? campaign.placement) === slot);
-                const slotStatus = slotAvailabilityText(availability[key], checked, availabilityLoading, availabilityError);
-                return <label className={styles.placement} key={key}>
-                  <input type="checkbox" name="targets" value={key} checked={checked}
-                    disabled={availabilityLoading || !!availabilityError || (availability[key] === "Belegt" && !checked)}
-                    onChange={(event) => setTarget(target, event.target.checked)} />
-                  <span className={styles.placementName}>{label}</span>
-                  <small className={availability[key] === "Belegt" ? styles.slotBooked : styles.slotAvailability}>{slotStatus}</small>
-                </label>;
-              })}
-            </div>
+            {portalSection ? <>
+              <label className={styles.areaPicker}>Wo innerhalb dieses Bereichs möchten Sie werben?
+                <select value="" onChange={(event) => {
+                  if (portalAdSection(event.target.value) === portalSection.id)
+                    setShownAreas((current) => current.includes(event.target.value) ? current : [...current, event.target.value]);
+                }}>
+                  <option value="">Rubrik oder Unterrubrik auswählen</option>
+                  {portalSection.areas.map((area) => <option key={area.key} value={area.key} disabled={shownAreas.includes(area.key)}>{area.label}</option>)}
+                </select>
+              </label>
+              <p className={styles.sectionHint}>Für diese Rubrik wird eine sichtbare Bannerfläche noch eingerichtet. Ihre Auswahl wird getrennt nach Unterrubrik und Platz geprüft.</p>
+              {shownAreas.filter((key) => portalAdSection(key) === portalSection.id).map((key) => <div className={styles.areaCard} key={key}>
+                <div className={styles.scopeHeader}>
+                  <label>Platzierung in
+                    <select value={key} onChange={(event) => {
+                      const nextKey = event.target.value;
+                      if (portalAdSection(nextKey) !== portalSection.id || shownAreas.includes(nextKey)) return;
+                      setValues((current) => ({ ...current, targets: changePortalArea(current.targets, key, nextKey) }));
+                      setShownAreas((current) => current.map((item) => item === key ? nextKey : item));
+                    }}>
+                      {portalSection.areas.map((area) => <option key={area.key} value={area.key} disabled={area.key !== key && shownAreas.includes(area.key)}>{area.label}</option>)}
+                    </select>
+                  </label>
+                  <button type="button" className={styles.removeScope} aria-label={`${portalAdAreaLabel(key)} entfernen`}
+                    onClick={() => {
+                      setValues((current) => ({ ...current, targets: removePortalArea(current.targets, key) }));
+                      setShownAreas((current) => current.filter((item) => item !== key));
+                    }}>Auswahl entfernen</button>
+                </div>
+                {renderPlacements({ target_type: "portal_area", category_id: null, target_key: key })}
+              </div>)}
+            </> : renderPlacements({ target_type: scope.id as "homepage" | "experts_directory", category_id: null })}
           </section>;
         })}
         {availableScopes.length > 0 && <div className={styles.addScope}>

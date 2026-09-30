@@ -59,9 +59,10 @@ registerHooks({
   },
 });
 
-const { CampaignForm, AdminCampaignForm, addRequestScope, removeRequestScope, requestScopeIds, slotAvailabilityText } = await import(
+const { CampaignForm, AdminCampaignForm, addRequestScope, removeRequestScope, removePortalArea, changePortalArea, requestScopeIds, slotAvailabilityText } = await import(
   "../src/components/advertising/campaign-form.tsx"
 );
+const { portalAdSections } = await import("../src/lib/ad-target-areas.ts");
 const { CampaignFacts, CampaignSlot } = await import(
   "../src/components/advertising/campaign-view.tsx"
 );
@@ -122,6 +123,34 @@ test("request starts compact, adds each area once, and removes only its placemen
   const css = readFileSync(new URL("../src/components/advertising/advertising.module.css", import.meta.url), "utf8");
   assert.match(css, /@media \(max-width: 600px\)[\s\S]*?\.requestForm \.placements\s*\{\s*grid-template-columns:\s*minmax\(0, 1fr\)/);
   assert.match(css, /\.requestForm \.placement\s*\{[^}]*min-height:\s*60px/);
+});
+test("portal picker derives real subpages and edits one nested target without affecting its siblings", () => {
+  assert.equal(portalAdSections.find((section) => section.id === "mottoreisen").areas.length, 13);
+  assert.equal(portalAdSections.find((section) => section.id === "reiseziele").areas.length, 5);
+  const targets = [
+    { target_type: "homepage", category_id: null, placement: "top_banner" },
+    { target_type: "portal_area", category_id: null, target_key: "mottoreisen/wellnessangebote", placement: "top_banner" },
+    { target_type: "portal_area", category_id: null, target_key: "mottoreisen/wanderurlaub", placement: "sidebar_middle" },
+    { target_type: "portal_area", category_id: null, target_key: "reiseziele/deutschland", placement: "sidebar_top" },
+  ];
+  assert.deepEqual(requestScopeIds(targets), ["homepage", "mottoreisen", "reiseziele"]);
+  assert.deepEqual(removePortalArea(targets, "mottoreisen/wellnessangebote"), [targets[0], targets[2], targets[3]]);
+  assert.deepEqual(removeRequestScope(targets, "mottoreisen"), [targets[0], targets[3]]);
+  assert.deepEqual(changePortalArea(targets, "mottoreisen/wellnessangebote", "mottoreisen/nordic-walking"),
+    [targets[0], { ...targets[1], target_key: "mottoreisen/nordic-walking" }, targets[2], targets[3]]);
+  const html = render(CampaignForm, { campaign: { ...campaign, targets }, categoryIds: [] });
+  assert.match(html, /Mottoreisen|Reiseziele|Wellnessangebote|Wanderurlaub|Deutschland/);
+  assert.match(html, /Wo innerhalb dieses Bereichs möchten Sie werben\?/);
+  assert.equal((html.match(/type="checkbox"/g) ?? []).length, 52);
+  assert.equal((html.match(/checked=""/g) ?? []).length, 4);
+  assert.match(html, /Mottoreisen · Wellnessangebote entfernen/);
+  assert.doesNotMatch(html, />portal_area:|>theme:|>destination:/);
+  const admin = render(CampaignForm, { campaign: { ...campaign, targets }, categoryIds: [], admin: true });
+  assert.match(admin, /Mottoreisen|Reiseziele|Wellnessangebote|Deutschland/);
+  const facts = render(CampaignFacts, { campaign: { ...campaign, targets } });
+  assert.match(facts, /Mottoreisen · Wellnessangebote · Premium-Banner oben/);
+  assert.match(facts, /Reiseziele · Deutschland · Banner A/);
+  assert.doesNotMatch(facts, /portal_area:|mottoreisen\/wellnessangebote/);
 });
 test("campaign form loads saved page/slot pairs without a cross product", () => {
   const html = render(CampaignForm, {

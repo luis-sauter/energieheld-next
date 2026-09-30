@@ -5,6 +5,7 @@ import {
   validateAdValues,
   validAdDate,
   adPlacements,
+  adTargetAvailabilityKey,
   type AdCampaign,
   type ActiveAd,
   type AdFormState,
@@ -24,9 +25,9 @@ export async function loadAdAvailability(client: SupabaseClient, start: string, 
   if (error) return { error: "Die Verfügbarkeit konnte nicht geprüft werden. Bitte versuchen Sie es erneut." };
   const slots: Record<string, "Belegt" | "Angefragt"> = {};
   for (const row of data ?? []) {
-    if (row.target_type !== "homepage" && row.target_type !== "experts_directory") continue;
+    if (row.target_type !== "homepage" && row.target_type !== "experts_directory" && row.target_type !== "portal_area") continue;
     if (!Object.hasOwn(adPlacements, row.placement)) continue;
-    const key = `${row.target_type}|${row.placement}`;
+    const key = adTargetAvailabilityKey(row);
     if (row.status === "approved") slots[key] = "Belegt";
     else if (!slots[key]) slots[key] = "Angefragt";
   }
@@ -111,7 +112,7 @@ export async function loadAdCampaigns(
   let query = client
     .from("company_ad_campaigns")
     .select(
-      "*,targets:company_ad_campaign_targets(target_type,category_id,placement),company_profiles!inner(display_name,company_profile_categories(category_id))",
+      "*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement),company_profiles!inner(display_name,company_profile_categories(category_id))",
       { count: "exact" },
     );
   if (profileId) query = query.eq("profile_id", profileId);
@@ -140,7 +141,7 @@ export async function loadAdCampaigns(
       })
       .map((t: { category_id: string }) => t.category_id),
     ...row,
-    targets: (row.targets ?? []).map((target: {target_type: string; category_id: string | null; placement: string | null}) => ({
+    targets: (row.targets ?? []).map((target: {target_type: string; category_id: string | null; target_key: string | null; placement: string | null}) => ({
       ...target, placement: target.placement ?? row.placement,
     })),
     companyName: (Array.isArray(row.company_profiles)
