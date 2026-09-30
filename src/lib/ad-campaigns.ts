@@ -4,10 +4,34 @@ import { validateMediaFile } from "./company-media";
 import {
   validateAdValues,
   validAdDate,
+  adPlacements,
   type AdCampaign,
   type ActiveAd,
   type AdFormState,
 } from "./ad-values";
+export async function loadAdAvailability(client: SupabaseClient, start: string, end: string, campaignId: string, admin = false) {
+  if (admin) {
+    if (await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
+  } else {
+    const own = await ownAdProfile(client);
+    if (!own.profileId) return { error: "Bitte melden Sie sich an, um die Verfügbarkeit zu prüfen." };
+  }
+  if (!validAdDate(start) || !validAdDate(end) || end < start || !isProfileId(campaignId))
+    return { error: "Bitte wählen Sie einen gültigen Zeitraum." };
+  const { data, error } = await client.rpc("get_ad_slot_availability", {
+    p_start: start, p_end: end, p_exclude_campaign_id: campaignId,
+  });
+  if (error) return { error: "Die Verfügbarkeit konnte nicht geprüft werden. Bitte versuchen Sie es erneut." };
+  const slots: Record<string, "Belegt" | "Angefragt"> = {};
+  for (const row of data ?? []) {
+    if (row.target_type !== "homepage" && row.target_type !== "experts_directory") continue;
+    if (!Object.hasOwn(adPlacements, row.placement)) continue;
+    const key = `${row.target_type}|${row.placement}`;
+    if (row.status === "approved") slots[key] = "Belegt";
+    else if (!slots[key]) slots[key] = "Angefragt";
+  }
+  return { slots };
+}
 export const AD_BUCKET = "ad-media";
 const failed =
   "Die Kampagne konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.";
@@ -87,7 +111,7 @@ export async function loadAdCampaigns(
   let query = client
     .from("company_ad_campaigns")
     .select(
-      "*,targets:company_ad_campaign_targets(target_type,category_id),company_profiles!inner(display_name,company_profile_categories(category_id))",
+      "*,targets:company_ad_campaign_targets(target_type,category_id,placement),company_profiles!inner(display_name,company_profile_categories(category_id))",
       { count: "exact" },
     );
   if (profileId) query = query.eq("profile_id", profileId);
@@ -116,6 +140,9 @@ export async function loadAdCampaigns(
       })
       .map((t: { category_id: string }) => t.category_id),
     ...row,
+    targets: (row.targets ?? []).map((target: {target_type: string; category_id: string | null; placement: string | null}) => ({
+      ...target, placement: target.placement ?? row.placement,
+    })),
     companyName: (Array.isArray(row.company_profiles)
       ? row.company_profiles[0]
       : row.company_profiles
@@ -139,18 +166,20 @@ export async function loadAdCampaigns(
 export async function prepareAdUpload(
   client: SupabaseClient,
   form: FormData,
+  admin = false,
 ): Promise<AdFormState & { uploadPath?: string; unauthenticated?: boolean }> {
-  const own = await ownAdProfile(client);
-  if (!own.profileId) return own;
+  const own = admin ? null : await ownAdProfile(client);
+  if (admin && await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
+  if (own && !own.profileId) return own;
   const id = form.get("campaign_id");
   if (!isProfileId(id)) return { error: failed };
-  const { data: campaign, error } = await client
+  let query = client
     .from("company_ad_campaigns")
     .select("id,status")
-    .eq("id", id)
-    .eq("profile_id", own.profileId)
-    .maybeSingle();
-  if (error || !campaign || !["draft", "rejected"].includes(campaign.status))
+    .eq("id", id);
+  if (own?.profileId) query = query.eq("profile_id", own.profileId);
+  const { data: campaign, error } = await query.maybeSingle();
+  if (error || !campaign || (!admin && !["draft", "rejected"].includes(campaign.status)))
     return { error: "Diese Kampagne kann derzeit nicht bearbeitet werden." };
   const type = form.get("file_type"),
     size = Number(form.get("file_size"));
@@ -171,15 +200,17 @@ export async function prepareAdUpload(
 export async function saveOwnAd(
   client: SupabaseClient,
   form: FormData,
+  admin = false,
 ): Promise<AdFormState & { unauthenticated?: boolean }> {
-  const own = await ownAdProfile(client);
-  if (!own.profileId) return own;
+  const own = admin ? null : await ownAdProfile(client);
+  if (admin && await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
+  if (own && !own.profileId) return own;
   const id = form.get("campaign_id"),
     submit = form.get("intent") === "submit";
   if (!isProfileId(id)) return { error: failed };
   const values = validateAdValues(form);
   if (!values.data) return { error: values.error };
-  if (
+  if (own &&
     values.data.targets.some(
       (t) =>
         t.target_type === "trade" && !own.categoryIds?.includes(t.category_id!),
@@ -189,13 +220,13 @@ export async function saveOwnAd(
       error:
         "Sie können nur in Ihren offiziell zugeordneten Gewerken werben. Bitte laden Sie die Seite neu.",
     };
-  const { data: campaign, error } = await client
+  let query = client
     .from("company_ad_campaigns")
     .select("id,status,image_path")
-    .eq("id", id)
-    .eq("profile_id", own.profileId)
-    .maybeSingle();
-  if (error || !campaign || !["draft", "rejected"].includes(campaign.status))
+    .eq("id", id);
+  if (own?.profileId) query = query.eq("profile_id", own.profileId);
+  const { data: campaign, error } = await query.maybeSingle();
+  if (error || !campaign || (!admin && !["draft", "rejected"].includes(campaign.status)))
     return { error: "Diese Kampagne kann derzeit nicht bearbeitet werden." };
   // Existing media comes from the authorized row, never an arbitrary hidden field.
   values.data.image_path = campaign.image_path;
@@ -246,10 +277,6 @@ export async function saveOwnAd(
     uploaded = path;
     values.data.image_path = uploaded;
   }
-  if (submit && !values.data.image_path)
-    return {
-      error: "Bitte laden Sie vor dem Einreichen ein Anzeigenbild hoch.",
-    };
   const saved = await client.rpc("save_ad_campaign", {
     p_campaign_id: id,
     p_data: values.data,
@@ -258,7 +285,9 @@ export async function saveOwnAd(
   if (saved.error) {
     if (uploaded) await client.storage.from(AD_BUCKET).remove([uploaded]);
     return {
-      error: saved.error.message?.includes("ad_target_not_assigned")
+      error: saved.error.message?.includes("ad_booking_conflict")
+        ? "Ein ausgewählter Platz ist in diesem Zeitraum bereits belegt."
+        : saved.error.message?.includes("ad_target_not_assigned")
         ? "Ein ausgewähltes Gewerk ist Ihrer Firma nicht mehr zugeordnet. Bitte laden Sie die Seite neu."
         : failed,
     };

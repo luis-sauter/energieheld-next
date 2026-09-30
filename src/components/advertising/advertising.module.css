@@ -70,6 +70,10 @@
   width: auto;
   justify-self: start;
 }
+.scopeGroup { margin: 18px 0 26px; }
+.scopeGroup h3 { margin: 0 0 12px; }
+.placement small { display: block; color: var(--muted); font-weight: 500; }
+.placement:has(input:disabled) { opacity: .65; cursor: not-allowed; }
 .map {
   display: grid;
   grid-template-columns: 3fr 1fr;

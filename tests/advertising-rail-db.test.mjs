@@ -40,6 +40,7 @@ before(async () => {
   // Model an editorial order that differs from the original identifier sequence.
   await db.exec("update ad_sidebar_slot_order set sort_order=case slot when 'sidebar_middle' then 0 when 'sidebar_bottom' then 1 else 2 end");
   await migration("20260925160039_expand_legacy_advertising_rail.sql");
+  await migration("20260930120000_ad_target_placements.sql");
   today = (await db.query("select ((now() at time zone 'Europe/Berlin')::date)::text as day")).rows[0].day;
 });
 after(async () => db?.close());
@@ -117,4 +118,98 @@ test("homepage shape is enforced and homepage, directory, trade bookings stay is
   const invalid = await campaign(owner, "sidebar_06", [{ target_type: "homepage", category_id: null }]);
   await actor(admin, "postgres");
   await denied("update company_ad_campaign_targets set category_id='solar' where campaign_id=$1", [invalid]);
+});
+
+test("independent page/placement pairs persist, deliver exactly, and book only matching pairs", async () => {
+  const pairs = [
+    { target_type: "homepage", category_id: null, placement: "top_banner" },
+    { target_type: "experts_directory", category_id: null, placement: "sidebar_top" },
+    { target_type: "experts_directory", category_id: null, placement: "sidebar_middle" },
+  ];
+  const id = await campaign(owner, "top_banner", pairs);
+  const stored = (await db.query("select target_type,placement from company_ad_campaign_targets where campaign_id=$1 order by target_type,placement", [id])).rows;
+  assert.deepEqual(stored, [
+    { target_type: "experts_directory", placement: "sidebar_middle" },
+    { target_type: "experts_directory", placement: "sidebar_top" },
+    { target_type: "homepage", placement: "top_banner" },
+  ]);
+  await approve(id);
+  assert.deepEqual(await publicAds("homepage"), [{ id, placement: "top_banner" }]);
+  assert.deepEqual(await publicAds("experts_directory"), [
+    { id, placement: "sidebar_middle" }, { id, placement: "sidebar_top" },
+  ]);
+  const otherPageSameSlot = await campaign(other, "top_banner", [{ target_type: "experts_directory", category_id: null, placement: "top_banner" }]);
+  await approve(otherPageSameSlot);
+  const samePageSameSlot = await campaign(other, "top_banner", [{ target_type: "homepage", category_id: null, placement: "top_banner" }]);
+  await actor(admin);
+  await denied("select review_ad_campaign($1,'approve',$2,$2,null)", [samePageSameSlot, today]);
+  const availability = (await db.query("select target_type,placement,status from get_ad_slot_availability($1,$1,$2) order by target_type,placement", [today, samePageSameSlot])).rows;
+  assert.ok(availability.some((slot) => slot.target_type === "homepage" && slot.placement === "top_banner" && slot.status === "approved"));
+  assert.ok(availability.some((slot) => slot.target_type === "experts_directory" && slot.placement === "top_banner" && slot.status === "approved"));
+  assert.ok(!availability.some((slot) => slot.target_type === "homepage" && slot.placement === "sidebar_top"));
+});
+
+test("admin creates a campaign for a real profile and cannot bypass media path or slot rules", async () => {
+  await actor("", "anon");
+  await denied("select create_admin_ad_campaign($1)", [other]);
+  await actor(other);
+  await denied("select create_admin_ad_campaign($1)", [other]);
+  await actor(admin);
+  const id = (await db.query("select create_admin_ad_campaign($1) as id", [other])).rows[0].id;
+  assert.equal((await db.query("select profile_id from company_ad_campaigns where id=$1", [id])).rows[0].profile_id, other);
+  assert.equal((await db.query("select can_access_ad_media($1,true) as allowed", [`campaigns/${id}/creative/${crypto.randomUUID()}.png`])).rows[0].allowed, true);
+  const image = `campaigns/${id}/creative/${crypto.randomUUID()}.png`;
+  await db.query("insert into storage.objects(bucket_id,name) values('ad-media',$1)", [image]);
+  const creative = {
+    internal_name: "Redaktionelles Banner", placement: "top_banner",
+    targets: [{ target_type: "homepage", category_id: null, placement: "top_banner" }],
+    headline: "Anzeige", body_text: null, target_url: "https://example.org/angebot",
+    image_path: image, requested_start_date: today, requested_end_date: today,
+    contact_name: "Carola", contact_phone: "+49 123", contact_email: "carola@example.org",
+  };
+  await db.query("select save_ad_campaign($1,$2,true)", [id, creative]);
+  await db.query("select review_ad_campaign($1,'approve',$2,$2,null)", [id, today]);
+  await db.query("select save_ad_campaign($1,$2,false)", [id, { ...creative, target_url: "https://example.org/neues-ziel" }]);
+  assert.deepEqual((await db.query("select status,target_url,contact_name from company_ad_campaigns where id=$1", [id])).rows,
+    [{ status: "approved", target_url: "https://example.org/neues-ziel", contact_name: "Carola" }]);
+  await actor(owner);
+  await denied("select save_ad_campaign($1,$2,false)", [id, creative]);
+  await actor(admin);
+  await denied("select create_admin_ad_campaign($1)", ["99999999-9999-4999-8999-999999999999"]);
+});
+
+test("customer may request without a creative; admin adds the private image before approval", async () => {
+  await actor(owner);
+  const id = (await db.query("select create_ad_campaign() as id")).rows[0].id;
+  const request = {
+    internal_name: "Anfrage", placement: "sidebar_top",
+    targets: [{ target_type: "homepage", category_id: null, placement: "sidebar_top" }],
+    headline: "Anzeige", target_url: "https://example.org", image_path: null,
+    requested_start_date: today, requested_end_date: today,
+  };
+  await db.query("select save_ad_campaign($1,$2,true)", [id, request]);
+  assert.equal((await db.query("select image_path,status from company_ad_campaigns where id=$1", [id])).rows[0].image_path, null);
+  await actor(admin);
+  await denied("select review_ad_campaign($1,'approve',$2,$2,null)", [id, today]);
+  const image = `campaigns/${id}/creative/${crypto.randomUUID()}.png`;
+  await db.query("insert into storage.objects(bucket_id,name) values('ad-media',$1)", [image]);
+  await db.query("select save_ad_campaign($1,$2,false)", [id, { ...request, image_path: image }]);
+  await db.query("select review_ad_campaign($1,'approve',$2,$2,null)", [id, today]);
+  assert.deepEqual(await publicAds("homepage"), [{ id, placement: "sidebar_top" }]);
+});
+
+test("availability distinguishes pending, inclusive overlap, and a free later period", async () => {
+  const id = await campaign(owner, "sidebar_04", [
+    { target_type: "homepage", category_id: null, placement: "sidebar_04" },
+  ]);
+  await actor(other);
+  const pending = (await db.query("select * from get_ad_slot_availability($1,$1,null)", [today])).rows;
+  assert.deepEqual(pending, [{ target_type: "homepage", category_id: null, placement: "sidebar_04", status: "pending" }]);
+  assert.deepEqual((await db.query("select * from get_ad_slot_availability(($1::date+1),($1::date+1),null)", [today])).rows, []);
+  await approve(id);
+  await actor(other);
+  const booked = (await db.query("select * from get_ad_slot_availability($1,$1,null)", [today])).rows;
+  assert.equal(booked[0].status, "approved");
+  const ownExclusion = (await db.query("select * from get_ad_slot_availability($1,$1,$2)", [today, id])).rows;
+  assert.equal(ownExclusion.length, 1, "a foreign campaign ID cannot hide a booking");
 });

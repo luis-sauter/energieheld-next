@@ -80,9 +80,7 @@ export function CampaignFacts({ campaign: c }: { campaign: AdCampaign }) {
     <>
       <span className={styles.status}>{adStatus(c)}</span>
       <dl className={styles.details}>
-        <dt>Werbeplatz</dt>
-        <dd>{adPlacements[c.placement]}</dd>
-        <dt>Ausspielung</dt>
+        <dt>Seite und Werbeplatz</dt>
         <dd>{adScopeLabel(c)}</dd>
         <dt>Gewünschter Zeitraum</dt>
         <dd>

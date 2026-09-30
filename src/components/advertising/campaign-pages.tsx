@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdminAccess } from "@/lib/admin";
 import { loadAdCampaigns } from "@/lib/ad-campaigns";
 import { createCampaign } from "@/app/(energieheld)/firma/werbung/actions";
+import { createAdminCampaign } from "@/app/(energieheld)/admin/werbung/actions";
 import { CampaignFacts, CampaignList, CampaignSlot } from "./campaign-view";
 import { CampaignForm, AdminCampaignForm } from "./campaign-form";
 import styles from "./advertising.module.css";
@@ -20,7 +21,8 @@ export async function CampaignIndex({
       Number.isSafeInteger(parsed) && parsed > 0 && parsed < 100000
         ? parsed
         : 1;
-  const result = await loadAdCampaigns(await createClient(), admin, page);
+  const client = await createClient();
+  const result = await loadAdCampaigns(client, admin, page);
   if ("unauthenticated" in result && result.unauthenticated) redirect("/login");
   if ("access" in result) requireAdminAccess(result.access ?? "forbidden");
   const campaigns = "campaigns" in result ? result.campaigns : undefined,
@@ -35,13 +37,24 @@ export async function CampaignIndex({
       <p className={styles.intro}>
         {admin
           ? "Prüfen Sie Anzeigen und bestätigen Sie freie Zeiträume. Werbung bleibt unabhängig von Profilfreischaltung und Qualitätssiegel."
-          : "Planen Sie Ihre Anzeige auf der Expertenübersicht oder den Gewerkeseiten. Platz und Zeitraum werden vor der Veröffentlichung geprüft."}
+          : "Planen Sie Ihre Anzeige auf der Startseite oder bei Unterkünfte A–Z. Seite, Platz und Zeitraum werden vor der Veröffentlichung geprüft."}
       </p>
       {!admin && (
         <form action={createCampaign}>
           <button className="button button-primary">Neue Werbekampagne</button>
         </form>
       )}
+      {admin && <form action={createAdminCampaign} className={styles.form}>
+        <label>Banner für Anbieter anlegen
+          <select name="profile_id" required defaultValue="">
+            <option value="" disabled>Anbieter auswählen</option>
+            {(await client.from("company_profiles").select("id,display_name").order("display_name")).data?.map((profile) =>
+              <option key={profile.id} value={profile.id}>{profile.display_name}</option>
+            )}
+          </select>
+        </label>
+        <button className="button button-primary">Banner anlegen</button>
+      </form>}
       {params.fehler && (
         <p role="alert">
           Die Kampagne konnte nicht erstellt werden. Bitte versuchen Sie es
@@ -96,6 +109,9 @@ export async function CampaignDetail({
           <CampaignFacts campaign={campaign} />
           {admin ? (
             <>
+              <h3>Banner gestalten und zuordnen</h3>
+              <CampaignForm campaign={campaign} categoryIds={[]} admin />
+              <h3>Freigabe</h3>
               <CampaignSlot
                 placement={campaign.placement}
                 ad={campaign}
