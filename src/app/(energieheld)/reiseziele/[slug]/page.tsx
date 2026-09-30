@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { destinations } from "@/data/reiseportal-discovery";
 import { DiscoveryDetail } from "@/components/portal/discovery-detail";
 import { loadReiseportalFeatured } from "@/lib/reiseportal-directory";
+import { loadDiscoveryAdvertising } from "@/lib/discovery-advertising";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,6 @@ export default async function DestinationDetail({ params }: { params: Promise<{ 
   const { slug } = await params;
   const entry = destinations.find((item) => item.slug === slug);
   if (!entry) notFound();
-  const listings = await loadReiseportalFeatured(entry.previewSlugs);
-  return <DiscoveryDetail entry={entry} title="Reiseziele" basePath="/reiseziele" listings={listings} />;
+  const [listings, advertising] = await Promise.all([loadReiseportalFeatured(entry.previewSlugs), loadDiscoveryAdvertising(`/reiseziele/${entry.slug}`)]);
+  return <DiscoveryDetail entry={entry} title="Reiseziele" basePath="/reiseziele" listings={listings} advertising={advertising} />;
 }

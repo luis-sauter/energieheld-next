@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { DiscoveryEntry } from "@/data/reiseportal-discovery";
+import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
+import type { DiscoveryAdvertisingData } from "@/lib/discovery-advertising";
 
 export function DiscoveryCard({ entry, basePath }: { entry: DiscoveryEntry; basePath: string }) {
   return <Link className="discovery-card" href={`${basePath}/${entry.slug}`}>
@@ -11,17 +13,18 @@ export function DiscoveryCard({ entry, basePath }: { entry: DiscoveryEntry; base
   </Link>;
 }
 
-export function ReiseOverview({ title, intro, entries, basePath }: {
+export function ReiseOverview({ title, intro, entries, basePath, advertising }: {
   title: string;
   intro: string;
   entries: readonly DiscoveryEntry[];
   basePath: string;
+  advertising?: DiscoveryAdvertisingData;
 }) {
   return <main id="hauptinhalt" className="container trade-page discovery-page">
     <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
       <Link href="/">Startseite</Link><span>›</span><span>{title}</span>
     </nav>
-    <section className="section">
+    <DiscoveryAdvertising data={advertising}><section className="section">
       <div className="section-heading"><div>
         <h1>{title}</h1>
         <p>{intro}</p>
@@ -29,6 +32,6 @@ export function ReiseOverview({ title, intro, entries, basePath }: {
       <div className="discovery-grid">
         {entries.map((entry) => <DiscoveryCard key={entry.slug} entry={entry} basePath={basePath} />)}
       </div>
-    </section>
+    </section></DiscoveryAdvertising>
   </main>;
 }

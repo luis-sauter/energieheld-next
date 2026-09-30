@@ -2,9 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { DiscoveryCard } from "@/components/portal/reise-overview";
 import { travelThemes } from "@/data/reiseportal-discovery";
+import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
+import { loadDiscoveryAdvertising } from "@/lib/discovery-advertising";
 
 export const metadata = { title: "Mottoreisen" };
-export default function MottoTravelPage() {
+export const dynamic = "force-dynamic";
+export default async function MottoTravelPage() {
+  const advertising = await loadDiscoveryAdvertising("/mottoreisen");
   return <main id="hauptinhalt" className="container trade-page discovery-page motto-page">
     <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
       <Link href="/">Startseite</Link><span>›</span><span>Mottoreisen</span>
@@ -18,10 +22,10 @@ export default function MottoTravelPage() {
       </div>
       <div className="motto-intro-image"><Image src="/reiseportal/mottoreisen-intro.jpg" alt="Originales Mottoreisen-Motiv aus dem Reiseportal" fill sizes="(max-width: 700px) 100vw, 50vw" priority /></div>
     </section>
-    <section className="section" aria-labelledby="motto-grid-heading">
+    <DiscoveryAdvertising data={advertising}><section className="section" aria-labelledby="motto-grid-heading">
       <div className="section-heading"><div><h2 id="motto-grid-heading">Reisen nach Ihrem Motto</h2></div></div>
       <div className="discovery-grid">{travelThemes.map((entry) =>
         <DiscoveryCard key={entry.slug} entry={entry} basePath="/mottoreisen" />)}</div>
-    </section>
+    </section></DiscoveryAdvertising>
   </main>;
 }

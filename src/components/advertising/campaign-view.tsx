@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useInlineBanners } from "./inline-banner-context";
 import {
   adPlacements,
   adScopeLabel,
@@ -19,7 +22,7 @@ function CreativeImage({ src, alt }: { src: string; alt: string }) {
 
 export function CampaignSlot({
   placement,
-  ad,
+  ad: initialAd,
   preview = false,
   showLabel = true,
 }: {
@@ -28,6 +31,8 @@ export function CampaignSlot({
   preview?: boolean;
   showLabel?: boolean;
 }) {
+  const inline = useInlineBanners();
+  const ad = inline && Object.hasOwn(inline.overrides, placement) ? inline.overrides[placement] ?? undefined : initialAd;
   const content = ad && (
     ad.imageUrl ? (
       <CreativeImage
@@ -49,6 +54,12 @@ export function CampaignSlot({
       aria-label={`Anzeige – ${adPlacements[placement]}`}
     >
       {showLabel && <div className={styles.label}>Anzeige{preview ? " · Vorschau" : ""}</div>}
+      {inline && !preview && <div className={styles.inlineControls}>
+        <strong>{adPlacements[placement]}</strong>
+        <button type="button" className="button" onClick={() => inline.open(placement, ad?.id)}>
+          {ad?.image_path ? "Banner bearbeiten" : "Banner hinzufügen"}
+        </button>
+      </div>}
       {ad ? (
         preview ? (
           <div className={`${styles.creative} ${ad.imageUrl ? styles.imageCreative : ""}`}>{content}</div>

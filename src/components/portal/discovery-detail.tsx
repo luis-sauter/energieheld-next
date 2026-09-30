@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { DiscoveryEntry } from "@/data/reiseportal-discovery";
 import type { Listing } from "@/types/portal";
+import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
+import type { DiscoveryAdvertisingData } from "@/lib/discovery-advertising";
 
 export function AccommodationCard({ listing }: { listing: Listing }) {
   const image = listing.images[0];
@@ -22,11 +24,12 @@ export function AccommodationCard({ listing }: { listing: Listing }) {
   </article>;
 }
 
-export function DiscoveryDetail({ entry, title, basePath, listings }: {
+export function DiscoveryDetail({ entry, title, basePath, listings, advertising }: {
   entry: DiscoveryEntry;
   title: string;
   basePath: string;
   listings: Listing[];
+  advertising?: DiscoveryAdvertisingData;
 }) {
   return <main id="hauptinhalt" className="container trade-page discovery-detail">
     <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
@@ -37,13 +40,13 @@ export function DiscoveryDetail({ entry, title, basePath, listings }: {
       {entry.image && <Image src={entry.image} alt={entry.alt} fill sizes="100vw" priority />}
       <div><p className="eyebrow">{title}</p><h1>{entry.title}</h1></div>
     </header>
-    <div className="discovery-detail-content">
+    <DiscoveryAdvertising data={advertising}><div className="discovery-detail-content">
       <p className="discovery-intro">{entry.intro}</p>
       {listings.length > 0 && <section className="section" aria-labelledby="related-stays">
         <div className="section-heading"><div><p className="eyebrow">Aus dem Reiseportal</p><h2 id="related-stays">Passende Unterkünfte</h2></div></div>
         <div className="accommodation-grid">{listings.map((listing) => <AccommodationCard listing={listing} key={listing.id} />)}</div>
       </section>}
       <Link className="text-link" href={basePath}>← Alle {title} ansehen</Link>
-    </div>
+    </div></DiscoveryAdvertising>
   </main>;
 }

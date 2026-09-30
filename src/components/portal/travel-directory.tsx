@@ -12,9 +12,11 @@ import { ListingRow } from "./listing-row";
 import { TravelFinder } from "./travel-finder";
 import { DirectoryOrderEditor } from "@/components/admin/directory-order-editor";
 import { SidebarOrderEditor } from "@/components/admin/sidebar-order-editor";
+import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
+import type { InlineBannerOptions } from "@/lib/inline-ad-context";
 
 export function TravelDirectory({ initialValues, database, preview, terms, error, ads, sidebarOrder,
-  canReorder, hiddenOrderKeys, saveOrder, saveSidebarOrder }: {
+  canReorder, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions }: {
   initialValues: TravelFilterValues;
   database: Listing[];
   preview: Listing[];
@@ -23,6 +25,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   ads: ActiveAd[];
   sidebarOrder: SidebarSlot[];
   canReorder: boolean;
+  bannerOptions?: InlineBannerOptions;
   hiddenOrderKeys: string[];
   saveOrder?: (ids: string[]) => Promise<{ success?: string; error?: string }>;
   saveSidebarOrder?: (slots: SidebarSlot[]) => Promise<{ success?: string; error?: string }>;
@@ -47,7 +50,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     return () => window.removeEventListener("popstate", restore);
   }, []);
 
-  return <main id="hauptinhalt" className="travel-directory-page">
+  return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className="travel-directory-page">
     <TravelFinder mode="directory" listings={listings} options={options} values={values} onChange={setValues} error={error} />
     <div className="container trade-page travel-directory-content">
       <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
@@ -91,5 +94,5 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
         </section>
       </AdvertisingLayout>
     </div>
-  </main>;
+  </main></InlineBannerProvider>;
 }
