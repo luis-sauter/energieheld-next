@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useInlineBanners } from "./inline-banner-context";
 import type { ReactNode } from "react";
 import type { ActiveAd } from "@/lib/ad-values";
 import { sidebarCreative } from "@/lib/advertising-rail";
@@ -14,6 +17,7 @@ export function AdvertisingRail({
   ads: ActiveAd[];
   editor?: ReactNode;
 }) {
+  const inline = useInlineBanners();
   return (
     <aside className="commercial-sidebar advertising-rail" aria-label="Werbeanzeigen">
       <p className="advertising-rail-label">Anzeige</p>
@@ -21,7 +25,7 @@ export function AdvertisingRail({
         <div className="advertising-rail-creatives">
           {slots.map((slot) => {
             const ad = sidebarCreative(slot, ads);
-            return ad ? <CampaignSlot key={slot} placement={slot} ad={ad} showLabel={false} /> : null;
+            return ad || inline ? <CampaignSlot key={slot} placement={slot} ad={ad} showLabel={false} /> : null;
           })}
         </div>
       )}

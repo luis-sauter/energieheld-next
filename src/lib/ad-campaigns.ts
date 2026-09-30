@@ -112,7 +112,7 @@ export async function loadAdCampaigns(
   let query = client
     .from("company_ad_campaigns")
     .select(
-      "*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement),company_profiles!inner(display_name,company_profile_categories(category_id))",
+      "*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement),company_profiles(display_name,company_profile_categories(category_id))",
       { count: "exact" },
     );
   if (profileId) query = query.eq("profile_id", profileId);

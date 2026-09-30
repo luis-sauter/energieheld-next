@@ -15,6 +15,7 @@ import { EmptyState } from "./listings";
 import { ListingRow } from "./listing-row";
 import { Icon } from "./icon";
 import { TravelDirectory } from "./travel-directory";
+import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
 
 export async function DirectoryPage({ searchParams, trade, mode = "energy", canReorder = false,
   saveOrder, saveSidebarOrder }: {
@@ -27,13 +28,14 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
 }) {
   const params = await searchParams;
   if (mode === "travel") {
-    const [loaded, terms, ads, sidebarOrder] = await Promise.all([
+    const [loaded, terms, ads, sidebarOrder, bannerOptions] = await Promise.all([
       loadReiseportalDirectory(), loadPublicTravelTerms(), loadPublicAds(undefined), loadPublicSidebarOrder(),
+      loadInlineBannerOptions("/unterkuenfte-a-z"),
     ]);
     return <TravelDirectory initialValues={readTravelFilterValues(params)} database={loaded.database}
       preview={loaded.preview} terms={terms} error={loaded.error} ads={ads} sidebarOrder={sidebarOrder}
       canReorder={canReorder} hiddenOrderKeys={loaded.hiddenOrderKeys}
-      saveOrder={saveOrder} saveSidebarOrder={saveSidebarOrder} />;
+      saveOrder={saveOrder} saveSidebarOrder={saveSidebarOrder} bannerOptions={bannerOptions} />;
   }
 
   const read = (key: string) => typeof params[key] === "string" ? params[key] as string : "";

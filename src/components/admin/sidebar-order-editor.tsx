@@ -8,6 +8,7 @@ import { sidebarCreative } from "@/lib/advertising-rail";
 import type { ActiveAd } from "@/lib/ad-values";
 import { moveSidebarSlot, type SidebarSlot } from "@/lib/sidebar-order";
 import { useDirectoryEditMode } from "./directory-edit-mode";
+import { useInlineBanners } from "@/components/advertising/inline-banner-context";
 import styles from "./sidebar-order-editor.module.css";
 
 const label = (slot: SidebarSlot) => adPlacements[slot];
@@ -35,9 +36,10 @@ export function SidebarOrderSlots({
   onPointerUp: () => void;
   onMove: (from: number, to: number) => void;
 }) {
+  const inline = useInlineBanners();
   return slots.map((slot, index) => {
     const ad = sidebarCreative(slot, ads);
-    if (!editing && !ad) return null;
+    if (!editing && !ad && !inline) return null;
     return (
     <div key={slot} data-sidebar-slot={slot}
       className={`${styles.row} ${dragged === slot ? styles.dragging : ""} ${target === slot ? styles.target : ""}`}>
@@ -55,7 +57,7 @@ export function SidebarOrderSlots({
           </div>
         </>
       )}
-      {ad ? (
+      {ad || inline ? (
         <CampaignSlot placement={slot} ad={ad} showLabel={false} />
       ) : <div className={styles.placeholder}>Noch kein Banner</div>}
     </div>

@@ -22,6 +22,9 @@
   display: grid;
   gap: 20px;
 }
+.inlineControls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 12px; }
+.inlineControls strong { color: var(--brand-primary); font-size: 14px; }
+.inlineControls button { min-height: 44px; }
 .requestForm {
   padding: clamp(14px, 3vw, 28px);
   border-radius: 12px;

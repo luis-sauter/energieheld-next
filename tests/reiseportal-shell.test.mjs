@@ -11,7 +11,7 @@ registerHooks({
     if (specifier.endsWith(".module.css")) return { url: 'data:text/javascript,export default {}', shortCircuit: true };
     if (specifier === "server-only") return { url: "data:text/javascript,export {}", shortCircuit: true };
     if (specifier === "next/navigation") return {
-      url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")}',
+      url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")};export function useRouter(){return {refresh(){}}}',
       shortCircuit: true,
     };
     if (specifier === "next/link" || specifier === "next/image") return {
@@ -19,6 +19,7 @@ registerHooks({
       shortCircuit: true,
     };
     if (specifier.endsWith("/auth-actions")) return { url: 'data:text/javascript,export async function logout(){return {}}', shortCircuit: true };
+    if (specifier.endsWith("/discovery-advertising") && !specifier.includes("components/")) return { url: 'data:text/javascript,export async function loadDiscoveryAdvertising(){return undefined}', shortCircuit: true };
     if (specifier.endsWith("/public-companies")) return {
       url: 'data:text/javascript,export async function loadPublicCompanyDirectory(){return globalThis.__travelDirectoryResult};export async function loadPublicCompanyBySlug(slug){globalThis.__travelLookups.push(slug);return globalThis.__travelDetailResult}',
       shortCircuit: true,
@@ -215,7 +216,7 @@ test("four destinations and twelve themes have sourced images, links and detail 
     const detail = renderToStaticMarkup(createElement(DiscoveryDetail, { entry, title: "Mottoreisen", basePath: "/mottoreisen", listings: [] }));
     assert.match(detail, new RegExp(`${slug}\\.jpg`));
   }
-  const overview = renderToStaticMarkup(createElement(ThemeOverview));
+  const overview = renderToStaticMarkup(await ThemeOverview());
   assert.match(overview, /mottoreisen-intro\.jpg/);
   assert.match(overview, /Vielleicht geht es Ihnen aber gar nicht so sehr um ein bestimmtes Ziel/);
   await assert.rejects(destinationRoute.default({ params: Promise.resolve({ slug: "unbekannt" }) }), /NOT_FOUND/);

@@ -48,7 +48,8 @@ export type AdValues = {
 };
 export type AdCampaign = AdValues & {
   id: string;
-  profile_id: string;
+  profile_id: string | null;
+  is_editorial?: boolean;
   status: "draft" | "pending" | "approved" | "rejected" | "paused";
   approved_start_date: string | null;
   approved_end_date: string | null;

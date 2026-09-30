@@ -71,6 +71,7 @@ const { AdvertisingRail } = await import("../src/components/advertising/advertis
 const { sidebarCreative } = await import("../src/lib/advertising-rail.ts");
 const { defaultSidebarOrder } = await import("../src/lib/sidebar-order.ts");
 const { SidebarOrderSlots } = await import("../src/components/admin/sidebar-order-editor.tsx");
+const { InlineBannerContext } = await import("../src/components/advertising/inline-banner-context.tsx");
 const campaign = {
   id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   profile_id: "own",
@@ -435,4 +436,33 @@ test("legacy trade routes redirect without rendering their category pages", asyn
       /REDIRECT:\//,
     );
   }
+});
+
+test("inline banner controls are absent for public visitors and present at all admin placements", () => {
+  const visitor = renderToStaticMarkup(createElement(CampaignSlot, { placement: "top_banner", ad: campaign }));
+  assert.doesNotMatch(visitor, /Banner hinzufügen|Banner bearbeiten/);
+  const value = { overrides: {}, open() {} };
+  const admin = renderToStaticMarkup(createElement(InlineBannerContext.Provider, { value },
+    createElement(AdvertisingRail, { ads: [], slots: [...defaultSidebarOrder] })));
+  assert.equal((admin.match(/Banner hinzufügen/g) ?? []).length, 12);
+  for (const slot of defaultSidebarOrder) assert.match(admin, new RegExp(`data-placement="${slot}"`));
+  const existing = renderToStaticMarkup(createElement(InlineBannerContext.Provider, { value },
+    createElement(CampaignSlot, { placement: "top_banner", ad: { ...campaign, image_path: "campaigns/existing/creative/image.png" } })));
+  assert.match(existing, /Banner bearbeiten/);
+  assert.match(existing, /Premium-Banner oben/);
+});
+
+test("saved inline creative immediately overrides its exact placement without changing sibling slots", () => {
+  const updated = { ...campaign, id: "updated", placement: "sidebar_middle", target_url: "https://example.org/saved", imageUrl: "/saved-square.png" };
+  const value = { overrides: { sidebar_middle: updated, top_banner: null }, open() {} };
+  const html = renderToStaticMarkup(createElement(InlineBannerContext.Provider, { value },
+    createElement("div", null,
+      createElement(CampaignSlot, { placement: "top_banner", ad: campaign }),
+      createElement(CampaignSlot, { placement: "sidebar_middle" }),
+      createElement(CampaignSlot, { placement: "sidebar_top", ad: { ...campaign, imageUrl: "/unchanged.png" } }))));
+  assert.match(html, /href="https:\/\/example.org\/saved"/);
+  assert.match(html, /src="\/saved-square.png"/);
+  assert.match(html, /src="\/unchanged.png"/);
+  assert.doesNotMatch(html, /width="1200"|height="600"/);
+  assert.match(html, /rel="sponsored noopener noreferrer" target="_blank"/);
 });

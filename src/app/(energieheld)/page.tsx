@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
+import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
 import { CampaignSlot } from "@/components/advertising/campaign-view";
 import { AdvertisingRail } from "@/components/advertising/advertising-rail";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
@@ -19,11 +21,12 @@ const featuredStays = ["bayerischer-wald", "hoeflehner", "pension-sonnenhof", "s
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [ads, sidebarOrder, directory, terms] = await Promise.all([
+  const [ads, sidebarOrder, directory, terms, bannerOptions] = await Promise.all([
     loadPublicAds(undefined, "homepage"),
     loadPublicSidebarOrder(),
     loadReiseportalDirectory(),
     loadPublicTravelTerms(),
+    loadInlineBannerOptions("/"),
   ]);
   const bySlug = new Map(directory.database.map((listing) => [listing.slug, listing]));
   const featured = featuredStays.flatMap((slug) => {
@@ -32,7 +35,7 @@ export default async function Home() {
   });
   const searchableThemes = new Set(availableTravelFilters(directory.database, terms).themes.map((entry) => entry.slug));
 
-  return <main id="hauptinhalt" className="editorial-home discovery-home">
+  return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className="editorial-home discovery-home">
     <HomeTravelFinder listings={[...directory.preview, ...directory.database]} terms={terms} error={directory.error} />
 
     <nav className="container travel-quicklinks" aria-label="Schnell zu Reisethemen">
@@ -76,5 +79,5 @@ export default async function Home() {
     <div className="container premium-space">
       <CampaignSlot placement="top_banner" ad={ads.find((ad) => ad.placement === "top_banner")} />
     </div>
-  </main>;
+  </main></InlineBannerProvider>;
 }

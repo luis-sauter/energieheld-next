@@ -47,6 +47,7 @@ before(async () => {
   await db.exec("insert into public.travel_terms values ('theme','wellnessangebote'),('theme','wanderurlaub'),('theme','natur-pur')");
   await db.query("insert into company_ad_campaign_targets(campaign_id,target_type,placement) values($1,'homepage','top_banner')", [draftIds[0]]);
   await migration("20260930143000_portal_ad_target_areas.sql");
+  await migration("20260930170000_editorial_ad_campaigns.sql");
   today = (await db.query("select ((now() at time zone 'Europe/Berlin')::date)::text as day")).rows[0].day;
 });
 after(async () => db?.close());
