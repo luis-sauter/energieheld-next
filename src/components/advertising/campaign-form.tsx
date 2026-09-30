@@ -42,6 +42,10 @@ export function availableRequestScopes(scopes: RequestAdScope[], areas: string[]
 export function addPortalArea(areas: string[], key: string) {
   return !portalAdSection(key) || areas.includes(key) ? areas : [...areas, key];
 }
+export function revealAddedPortalArea(card: HTMLElement, reducedMotion: boolean) {
+  card.querySelector<HTMLSelectElement>("select")?.focus({ preventScroll: true });
+  card.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
+}
 export function requestScopeIds(targets: AdTarget[], pristine = false): RequestAdScope[] {
   return pristine ? [] : requestAdScopes.filter((scope) => targets.some((target) => target.target_type === "portal_area"
     ? portalAdSection(target.target_key ?? "") === scope.id : target.target_type === scope.id)).map((scope) => scope.id);
@@ -110,10 +114,17 @@ export function CampaignForm({
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
   const scopeToFocus = useRef<RequestAdScope | null>(null);
   const areaPickers = useRef<Partial<Record<RequestAdScope, HTMLSelectElement | null>>>({});
+  const areaToFocus = useRef<string | null>(null);
+  const areaCards = useRef<Record<string, HTMLDivElement | null>>({});
   useEffect(() => {
     if (scopeToFocus.current) areaPickers.current[scopeToFocus.current]?.focus();
     scopeToFocus.current = null;
   }, [scopePickerOpen, shownScopes]);
+  useEffect(() => {
+    const card = areaToFocus.current ? areaCards.current[areaToFocus.current] : null;
+    areaToFocus.current = null;
+    if (card) revealAddedPortalArea(card, window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, [shownAreas]);
   const [availabilityResult, setAvailabilityResult] = useState<{
     key: string; slots: Record<string, "Belegt" | "Angefragt">; error: string;
   }>({ key: "", slots: {}, error: "" });
@@ -222,15 +233,18 @@ export function CampaignForm({
                 <select value="" aria-label={`${portalSection.label}: Rubrik oder Unterrubrik hinzufügen`}
                   ref={(element) => { areaPickers.current[portalSection.id] = element; }} onChange={(event) => {
                   const key = event.target.value;
-                  if (portalAdSection(key) === portalSection.id)
+                  if (portalAdSection(key) === portalSection.id && !shownAreas.includes(key)) {
+                    areaToFocus.current = key;
                     setShownAreas((current) => addPortalArea(current, key));
+                  }
                 }}>
                   <option value="">Rubrik oder Unterrubrik auswählen</option>
                   {portalSection.areas.map((area) => <option key={area.key} value={area.key} disabled={shownAreas.includes(area.key)}>{area.label}</option>)}
                 </select>
               </label>
               <p className={styles.sectionHint}>Für diese Rubrik wird eine sichtbare Bannerfläche noch eingerichtet. Ihre Auswahl wird getrennt nach Unterrubrik und Platz geprüft.</p>
-              {shownAreas.filter((key) => portalAdSection(key) === portalSection.id).map((key) => <div className={styles.areaCard} key={key}>
+              {shownAreas.filter((key) => portalAdSection(key) === portalSection.id).map((key) => <div className={styles.areaCard} key={key}
+                role="group" aria-label={portalAdAreaLabel(key)} ref={(element) => { areaCards.current[key] = element; }}>
                 <div className={styles.scopeHeader}>
                   <label>Platzierung in
                     <select value={key} onChange={(event) => {
