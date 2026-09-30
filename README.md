@@ -1,19 +1,12 @@
-# Energieheld
+# DAS Reiseportal
 
-Next.js mit TypeScript, App Router, ESLint, technischer Supabase-Anbindung und einer statischen Frontend-Vorschau. Keine produktive Businesslogik, Login-Oberfläche oder Business-Tabellen.
-
-## Frontend-Vorschau
-
-Startseite: / · Experten: /experten · Beispielprofil: /experten/mueller-haustechnik · Komponenten-/Werbeplatz-Demo: /portal-vorschau.
-
-Architektur, Seiten, Bildquellen und nächste Schritte: [Frontend-Dokumentation](docs/frontend-preview.md).
+Next.js-Portal aus der Energieheld-Codebasis: Unterkünfte entdecken, nach Reisezielen und Mottoreisen filtern und Anbieter kontaktieren. Die Anwendung enthält Supabase-Auth, einen Anbieterbereich, einen Admin-Profil-Editor, private Medien, Werbekampagnen und gespeicherte Anfragen.
 
 ## Voraussetzungen
 
-- Node.js 24 LTS (mit Version 24.19.0 geprüft)
-- pnpm 11.19.0 (in `package.json` festgelegt)
-
-Falls pnpm noch fehlt: `npm install --global pnpm@11.19.0` mit einer regulären Node.js-/npm-Installation.
+- Node.js 24 LTS.
+- pnpm 11.19.0 gemäß `package.json`.
+- Next.js 16, React 19 und TypeScript im Strict-Modus. Exakte Versionen stehen in [package.json](package.json).
 
 ## Lokal starten
 
@@ -21,78 +14,40 @@ Falls pnpm noch fehlt: `npm install --global pnpm@11.19.0` mit einer regulären 
 pnpm install --frozen-lockfile
 ```
 
-Beim ersten Einrichten `.env.example` nach `.env.local` kopieren und den Publishable Key aus den API-Key-Einstellungen von **energieheld-dev** eintragen. Eine bereits vorhandene `.env.local` beibehalten.
-
-```dotenv
-NEXT_PUBLIC_SUPABASE_URL=https://mbcvlqnxluyxznlnitbq.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable-key>
-```
-
-Diese beiden Werte werden im Browser verwendet. Keine Secret- oder Service-Role-Keys einsetzen. `.env.local` und andere lokale Umgebungsdateien werden von Git ignoriert; nur `.env.example` wird versioniert.
+Bei der ersten Einrichtung `.env.example` als Vorlage für `.env.local` verwenden. Eine vorhandene `.env.local` beibehalten. `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` auf das vorgesehene Supabase-Projekt setzen. Diese Variablen sind öffentlich; dort keine Secret- oder Service-Role-Keys eintragen. Lokale Umgebungsdateien werden nicht versioniert.
 
 ```sh
 pnpm dev
 ```
 
-http://localhost:3000 öffnen. Änderungen werden automatisch übernommen; Strg+C beendet den Server. Nach Änderungen an Umgebungsvariablen den Server neu starten. Fehlende Supabase-Variablen führen beim ersten Aufruf zu einer verständlichen Fehlermeldung.
+Die Anwendung unter http://localhost:3000 öffnen. Nach Änderungen an Umgebungsvariablen den Server neu starten.
 
-## Prüfungen und Produktionsbetrieb
+## Prüfungen und Build
 
 ```sh
 pnpm lint
 pnpm typecheck
+pnpm test
 pnpm build
 pnpm start
 ```
 
-`pnpm start` benötigt einen erfolgreichen Build. Entwicklungs- und Produktionsserver verwenden standardmäßig Port 3000; immer nur einen davon starten. Die öffentlichen Supabase-Variablen müssen auch in einer Deployment-Umgebung vor dem Build gesetzt sein.
+`pnpm start` benötigt einen erfolgreichen Build. Entwicklungs- und Produktionsserver verwenden standardmäßig denselben Port; nur einen davon starten. Tests prüfen unter anderem Fachlogik, SQL mit PGlite und statisches React-Markup. Interaktive Browserabläufe werden separat geprüft.
 
 ## Projektstruktur
 
-- `src/app/`: App-Router-Seiten, HTML-Grundlayout, Metadaten, Basisstile und Browser-Icon.
-- `src/lib/supabase/client.ts`: Browser-Client mit Cookie-Verwaltung über `@supabase/ssr`; Import in Client Components.
-- `src/lib/supabase/server.ts`: Neuer Server-Client pro Request mit `await cookies()`; `server-only` verhindert versehentliche Browser-Imports. In Server Components mit `await createClient()` verwenden.
-- `src/lib/supabase/env.ts`: Gemeinsame Prüfung der beiden benötigten Umgebungsvariablen, ohne ihre Werte zu protokollieren.
-- `src/lib/supabase/proxy.ts`: Technische Session-Aktualisierung über `getClaims()`; überträgt aktualisierte Cookies und Cache-Schutz-Header.
-- `src/proxy.ts`: Bindet diese Aktualisierung vor Seitenaufrufen ein; statische Assets werden ausgenommen. Enthält keine Login-Weiterleitungen oder Zugriffsbeschränkungen.
-- `public/`: Statische Dateien; `.gitkeep` hält den leeren Ordner in Git.
-- `supabase/config.toml`: Von der CLI erzeugte Konfiguration für den optionalen lokalen Supabase-Stack (Postgres 17). Seed-Daten sind deaktiviert. Dies ist keine Änderung der Cloud-Konfiguration.
-- `supabase/migrations/`: Platz für spätere SQL-Migrationen; bisher nur `.gitkeep`, keine Migration und keine Tabelle.
-- `supabase/.gitignore`: Ignoriert temporäre CLI-Verbindungsdaten und lokale Supabase-Dateien.
-- `.env.example`: Vorlage mit Variablennamen und öffentlicher Projekt-URL, ohne Key.
-- `package.json`: Abhängigkeiten und Befehle. Supabase-Pakete und CLI sind auf exakte Versionen festgelegt.
-- `pnpm-lock.yaml`: Reproduzierbare Auflösung aller Abhängigkeiten.
-- `pnpm-workspace.yaml`: Vom Next.js-Generator angelegte pnpm-Konfiguration für Build-Skripte von Abhängigkeiten.
-- `tsconfig.json`: TypeScript im Strict-Modus; `@/*` verweist auf `src/*`.
-- `next.config.ts` und `eslint.config.mjs`: Next.js-Konfiguration und Codeprüfregeln.
-- `.gitignore`: Ignoriert Abhängigkeiten, Build-Ausgaben und Umgebungsdateien.
-- `AGENTS.md` und `CLAUDE.md`: Vom Next.js-Generator angelegte Hinweise für Coding-Assistenten.
+- `src/app/`: App-Router-Seiten, Layouts, Serveraktionen und Route-Handler.
+- `src/components/`, `src/lib/`, `src/config/`: Komponenten, Fachlogik und Konfiguration.
+- `src/lib/supabase/`: Browser-, SSR- und öffentliche Clients. Der Proxy aktualisiert Sessions; geschützte Operationen prüfen ihre Berechtigung serverseitig.
+- `public/`: statische Bilder, zugeordnete Legacy-Medien und Video.
+- `supabase/migrations/`: SQL-Migrationen; `supabase/config.toml` konfiguriert den optionalen lokalen Stack.
+- `tests/`: automatisierte Prüfungen; `docs/` und `scripts/`: Dokumentation und Importwerkzeuge.
+- `netlify.toml`: Deployment mit `pnpm build` und dem Next.js-Plugin.
 
-`node_modules/`, `.next/` und `next-env.d.ts` werden automatisch erzeugt und nicht versioniert.
+## Supabase und Deployment
 
-## Supabase CLI und spätere Migrationen
+Die Anwendung verwendet Supabase Auth, RLS und private Medien-Buckets. Öffentliche Medien werden über signierte URLs geladen. Die CLI-Anmeldung ist unabhängig von der App-Verbindung. Zugangstokens und Datenbankpasswörter gehören nicht in Git oder öffentliche Next.js-Variablen.
 
-Cloud-Projekt: **energieheld-dev**, Referenz `mbcvlqnxluyxznlnitbq` (Frankfurt).
+Lokale SQL-Dateien und CLI-Konfiguration bestätigen nicht, welche Migrationen in einer Cloud-Umgebung angewendet sind. Cloud-Änderungen separat prüfen; ein Frontend-Branch isoliert die Datenbank nicht automatisch.
 
-Die Webanwendung verbindet sich über `.env.local`. Die CLI benötigt eine separate persönliche Anmeldung, unabhängig von der Supabase-Verbindung in Codex:
-
-```sh
-pnpm exec supabase login
-pnpm supabase:link
-```
-
-Der Link-Befehl ist fest auf `energieheld-dev` eingestellt. Zugangstokens und Datenbankpasswörter gehören weder in Git noch in die öffentlichen Next.js-Variablen. CLI-Verbindungsdaten unter `supabase/.temp/` werden nicht versioniert; nach einem neuen Clone erneut anmelden und verknüpfen.
-
-Für eine spätere, tatsächlich gewünschte Schemaänderung:
-
-```sh
-pnpm exec supabase migration new beschreibung_der_aenderung
-```
-
-Die CLI erzeugt eine SQL-Datei mit Zeitstempel unter `supabase/migrations/`. Diese wird zusammen mit der geprüften Schemaänderung versioniert. Es wurden bisher keine Migrationen auf die Cloud-Datenbank angewendet.
-
-Optional kann später mit Docker Desktop und `pnpm exec supabase start` ein lokaler Supabase-Stack gestartet werden. Für die Verbindung zum vorhandenen Cloud-Projekt ist Docker nicht erforderlich. Die Konfiguration unter `supabase/config.toml` ist für diesen lokalen Stack gedacht; `project_id` ist dessen lokaler Bezeichner, nicht die Cloud-Projektreferenz.
-
-Auth-Seiten und fachliche Zugriffsregeln werden erst bei Bedarf ergänzt. Neue Auth-Route-Handler müssen ihre eigenen Antworten inklusive Cookies und Cache-Schutz korrekt behandeln; die vorhandene Session-Aktualisierung ersetzt keine Autorisierungsprüfung.
-
-Grundlagen: [Next.js-Installation](https://nextjs.org/docs/app/getting-started/installation) und [Supabase-Clients für SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client).
+Grundlagen: [Next.js](https://nextjs.org/docs/app), [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client) und [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security).
