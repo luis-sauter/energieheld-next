@@ -444,7 +444,8 @@ test("inline banner controls are absent for public visitors and present at all a
   const value = { overrides: {}, open() {} };
   const admin = renderToStaticMarkup(createElement(InlineBannerContext.Provider, { value },
     createElement(AdvertisingRail, { ads: [], slots: [...defaultSidebarOrder] })));
-  assert.equal((admin.match(/Banner hinzufügen/g) ?? []).length, 12);
+  assert.equal((admin.match(/Banner hinzufügen/g) ?? []).length, 2, "only K and L are empty; ten visible legacy banners are occupied");
+  assert.equal((admin.match(/Banner bearbeiten/g) ?? []).length, 10);
   for (const slot of defaultSidebarOrder) assert.match(admin, new RegExp(`data-placement="${slot}"`));
   const existing = renderToStaticMarkup(createElement(InlineBannerContext.Provider, { value },
     createElement(CampaignSlot, { placement: "top_banner", ad: { ...campaign, image_path: "campaigns/existing/creative/image.png" } })));
@@ -465,4 +466,13 @@ test("saved inline creative immediately overrides its exact placement without ch
   assert.match(html, /src="\/unchanged.png"/);
   assert.doesNotMatch(html, /width="1200"|height="600"/);
   assert.match(html, /rel="sponsored noopener noreferrer" target="_blank"/);
+});
+
+test("removed or temporarily imageless banners are invisible publicly while previews retain text fallback", () => {
+  for (const ad of [{ ...campaign, imageUrl: undefined, suppressed: true }, { ...campaign, imageUrl: undefined, image_path: null, suppressed: true }]) {
+    assert.equal(renderToStaticMarkup(createElement(CampaignSlot,{ placement: "top_banner", ad })), "");
+  }
+  const preview=renderToStaticMarkup(createElement(CampaignSlot,{ placement: "top_banner", preview: true,
+    ad: { ...campaign,imageUrl:undefined,headline:"Textvorschau" } }));
+  assert.match(preview,/Textvorschau/);
 });
