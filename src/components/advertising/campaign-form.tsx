@@ -14,8 +14,25 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import type { AdFormState } from "@/lib/ad-values";
 import { reviewCampaign, saveAdminCampaign, prepareAdminCampaignImage, adminCampaignAvailability } from "@/app/(energieheld)/admin/werbung/actions";
-import { CampaignSlot } from "./campaign-view";
 import styles from "./advertising.module.css";
+const requestScopes = [
+  { id: "homepage", name: "Startseite" },
+  { id: "experts_directory", name: "Unterkünfte A–Z" },
+] as const;
+type RequestScope = (typeof requestScopes)[number]["id"];
+export function removeRequestScope(targets: AdTarget[], scope: RequestScope) {
+  return targets.filter((target) => target.target_type !== scope);
+}
+export function addRequestScope(scopes: RequestScope[], scope: RequestScope) {
+  return scopes.includes(scope) ? scopes : [...scopes, scope];
+}
+export function requestScopeIds(targets: AdTarget[], pristine = false): RequestScope[] {
+  return pristine ? [] : requestScopes.filter((scope) => targets.some((target) => target.target_type === scope.id)).map((scope) => scope.id);
+}
+export function slotAvailabilityText(status: "Belegt" | "Angefragt" | undefined, checked: boolean, loading: boolean, error: string) {
+  const label = loading ? "Wird geprüft …" : error ? "Derzeit nicht prüfbar" : status ?? "Verfügbar";
+  return checked ? `Ausgewählt · ${label}` : label;
+}
 export function CampaignForm({
   campaign,
   categoryIds,
@@ -60,11 +77,15 @@ export function CampaignForm({
     },
     {},
   );
-  const [values, setValues] = useState(() => admin && ["approved", "paused"].includes(campaign.status)
-    ? { ...campaign, requested_start_date: campaign.approved_start_date ?? campaign.requested_start_date,
-        requested_end_date: campaign.approved_end_date ?? campaign.requested_end_date }
-    : campaign),
-    [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
+  const pristine = !admin && campaign.status === "draft" && !campaign.internal_name && !campaign.headline && !campaign.target_url;
+  const [values, setValues] = useState(() => {
+    if (admin && ["approved", "paused"].includes(campaign.status))
+      return { ...campaign, requested_start_date: campaign.approved_start_date ?? campaign.requested_start_date,
+        requested_end_date: campaign.approved_end_date ?? campaign.requested_end_date };
+    return pristine ? { ...campaign, targets: [] } : campaign;
+  });
+  const [shownScopes, setShownScopes] = useState<RequestScope[]>(() => requestScopeIds(campaign.targets, pristine));
+  const [scopePickerOpen, setScopePickerOpen] = useState(false);
   const [availabilityResult, setAvailabilityResult] = useState<{
     key: string; slots: Record<string, "Belegt" | "Angefragt">; error: string;
   }>({ key: "", slots: {}, error: "" });
@@ -85,12 +106,6 @@ export function CampaignForm({
     });
     return () => { current = false; };
   }, [values.requested_start_date, values.requested_end_date, campaign.id, admin, availabilityKey]);
-  useEffect(
-    () => () => {
-      if (imageUrl) URL.revokeObjectURL(imageUrl);
-    },
-    [imageUrl],
-  );
   const set = (name: string, value: string) =>
     setValues((v) => ({ ...v, [name]: value }));
   const setTarget = (target: AdTarget, checked: boolean) =>
@@ -106,44 +121,86 @@ export function CampaignForm({
         targets: checked ? [...remaining, target] : remaining,
       };
     });
+  const availableScopes = requestScopes.filter((scope) => !shownScopes.includes(scope.id));
   return (
-    <form action={action} className={styles.form}>
+    <form action={action} className={`${styles.form} ${styles.requestForm}`}>
       <input type="hidden" name="campaign_id" value={campaign.id} />
-      <label>
-        Interner Kampagnenname
-        <input
-          name="internal_name"
-          required
-          maxLength={120}
-          value={values.internal_name}
-          onChange={(e) => set("internal_name", e.target.value)}
-        />
-      </label>
       <input type="hidden" name="placement" value={values.targets[0]?.placement ?? campaign.placement} />
-      <fieldset>
+      {!admin && <input type="hidden" name="headline" value={values.headline || values.internal_name.slice(0, 100)} />}
+      <fieldset className={styles.formSection}>
+        <legend>Ansprechpartner</legend>
+        <p className={styles.sectionHint}>So können wir Ihre Anfrage zuordnen und Sie bei Rückfragen erreichen.</p>
+        <div className={styles.contactGrid}>
+          <label>Name<input name="contact_name" maxLength={120} value={values.contact_name ?? ""} onChange={(e) => set("contact_name", e.target.value)} /></label>
+          <label>E-Mail-Adresse<input name="contact_email" type="email" maxLength={254} value={values.contact_email ?? ""} onChange={(e) => set("contact_email", e.target.value)} /></label>
+          <label>Telefonnummer<input name="contact_phone" type="tel" maxLength={60} value={values.contact_phone ?? ""} onChange={(e) => set("contact_phone", e.target.value)} /></label>
+        </div>
+      </fieldset>
+      <fieldset className={styles.formSection}>
+        <legend>Kampagnenziel</legend>
+        <div className={styles.formFields}>
+          <label>{admin ? "Interner Kampagnenname" : "Name der Kampagne"}
+            <input name="internal_name" required maxLength={120} value={values.internal_name} onChange={(e) => set("internal_name", e.target.value)} />
+          </label>
+          <label>Ziel-URL
+            <input type="url" name="target_url" required maxLength={2048} placeholder="https://www.ihre-firma.de" value={values.target_url} onChange={(e) => set("target_url", e.target.value)} />
+          </label>
+        </div>
+      </fieldset>
+      <fieldset className={styles.formSection}>
+        <legend>Zeitraum</legend>
+        <div className={styles.dateGrid}>
+          {([
+            ["requested_start_date", admin && ["approved", "paused"].includes(campaign.status) ? "Ausspielung ab" : "Gewünschter Start"],
+            ["requested_end_date", admin && ["approved", "paused"].includes(campaign.status) ? "Ausspielung bis" : "Gewünschtes Ende"],
+          ] as const).map(([field, label]) => (
+            <label key={field}>{label}
+              <input type="date" name={field} required value={values[field]} onChange={(e) => set(field, e.target.value)} />
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset className={styles.formSection}>
         <legend>Wo möchten Sie werben?</legend>
-        {([
-          { id: "homepage", name: "Startseite" },
-          { id: "experts_directory", name: "Unterkünfte A–Z" },
-        ] as const).map((scope) => (
-          <section key={scope.id} className={styles.scopeGroup}>
-            <h3>{scope.name}</h3>
+        <p className={styles.sectionHint}>Wählen Sie zunächst einen Bereich und danach die passenden Bannerplätze. Weitere Bereiche können Sie jederzeit ergänzen.</p>
+        {shownScopes.map((scopeId) => {
+          const scope = requestScopes.find((item) => item.id === scopeId)!;
+          return <section key={scope.id} className={styles.scopeGroup} aria-label={scope.name}>
+            <div className={styles.scopeHeader}>
+              <div><span className={styles.scopeEyebrow}>Werbebereich</span><h3>{scope.name}</h3></div>
+              <button type="button" className={styles.removeScope} aria-label={`${scope.name} entfernen`}
+                onClick={() => {
+                  setValues((current) => ({ ...current, targets: removeRequestScope(current.targets, scope.id) }));
+                  setShownScopes((current) => current.filter((id) => id !== scope.id));
+                }}>Bereich entfernen</button>
+            </div>
             <div className={styles.placements}>
               {Object.entries(adPlacements).map(([slot, label]) => {
                 const target: AdTarget = { target_type: scope.id, category_id: null, placement: slot as AdPlacementId };
                 const key = `${scope.id}|${slot}`;
                 const checked = values.targets.some((t) => t.target_type === scope.id && (t.placement ?? campaign.placement) === slot);
+                const slotStatus = slotAvailabilityText(availability[key], checked, availabilityLoading, availabilityError);
                 return <label className={styles.placement} key={key}>
                   <input type="checkbox" name="targets" value={key} checked={checked}
                     disabled={availabilityLoading || !!availabilityError || (availability[key] === "Belegt" && !checked)}
                     onChange={(event) => setTarget(target, event.target.checked)} />
-                  <span>{label}</span>
-                  <small>{availabilityLoading ? "Wird geprüft …" : availabilityError ? "Derzeit nicht prüfbar" : availability[key] ?? "Verfügbar"}</small>
+                  <span className={styles.placementName}>{label}</span>
+                  <small className={availability[key] === "Belegt" ? styles.slotBooked : styles.slotAvailability}>{slotStatus}</small>
                 </label>;
               })}
             </div>
-          </section>
-        ))}
+          </section>;
+        })}
+        {availableScopes.length > 0 && <div className={styles.addScope}>
+          <button type="button" className={styles.addScopeButton} aria-expanded={scopePickerOpen} aria-controls={scopePickerOpen ? "ad-scope-options" : undefined}
+            onClick={() => setScopePickerOpen((open) => !open)}>+ Werbebereich hinzufügen</button>
+          {scopePickerOpen && <div id="ad-scope-options" className={styles.scopeOptions} role="group" aria-label="Verfügbare Werbebereiche">
+            {availableScopes.map((scope) => <button type="button" key={scope.id} onClick={() => {
+              setShownScopes((current) => addRequestScope(current, scope.id));
+              setScopePickerOpen(false);
+            }}>{scope.name}</button>)}
+          </div>}
+        </div>}
         {availabilityError && <p role="alert">{availabilityError}</p>}
         {hasBookedSelection &&
           <p role="alert">Ein ausgewählter Platz ist im gewünschten Zeitraum belegt. Bitte ändern Sie die Auswahl.</p>}
@@ -161,46 +218,21 @@ export function CampaignForm({
             Zielseiten.
           </p>
         )}
-        <p className="small muted">Jeder Bannerplatz wird nur für die angezeigte Seite ausgewählt. Belegte Plätze können nicht neu gewählt werden.</p>
+        <p className={styles.sectionHint}>Jeder Bannerplatz gilt nur für die ausgewählte Seite. Belegte Plätze können nicht neu gewählt werden.</p>
       </fieldset>
-      <div className={styles.grid}>
-        {(
-          [
-            ["requested_start_date", admin && ["approved", "paused"].includes(campaign.status) ? "Ausspielung ab" : "Gewünschter Start"],
-            ["requested_end_date", admin && ["approved", "paused"].includes(campaign.status) ? "Ausspielung bis" : "Gewünschtes Ende"],
-          ] as const
-        ).map(([field, label]) => (
-          <label key={field}>
-            {label}
-            <input
-              type="date"
-              name={field}
-              required
-              value={values[field]}
-              onChange={(e) => set(field, e.target.value)}
-            />
-          </label>
-        ))}
-      </div>
-      <div className={styles.grid}>
-        <label>Ansprechpartner<input name="contact_name" maxLength={120} value={values.contact_name ?? ""} onChange={(e) => set("contact_name", e.target.value)} /></label>
-        <label>Telefonnummer<input name="contact_phone" type="tel" maxLength={60} value={values.contact_phone ?? ""} onChange={(e) => set("contact_phone", e.target.value)} /></label>
-        <label>E-Mail-Adresse<input name="contact_email" type="email" maxLength={254} value={values.contact_email ?? ""} onChange={(e) => set("contact_email", e.target.value)} /></label>
-      </div>
-      <label>
-        Anzeigenbild, falls vorhanden (JPEG, PNG oder WebP, maximal 5 MB)
-        <input
+      <fieldset className={styles.formSection}>
+        <legend>Haben Sie bereits ein Bannerbild?</legend>
+        <p className={styles.sectionHint}>Laden Sie Ihr Bannerbild gerne direkt mit hoch. Falls noch kein passendes Motiv vorhanden ist, melden wir uns bei Ihnen und unterstützen Sie gerne bei der Erstellung.</p>
+        <label>Bannerbild hochladen (optional · JPEG, PNG oder WebP, maximal 5 MB)
+          <input
           type="file"
           name="image"
           accept="image/jpeg,image/png,image/webp"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            setImageUrl(file ? URL.createObjectURL(file) : undefined);
-          }}
-        />
-      </label>
-      <label>
-        Überschrift
+          />
+        </label>
+      </fieldset>
+      {admin && <label>
+        Überschrift für interne Vorschau
         <input
           name="headline"
           required
@@ -208,9 +240,11 @@ export function CampaignForm({
           value={values.headline}
           onChange={(e) => set("headline", e.target.value)}
         />
-      </label>
-      <label>
-        Kurzer Text (optional)
+      </label>}
+      <fieldset className={styles.formSection}>
+        <legend>Hinweise oder Wünsche</legend>
+        <p className={styles.sectionHint}>Gibt es etwas, das wir bei Ihrer Kampagne berücksichtigen sollen?</p>
+        <label>Ihre Hinweise (optional)
         <textarea
           name="body_text"
           maxLength={400}
@@ -218,27 +252,8 @@ export function CampaignForm({
           value={values.body_text ?? ""}
           onChange={(e) => set("body_text", e.target.value)}
         />
-      </label>
-      <label>
-        Ziel-URL
-        <input
-          type="url"
-          name="target_url"
-          required
-          maxLength={2048}
-          placeholder="https://www.ihre-firma.de"
-          value={values.target_url}
-          onChange={(e) => set("target_url", e.target.value)}
-        />
-      </label>
-      <section>
-        <h2>Anzeigenvorschau</h2>
-        <CampaignSlot
-          placement={(values.targets[0]?.placement ?? values.placement) as AdPlacementId}
-          ad={{ ...values, imageUrl: imageUrl ?? campaign.imageUrl }}
-          preview
-        />
-      </section>
+        </label>
+      </fieldset>
       <p>
         {admin ? "Redaktionelle Änderungen an einer freigegebenen Kampagne werden sofort wirksam. Entwürfe werden erst nach Freigabe ausgespielt." : "Mit dem Einreichen wird die Kampagne zur Prüfung gesendet. Sie wird erst nach Freigabe im bestätigten Zeitraum angezeigt."}
       </p>

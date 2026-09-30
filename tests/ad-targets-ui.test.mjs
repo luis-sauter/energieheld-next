@@ -59,7 +59,7 @@ registerHooks({
   },
 });
 
-const { CampaignForm, AdminCampaignForm } = await import(
+const { CampaignForm, AdminCampaignForm, addRequestScope, removeRequestScope, requestScopeIds, slotAvailabilityText } = await import(
   "../src/components/advertising/campaign-form.tsx"
 );
 const { CampaignFacts, CampaignSlot } = await import(
@@ -98,21 +98,56 @@ const campaign = {
 };
 const render = (Component, props) =>
   renderToStaticMarkup(createElement(Component, props));
-test("campaign form offers independent homepage and directory placement pairs", () => {
+test("request starts compact, adds each area once, and removes only its placements", () => {
+  const blank = render(CampaignForm, { campaign: { ...campaign, status: "draft", internal_name: "", headline: "", target_url: "" }, categoryIds: [] });
+  assert.match(blank, /Werbebereich hinzufügen/);
+  assert.doesNotMatch(blank, /class="scopeGroup"|type="checkbox"/);
+  const one = addRequestScope([], "homepage");
+  const two = addRequestScope(one, "experts_directory");
+  assert.deepEqual(addRequestScope(two, "homepage"), two);
+  const targets = [
+    { target_type: "homepage", category_id: null, placement: "top_banner" },
+    { target_type: "experts_directory", category_id: null, placement: "sidebar_top" },
+    { target_type: "experts_directory", category_id: null, placement: "sidebar_middle" },
+  ];
+  assert.deepEqual(requestScopeIds(targets), two);
+  assert.deepEqual(requestScopeIds(targets, true), []);
+  assert.deepEqual(removeRequestScope(targets, "homepage"), targets.slice(1));
+  assert.deepEqual(removeRequestScope(targets, "experts_directory"), targets.slice(0, 1));
+  assert.equal(slotAvailabilityText(undefined, false, false, ""), "Verfügbar");
+  assert.equal(slotAvailabilityText("Belegt", false, false, ""), "Belegt");
+  assert.equal(slotAvailabilityText("Angefragt", false, false, ""), "Angefragt");
+  assert.equal(slotAvailabilityText(undefined, true, false, ""), "Ausgewählt · Verfügbar");
+  assert.match(blank, /aria-expanded="false"/);
+  const css = readFileSync(new URL("../src/components/advertising/advertising.module.css", import.meta.url), "utf8");
+  assert.match(css, /@media \(max-width: 600px\)[\s\S]*?\.requestForm \.placements\s*\{\s*grid-template-columns:\s*minmax\(0, 1fr\)/);
+  assert.match(css, /\.requestForm \.placement\s*\{[^}]*min-height:\s*60px/);
+});
+test("campaign form loads saved page/slot pairs without a cross product", () => {
   const html = render(CampaignForm, {
-    campaign,
+    campaign: { ...campaign, targets: [
+      { target_type: "homepage", category_id: null, placement: "top_banner" },
+      { target_type: "experts_directory", category_id: null, placement: "sidebar_top" },
+      { target_type: "experts_directory", category_id: null, placement: "sidebar_middle" },
+    ] },
     categoryIds: ["solar", "elektro", "dach"],
   });
   assert.match(html, /Wo möchten Sie werben/);
   const inputs = html.match(/<input[^>]*type="checkbox"[^>]*>/g);
   assert.equal(inputs.length, 26);
-  assert.ok(inputs.some((input) => input.includes('value="experts_directory|top_banner"') && input.includes('checked=""')));
-  assert.ok(inputs.some((input) => input.includes('value="homepage|top_banner"') && !input.includes('checked=""')));
-  assert.ok(inputs.some((input) => input.includes('value="experts_directory|sidebar_top"')));
-  assert.ok(inputs.some((input) => input.includes('value="homepage|sidebar_top"')));
+  for (const pair of ["homepage|top_banner", "experts_directory|sidebar_top", "experts_directory|sidebar_middle"])
+    assert.ok(inputs.some((input) => input.includes(`value="${pair}"`) && input.includes('checked=""')));
+  assert.equal(inputs.filter((input) => input.includes('checked=""')).length, 3);
   assert.match(html, /Startseite/);
   assert.match(html, /Unterkünfte A–Z/);
-  assert.match(html, /Ansprechpartner|Telefonnummer|E-Mail-Adresse/);
+  assert.match(html, /Startseite entfernen|Unterkünfte A–Z entfernen/);
+  assert.match(html, /Ansprechpartner|Telefonnummer|E-Mail-Adresse|Ziel-URL|Gewünschter Start|Gewünschtes Ende/);
+  assert.match(html, /Haben Sie bereits ein Bannerbild\?|unterstützen Sie gerne bei der Erstellung/);
+  assert.match(html, /Hinweise oder Wünsche|name="body_text"/);
+  assert.match(html, /name="headline"[^>]*type="hidden"|type="hidden"[^>]*name="headline"/);
+  assert.doesNotMatch(html, /Anzeigenvorschau|Ihre Überschrift|Mehr erfahren|Überschrift für interne Vorschau/);
+  assert.match(html, /name="image"/);
+  assert.doesNotMatch(html.match(/<input[^>]*name="image"[^>]*>/)?.[0] ?? "", /required/);
   assert.doesNotMatch(
     html,
     /type="radio"|value="trade:heizung"|name="scope_type"|name="category_id"|Alle Gewerkeseiten/,
@@ -121,7 +156,7 @@ test("campaign form offers independent homepage and directory placement pairs", 
     campaign: { ...campaign, targets: [campaign.targets[0]] },
     categoryIds: [],
   });
-  assert.equal((noTrades.match(/type="checkbox"/g) || []).length, 26);
+  assert.equal((noTrades.match(/type="checkbox"/g) || []).length, 13);
   const removed = render(CampaignForm, { campaign, categoryIds: ["solar"] });
   assert.doesNotMatch(removed, /value="trade:elektro"/);
   assert.match(removed, /ohne aktuelle Firmenzuordnung/);
@@ -155,6 +190,8 @@ test("admin review exposes every target and explains removed assignments", () =>
   );
   const edit = render(CampaignForm, { campaign: { ...campaign, status: "approved", approved_start_date: "2030-10-02", approved_end_date: "2030-10-14" }, categoryIds: [], admin: true });
   assert.match(edit, /Banner speichern/);
+  assert.match(edit, /Überschrift für interne Vorschau/);
+  assert.doesNotMatch(edit, /Anzeigenvorschau/);
   assert.match(edit, /Ausspielung ab/);
   assert.match(edit, /value="2030-10-02"/);
   assert.match(edit, /value="2030-10-14"/);
@@ -263,7 +300,11 @@ if (process.env.AD_TARGET_PREVIEW_FILE) {
       "utf8",
     );
   const content = render(CampaignForm, {
-    campaign,
+    campaign: { ...campaign, targets: [
+      { target_type: "homepage", category_id: null, placement: "top_banner" },
+      { target_type: "experts_directory", category_id: null, placement: "sidebar_top" },
+      { target_type: "experts_directory", category_id: null, placement: "sidebar_middle" },
+    ] },
     categoryIds: ["solar", "elektro", "dach"],
   });
   writeFileSync(
