@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { ownAdProfile, saveOwnAd, prepareAdUpload } from "@/lib/ad-campaigns";
 import type { AdFormState } from "@/lib/ad-values";
+import { loadAdAvailability } from "@/lib/ad-campaigns";
+export async function campaignAvailability(start: string, end: string, campaignId: string) {
+  return loadAdAvailability(await createClient(), start, end, campaignId);
+}
 export async function createCampaign() {
   const client = await createClient();
   const own = await ownAdProfile(client);

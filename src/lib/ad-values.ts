@@ -18,6 +18,7 @@ export type AdPlacementId = keyof typeof adPlacements;
 export type AdTarget = {
   target_type: "homepage" | "experts_directory" | "trade";
   category_id: string | null;
+  placement: AdPlacementId;
 };
 export type AdValues = {
   internal_name: string;
@@ -29,6 +30,9 @@ export type AdValues = {
   body_text: string | null;
   target_url: string;
   image_path: string | null;
+  contact_name: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
 };
 export type AdCampaign = AdValues & {
   id: string;
@@ -81,15 +85,16 @@ export function adStatus(
     paused: "Pausiert",
   }[c.status];
 }
-export function adScopeLabel(c: Pick<AdValues, "targets">) {
+export function adScopeLabel(c: Pick<AdValues, "targets" | "placement">) {
   return c.targets
-    .map((t) =>
+    .map((t) => `${
       t.target_type === "homepage"
         ? "Startseite"
         : t.target_type === "experts_directory"
-          ? "Experten A–Z"
+          ? "Unterkünfte A–Z"
         : (energieheld.categories.find((x) => x.id === t.category_id)?.name ??
-          "Unbekanntes Gewerk"),
+          "Unbekanntes Gewerk")
+    } · ${adPlacements[t.placement ?? c.placement]}`,
     )
     .join(" · ");
 }
@@ -136,12 +141,10 @@ export function validateAdValues(form: FormData): {
       error:
         "Bitte geben Sie einen Kampagnennamen (max. 120 Zeichen), eine Überschrift (max. 100) und höchstens 400 Zeichen Beschreibung ein.",
     };
-  if (!Object.hasOwn(adPlacements, placement))
-    return { error: "Bitte wählen Sie einen gültigen Werbeplatz." };
   const selected = form.getAll("targets");
   if (
     !selected.length ||
-    selected.length > 16 ||
+    selected.length > 32 ||
     new Set(selected).size !== selected.length
   )
     return {
@@ -150,16 +153,18 @@ export function validateAdValues(form: FormData): {
     };
   const targets: AdTarget[] = [];
   for (const value of selected) {
-    if (value === "homepage" || value === "experts_directory")
-      targets.push({ target_type: value, category_id: null });
-    else if (
-      typeof value === "string" &&
-      value.startsWith("trade:") &&
-      energieheld.categories.some((c) => c.id === value.slice(6))
-    )
-      targets.push({ target_type: "trade", category_id: value.slice(6) });
+    if (typeof value !== "string") return { error: "Bitte wählen Sie gültige Werbeplätze." };
+    const [scope, selectedSlot, extra] = value.split("|");
+    const slot = selectedSlot ?? placement;
+    if (extra || !Object.hasOwn(adPlacements, slot))
+      return { error: "Bitte wählen Sie gültige Werbeplätze." };
+    if (scope === "homepage" || scope === "experts_directory")
+      targets.push({ target_type: scope, category_id: null, placement: slot as AdPlacementId });
+    else if (scope.startsWith("trade:") && energieheld.categories.some((c) => c.id === scope.slice(6)))
+      targets.push({ target_type: "trade", category_id: scope.slice(6), placement: slot as AdPlacementId });
     else return { error: "Bitte wählen Sie gültige Zielseiten." };
   }
+  if (!targets.length) return { error: "Bitte wählen Sie mindestens einen Werbeplatz." };
   const requested_start_date = get("requested_start_date"),
     requested_end_date = get("requested_end_date");
   if (
@@ -177,13 +182,20 @@ export function validateAdValues(form: FormData): {
       error:
         "Bitte geben Sie eine gültige http://- oder https://-Zieladresse ohne Zugangsdaten ein.",
     };
+  const contact_name = get("contact_name"), contact_phone = get("contact_phone"), contact_email = get("contact_email");
+  if (contact_name.length > 120 || contact_phone.length > 60 || contact_email.length > 254 ||
+      (contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact_email)))
+    return { error: "Bitte prüfen Sie Name, Telefonnummer und E-Mail-Adresse." };
   return {
     data: {
       internal_name,
       headline,
       body_text: body_text || null,
-      placement: placement as AdPlacementId,
+      placement: (targets[0]?.placement ?? placement) as AdPlacementId,
       targets,
+      contact_name: contact_name || null,
+      contact_phone: contact_phone || null,
+      contact_email: contact_email || null,
       requested_start_date,
       requested_end_date,
       target_url,

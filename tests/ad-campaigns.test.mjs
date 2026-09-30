@@ -29,10 +29,25 @@ const form = (overrides = {}) => {
 };
 test("homepage target and all twelve sidebar placements validate without a category", () => {
   const homepage = validateAdValues(form({ targets: ["homepage"], placement: "sidebar_12" }));
-  assert.deepEqual(homepage.data?.targets, [{ target_type: "homepage", category_id: null }]);
+  assert.deepEqual(homepage.data?.targets, [{ target_type: "homepage", category_id: null, placement: "sidebar_12" }]);
   assert.equal(homepage.data?.placement, "sidebar_12");
   assert.equal(validateAdValues(form({ targets: ["homepage", "homepage"] })).data, undefined);
   assert.equal(validateAdValues(form({ placement: "sidebar_13" })).data, undefined);
+});
+test("three explicit page/slot pairs and contact data do not form a cross product", () => {
+  const result = validateAdValues(form({
+    targets: ["homepage|top_banner", "experts_directory|sidebar_top", "experts_directory|sidebar_middle"],
+    contact_name: "Carola", contact_phone: "+49 1234", contact_email: "carola@example.org",
+  }));
+  assert.deepEqual(result.data?.targets, [
+    { target_type: "homepage", category_id: null, placement: "top_banner" },
+    { target_type: "experts_directory", category_id: null, placement: "sidebar_top" },
+    { target_type: "experts_directory", category_id: null, placement: "sidebar_middle" },
+  ]);
+  assert.equal(result.data.contact_name, "Carola");
+  assert.equal(result.data.contact_phone, "+49 1234");
+  assert.equal(result.data.contact_email, "carola@example.org");
+  assert.equal(result.data.target_url, "https://example.org/");
 });
 const png = new File(
   [new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 0])],
@@ -168,8 +183,8 @@ test("ad validation rejects invalid URL, date, category and placement; derives s
     validateAdValues(form({ targets: ["experts_directory", "trade:solar"] }))
       .data.targets,
     [
-      { target_type: "experts_directory", category_id: null },
-      { target_type: "trade", category_id: "solar" },
+      { target_type: "experts_directory", category_id: null, placement: "top_banner" },
+      { target_type: "trade", category_id: "solar", placement: "top_banner" },
     ],
   );
   assert.ok(validateAdValues(form({ targets: [] })).error);
@@ -327,8 +342,10 @@ test("ad uploads reject unsupported MIME, signature and oversize before writing 
     assert.ok(result.error || result.unauthenticated);
     assert.ok(!db.calls.some((c) => c.upload || c.rpc));
   }
-  const missing = await saveOwnAd(client(), form({ intent: "submit" }));
-  assert.ok(missing.error);
+  const withoutImage = client();
+  const requested = await saveOwnAd(withoutImage, form({ intent: "submit" }));
+  assert.ok(requested.success);
+  assert.equal(withoutImage.calls.find((c) => c.rpc)?.args.p_data.image_path, null);
 });
 test("ad failed save cleans new object; admin decisions are fixed RPCs and conflicts are understandable", async () => {
   const db = client({ rpcError: { message: "private" } });

@@ -98,41 +98,30 @@ const campaign = {
 };
 const render = (Component, props) =>
   renderToStaticMarkup(createElement(Component, props));
-test("campaign form offers homepage, directory and official trade checkboxes", () => {
+test("campaign form offers independent homepage and directory placement pairs", () => {
   const html = render(CampaignForm, {
     campaign,
     categoryIds: ["solar", "elektro", "dach"],
   });
-  assert.match(html, /Werbung anzeigen auf:/);
-  assert.match(html, /Ihre Gewerke:/);
+  assert.match(html, /Wo möchten Sie werben/);
   const inputs = html.match(/<input[^>]*type="checkbox"[^>]*>/g);
-  assert.equal(inputs.length, 5);
-  for (const target of ["experts_directory", "trade:solar", "trade:elektro"])
-    assert.ok(
-      inputs.some(
-        (input) =>
-          input.includes('value="' + target + '"') &&
-          input.includes('checked=""'),
-      ),
-    );
-  assert.ok(
-    inputs.some(
-      (input) =>
-        input.includes('value="trade:dach"') && !input.includes('checked=""'),
-    ),
-  );
-  assert.ok(inputs.some((input) => input.includes('value="homepage"')));
+  assert.equal(inputs.length, 26);
+  assert.ok(inputs.some((input) => input.includes('value="experts_directory|top_banner"') && input.includes('checked=""')));
+  assert.ok(inputs.some((input) => input.includes('value="homepage|top_banner"') && !input.includes('checked=""')));
+  assert.ok(inputs.some((input) => input.includes('value="experts_directory|sidebar_top"')));
+  assert.ok(inputs.some((input) => input.includes('value="homepage|sidebar_top"')));
   assert.match(html, /Startseite/);
+  assert.match(html, /Unterkünfte A–Z/);
+  assert.match(html, /Ansprechpartner|Telefonnummer|E-Mail-Adresse/);
   assert.doesNotMatch(
     html,
-    /value="trade:heizung"|name="scope_type"|name="category_id"|Alle Gewerkeseiten/,
+    /type="radio"|value="trade:heizung"|name="scope_type"|name="category_id"|Alle Gewerkeseiten/,
   );
   const noTrades = render(CampaignForm, {
     campaign: { ...campaign, targets: [campaign.targets[0]] },
     categoryIds: [],
   });
-  assert.equal((noTrades.match(/type="checkbox"/g) || []).length, 2);
-  assert.match(noTrades, /noch keine offiziellen Gewerke/);
+  assert.equal((noTrades.match(/type="checkbox"/g) || []).length, 26);
   const removed = render(CampaignForm, { campaign, categoryIds: ["solar"] });
   assert.doesNotMatch(removed, /value="trade:elektro"/);
   assert.match(removed, /ohne aktuelle Firmenzuordnung/);
@@ -146,7 +135,7 @@ test("admin review exposes every target and explains removed assignments", () =>
     },
   });
   for (const label of [
-    "Experten A–Z",
+    "Unterkünfte A–Z",
     "Photovoltaik",
     "Smart Home &amp; Elektro",
     "Premium-Banner oben",
@@ -164,6 +153,11 @@ test("admin review exposes every target and explains removed assignments", () =>
     render(AdminCampaignForm, { campaign: { ...campaign, status: "paused" } }),
     /value="resume"/,
   );
+  const edit = render(CampaignForm, { campaign: { ...campaign, status: "approved", approved_start_date: "2030-10-02", approved_end_date: "2030-10-14" }, categoryIds: [], admin: true });
+  assert.match(edit, /Banner speichern/);
+  assert.match(edit, /Ausspielung ab/);
+  assert.match(edit, /value="2030-10-02"/);
+  assert.match(edit, /value="2030-10-14"/);
 });
 test("top and sidebar image creatives are linked banners without public text cards or cropping", () => {
   const preview = render(CampaignSlot, {
