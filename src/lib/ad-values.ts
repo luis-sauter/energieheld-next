@@ -1,4 +1,5 @@
 import { energieheld } from "../config/energieheld";
+import { portalAdAreaLabel, portalAdSection } from "./ad-target-areas";
 export const adPlacements = {
   top_banner: "Premium-Banner oben",
   sidebar_top: "Banner A",
@@ -16,10 +17,21 @@ export const adPlacements = {
 } as const;
 export type AdPlacementId = keyof typeof adPlacements;
 export type AdTarget = {
-  target_type: "homepage" | "experts_directory" | "trade";
+  target_type: "homepage" | "experts_directory" | "trade" | "portal_area";
   category_id: string | null;
+  target_key?: string | null;
   placement: AdPlacementId;
 };
+export function adTargetAvailabilityKey(target: AdTarget) {
+  const detail = target.target_type === "portal_area" ? `|${target.target_key}`
+    : target.target_type === "trade" ? `|${target.category_id}` : "";
+  return `${target.target_type}${detail}|${target.placement}`;
+}
+export function adTargetFormValue(target: AdTarget) {
+  const scope = target.target_type === "portal_area" ? `portal_area:${target.target_key}`
+    : target.target_type === "trade" ? `trade:${target.category_id}` : target.target_type;
+  return `${scope}|${target.placement}`;
+}
 export type AdValues = {
   internal_name: string;
   placement: AdPlacementId;
@@ -92,6 +104,8 @@ export function adScopeLabel(c: Pick<AdValues, "targets" | "placement">) {
         ? "Startseite"
         : t.target_type === "experts_directory"
           ? "Unterkünfte A–Z"
+        : t.target_type === "portal_area"
+          ? portalAdAreaLabel(t.target_key ?? "")
         : (energieheld.categories.find((x) => x.id === t.category_id)?.name ??
           "Unbekanntes Gewerk")
     } · ${adPlacements[t.placement ?? c.placement]}`,
@@ -144,7 +158,7 @@ export function validateAdValues(form: FormData): {
   const selected = form.getAll("targets");
   if (
     !selected.length ||
-    selected.length > 32 ||
+    selected.length > 128 ||
     new Set(selected).size !== selected.length
   )
     return {
@@ -160,6 +174,8 @@ export function validateAdValues(form: FormData): {
       return { error: "Bitte wählen Sie gültige Werbeplätze." };
     if (scope === "homepage" || scope === "experts_directory")
       targets.push({ target_type: scope, category_id: null, placement: slot as AdPlacementId });
+    else if (scope.startsWith("portal_area:") && portalAdSection(scope.slice(12)))
+      targets.push({ target_type: "portal_area", category_id: null, target_key: scope.slice(12), placement: slot as AdPlacementId });
     else if (scope.startsWith("trade:") && energieheld.categories.some((c) => c.id === scope.slice(6)))
       targets.push({ target_type: "trade", category_id: scope.slice(6), placement: slot as AdPlacementId });
     else return { error: "Bitte wählen Sie gültige Zielseiten." };

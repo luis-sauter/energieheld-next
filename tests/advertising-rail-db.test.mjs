@@ -41,6 +41,12 @@ before(async () => {
   await db.exec("update ad_sidebar_slot_order set sort_order=case slot when 'sidebar_middle' then 0 when 'sidebar_bottom' then 1 else 2 end");
   await migration("20260925160039_expand_legacy_advertising_rail.sql");
   await migration("20260930120000_ad_target_placements.sql");
+  // The Cloud already has the controlled taxonomy; two fixture terms prove that
+  // portal ad areas derive from its theme rows rather than a copied SQL list.
+  await db.exec("create table public.travel_terms(dimension text not null,slug text not null)");
+  await db.exec("insert into public.travel_terms values ('theme','wellnessangebote'),('theme','wanderurlaub')");
+  await db.query("insert into company_ad_campaign_targets(campaign_id,target_type,placement) values($1,'homepage','top_banner')", [draftIds[0]]);
+  await migration("20260930143000_portal_ad_target_areas.sql");
   today = (await db.query("select ((now() at time zone 'Europe/Berlin')::date)::text as day")).rows[0].day;
 });
 after(async () => db?.close());
@@ -56,6 +62,11 @@ test("migration keeps first-three stored order and drafts while adding nine slot
   assert.match(JSON.stringify(functionInfo.proconfig), /search_path/);
   assert.equal((await db.query("select has_function_privilege('anon','public.reorder_ad_sidebar_slots(text[])','EXECUTE') as allowed")).rows[0].allowed, false);
   assert.equal((await db.query("select has_function_privilege('authenticated','public.reorder_ad_sidebar_slots(text[])','EXECUTE') as allowed")).rows[0].allowed, true);
+  assert.deepEqual((await db.query("select target_type,category_id,target_key,placement from company_ad_campaign_targets where campaign_id=$1", [draftIds[0]])).rows,
+    [{ target_type: "homepage", category_id: null, target_key: null, placement: "top_banner" }]);
+  assert.equal((await db.query("select count(*)::int as total from ad_portal_areas")).rows[0].total, 8);
+  assert.equal((await db.query("select has_table_privilege('authenticated','public.ad_portal_areas','INSERT') as allowed")).rows[0].allowed, false);
+  assert.equal((await db.query("select has_table_privilege('anon','public.company_ad_campaign_targets','INSERT') as allowed")).rows[0].allowed, false);
 });
 
 test("legacy three-slot and full twelve-slot calls are exact, admin-only permutations", async () => {
@@ -149,6 +160,47 @@ test("independent page/placement pairs persist, deliver exactly, and book only m
   assert.ok(!availability.some((slot) => slot.target_type === "homepage" && slot.placement === "sidebar_top"));
 });
 
+test("portal overview, theme and destination pairs stay independent for delivery and booking", async () => {
+  const pairs = [
+    { target_type: "homepage", category_id: null, placement: "top_banner" },
+    { target_type: "experts_directory", category_id: null, placement: "sidebar_top" },
+    { target_type: "experts_directory", category_id: null, placement: "sidebar_middle" },
+    { target_type: "portal_area", category_id: null, target_key: "mottoreisen", placement: "sidebar_top" },
+    { target_type: "portal_area", category_id: null, target_key: "mottoreisen/wellnessangebote", placement: "top_banner" },
+    { target_type: "portal_area", category_id: null, target_key: "mottoreisen/wanderurlaub", placement: "top_banner" },
+    { target_type: "portal_area", category_id: null, target_key: "reiseziele", placement: "sidebar_top" },
+    { target_type: "portal_area", category_id: null, target_key: "reiseziele/deutschland", placement: "sidebar_middle" },
+  ];
+  const id = await campaign(owner, "top_banner", pairs);
+  assert.deepEqual((await db.query("select target_type,target_key,placement from company_ad_campaign_targets where campaign_id=$1 order by target_type,target_key,placement", [id])).rows.length, 8);
+  await approve(id);
+  for (const [key, slot] of [
+    ["mottoreisen", "sidebar_top"], ["mottoreisen/wellnessangebote", "top_banner"],
+    ["mottoreisen/wanderurlaub", "top_banner"], ["reiseziele", "sidebar_top"],
+    ["reiseziele/deutschland", "sidebar_middle"],
+  ]) assert.deepEqual(await publicAds("portal_area", key), [{ id, placement: slot }]);
+  assert.deepEqual(await publicAds("portal_area", "reiseziele/oesterreich"), []);
+  const otherRegion = await campaign(other, "sidebar_middle", [
+    { target_type: "portal_area", category_id: null, target_key: "reiseziele/oesterreich", placement: "sidebar_middle" },
+  ]);
+  await approve(otherRegion);
+  const sameRegion = await campaign(other, "sidebar_middle", [
+    { target_type: "portal_area", category_id: null, target_key: "reiseziele/deutschland", placement: "sidebar_middle" },
+  ]);
+  await actor(admin);
+  await denied("select review_ad_campaign($1,'approve',$2,$2,null)", [sameRegion, today]);
+  const availability = (await db.query("select target_key,placement,status from get_ad_slot_availability($1,$1,$2) where target_type='portal_area'", [today, sameRegion])).rows;
+  assert.ok(availability.some((slot) => slot.target_key === "reiseziele/deutschland" && slot.placement === "sidebar_middle" && slot.status === "approved"));
+  assert.ok(availability.some((slot) => slot.target_key === "reiseziele/oesterreich" && slot.placement === "sidebar_middle" && slot.status === "approved"));
+  await actor(owner);
+  const invalid = (await db.query("select create_ad_campaign() as id")).rows[0].id;
+  await denied("select save_ad_campaign($1,$2,false)", [invalid, {
+    internal_name: "Ungültig", headline: "Ungültig", target_url: "https://example.org", image_path: null,
+    requested_start_date: today, requested_end_date: today,
+    targets: [{ target_type: "portal_area", category_id: null, target_key: "reiseziele/erfunden", placement: "sidebar_top" }],
+  }]);
+});
+
 test("admin creates a campaign for a real profile and cannot bypass media path or slot rules", async () => {
   await actor("", "anon");
   await denied("select create_admin_ad_campaign($1)", [other]);
@@ -204,7 +256,7 @@ test("availability distinguishes pending, inclusive overlap, and a free later pe
   ]);
   await actor(other);
   const pending = (await db.query("select * from get_ad_slot_availability($1,$1,null)", [today])).rows;
-  assert.deepEqual(pending, [{ target_type: "homepage", category_id: null, placement: "sidebar_04", status: "pending" }]);
+  assert.deepEqual(pending, [{ target_type: "homepage", category_id: null, target_key: null, placement: "sidebar_04", status: "pending" }]);
   assert.deepEqual((await db.query("select * from get_ad_slot_availability(($1::date+1),($1::date+1),null)", [today])).rows, []);
   await approve(id);
   await actor(other);

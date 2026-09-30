@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import "./helpers/load-ts.mjs";
-const { validateAdValues, adTargetUrl, adStatus, berlinToday } = await import(
+const { validateAdValues, adTargetUrl, adStatus, berlinToday, adTargetAvailabilityKey, adScopeLabel } = await import(
   "../src/lib/ad-values.ts"
 );
 const { saveOwnAd, decideAd, signAdImages, loadAdCampaigns, prepareAdUpload } =
@@ -48,6 +48,31 @@ test("three explicit page/slot pairs and contact data do not form a cross produc
   assert.equal(result.data.contact_phone, "+49 1234");
   assert.equal(result.data.contact_email, "carola@example.org");
   assert.equal(result.data.target_url, "https://example.org/");
+});
+test("published portal themes and destinations validate as independent page/area/slot targets", () => {
+  const data = validateAdValues(form({ targets: [
+    "homepage|top_banner",
+    "experts_directory|sidebar_top",
+    "experts_directory|sidebar_middle",
+    "portal_area:mottoreisen|sidebar_top",
+    "portal_area:mottoreisen/wellnessangebote|top_banner",
+    "portal_area:mottoreisen/wanderurlaub|top_banner",
+    "portal_area:reiseziele|sidebar_top",
+    "portal_area:reiseziele/deutschland|sidebar_middle",
+  ] })).data;
+  assert.equal(data.targets.length, 8);
+  assert.deepEqual(data.targets.slice(4), [
+    { target_type: "portal_area", category_id: null, target_key: "mottoreisen/wellnessangebote", placement: "top_banner" },
+    { target_type: "portal_area", category_id: null, target_key: "mottoreisen/wanderurlaub", placement: "top_banner" },
+    { target_type: "portal_area", category_id: null, target_key: "reiseziele", placement: "sidebar_top" },
+    { target_type: "portal_area", category_id: null, target_key: "reiseziele/deutschland", placement: "sidebar_middle" },
+  ]);
+  assert.equal(adTargetAvailabilityKey(data.targets[4]), "portal_area|mottoreisen/wellnessangebote|top_banner");
+  assert.equal(adTargetAvailabilityKey(data.targets[5]), "portal_area|mottoreisen/wanderurlaub|top_banner");
+  assert.match(adScopeLabel(data), /Mottoreisen · Wellnessangebote · Premium-Banner oben/);
+  assert.match(adScopeLabel(data), /Reiseziele · Deutschland · Banner B/);
+  for (const invalid of ["portal_area:mottoreisen/erfunden|top_banner", "portal_area:reiseziele/erfunden|sidebar_top", "portal_area:login|sidebar_top"])
+    assert.ok(validateAdValues(form({ targets: [invalid] })).error);
 });
 const png = new File(
   [new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 0])],
