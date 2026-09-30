@@ -7,7 +7,8 @@ export function sidebarCreative(
   ads: ActiveAd[],
   fallback: readonly (typeof legacyBannerPreview)[number][] = legacyBannerPreview,
 ): ActiveAd | undefined {
-  const live = ads.find((ad) => ad.placement === slot && ad.imageUrl);
+  const live = ads.find((ad) => ad.placement === slot);
+  if (live?.suppressed) return undefined;
   if (live) return live;
   const order = defaultSidebarOrder.indexOf(slot);
   const legacy = fallback.find((creative) => creative.order === order);
@@ -19,5 +20,6 @@ export function sidebarCreative(
     target_url: legacy.targetUrl,
     image_path: null,
     imageUrl: legacy.imageUrl,
+    source: "legacy",
   };
 }

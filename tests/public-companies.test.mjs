@@ -150,12 +150,17 @@ const originalFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = originalFetch;
 });
-function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((item) => item.status === "approved").map((item, sort_order) => ({ profile_id: item.id, sort_order })), sidebarRows = null, packageRows = []) {
+function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((item) => item.status === "approved").map((item, sort_order) => ({ profile_id: item.id, sort_order })), sidebarRows = null, packageRows = [], presentationRows = []) {
   const requests = [];
   globalThis.fetch = async (input, init) => {
     const url = new URL(input),
       headers = new Headers(init?.headers);
     requests.push({ url, headers });
+    if (url.pathname === "/rest/v1/ad_slot_presentations") {
+      assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
+      assert.equal(headers.get("cookie"), null);
+      return new Response(JSON.stringify(presentationRows), { headers: { "content-type": "application/json" } });
+    }
     if (url.pathname === "/rest/v1/rpc/get_active_ad_campaigns") {
       assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
       assert.equal(headers.get("cookie"), null);
@@ -333,6 +338,30 @@ test("real and demo profiles interleave after merge, while sidebar order applies
   api([real], false, [], order, sidebar);
   const travel = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({}) }));
   assert.deepEqual([...travel.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]).slice(0, 4), placements.slice(0, 4));
+});
+
+test("portal ads use the existing two-argument projection and exact public presentation scope", async () => {
+  const { loadPublicAds } = await import("../src/lib/public-ads.ts");
+  const requests = api([row], false, []);
+  await loadPublicAds(undefined, "portal_area", "mottoreisen/wellnessangebote");
+  assert.deepEqual(requests.find((request) => request.body)?.body, { p_scope_type: "portal_area", p_category_id: "mottoreisen/wellnessangebote" });
+  const settings = requests.find((request) => request.url.pathname.endsWith("ad_slot_presentations"));
+  assert.equal(settings.url.searchParams.get("target_type"), "eq.portal_area");
+  assert.equal(settings.url.searchParams.get("target_key"), "eq.mottoreisen/wellnessangebote");
+});
+
+test("public persisted legacy deletion survives loading and cannot resurrect on presentation read failure", async () => {
+  const { loadPublicAds } = await import("../src/lib/public-ads.ts");
+  const { sidebarCreative } = await import("../src/lib/advertising-rail.ts");
+  api([row], false, [], [], null, [], [{ placement: "sidebar_top",size: "small",legacy_hidden: true,legacy_target_url: null }]);
+  const loaded = await loadPublicAds(undefined, "homepage");
+  assert.equal(sidebarCreative("sidebar_top",loaded), undefined);
+  assert.equal(sidebarCreative("sidebar_middle",loaded).id, "haus-salzburg");
+  const workingFetch=globalThis.fetch;
+  globalThis.fetch=(input,init)=>new URL(input).pathname.endsWith("ad_slot_presentations")
+    ? Promise.resolve(new Response(JSON.stringify({message:"denied",code:"42501"}),{status:403})) : workingFetch(input,init);
+  const unavailable=await loadPublicAds(undefined,"homepage");
+  assert.equal(sidebarCreative("sidebar_middle",unavailable),undefined);
 });
 
 test("public loader retries its existing columns when anon has no street grant", async () => {
@@ -544,9 +573,9 @@ test("public ads use one anonymous RPC and one signing batch; real cards are lab
   }));
   const requests = api([row], false, ads);
   const loaded = await loadPublicAds("solar");
-  assert.equal(loaded.length, 4);
-  assert.equal(requests.length, 2);
-  assert.deepEqual(requests[0].body, {
+  assert.equal(loaded.filter((ad) => ad.source === "campaign").length, 4);
+  assert.equal(requests.length, 3, "one projection, one scoped presentation query, one batched signing request");
+  assert.deepEqual(requests.find((request) => request.body)?.body, {
     p_scope_type: "trade",
     p_category_id: "solar",
   });

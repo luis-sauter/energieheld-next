@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import "./helpers/load-ts.mjs";
 const { inlineAdContext, matchesInlineAdContext } = await import("../src/lib/inline-ad-context.ts");
-const { prepareInlineAdUpload, saveInlineAd } = await import("../src/lib/inline-advertising.ts");
+const { prepareInlineAdUpload, saveInlineAd, removeInlineAd } = await import("../src/lib/inline-advertising.ts");
 const { adPlacements, berlinToday } = await import("../src/lib/ad-values.ts");
 const { travelThemes, destinations } = await import("../src/data/reiseportal-discovery.ts");
 
@@ -15,7 +15,7 @@ const form = (values = {}) => {
   return data;
 };
 
-function client({ authenticated = true, admin = true, campaign = {}, saveError = null, reviewError = null } = {}) {
+function client({ authenticated = true, admin = true, campaign = {}, saveError = null, reviewError = null, removeError = null, settings = [], active = [] } = {}) {
   const calls = [];
   const row = { id, is_editorial: false, profile_id: "existing-company", status: "approved", image_path: image,
     internal_name: "Existing", headline: "Existing image alt", body_text: "Existing text", target_url: "https://example.org/old",
@@ -26,10 +26,19 @@ function client({ authenticated = true, admin = true, campaign = {}, saveError =
     from(table) {
       const call = { table, filters: [] }; calls.push(call);
       return { select(columns) { call.columns = columns; return this; }, eq(key, value) { call.filters.push([key,value]); return this; },
+        is(key,value) { call.filters.push([key,value]); return this; },
+        then(resolve) { return Promise.resolve({ data: settings, error: null }).then(resolve); },
         async maybeSingle() { return { data: table === "portal_admins" ? admin ? { user_id: "verified-admin" } : null : structuredClone(row), error: null }; } };
     },
     async rpc(name, data) {
       calls.push({ rpc: name, data });
+      if (name === "get_active_ad_campaigns") return { data: active, error: null };
+      if (name === "remove_inline_ad_banner") {
+        if (removeError) return { error: removeError };
+        const previous = row.image_path; row.status = "draft"; row.image_path = null;
+        if (data.p_remove_banner) row.targets = [];
+        return { data: previous, error: null };
+      }
       if (name === "create_editorial_ad_campaign") {
         Object.assign(row, { is_editorial: true, profile_id: null, status: "draft", image_path: null, internal_name: "", headline: "",
           requested_start_date: berlinToday(), requested_end_date: berlinToday(), approved_start_date: null, approved_end_date: null,
@@ -64,6 +73,74 @@ test("inline contexts accept only real homepage, directory, 12 themes and four d
   for (const path of ["/admin", "/experten/foo", "/mottoreisen/fake", "/reiseziele/fake", "/reiseziele/deutschland/", "/?page=admin"]) assert.equal(inlineAdContext(path), null);
   assert.equal(matchesInlineAdContext(target(), inlineAdContext("/mottoreisen/wellnessangebote")), true);
   assert.equal(matchesInlineAdContext(target("mottoreisen/wanderurlaub"), inlineAdContext("/mottoreisen/wellnessangebote")), false);
+});
+
+test("size choices persist as controlled relative presentation, not arbitrary dimensions", async () => {
+  for (const size of ["small", "medium", "large"]) {
+    const db = client();
+    assert.ok((await saveInlineAd(db, "/mottoreisen/wellnessangebote", form({ size }))).success);
+    const rpc = db.calls.find((call) => call.rpc === "save_inline_ad_presentation");
+    assert.equal(rpc.data.p_size, size); assert.equal(rpc.data.p_target_key, "mottoreisen/wellnessangebote");
+    assert.equal(rpc.data.p_campaign_id, id);
+  }
+  const db = client();
+  assert.ok((await saveInlineAd(db, "/mottoreisen/wellnessangebote", form({ size: "999px" }))).error);
+  assert.equal(db.calls.length, 0);
+});
+
+test("remove only the authorized single-target editorial banner, then clean its exact unreferenced image", async () => {
+  for (const action of ["image", "banner"]) {
+    const db = client({ campaign: { is_editorial: true, profile_id: null } });
+    const result = await removeInlineAd(db, "/mottoreisen/wellnessangebote", form({ action }));
+    assert.ok(result.success); assert.equal(result.removed, action === "banner");
+    assert.equal(db.row.image_path, null);
+    assert.deepEqual(db.calls.find((call) => call.remove).remove, [image]);
+    if (action === "image") {
+      assert.equal(result.ad.suppressed, true);
+      const saved = await saveInlineAd(db, "/mottoreisen/wellnessangebote", form({ size: "small" }));
+      assert.ok(saved.success); assert.equal(saved.ad.suppressed, true);
+      assert.equal(db.row.status, "draft", "saving an imageless draft must not publish it");
+    }
+  }
+});
+
+test("failed, forged, non-admin, shared and company banner removals cannot remove Storage objects", async () => {
+  for (const config of [{ authenticated: false }, { admin: false }, {},
+    { campaign: { is_editorial: true, targets: [target(),target("mottoreisen/wanderurlaub")] } },
+    { campaign: { is_editorial: true }, removeError: { message: "changed" } }]) {
+    const db = client(config);
+    assert.ok((await removeInlineAd(db, "/mottoreisen/wellnessangebote", form({ action: "banner" }))).error);
+    assert.ok(!db.calls.some((call) => call.remove));
+  }
+  const db = client({ campaign: { is_editorial: true } });
+  assert.ok((await removeInlineAd(db, "/reiseziele/deutschland", form({ action: "banner" }))).error);
+  assert.ok(!db.calls.some((call) => call.rpc || call.bucket));
+});
+
+test("legacy URL/size and deletion affect only the actual bound mapping; stale legacy controls are rejected", async () => {
+  const legacyForm = () => form({ campaign_id: "", legacy_id: "city-apart-square", placement: "sidebar_top", original_placement: "sidebar_top", size: "medium" });
+  const db = client();
+  const saved = await saveInlineAd(db, "/reiseziele/deutschland", legacyForm());
+  assert.ok(saved.success); assert.equal(saved.ad.source, "legacy");
+  assert.equal(saved.ad.target_url, "https://example.org/new");
+  const removal = legacyForm(); removal.set("action", "banner");
+  assert.equal((await removeInlineAd(db, "/reiseziele/deutschland", removal)).removed, true);
+  assert.ok(!db.calls.some((call) => call.remove || call.rpc === "save_ad_campaign"));
+  for (const config of [{ admin: false }, { active: [{ placement: "sidebar_top" }] },
+    { settings: [{ placement: "sidebar_top", legacy_hidden: true }] }]) {
+    const denied = client(config);
+    assert.ok((await removeInlineAd(denied, "/reiseziele/deutschland", removal)).error);
+    assert.ok(!denied.calls.some((call) => call.rpc === "save_inline_ad_presentation"));
+  }
+});
+
+test("removing a legacy image retains URL as a standard editorial draft without copying its static file", async () => {
+  const db = client();
+  const result = await removeInlineAd(db, "/reiseziele/deutschland", form({ campaign_id: "", legacy_id: "city-apart-square",
+    placement: "sidebar_top", original_placement: "sidebar_top", action: "image" }));
+  assert.ok(result.success); assert.equal(result.ad.suppressed, true); assert.equal(result.ad.id, id);
+  assert.equal(db.row.status, "draft"); assert.equal(db.row.target_url, "https://city-apart-dresden.de/");
+  assert.ok(!db.calls.some((call) => call.download || call.remove || call.sign));
 });
 
 test("visitor and ordinary account cannot prepare uploads or save even with admin metadata", async () => {

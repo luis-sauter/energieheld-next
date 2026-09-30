@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { bannerWidth, type BannerSize } from "@/lib/banner-presentation";
 import { useInlineBanners } from "./inline-banner-context";
 import {
   adPlacements,
@@ -14,10 +16,12 @@ import {
 import styles from "./advertising.module.css";
 import { energieheld } from "@/config/energieheld";
 
-function CreativeImage({ src, alt }: { src: string; alt: string }) {
+function CreativeImage({ src, alt, size }: { src: string; alt: string; size?: BannerSize }) {
+  const [ratio, setRatio] = useState(1);
   // Signed uploads have unknown dimensions; the browser must use each image's intrinsic ratio.
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} />;
+  return <img src={src} alt={alt} style={size ? { width: `${bannerWidth(size, ratio)}%`, marginInline: "auto" } : undefined}
+    onLoad={(event) => { const image = event.currentTarget; if (image.naturalHeight) setRatio(image.naturalWidth / image.naturalHeight); }} />;
 }
 
 export function CampaignSlot({
@@ -33,16 +37,20 @@ export function CampaignSlot({
 }) {
   const inline = useInlineBanners();
   const ad = inline && Object.hasOwn(inline.overrides, placement) ? inline.overrides[placement] ?? undefined : initialAd;
-  const content = ad && (
-    ad.imageUrl ? (
+  if (!preview && !inline && ad?.suppressed) return null;
+  const displayAd = !preview && (ad?.suppressed || !ad?.imageUrl) ? undefined : ad;
+  const content = displayAd && (
+    displayAd.imageUrl ? (
       <CreativeImage
-        src={ad.imageUrl}
-        alt={ad.headline}
+        key={displayAd.imageUrl}
+        src={displayAd.imageUrl}
+        alt={displayAd.headline}
+        size={displayAd.banner_size}
       />
     ) : (
       <div>
-        <strong>{ad.headline || "Ihre Überschrift"}</strong>
-        {ad.body_text && <p>{ad.body_text}</p>}
+        <strong>{displayAd.headline || "Ihre Überschrift"}</strong>
+        {displayAd.body_text && <p>{displayAd.body_text}</p>}
         <span>Mehr erfahren →</span>
       </div>
     )
@@ -57,16 +65,16 @@ export function CampaignSlot({
       {inline && !preview && <div className={styles.inlineControls}>
         <strong>{adPlacements[placement]}</strong>
         <button type="button" className="button" onClick={() => inline.open(placement, ad?.id)}>
-          {ad?.image_path ? "Banner bearbeiten" : "Banner hinzufügen"}
+          {ad?.imageUrl || inline.hasBanner?.(placement) ? "Banner bearbeiten" : "Banner hinzufügen"}
         </button>
       </div>}
-      {ad ? (
+      {displayAd ? (
         preview ? (
-          <div className={`${styles.creative} ${ad.imageUrl ? styles.imageCreative : ""}`}>{content}</div>
+          <div className={`${styles.creative} ${displayAd.imageUrl ? styles.imageCreative : ""}`}>{content}</div>
         ) : (
           <a
-            className={`${styles.creative} ${ad.imageUrl ? styles.imageCreative : ""}`}
-            href={adTargetUrl(ad.target_url) ?? "#"}
+            className={`${styles.creative} ${displayAd.imageUrl ? styles.imageCreative : ""}`}
+            href={adTargetUrl(displayAd.target_url) ?? "#"}
             rel="sponsored noopener noreferrer"
             target="_blank"
           >

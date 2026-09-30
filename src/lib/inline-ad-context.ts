@@ -28,6 +28,9 @@ export type InlineBanner = {
   target_url: string;
   imageUrl?: string;
   shared: boolean;
+  source?: "legacy" | "campaign";
+  editorial?: boolean;
+  size?: import("./banner-presentation").BannerSize;
 };
 export type InlineBannerResult = {
   error?: string;
@@ -35,6 +38,8 @@ export type InlineBannerResult = {
   campaignId?: string;
   uploadPath?: string;
   ad?: ActiveAd;
+  removed?: boolean;
+  warning?: string;
 };
 export type InlineBannerOptions = {
   label: string;
@@ -43,4 +48,5 @@ export type InlineBannerOptions = {
   error?: string;
   prepare: (form: FormData) => Promise<InlineBannerResult>;
   save: (form: FormData) => Promise<InlineBannerResult>;
+  remove: (form: FormData) => Promise<InlineBannerResult>;
 };

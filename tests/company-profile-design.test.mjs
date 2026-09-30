@@ -32,6 +32,12 @@ registerHooks({
         url: "data:text/javascript,export async function loadPublicTravelTerms(){return []};export async function loadPublicTravelAssignments(){return new Map()}",
         shortCircuit: true,
       };
+    if (s.endsWith("/public-ads"))
+      return {
+        // Layout tests use successful empty ad inventory; unavailable state is covered in public-companies tests.
+        url: "data:text/javascript,export async function loadPublicAds(){return []}",
+        shortCircuit: true,
+      };
     if (s.endsWith(".module.css"))
       return {
         url: "data:text/javascript,export default {}",
