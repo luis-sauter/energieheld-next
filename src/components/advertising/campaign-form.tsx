@@ -1,5 +1,5 @@
 "use client";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import {
   adPlacements,
   adTargetAvailabilityKey,
@@ -32,6 +32,15 @@ export function changePortalArea(targets: AdTarget[], oldKey: string, newKey: st
 }
 export function addRequestScope(scopes: RequestAdScope[], scope: RequestAdScope) {
   return scopes.includes(scope) ? scopes : [...scopes, scope];
+}
+export function availableRequestScopes(scopes: RequestAdScope[], areas: string[]) {
+  return requestAdScopes.filter((scope) => {
+    const section = portalAdSections.find((item) => item.id === scope.id);
+    return section ? section.areas.some((area) => !areas.includes(area.key)) : !scopes.includes(scope.id);
+  });
+}
+export function addPortalArea(areas: string[], key: string) {
+  return !portalAdSection(key) || areas.includes(key) ? areas : [...areas, key];
 }
 export function requestScopeIds(targets: AdTarget[], pristine = false): RequestAdScope[] {
   return pristine ? [] : requestAdScopes.filter((scope) => targets.some((target) => target.target_type === "portal_area"
@@ -99,6 +108,12 @@ export function CampaignForm({
     return areas.filter((key, index) => areas.indexOf(key) === index);
   });
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
+  const scopeToFocus = useRef<RequestAdScope | null>(null);
+  const areaPickers = useRef<Partial<Record<RequestAdScope, HTMLSelectElement | null>>>({});
+  useEffect(() => {
+    if (scopeToFocus.current) areaPickers.current[scopeToFocus.current]?.focus();
+    scopeToFocus.current = null;
+  }, [scopePickerOpen, shownScopes]);
   const [availabilityResult, setAvailabilityResult] = useState<{
     key: string; slots: Record<string, "Belegt" | "Angefragt">; error: string;
   }>({ key: "", slots: {}, error: "" });
@@ -132,7 +147,7 @@ export function CampaignForm({
         targets: checked ? [...remaining, target] : remaining,
       };
     });
-  const availableScopes = requestAdScopes.filter((scope) => !shownScopes.includes(scope.id));
+  const availableScopes = availableRequestScopes(shownScopes, shownAreas);
   const renderPlacements = (base: Omit<AdTarget, "placement">) => <div className={styles.placements}>
     {Object.entries(adPlacements).map(([slot, label]) => {
       const target: AdTarget = { ...base, placement: slot as AdPlacementId };
@@ -204,9 +219,11 @@ export function CampaignForm({
             </div>
             {portalSection ? <>
               <label className={styles.areaPicker}>Wo innerhalb dieses Bereichs möchten Sie werben?
-                <select value="" onChange={(event) => {
-                  if (portalAdSection(event.target.value) === portalSection.id)
-                    setShownAreas((current) => current.includes(event.target.value) ? current : [...current, event.target.value]);
+                <select value="" aria-label={`${portalSection.label}: Rubrik oder Unterrubrik hinzufügen`}
+                  ref={(element) => { areaPickers.current[portalSection.id] = element; }} onChange={(event) => {
+                  const key = event.target.value;
+                  if (portalAdSection(key) === portalSection.id)
+                    setShownAreas((current) => addPortalArea(current, key));
                 }}>
                   <option value="">Rubrik oder Unterrubrik auswählen</option>
                   {portalSection.areas.map((area) => <option key={area.key} value={area.key} disabled={shownAreas.includes(area.key)}>{area.label}</option>)}
@@ -243,6 +260,7 @@ export function CampaignForm({
             {availableScopes.map((scope) => <button type="button" key={scope.id} onClick={() => {
               setShownScopes((current) => addRequestScope(current, scope.id));
               setScopePickerOpen(false);
+              scopeToFocus.current = scope.id;
             }}>{scope.name}</button>)}
           </div>}
         </div>}

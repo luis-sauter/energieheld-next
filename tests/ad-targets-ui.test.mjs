@@ -59,10 +59,11 @@ registerHooks({
   },
 });
 
-const { CampaignForm, AdminCampaignForm, addRequestScope, removeRequestScope, removePortalArea, changePortalArea, requestScopeIds, slotAvailabilityText } = await import(
+const { CampaignForm, AdminCampaignForm, addRequestScope, availableRequestScopes, addPortalArea, removeRequestScope, removePortalArea, changePortalArea, requestScopeIds, slotAvailabilityText } = await import(
   "../src/components/advertising/campaign-form.tsx"
 );
 const { portalAdSections } = await import("../src/lib/ad-target-areas.ts");
+const { validateAdValues, adTargetFormValue } = await import("../src/lib/ad-values.ts");
 const { CampaignFacts, CampaignSlot } = await import(
   "../src/components/advertising/campaign-view.tsx"
 );
@@ -151,6 +152,52 @@ test("portal picker derives real subpages and edits one nested target without af
   assert.match(facts, /Mottoreisen · Wellnessangebote · Premium-Banner oben/);
   assert.match(facts, /Reiseziele · Deutschland · Banner A/);
   assert.doesNotMatch(facts, /portal_area:|mottoreisen\/wellnessangebote/);
+});
+test("outer picker keeps themes and destinations available until every concrete area is used", () => {
+  const scopes = ["homepage", "experts_directory", "mottoreisen", "reiseziele"];
+  let areas = addPortalArea([], "mottoreisen/natur-pur");
+  areas = addPortalArea(areas, "mottoreisen/wellnessangebote");
+  areas = addPortalArea(areas, "mottoreisen/wanderurlaub");
+  areas = addPortalArea(areas, "reiseziele/deutschland");
+  areas = addPortalArea(areas, "reiseziele/oesterreich");
+  assert.equal(areas.length, 5);
+  assert.deepEqual(availableRequestScopes(scopes, areas).map((scope) => scope.id), ["mottoreisen", "reiseziele"]);
+  assert.deepEqual(addRequestScope(scopes, "mottoreisen"), scopes, "one shared outer group, several area cards");
+  assert.strictEqual(addPortalArea(areas, "mottoreisen/natur-pur"), areas, "duplicate card is refused");
+  assert.strictEqual(addPortalArea(areas, "mottoreisen/erfunden"), areas);
+  const allThemes = portalAdSections.find((section) => section.id === "mottoreisen").areas.map((area) => area.key);
+  const allDestinations = portalAdSections.find((section) => section.id === "reiseziele").areas.map((area) => area.key);
+  assert.deepEqual(availableRequestScopes(scopes, [...allThemes, ...allDestinations]), []);
+  const removed = allThemes.filter((key) => key !== "mottoreisen/natur-pur");
+  assert.deepEqual(availableRequestScopes(scopes, [...removed, ...allDestinations]).map((scope) => scope.id), ["mottoreisen"]);
+  assert.deepEqual(addPortalArea(removed, "mottoreisen/natur-pur"), [...removed, "mottoreisen/natur-pur"]);
+  assert.deepEqual(availableRequestScopes([], []).map((scope) => scope.id), scopes);
+});
+test("multiple theme and destination cards restore exact saved slots for owner and admin", () => {
+  const keys = ["mottoreisen/natur-pur", "mottoreisen/wellnessangebote", "mottoreisen/wanderurlaub", "reiseziele/deutschland", "reiseziele/oesterreich"];
+  const targets = keys.map((target_key, index) => ({ target_type: "portal_area", category_id: null, target_key,
+    placement: index % 2 ? "sidebar_top" : "top_banner" }));
+  targets.push({ ...targets[0], placement: "sidebar_middle" });
+  const form = new FormData();
+  for (const key of ["internal_name", "headline", "target_url", "requested_start_date", "requested_end_date", "placement"])
+    form.set(key, campaign[key]);
+  for (const target of targets) form.append("targets", adTargetFormValue(target));
+  const saved = validateAdValues(form);
+  assert.equal(saved.error, undefined);
+  assert.deepEqual(saved.data.targets, targets);
+  for (const admin of [false, true]) {
+    const html = render(CampaignForm, { campaign: { ...campaign, ...saved.data }, categoryIds: [], admin });
+    assert.equal((html.match(/class="scopeGroup"/g) ?? []).length, 2);
+    assert.equal((html.match(/class="areaCard"/g) ?? []).length, 5);
+    const checked = (html.match(/<input[^>]*type="checkbox"[^>]*>/g) ?? []).filter((input) => input.includes('checked=""'));
+    assert.equal(checked.length, targets.length);
+    for (const target of targets) assert.ok(checked.some((input) => input.includes(`value="${adTargetFormValue(target)}"`)));
+    assert.match(html, /aria-label="Mottoreisen: Rubrik oder Unterrubrik hinzufügen"/);
+  }
+  const changed = changePortalArea(targets, keys[0], "mottoreisen/golfurlaub");
+  assert.deepEqual(changed.filter((target) => target.target_key === "mottoreisen/golfurlaub").map((target) => target.placement), ["top_banner", "sidebar_middle"]);
+  assert.deepEqual(changed.filter((target) => target.target_key !== "mottoreisen/golfurlaub"), targets.slice(1, -1));
+  assert.deepEqual(removePortalArea(targets, keys[0]), targets.slice(1, -1));
 });
 test("campaign form loads saved page/slot pairs without a cross product", () => {
   const html = render(CampaignForm, {
