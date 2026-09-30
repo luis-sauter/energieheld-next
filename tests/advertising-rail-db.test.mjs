@@ -41,10 +41,10 @@ before(async () => {
   await db.exec("update ad_sidebar_slot_order set sort_order=case slot when 'sidebar_middle' then 0 when 'sidebar_bottom' then 1 else 2 end");
   await migration("20260925160039_expand_legacy_advertising_rail.sql");
   await migration("20260930120000_ad_target_placements.sql");
-  // The Cloud already has the controlled taxonomy; two fixture terms prove that
+  // The Cloud already has the controlled taxonomy; fixture terms prove that
   // portal ad areas derive from its theme rows rather than a copied SQL list.
   await db.exec("create table public.travel_terms(dimension text not null,slug text not null)");
-  await db.exec("insert into public.travel_terms values ('theme','wellnessangebote'),('theme','wanderurlaub')");
+  await db.exec("insert into public.travel_terms values ('theme','wellnessangebote'),('theme','wanderurlaub'),('theme','natur-pur')");
   await db.query("insert into company_ad_campaign_targets(campaign_id,target_type,placement) values($1,'homepage','top_banner')", [draftIds[0]]);
   await migration("20260930143000_portal_ad_target_areas.sql");
   today = (await db.query("select ((now() at time zone 'Europe/Berlin')::date)::text as day")).rows[0].day;
@@ -64,7 +64,7 @@ test("migration keeps first-three stored order and drafts while adding nine slot
   assert.equal((await db.query("select has_function_privilege('authenticated','public.reorder_ad_sidebar_slots(text[])','EXECUTE') as allowed")).rows[0].allowed, true);
   assert.deepEqual((await db.query("select target_type,category_id,target_key,placement from company_ad_campaign_targets where campaign_id=$1", [draftIds[0]])).rows,
     [{ target_type: "homepage", category_id: null, target_key: null, placement: "top_banner" }]);
-  assert.equal((await db.query("select count(*)::int as total from ad_portal_areas")).rows[0].total, 8);
+  assert.equal((await db.query("select count(*)::int as total from ad_portal_areas")).rows[0].total, 9);
   assert.equal((await db.query("select has_table_privilege('authenticated','public.ad_portal_areas','INSERT') as allowed")).rows[0].allowed, false);
   assert.equal((await db.query("select has_table_privilege('anon','public.company_ad_campaign_targets','INSERT') as allowed")).rows[0].allowed, false);
 });
@@ -107,6 +107,31 @@ async function publicAds(target, category = null) {
   await actor("", "anon");
   return (await db.query("select id,placement from get_active_ad_campaigns($1,$2)", [target, category])).rows;
 }
+
+test("one campaign persists multiple themes and destinations without duplicate cards or slot cross products", async () => {
+  const pairs = [
+    { target_type: "portal_area", category_id: null, target_key: "mottoreisen/natur-pur", placement: "top_banner" },
+    { target_type: "portal_area", category_id: null, target_key: "mottoreisen/wellnessangebote", placement: "sidebar_top" },
+    { target_type: "portal_area", category_id: null, target_key: "mottoreisen/wanderurlaub", placement: "top_banner" },
+    { target_type: "portal_area", category_id: null, target_key: "reiseziele/deutschland", placement: "sidebar_middle" },
+    { target_type: "portal_area", category_id: null, target_key: "reiseziele/oesterreich", placement: "sidebar_middle" },
+  ];
+  const id = await campaign(owner, "top_banner", pairs);
+  const readPairs = async () => (await db.query("select target_type,category_id,target_key,placement from company_ad_campaign_targets where campaign_id=$1 order by target_key", [id])).rows;
+  const saved = await readPairs();
+  assert.deepEqual(saved, [...pairs].sort((a, b) => a.target_key.localeCompare(b.target_key)));
+  // A fresh role context reads the same persisted pairs; no client state is involved.
+  await actor(other);
+  assert.deepEqual(await readPairs(), []);
+  await actor(owner);
+  assert.deepEqual(await readPairs(), saved);
+  const creative = (await db.query("select * from company_ad_campaigns where id=$1", [id])).rows[0];
+  await actor(admin);
+  await denied("select save_ad_campaign($1,$2,false)", [id, { ...creative, targets: [...pairs, pairs[0]] }]);
+  assert.deepEqual(await readPairs(), saved, "failed duplicate save leaves all targets intact");
+  await approve(id);
+  for (const pair of pairs) assert.deepEqual(await publicAds("portal_area", pair.target_key), [{ id, placement: pair.placement }]);
+});
 
 test("homepage shape is enforced and homepage, directory, trade bookings stay isolated", async () => {
   const home = await campaign(owner, "sidebar_04", [{ target_type: "homepage", category_id: null }]);
