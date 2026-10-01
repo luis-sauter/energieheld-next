@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Listing } from "@/types/portal";
 import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, type TravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { filterTravelListings, travelFacetCount, travelFilterParams, travelFilterUrl, type TravelFacet } from "@/lib/reiseportal-facets";
+import { travelSearchUrl, travelSearchReturnUrl } from "@/lib/travel-search-intent";
+import { SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
 
 type Options = ReturnType<typeof availableTravelFilters>;
 type FacetOptions = { slug: string; label: string }[];
@@ -16,7 +18,9 @@ export function TravelFinder({ mode, listings, options, values, onChange, error 
   onChange: (values: TravelFilterValues) => void;
   error?: string | null;
 }) {
-  const count = filterTravelListings(listings, values).length;
+  const portalQuery = values.query.trim();
+  const filterValues = { ...values, query: "" };
+  const count = filterTravelListings(listings, filterValues).length;
   const update = (key: keyof TravelFilterValues, value: string) => onChange({ ...values, [key]: value });
   const facets: { key: TravelFacet; label: string; all: string; entries: FacetOptions }[] = [
     { key: "destination", label: "Wohin?", all: "Alle Reiseziele", entries: options.destinations },
@@ -44,6 +48,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error 
       <p>Sag uns, wie du reisen möchtest – wir zeigen dir passende Orte, Unterkünfte und Erlebnisse.</p>
       <form className="reise-finder" role="search" aria-label="Reisefinder" onSubmit={(event) => {
         event.preventDefault();
+        if (portalQuery) { window.location.assign(travelSearchUrl(values, mode)); return; }
         if (count === 0 || error) return;
         if (mode === "home") window.location.assign(travelFilterUrl(values));
         else document.getElementById("unterkunft-ergebnisse")?.scrollIntoView({ behavior: "smooth" });
@@ -56,7 +61,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error 
                 {values[key] && !entries.some((entry) => entry.slug === values[key]) &&
                   <option value={values[key]}>Nicht verfügbar (0)</option>}
                 {entries.map(({ slug, label: optionLabel }) => {
-                  const optionCount = travelFacetCount(listings, values, key, slug);
+                  const optionCount = travelFacetCount(listings, filterValues, key, slug);
                   return <option key={slug} value={slug} disabled={optionCount === 0 && values[key] !== slug}>
                     {optionLabel} ({optionCount})
                   </option>;
@@ -65,19 +70,20 @@ export function TravelFinder({ mode, listings, options, values, onChange, error 
             </label>)}
           <label>Suchbegriff
             <input name="q" type="search" value={values.query} onChange={(event) => update("query", event.target.value)}
-              placeholder="Name oder Reisethema" />
+              maxLength={SEARCH_QUERY_LIMIT} placeholder="Name, Reisethema oder Inhalt" aria-describedby="reise-finder-hint" />
           </label>
           <label>Ort oder Postleitzahl
             <input name="ort" type="search" value={values.location} onChange={(event) => update("location", event.target.value)}
               placeholder="Ort, Region oder PLZ" />
           </label>
-          <button className="button button-primary reise-finder-submit" type="submit" disabled={count === 0 || Boolean(error)}>
-            {count === 0 ? "Keine passenden Unterkünfte" : `${count} ${count === 1 ? "Unterkunft" : "Unterkünfte"} anzeigen`}
+          <button className="button button-primary reise-finder-submit" type="submit" disabled={!portalQuery && (count === 0 || Boolean(error))}>
+            {portalQuery ? "Im Reiseportal suchen" : count === 0 ? "Keine passenden Unterkünfte" : `${count} ${count === 1 ? "Unterkunft" : "Unterkünfte"} anzeigen`}
           </button>
         </div>
         <div className="reise-finder-summary" aria-live="polite" aria-atomic="true">
-          {error ?? `${count} ${count === 1 ? "passende Unterkunft" : "passende Unterkünfte"}`}
+          {portalQuery ? "Suche in allen öffentlichen Inhalten" : error ?? `${count} ${count === 1 ? "passende Unterkunft" : "passende Unterkünfte"}`}
         </div>
+        <p id="reise-finder-hint">{portalQuery ? "Freitext durchsucht das gesamte Portal. Reisefilter gelten nur bei leerem Suchbegriff und bleiben für Ihre Rückkehr erhalten." : "Mit einem Suchbegriff finden Sie auch Reiseziele, Mottoreisen und weitere Inhalte im gesamten Portal."}</p>
         {active.length > 0 && <div className="reise-finder-active" aria-label="Aktive Filter">
           {active.map(({ key, label }) => <button key={key} type="button" className="reise-finder-chip"
             onClick={() => update(key, "")} aria-label={`${label} entfernen`}>{label} <span aria-hidden="true">×</span></button>)}
@@ -88,8 +94,17 @@ export function TravelFinder({ mode, listings, options, values, onChange, error 
   </section>;
 }
 
-export function HomeTravelFinder({ listings, terms, error }: { listings: Listing[]; terms: PublicTravelTerm[]; error?: string | null }) {
-  const [values, setValues] = useState<TravelFilterValues>(() => readTravelFilterValues({}));
+export function HomeTravelFinder({ listings, terms, error, initialValues }: { listings: Listing[]; terms: PublicTravelTerm[]; error?: string | null; initialValues: TravelFilterValues }) {
+  const [values, setValues] = useState<TravelFilterValues>(initialValues);
+  useEffect(() => {
+    const url = travelSearchReturnUrl(values, 'home');
+    if (`${window.location.pathname}${window.location.search}` !== url) window.history.replaceState(window.history.state, '', url);
+  }, [values]);
+  useEffect(() => {
+    const restore = () => setValues(readTravelFilterValues(Object.fromEntries(new URLSearchParams(window.location.search))));
+    window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
+  }, []);
   const options = useMemo(() => availableTravelFilters(listings, terms), [listings, terms]);
   return <TravelFinder mode="home" listings={listings} options={options}
     values={values} onChange={setValues} error={error} />;

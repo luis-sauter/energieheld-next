@@ -29,6 +29,7 @@ registerHooks({
 
 const { TravelFinder } = await import("../src/components/portal/travel-finder.tsx");
 const { availableTravelFilters, readTravelFilterValues } = await import("../src/lib/reiseportal-filter-options.ts");
+const { travelSearchUrl, travelSearchReturnUrl } = await import('../src/lib/travel-search-intent.ts');
 const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const listing = (slug, country, terms, premium = false) => ({
   id: slug, slug, name: slug, tagline: "", description: "", businessAreas: "", services: [],
@@ -77,7 +78,7 @@ test("selected facets retain their label, zero options stay visible and disabled
   assert.match(html, /value="campingurlaub" disabled/);
   assert.match(html, /Reiseart: Wellnessangebote entfernen/);
   assert.match(html, /Alle Filter zurücksetzen/);
-  assert.match(render(readTravelFilterValues({ q: "unpassend" })), /Keine passenden Unterkünfte/);
+  assert.match(render(readTravelFilterValues({ q: "unpassend" })), /Im Reiseportal suchen/);
 });
 
 test("A–Z keeps hero above results, updates the URL locally and has mobile layout rules", () => {
@@ -85,8 +86,48 @@ test("A–Z keeps hero above results, updates the URL locally and has mobile lay
   const css = source("src/app/globals.css");
   assert.ok(directory.indexOf("<TravelFinder") < directory.indexOf("unterkunft-ergebnisse"));
   assert.match(directory, /window\.history\.replaceState/);
-  assert.match(directory, /filterTravelListings\(listings, values\)/);
+  assert.match(directory, /filterTravelListings\(listings, filterValues\)/);
   assert.match(directory, /DirectoryOrderEditor/);
   assert.match(css, /\.reise-finder-grid \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/);
   assert.match(css, /\.reise-finder-grid \{ grid-template-columns: minmax\(0, 1fr\); \}/);
+});
+
+function formIn(node) {
+  if (!node || typeof node !== 'object') return;
+  if (node.type === 'form') return node;
+  for (const child of [node.props?.children].flat(Infinity)) { const form = formIn(child); if (form) return form; }
+}
+test('both hero forms submit portal queries despite zero local matches or directory errors', () => {
+  const previousWindow = globalThis.window;
+  try {
+    for (const mode of ['home', 'directory']) for (const q of ['Österreich', 'Nordic Walking', 'Pension Sonnenhof', 'City Apart Dresden']) {
+      const values = readTravelFilterValues({ q, ziel: 'schweiz', ort: 'Unpassender Ort' });
+      let assigned;
+      globalThis.window = { location: { assign(url) { assigned = url; } } };
+      const form = formIn(TravelFinder({ mode, listings, options, values, onChange() {}, error: 'Unterkünfte nicht verfügbar' }));
+      form.props.onSubmit({ preventDefault() {} });
+      const url = new URL(assigned, 'https://das-reiseportal.com');
+      assert.equal(url.pathname, '/suche'); assert.equal(url.searchParams.get('q'), q);
+      assert.equal(url.searchParams.get('ziel'), 'schweiz'); assert.equal(url.searchParams.get('von'), mode);
+      const html = renderToStaticMarkup(createElement(TravelFinder, { mode, listings, options, values, onChange() {}, error: 'Unterkünfte nicht verfügbar' }));
+      assert.match(html, /Im Reiseportal suchen/); assert.doesNotMatch(html, /type="submit" disabled/);
+      assert.match(html, /Reisefilter gelten nur bei leerem Suchbegriff/);
+    }
+  } finally { globalThis.window = previousWindow; }
+});
+test('empty free text retains structured filter URLs and return links preserve origin and selections', () => {
+  const filters = readTravelFilterValues({ ziel: 'oesterreich', thema: 'wellnessangebote', ort: 'Tirol', q: '   ' });
+  assert.equal(travelSearchUrl(filters, 'home'), '/unterkuenfte-a-z?ziel=oesterreich&thema=wellnessangebote&ort=Tirol');
+  const query = { ...filters, query: 'Nordic Walking' };
+  assert.match(travelSearchReturnUrl(query, 'home'), /^\/\?ziel=oesterreich/);
+  assert.match(travelSearchReturnUrl(query, 'directory'), /^\/unterkuenfte-a-z\?/);
+  assert.match(travelSearchReturnUrl(query, 'https://foreign.invalid'), /^\/unterkuenfte-a-z\?/);
+  assert.equal(new URL(travelSearchUrl({ ...query, query: 'x'.repeat(500) }, 'home'), 'https://das-reiseportal.com').searchParams.get('q').length, 160);
+});
+test('results remain a compact continuation and no separate header search entry survives', () => {
+  const page = source('src/app/(energieheld)/suche/page.tsx');
+  assert.match(page, /<h1>Suchergebnisse<\/h1>/); assert.match(page, /Zur Suche zurück/);
+  assert.match(page, /name="von"/); assert.match(page, /travelFilterParams/);
+  assert.doesNotMatch(source('src/components/portal/chrome.tsx'), /Portalsuche öffnen|href="\/suche"/);
+  assert.match(source('src/components/portal/travel-finder.tsx'), /popstate/);
 });
