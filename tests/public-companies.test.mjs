@@ -310,7 +310,7 @@ test("public loader applies manual order before demos and keeps the directory av
   assert.deepEqual((await loadPortalCompanies()).data.slice(0, 3).map((item) => item.name), ["Beta", "Alpha", "Charlie"]);
 });
 
-test("real and demo profiles interleave after merge, while sidebar order applies globally without moving top banner", async () => {
+test("profile ordering stays intact while old global banner order cannot move fixed slot identities", async () => {
   const real = { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: "actual", display_name: "Actual Firma" };
   const order = [
     { profile_id: null, demo_slug: demos[1].slug, item_key: `demo:${demos[1].slug}`, sort_order: 0 },
@@ -329,7 +329,7 @@ test("real and demo profiles interleave after merge, while sidebar order applies
   const html = renderToStaticMarkup(await DirectoryPage({ searchParams: Promise.resolve({}) }));
   assert.ok(html.indexOf(demos[1].name) < html.indexOf("Actual Firma"));
   const placements = [...html.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]);
-  assert.deepEqual(placements.slice(0, 4), ["top_banner", "sidebar_bottom", "sidebar_top", "sidebar_middle"]);
+  assert.deepEqual(placements.slice(0, 4), ["top_banner", "sidebar_top", "sidebar_middle", "sidebar_bottom"]);
   api([real], false, [], order, sidebar);
   assert.throws(
     () => TradePage({ params: Promise.resolve({ slug: "daemmung" }), searchParams: Promise.resolve({}) }),

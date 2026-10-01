@@ -16,14 +16,14 @@ async function authorizedLegacy(client: SupabaseClient, path: string, form: Form
   const context = inlineAdContext(path);
   if (!context || await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
   const placement = String(form.get("original_placement") || form.get("placement")) as AdPlacementId;
-  const legacy = legacyCreative(placement);
-  if (!legacy || legacy.id !== form.get("legacy_id")) return { error: denied };
   if (form.get("placement") !== placement) return { error: "Bitte bearbeiten Sie das Bestandsbanner an seinem bisherigen Platz." };
   const [settings, active] = await Promise.all([loadBannerPresentations(client, context),
     client.rpc("get_active_ad_campaigns", { p_scope_type: context.target_type, p_category_id: context.target_key })]);
   if (settings.error || active.error || settings.rows.some((row) => row.placement === placement && row.legacy_hidden) ||
     (active.data ?? []).some((row: { placement: string }) => row.placement === placement)) return { error: denied };
   const setting = settings.rows.find((row) => row.placement === placement);
+  const legacy = legacyCreative(placement, setting?.legacy_placement ?? placement);
+  if (!legacy || legacy.id !== form.get("legacy_id")) return { error: denied };
   return { context, legacy: { ...legacy, target_url: setting?.legacy_target_url || legacy.target_url, banner_size: setting?.size } };
 }
 async function savePresentation(client: SupabaseClient, path: string, placement: AdPlacementId,

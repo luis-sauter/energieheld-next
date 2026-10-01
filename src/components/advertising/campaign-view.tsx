@@ -29,14 +29,16 @@ export function CampaignSlot({
   ad: initialAd,
   preview = false,
   showLabel = true,
+  reordering = false,
 }: {
   placement: AdPlacementId;
   ad?: ActiveAd;
   preview?: boolean;
   showLabel?: boolean;
+  reordering?: boolean;
 }) {
   const inline = useInlineBanners();
-  const ad = inline && Object.hasOwn(inline.overrides, placement) ? inline.overrides[placement] ?? undefined : initialAd;
+  const ad = inline && !preview && !reordering && Object.hasOwn(inline.overrides, placement) ? inline.overrides[placement] ?? undefined : initialAd;
   if (!preview && !inline && ad?.suppressed) return null;
   const displayAd = !preview && (ad?.suppressed || !ad?.imageUrl) ? undefined : ad;
   const content = displayAd && (
@@ -62,7 +64,7 @@ export function CampaignSlot({
       aria-label={`Anzeige – ${adPlacements[placement]}`}
     >
       {showLabel && <div className={styles.label}>Anzeige{preview ? " · Vorschau" : ""}</div>}
-      {inline && !preview && <div className={styles.inlineControls}>
+      {inline && !preview && !reordering && <div className={styles.inlineControls}>
         <strong>{adPlacements[placement]}</strong>
         <button type="button" className="button" onClick={() => inline.open(placement, ad?.id)}>
           {ad?.imageUrl || inline.hasBanner?.(placement) ? "Banner bearbeiten" : "Banner hinzufügen"}

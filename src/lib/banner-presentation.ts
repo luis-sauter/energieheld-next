@@ -14,9 +14,10 @@ export type BannerPresentation = {
   size: BannerSize;
   legacy_hidden: boolean;
   legacy_target_url: string | null;
+  legacy_placement?: AdPlacementId | null;
 };
-export function legacyCreative(placement: AdPlacementId): ActiveAd | undefined {
-  const creative = legacyBannerPreview.find((item) => defaultSidebarOrder[item.order] === placement);
+export function legacyCreative(placement: AdPlacementId, source: AdPlacementId = placement): ActiveAd | undefined {
+  const creative = legacyBannerPreview.find((item) => defaultSidebarOrder[item.order] === source);
   return creative && { id: creative.id, placement, headline: creative.alt, body_text: null,
     target_url: creative.targetUrl, image_path: null, imageUrl: creative.imageUrl, source: "legacy" };
 }
@@ -30,8 +31,10 @@ export function presentedBanners(ads: ActiveAd[], presentations: BannerPresentat
     if (live) return [{ ...live, source: "campaign" as const, banner_size: setting?.size }];
     if (setting?.legacy_hidden) return [{ id: `hidden:${placement}`, placement, headline: "", body_text: null,
       target_url: "", image_path: null, suppressed: true, source: "hidden" as const, banner_size: setting.size }];
-    const legacy = legacyCreative(placement);
+    const legacy = legacyCreative(placement, setting?.legacy_placement ?? placement);
     return legacy ? [{ ...legacy, banner_size: setting?.size,
-      target_url: setting?.legacy_target_url || legacy.target_url }] : [];
+      target_url: setting?.legacy_target_url || legacy.target_url }]
+      : setting?.legacy_placement ? [{ id: `hidden:${placement}`, placement, headline: "", body_text: null,
+        target_url: "", image_path: null, suppressed: true, source: "hidden" as const }] : [];
   });
 }

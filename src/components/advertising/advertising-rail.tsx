@@ -5,11 +5,10 @@ import { useInlineBanners } from "./inline-banner-context";
 import type { ReactNode } from "react";
 import type { ActiveAd } from "@/lib/ad-values";
 import { sidebarCreative } from "@/lib/advertising-rail";
-import type { SidebarSlot } from "@/lib/sidebar-order";
+import { defaultSidebarOrder, type SidebarSlot } from "@/lib/sidebar-order";
 import { CampaignSlot } from "./campaign-view";
 
 export function AdvertisingRail({
-  slots,
   ads,
   editor,
 }: {
@@ -23,7 +22,7 @@ export function AdvertisingRail({
       <p className="advertising-rail-label">Anzeige</p>
       {editor ?? (
         <div className="advertising-rail-creatives">
-          {slots.map((slot) => {
+          {defaultSidebarOrder.map((slot) => {
             const ad = sidebarCreative(slot, ads);
             return ad || inline ? <CampaignSlot key={slot} placement={slot} ad={ad} showLabel={false} /> : null;
           })}

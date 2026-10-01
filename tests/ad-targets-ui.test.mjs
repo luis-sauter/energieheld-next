@@ -72,6 +72,20 @@ const { sidebarCreative } = await import("../src/lib/advertising-rail.ts");
 const { defaultSidebarOrder } = await import("../src/lib/sidebar-order.ts");
 const { SidebarOrderSlots } = await import("../src/components/admin/sidebar-order-editor.tsx");
 const { InlineBannerContext } = await import("../src/components/advertising/inline-banner-context.tsx");
+
+test("fixed positions A–L survive reversed rail input and C-to-A content previews on desktop/mobile markup", () => {
+  const sources=[defaultSidebarOrder[2],defaultSidebarOrder[0],defaultSidebarOrder[1],...defaultSidebarOrder.slice(3)];
+  const html=renderToStaticMarkup(createElement(SidebarOrderSlots,{
+    ads:[],slots:sources,editing:true,busy:false,dragged:null,target:null,
+    onPointerDown(){},onPointerMove(){},onPointerUp(){},onMove(){},
+  }));
+  const identities=[...html.matchAll(/data-sidebar-slot="([^"]+)"/g)].map(x=>x[1]);
+  assert.deepEqual(identities,[...defaultSidebarOrder]);
+  const first=html.slice(0,html.indexOf('data-sidebar-slot="sidebar_middle"'));
+  assert.match(first,/Banner A/); assert.match(first,/ferienanlage-nationalpark/); assert.doesNotMatch(first,/Banner C/);
+  const rail=renderToStaticMarkup(createElement(AdvertisingRail,{ads:[],slots:[...defaultSidebarOrder].reverse()}));
+  assert.ok(rail.indexOf('data-placement="sidebar_top"')<rail.indexOf('data-placement="sidebar_bottom"'));
+});
 const campaign = {
   id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   profile_id: "own",

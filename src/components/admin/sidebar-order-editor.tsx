@@ -6,7 +6,8 @@ import { CampaignSlot } from "@/components/advertising/campaign-view";
 import { adPlacements } from "@/lib/ad-values";
 import { sidebarCreative } from "@/lib/advertising-rail";
 import type { ActiveAd } from "@/lib/ad-values";
-import { moveSidebarSlot, type SidebarSlot } from "@/lib/sidebar-order";
+import { defaultSidebarOrder, isSidebarOrder, moveSidebarSlot, type SidebarSlot } from "@/lib/sidebar-order";
+import { sidebarContentAt, sidebarContentToken } from "@/lib/sidebar-content";
 import { useDirectoryEditMode } from "./directory-edit-mode";
 import { useInlineBanners } from "@/components/advertising/inline-banner-context";
 import styles from "./sidebar-order-editor.module.css";
@@ -24,6 +25,7 @@ export function SidebarOrderSlots({
   onPointerMove,
   onPointerUp,
   onMove,
+  canMove = () => true,
 }: {
   ads: ActiveAd[];
   slots: SidebarSlot[];
@@ -35,10 +37,16 @@ export function SidebarOrderSlots({
   onPointerMove: (event: PointerEvent<HTMLButtonElement>) => void;
   onPointerUp: () => void;
   onMove: (from: number, to: number) => void;
+  canMove?: (from: number, to: number) => boolean;
 }) {
   const inline = useInlineBanners();
-  return slots.map((slot, index) => {
+  const sources = isSidebarOrder(slots) ? slots : [...defaultSidebarOrder];
+  const contents = defaultSidebarOrder.flatMap((slot) => {
     const ad = sidebarCreative(slot, ads);
+    return ad ? [ad] : [];
+  });
+  return defaultSidebarOrder.map((slot, index) => {
+    const ad = sidebarContentAt(contents, sources, index);
     if (!editing && !ad && !inline) return null;
     return (
     <div key={slot} data-sidebar-slot={slot}
@@ -49,16 +57,16 @@ export function SidebarOrderSlots({
           <div className={styles.controls}>
             <button type="button" className={styles.handle} aria-label={`${label(slot)} verschieben`}
               onPointerDown={(event) => onPointerDown(event, slot)} onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp} onPointerCancel={onPointerUp} disabled={busy}>↕</button>
-            <button type="button" aria-label={`${label(slot)} nach oben`} disabled={busy || index === 0}
+              onPointerUp={onPointerUp} onPointerCancel={onPointerUp} disabled={busy || !canMove(index, index)}>↕</button>
+            <button type="button" aria-label={`${label(slot)} nach oben`} disabled={busy || index === 0 || !canMove(index, index - 1)}
               onClick={() => onMove(index, index - 1)}>↑</button>
-            <button type="button" aria-label={`${label(slot)} nach unten`} disabled={busy || index === slots.length - 1}
+            <button type="button" aria-label={`${label(slot)} nach unten`} disabled={busy || index === defaultSidebarOrder.length - 1 || !canMove(index, index + 1)}
               onClick={() => onMove(index, index + 1)}>↓</button>
           </div>
         </>
       )}
       {ad || inline ? (
-        <CampaignSlot placement={slot} ad={ad} showLabel={false} />
+        <CampaignSlot placement={slot} ad={ad} showLabel={false} reordering={editing} />
       ) : <div className={styles.placeholder}>Noch kein Banner</div>}
     </div>
   );
@@ -67,19 +75,25 @@ export function SidebarOrderSlots({
 
 export function SidebarOrderEditor({
   ads,
-  slots,
   saveOrder,
 }: {
   ads: ActiveAd[];
   slots: SidebarSlot[];
-  saveOrder: (slots: SidebarSlot[]) => Promise<{ success?: string; error?: string }>;
+  saveOrder: (sources: SidebarSlot[], expected?: string[]) => Promise<{ success?: string; error?: string }>;
 }) {
   const router = useRouter();
   const { mode, setMode } = useDirectoryEditMode();
-  const initialKey = slots.join("|");
-  const [saved, setSaved] = useState({ key: initialKey, slots });
-  const savedSlots = saved.key === initialKey ? saved.slots : slots;
-  const [draft, setDraft] = useState<SidebarSlot[]>(slots);
+  const inline = useInlineBanners();
+  const currentAds = defaultSidebarOrder.flatMap((slot) => {
+    const ad = inline && Object.hasOwn(inline.overrides, slot) ? inline.overrides[slot] : sidebarCreative(slot, ads);
+    return ad ? [ad] : [{ id: `hidden:${slot}`, placement: slot, suppressed: true, source: "hidden" as const,
+      headline: "", body_text: null, target_url: "", image_path: null }];
+  });
+  const initialKey = JSON.stringify(ads);
+  const [saved, setSaved] = useState({ key: initialKey, sources: [...defaultSidebarOrder] as SidebarSlot[] });
+  const savedSources = saved.key === initialKey ? saved.sources : [...defaultSidebarOrder];
+  const [draft, setDraft] = useState<SidebarSlot[]>([...defaultSidebarOrder]);
+  const expectedRef = useRef<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -88,18 +102,22 @@ export function SidebarOrderEditor({
   const busyRef = useRef(false);
   const dragRef = useRef<SidebarSlot | null>(null);
   const lastTargetRef = useRef<SidebarSlot | null>(null);
+  const dragBoundsRef = useRef<{ slot: SidebarSlot; top: number; bottom: number }[]>([]);
   const editing = mode === "sidebar";
+  const awaitingRefresh = saved.key === initialKey && saved.sources.some((source, index) => source !== defaultSidebarOrder[index]);
 
   function start() {
     if (mode) return;
-    setDraft(savedSlots);
+    setDraft([...defaultSidebarOrder]);
+    expectedRef.current = defaultSidebarOrder.map((slot) => sidebarContentToken(slot,
+      currentAds.find((ad) => ad.placement === slot), inline?.bannerAt?.(slot)));
     setError("");
     setMessage("");
     setMode("sidebar");
   }
 
   function cancel() {
-    setDraft(savedSlots);
+    setDraft(savedSources);
     setError("");
     dragRef.current = null;
     lastTargetRef.current = null;
@@ -114,12 +132,13 @@ export function SidebarOrderEditor({
     setBusy(true);
     setError("");
     try {
-      const result = await saveOrder(draft);
+      const result = await saveOrder(draft, expectedRef.current);
       if (!result.success) {
         setError(result.error ?? "Die Banner-Reihenfolge konnte nicht gespeichert werden.");
         return;
       }
-      setSaved({ key: initialKey, slots: draft });
+      setSaved({ key: initialKey, sources: draft });
+      inline?.reordered?.();
       setMessage(result.success);
       setMode(null);
       router.refresh();
@@ -132,10 +151,15 @@ export function SidebarOrderEditor({
   }
 
   function onPointerDown(event: PointerEvent<HTMLButtonElement>, slot: SidebarSlot) {
-    if (busy) return;
+    if (busy || !canMove(defaultSidebarOrder.indexOf(slot), defaultSidebarOrder.indexOf(slot))) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = slot;
+    // Different image heights must not move the hit target back under the pointer.
+    dragBoundsRef.current = [...document.querySelectorAll<HTMLElement>("[data-sidebar-slot]")].map((row) => {
+      const bounds = row.getBoundingClientRect();
+      return { slot: row.dataset.sidebarSlot as SidebarSlot, top: bounds.top + window.scrollY, bottom: bounds.bottom + window.scrollY };
+    });
     lastTargetRef.current = null;
     setDragged(slot);
   }
@@ -144,19 +168,31 @@ export function SidebarOrderEditor({
     const slot = dragRef.current;
     if (!slot) return;
     const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-sidebar-slot]");
-    const over = hit?.dataset.sidebarSlot as SidebarSlot | undefined;
-    if (!over || over === slot || !slots.includes(over)) return;
+    if (!hit) return;
+    const pointerY = event.clientY + window.scrollY;
+    const over = dragBoundsRef.current.find((bounds) => pointerY >= bounds.top && pointerY <= bounds.bottom)?.slot;
+    if (!over || over === slot || !defaultSidebarOrder.includes(over)) return;
+    const from = defaultSidebarOrder.indexOf(slot), to = defaultSidebarOrder.indexOf(over);
+    if (!canMove(from, to)) return;
     if (lastTargetRef.current === over) return;
     lastTargetRef.current = over;
     setTarget(over);
-    setDraft((current) => moveSidebarSlot(current, current.indexOf(slot), current.indexOf(over)));
+    setDraft((current) => moveSidebarSlot(current, from, to));
+    dragRef.current = over;
+    setDragged(over);
   }
 
   function onPointerUp() {
     dragRef.current = null;
+    dragBoundsRef.current = [];
     lastTargetRef.current = null;
     setDragged(null);
     setTarget(null);
+  }
+
+  function canMove(from: number, to: number) {
+    return from >= 0 && to >= 0 && to < defaultSidebarOrder.length &&
+      draft.slice(Math.min(from, to), Math.max(from, to) + 1).every((source) => inline?.canMove?.(source) ?? true);
   }
 
   return (
@@ -171,17 +207,17 @@ export function SidebarOrderEditor({
             <button className="button" type="button" onClick={cancel} disabled={busy}>Abbrechen</button>
           </>
         ) : (
-          <button className="button" type="button" onClick={start} disabled={mode === "companies"}>
+          <button className="button" type="button" onClick={start} disabled={mode === "companies" || awaitingRefresh}>
             Banner-Reihenfolge bearbeiten
           </button>
         )}
       </div>
       {message && !editing && <p className={styles.success} role="status">{message}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <SidebarOrderSlots ads={ads} slots={editing ? draft : savedSlots} editing={editing} busy={busy}
+      <SidebarOrderSlots ads={currentAds} slots={editing ? draft : savedSources} editing={editing} busy={busy}
         dragged={dragged} target={target} onPointerDown={onPointerDown} onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onMove={(from, to) => setDraft((current) => moveSidebarSlot(current, from, to))} />
+        canMove={canMove} onMove={(from, to) => { if (canMove(from, to)) setDraft((current) => moveSidebarSlot(current, from, to)); }} />
     </div>
   );
 }

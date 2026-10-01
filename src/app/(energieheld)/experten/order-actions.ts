@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { checkAdmin, isProfileId } from "@/lib/admin-review";
 import { createClient } from "@/lib/supabase/server";
 import { listings } from "@/data/listings";
-import { isSidebarOrder, type SidebarSlot } from "@/lib/sidebar-order";
+import { type SidebarSlot } from "@/lib/sidebar-order";
+import { reorderInlineBannerContents } from "@/lib/inline-banner-order";
 
 const demoKeys = new Set(listings.map((listing) => `demo:${listing.slug}`));
 
@@ -40,22 +41,12 @@ export async function saveCompanyDirectoryOrder(itemKeys: string[]) {
   }
 }
 
-export async function saveSidebarOrder(slots: SidebarSlot[]) {
+export async function saveSidebarOrder(sources: SidebarSlot[], expected?: string[]) {
   try {
     const client = await createClient();
-    if (await checkAdmin(client) !== "admin")
-      return { error: "Sie sind für diese Änderung nicht berechtigt." };
-    if (!isSidebarOrder(slots))
-      return { error: "Die Banner-Reihenfolge ist ungültig. Bitte laden Sie die Seite neu." };
-    const { error } = await client.rpc("reorder_ad_sidebar_slots", { p_slots: slots });
-    if (error) return {
-      error: "Die Banner-Reihenfolge konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.",
-    };
-    revalidatePath("/experten");
-    revalidatePath("/gewerke", "layout");
-    revalidatePath("/unterkuenfte-a-z");
-    revalidatePath("/");
-    return { success: "Die Banner-Reihenfolge wurde gespeichert." };
+    const result = await reorderInlineBannerContents(client, "/unterkuenfte-a-z", sources, expected);
+    if (result.success) revalidatePath("/unterkuenfte-a-z");
+    return result;
   } catch {
     return { error: "Speichern ist gerade nicht möglich. Bitte versuchen Sie es erneut." };
   }
