@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Deterministic public JSX search catalog; generated before dev/build/test/typecheck.
+/src/data/generated/public-search-pages.json

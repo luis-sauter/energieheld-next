@@ -29,7 +29,7 @@ export function MobileNavigation({ items }: { items: HeaderNavigationItem[] }) {
       }}
     >
       <summary aria-label="Menü öffnen oder schließen">
-        <Icon name="menu" /> Menü
+        <Icon name="menu" /><span className="mobile-menu-label">Menü</span>
       </summary>
       <nav aria-label="Mobile Hauptnavigation">
         {items.map((item) => <div className="mobile-nav-group" key={item.href}>
