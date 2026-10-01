@@ -5,6 +5,7 @@ import { adPlacements, adTargetUrl, adTargetFormValue, berlinToday, type AdCampa
 import { inlineAdContext, matchesInlineAdContext, type InlineBannerResult } from "./inline-ad-context";
 import { bannerSizes, displaySource, displayPlacement, legacyCreative, type BannerSize } from "./banner-presentation";
 import { loadBannerPresentations } from "./banner-presentation-loader";
+import { legacyBannerKey, saveBannerMetadata, validateBannerMetadata } from './banner-search-metadata';
 
 const denied = "Dieses Banner kann auf dieser Seite nicht bearbeitet werden. Bitte laden Sie die Seite neu.";
 
@@ -13,7 +14,7 @@ function sizeValue(form: FormData): BannerSize | null {
   return typeof size === "string" && Object.hasOwn(bannerSizes, size) ? size as BannerSize : null;
 }
 async function authorizedLegacy(client: SupabaseClient, path: string, form: FormData) {
-  const context = inlineAdContext(path);
+  const context = inlineAdContext(path, true);
   if (!context || await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
   const placement = String(form.get("original_placement") || form.get("placement")) as AdPlacementId;
   if (form.get("placement") !== placement) return { error: "Bitte bearbeiten Sie das Bestandsbanner an seinem bisherigen Platz." };
@@ -28,13 +29,13 @@ async function authorizedLegacy(client: SupabaseClient, path: string, form: Form
 }
 async function savePresentation(client: SupabaseClient, path: string, placement: AdPlacementId,
   id: string | null, size: BannerSize, hidden = true, url: string | null = null) {
-  const context = inlineAdContext(path)!;
+  const context = inlineAdContext(path, true)!;
   return client.rpc("save_inline_ad_presentation", { p_target_type: context.target_type, p_target_key: context.target_key,
     p_placement: placement, p_campaign_id: id, p_size: size, p_legacy_hidden: hidden, p_legacy_url: url });
 }
 
-async function authorizedCampaign(client: SupabaseClient, path: string, form: FormData, requireUrl = true) {
-  const context = inlineAdContext(path);
+async function authorizedCampaign(client: SupabaseClient, path: string, form: FormData, requireUrl = true, metadataOnly = false) {
+  const context = inlineAdContext(path, true);
   if (!context || await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
   const placement = form.get("placement");
   if (typeof placement !== "string" || !Object.hasOwn(adPlacements, placement)) return { error: "Bitte wählen Sie einen gültigen Bannerplatz." };
@@ -47,17 +48,18 @@ async function authorizedCampaign(client: SupabaseClient, path: string, form: Fo
   const campaign = data as AdCampaign | null;
   if (error || !campaign || !campaign.targets.some((target) => matchesInlineAdContext(target, context) && target.placement === placement)) return { error: denied };
   // A shared creative must be edited deliberately in campaign management, never affect sibling pages silently.
-  if (campaign.targets.length !== 1) return { error: "Dieses Banner wird in mehreren Bereichen verwendet. Bitte bearbeiten Sie es in der bestehenden Kampagnenverwaltung." };
+  if (campaign.targets.length !== 1 && !metadataOnly) return { error: "Dieses Banner wird in mehreren Bereichen verwendet. Bitte bearbeiten Sie es in der bestehenden Kampagnenverwaltung." };
   return { context, campaign, placement: placement as AdPlacementId };
 }
 
 async function prepareInlineAdUploadAtSource(client: SupabaseClient, path: string, form: FormData): Promise<InlineBannerResult> {
+  if (form.has('headline') && !validateBannerMetadata(form).data) return { error: validateBannerMetadata(form).error };
   if (form.get("legacy_id")) {
     const legacy = await authorizedLegacy(client, path, form);
     if (!legacy.legacy) return { error: legacy.error };
   }
   if (!form.get("campaign_id")) {
-    const context = inlineAdContext(path);
+    const context = inlineAdContext(path, true);
     if (!context || await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
     const placement = form.get("placement"), type = form.get("file_type"), size = Number(form.get("file_size"));
     if (typeof placement !== "string" || !Object.hasOwn(adPlacements, placement) ||
@@ -77,6 +79,7 @@ async function prepareInlineAdUploadAtSource(client: SupabaseClient, path: strin
 }
 
 async function saveInlineAdAtSource(client: SupabaseClient, path: string, input: FormData): Promise<InlineBannerResult> {
+  if (input.has('headline') && !validateBannerMetadata(input).data) return { error: validateBannerMetadata(input).error };
   const size = sizeValue(input);
   if (!size) return { error: "Bitte wählen Sie Klein, Mittel oder Groß." };
   if (!input.get("campaign_id") && input.get("legacy_id")) {
@@ -85,6 +88,10 @@ async function saveInlineAdAtSource(client: SupabaseClient, path: string, input:
     const url = adTargetUrl(String(input.get("target_url") ?? "").trim());
     if (!url) return { error: "Bitte geben Sie eine gültige Ziel-URL ein." };
     const saved = await savePresentation(client, path, bound.legacy.placement, null, size, false, url);
+    if (!saved.error && input.has('headline')) {
+      const metadata = await saveBannerMetadata(client, input, null, legacyBannerKey(legacyCreative(bound.legacy.placement, bound.legacy.legacy_source ?? bound.legacy.placement, path)!.target_url));
+      if (metadata.error) return { error: metadata.error };
+    }
     return saved.error ? { error: "Das Bestandsbanner konnte nicht gespeichert werden." }
       : { success: "Das Banner wurde gespeichert.", ad: { ...bound.legacy, banner_size: size, target_url: url } };
   }
@@ -104,7 +111,7 @@ async function saveInlineAdAtSource(client: SupabaseClient, path: string, input:
   const end = fresh ? "9999-12-31" : campaign.requested_end_date;
   for (const [key, value] of Object.entries({
     campaign_id: campaign.id, internal_name: campaign.internal_name || `Banner · ${bound.context.label}`,
-    headline: campaign.headline || "Anzeige", body_text: campaign.body_text || "",
+    headline: input.has('headline') ? String(input.get('headline')).trim() : campaign.headline || "Anzeige", body_text: campaign.body_text || "",
     placement: bound.placement, requested_start_date: start, requested_end_date: end,
     target_url: String(input.get("target_url")).trim(), contact_name: campaign.contact_name || "",
     contact_phone: campaign.contact_phone || "", contact_email: campaign.contact_email || "",
@@ -116,6 +123,10 @@ async function saveInlineAdAtSource(client: SupabaseClient, path: string, input:
   if (hasImage && ["draft", "rejected"].includes(campaign.status)) form.set("intent", "submit");
   const saved = await saveOwnAd(client, form, true);
   if (!saved.success) return { error: saved.error };
+  if (input.has('headline')) {
+    const metadata = await saveBannerMetadata(client, input, campaign.id);
+    if (metadata.error) return { error: metadata.error };
+  }
   if (hasImage && campaign.status !== "approved") {
     const review = new FormData();
     review.set("campaign_id", campaign.id);
@@ -192,7 +203,7 @@ async function removeInlineAdAtSource(client: SupabaseClient, path: string, form
 // Translate only on the server. Existing upload/mutation authorization still applies at the booking source.
 async function atDisplaySource(client: SupabaseClient, path: string, input: FormData,
   mutation: typeof saveInlineAdAtSource): Promise<InlineBannerResult> {
-  const context = inlineAdContext(path);
+  const context = inlineAdContext(path, true);
   if (!context || await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
   const settings = await loadBannerPresentations(client, context);
   if (settings.error) return { error: denied };
@@ -210,3 +221,17 @@ export const prepareInlineAdUpload = (client: SupabaseClient, path: string, form
 export const saveInlineAd = (client: SupabaseClient, path: string, form: FormData): Promise<InlineBannerResult> => sizeValue(form)
   ? atDisplaySource(client, path, form, saveInlineAdAtSource) : Promise.resolve({ error: "Bitte wählen Sie Klein, Mittel oder Groß." });
 export const removeInlineAd = (client: SupabaseClient, path: string, form: FormData) => atDisplaySource(client, path, form, removeInlineAdAtSource);
+
+// Shared/company creatives can change public search copy without touching contracts,
+// media, targeting or sibling-page presentation. IDs are bound to this page server-side.
+export const saveInlineAdMetadata = (client: SupabaseClient, path: string, form: FormData) => atDisplaySource(client, path, form, async (client, path, input) => {
+  if (input.get('legacy_id') && !input.get('campaign_id')) {
+    const bound = await authorizedLegacy(client, path, input);
+    if (!bound.legacy) return { error: bound.error };
+    const original = legacyCreative(bound.legacy.placement, bound.legacy.legacy_source ?? bound.legacy.placement, path)!;
+    return saveBannerMetadata(client, input, null, legacyBannerKey(original.target_url));
+  }
+  const bound = await authorizedCampaign(client, path, input, false, true);
+  if (!bound.campaign) return { error: bound.error };
+  return saveBannerMetadata(client, input, bound.campaign.id);
+});

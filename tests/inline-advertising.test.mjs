@@ -3,11 +3,41 @@ import assert from "node:assert/strict";
 import "./helpers/load-ts.mjs";
 const { inlineAdContext, matchesInlineAdContext } = await import("../src/lib/inline-ad-context.ts");
 const { prepareInlineAdUpload, saveInlineAd, removeInlineAd } = await import("../src/lib/inline-advertising.ts");
+const { saveInlineAdMetadata } = await import('../src/lib/inline-advertising.ts');
+const { validateBannerMetadata, onlyBannerMetadataChanged } = await import('../src/lib/banner-search-metadata.ts');
 const { adPlacements, berlinToday } = await import("../src/lib/ad-values.ts");
 const { travelThemes, destinations } = await import("../src/data/reiseportal-discovery.ts");
 
 const id = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const image = `campaigns/${id}/creative/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.png`;
+
+test('shared/company metadata edits use only the admin metadata RPC after page/source authorization', async()=>{
+ const db=client({campaign:{targets:[target(),target('reiseziele/deutschland','sidebar_top')]}});
+ const input=form({headline:'Belegter Name',banner_postal_code:'80331',banner_city:'München'});input.append('banner_terms','theme:wellnessangebote');
+ const saved=await saveInlineAdMetadata(db,'/mottoreisen/wellnessangebote',input);assert.ok(saved.success,saved.error);
+ assert.deepEqual(db.calls.filter(call=>call.rpc).map(call=>call.rpc),['save_ad_banner_search_metadata']);
+ assert.equal(db.calls.find(call=>call.rpc).data.p_campaign_id,id);
+ assert.ok((await saveInlineAdMetadata(db,'/reiseziele/schweiz',input)).error);
+ for(const config of [{admin:false},{authenticated:false}]) assert.ok((await saveInlineAdMetadata(client(config),'/mottoreisen/wellnessangebote',input)).error);
+});
+test('metadata validation permits unknown location blanks, rejects invalid names/control characters and deduplicates normalized term keys',()=>{
+ const input=form({headline:'Name',banner_city:'',banner_postal_code:''});input.append('banner_terms','theme:wellnessangebote');input.append('banner_terms','theme:wellnessangebote');
+ assert.deepEqual(validateBannerMetadata(input).data.term_keys,['theme:wellnessangebote']);
+ for(const name of ['', 'x'.repeat(101),'Bad\nName']){input.set('headline',name);assert.ok(validateBannerMetadata(input).error);}
+});
+test('legacy metadata-only edits keep URL overrides and display mappings out of the mutation and bind stable source identity',async()=>{
+ const db=client({settings:[{placement:'sidebar_top',legacy_target_url:'https://city-apart-dresden.de/override',size:'large',legacy_hidden:false}]});
+ const input=form({campaign_id:'',legacy_id:'city-apart-square',placement:'sidebar_top',original_placement:'sidebar_top',headline:'City Apart',banner_city:'Dresden'});
+ const result=await saveInlineAdMetadata(db,'/unterkuenfte-a-z',input);assert.ok(result.success,result.error);
+ const writes=db.calls.filter(call=>call.rpc&&!call.rpc.startsWith('get_'));assert.equal(writes.length,1);
+ assert.equal(writes[0].data.p_legacy_key,'legacy:https://city-apart-dresden.de/');assert.equal(writes[0].rpc,'save_ad_banner_search_metadata');
+});
+test('central campaign metadata-only saves compare actual booking fields before selecting the narrow RPC',()=>{
+ const db=client();const c={...db.row,placement:'top_banner'};
+ const input=form({...c,headline:'Changed public name',targets:'portal_area:mottoreisen/wellnessangebote|top_banner'});
+ assert.equal(onlyBannerMetadataChanged(input,c),true);
+ input.set('contact_phone','changed');assert.equal(onlyBannerMetadataChanged(input,c),false);
+});
 
 test('editing and removing reordered content resolves its booking source on the server',async()=>{
  const settings=['sidebar_top','sidebar_bottom'].map((placement,i)=>({placement,display_source:i?'sidebar_top':'sidebar_bottom',size:'medium',legacy_hidden:true}));

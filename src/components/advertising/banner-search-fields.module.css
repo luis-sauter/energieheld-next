@@ -1,0 +1,4 @@
+.categories { border: 1px solid var(--line); border-radius: 8px; padding: 12px; min-width: 0; display: grid; gap: 6px; }
+.categories p { font-size: 14px; color: var(--muted); }
+.categories label { display: flex !important; align-items: center; gap: 10px !important; min-height: 44px; font-weight: 400 !important; }
+.categories input[type="checkbox"] { width: 20px !important; min-height: 20px !important; height: 20px; padding: 0; flex: 0 0 20px; }

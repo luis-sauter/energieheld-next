@@ -7,6 +7,8 @@ import { saveOwnAd, prepareAdUpload, loadAdAvailability } from "@/lib/ad-campaig
 import { checkAdmin, isProfileId } from "@/lib/admin-review";
 import { redirect } from "next/navigation";
 import type { AdFormState } from "@/lib/ad-values";
+import { validateBannerMetadata, saveBannerMetadata, onlyBannerMetadataChanged } from '@/lib/banner-search-metadata';
+import type { AdCampaign } from '@/lib/ad-values';
 export async function adminCampaignAvailability(start: string, end: string, campaignId: string) {
   return loadAdAvailability(await createClient(), start, end, campaignId, true);
 }
@@ -17,12 +19,23 @@ export async function saveAdminCampaign(_previous: AdFormState, form: FormData):
   const client = await createClient();
   requireAdminAccess(await checkAdmin(client));
   let result: AdFormState;
+  const validated = validateBannerMetadata(form);
+  if (!validated.data) return { error: validated.error };
   try {
+    const current = await client.from('company_ad_campaigns').select('*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement)').eq('id', form.get('campaign_id')).maybeSingle();
+    if (!current.error && current.data && onlyBannerMetadataChanged(form, current.data as AdCampaign)) {
+      const metadata = await saveBannerMetadata(client, form, current.data.id);
+      if (metadata.success) revalidatePath('/', 'layout');
+      return { success: metadata.success, error: metadata.error };
+    }
     result = await saveOwnAd(client, form, true);
   } catch {
     return { error: "Der Banner konnte gerade nicht gespeichert werden." };
   }
   if (result.success) {
+    const metadata = await saveBannerMetadata(client, form, String(form.get('campaign_id')));
+    if (metadata.error) return { error: `Banner gespeichert. ${metadata.error}` };
+    revalidatePath('/', 'layout');
     revalidatePath("/admin/werbung", "layout");
     revalidatePath("/firma/werbung", "layout");
     revalidatePath("/");

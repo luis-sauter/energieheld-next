@@ -18,6 +18,8 @@ import type { AdFormState } from "@/lib/ad-values";
 import { reviewCampaign, saveAdminCampaign, prepareAdminCampaignImage, adminCampaignAvailability } from "@/app/(energieheld)/admin/werbung/actions";
 import { portalAdAreaLabel, portalAdSections, portalAdSection, requestAdScopes, type RequestAdScope } from "@/lib/ad-target-areas";
 import styles from "./advertising.module.css";
+import { BannerSearchFields } from './banner-search-fields';
+import type { BannerSearchMetadata, BannerSearchTerm } from '@/lib/banner-search-metadata';
 export function removeRequestScope(targets: AdTarget[], scope: RequestAdScope) {
   return targets.filter((target) => target.target_type === "portal_area"
     ? portalAdSection(target.target_key ?? "") !== scope
@@ -58,10 +60,14 @@ export function CampaignForm({
   campaign,
   categoryIds,
   admin = false,
+  bannerMetadata,
+  bannerTerms = [],
 }: {
   campaign: AdCampaign;
   categoryIds: string[];
   admin?: boolean;
+  bannerMetadata?: BannerSearchMetadata;
+  bannerTerms?: BannerSearchTerm[];
 }) {
   const [state, action, busy] = useActionState<AdFormState, FormData>(
     async (_previous, form) => {
@@ -99,6 +105,7 @@ export function CampaignForm({
     {},
   );
   const pristine = !admin && campaign.status === "draft" && !campaign.internal_name && !campaign.headline && !campaign.target_url;
+  const [metadata, setMetadata] = useState(bannerMetadata ?? { name: campaign.headline, postal_code: '', city: '', term_keys: [] });
   const [values, setValues] = useState(() => {
     if (admin && ["approved", "paused"].includes(campaign.status))
       return { ...campaign, requested_start_date: campaign.approved_start_date ?? campaign.requested_start_date,
@@ -309,7 +316,7 @@ export function CampaignForm({
         </label>
       </fieldset>
       {admin && <label>
-        Überschrift für interne Vorschau
+        Name / Bezeichnung
         <input
           name="headline"
           required
@@ -318,6 +325,7 @@ export function CampaignForm({
           onChange={(e) => set("headline", e.target.value)}
         />
       </label>}
+      {admin && <BannerSearchFields value={metadata} terms={bannerTerms} onChange={setMetadata} includeName={false} />}
       <fieldset className={styles.formSection}>
         <legend>Hinweise oder Wünsche</legend>
         <p className={styles.sectionHint}>Gibt es etwas, das wir bei Ihrer Kampagne berücksichtigen sollen?</p>

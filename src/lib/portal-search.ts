@@ -2,10 +2,10 @@ import 'server-only';
 import { createPublicClient } from './supabase/public';
 import { portalAdSections } from './ad-target-areas';
 import { portalSearchCatalog } from './portal-search-catalog';
-import { legacySearchCatalog, publicBannerSearch, type SearchAdSource, type SearchPresentation } from './portal-search-banners';
+import { legacySearchCatalog, publicBannerSearch, type SearchAdSource, type SearchPresentation, type BannerSearchData } from './portal-search-banners';
 import { searchResultPage, searchExcerpt, searchQuery, searchType, SEARCH_PAGE_SIZE, queryWords, type SearchHit, type SearchType } from './portal-search-values';
 
-type SearchResponse = { total: number; hits: Omit<SearchHit, 'type'>[]; catalog_hits: SearchHit[]; ads: SearchAdSource[]; presentations: SearchPresentation[] };
+type SearchResponse = { total: number; hits: Omit<SearchHit, 'type'>[]; catalog_hits: SearchHit[]; ads: SearchAdSource[]; presentations: SearchPresentation[]; banner_metadata?: BannerSearchData[] };
 export type SearchResult = { query: string; type?: SearchType; page: number; total: number; hits: SearchHit[]; error?: string };
 // Provider boundary: the server page consumes only SearchResult, never Supabase rows.
 export async function searchPortal(value: unknown, options: { type?: unknown; page?: unknown } = {}): Promise<SearchResult> {
@@ -24,7 +24,7 @@ export async function searchPortal(value: unknown, options: { type?: unknown; pa
     if (error || !data) throw new Error('Public search unavailable');
     const result = data as SearchResponse;
     const profiles: SearchHit[] = result.hits.map(hit => ({ ...hit, type: 'accommodation', excerpt: searchExcerpt(hit.excerpt, query) }));
-    const otherHits = [...result.catalog_hits.filter(hit => hit.type !== 'ad'), ...publicBannerSearch(result.ads, result.presentations, query, result.catalog_hits)];
+    const otherHits = [...result.catalog_hits.filter(hit => hit.type !== 'ad'), ...publicBannerSearch(result.ads, result.presentations, query, result.catalog_hits, result.banner_metadata)];
     return { query, type, page, ...searchResultPage(profiles, otherHits, result.total, type, page) };
   } catch {
     // Never present an incomplete list as the complete portal search.

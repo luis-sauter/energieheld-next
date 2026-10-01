@@ -8,12 +8,12 @@ export type InlineAdContext = {
   target_key: string | null;
 };
 
-export function inlineAdContext(path: string): InlineAdContext | null {
+export function inlineAdContext(path: string, registeredArea = false): InlineAdContext | null {
   if (path === "/") return { path, label: "Startseite", target_type: "homepage", target_key: null };
   if (path === "/unterkuenfte-a-z") return { path, label: "Unterkünfte A–Z", target_type: "experts_directory", target_key: null };
   const key = path.slice(1);
-  return path.startsWith("/") && portalAdSection(key)
-    ? { path, label: portalAdAreaLabel(key), target_type: "portal_area", target_key: key }
+  return path.startsWith("/") && (portalAdSection(key) || registeredArea) && /^(mottoreisen|reiseziele)(\/[a-z0-9-]+)?$/.test(key)
+    ? { path, label: portalAdSection(key) ? portalAdAreaLabel(key) : key.split('/').at(-1)!.replaceAll('-', ' '), target_type: "portal_area", target_key: key }
     : null;
 }
 
@@ -32,6 +32,7 @@ export type InlineBanner = {
   editorial?: boolean;
   size?: import("./banner-presentation").BannerSize;
   legacy_source?: AdPlacementId;
+  metadata?: import('./banner-search-metadata').BannerSearchMetadata;
 };
 export type InlineBannerResult = {
   error?: string;
@@ -41,12 +42,15 @@ export type InlineBannerResult = {
   ad?: ActiveAd;
   removed?: boolean;
   warning?: string;
+  metadata?: import('./banner-search-metadata').BannerSearchMetadata;
 };
 export type InlineBannerOptions = {
   label: string;
   banners: InlineBanner[];
   availability: Record<string, string>;
   error?: string;
+  terms?: import('./banner-search-metadata').BannerSearchTerm[];
+  saveMetadata?: (form: FormData) => Promise<InlineBannerResult>;
   prepare: (form: FormData) => Promise<InlineBannerResult>;
   save: (form: FormData) => Promise<InlineBannerResult>;
   remove: (form: FormData) => Promise<InlineBannerResult>;
