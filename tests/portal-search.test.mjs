@@ -8,6 +8,16 @@ const { searchQuery, normalizeSearch, matchSearchDocument, mergeSearchHits, sear
 const { publicBannerSearch } = await import('../src/lib/portal-search-banners.ts');
 const { legacyBannerPages } = await import('../src/data/legacy-banner-pages.ts');
 
+test('central banner metadata uses DB FTS, deduplicates shared legacy identity and preserves URL overrides',()=>{
+ const key='legacy:https://city-apart-dresden.de/';
+ const metadata=['/','/unterkuenfte-a-z'].map(path=>({banner_key:key,name:'Öffentlicher neuer Name',body:'Reisekontext',postal_code:'80331',city:'München',categories:'Wellness Familie',path,target_url:'https://city-apart-dresden.de/',rank:150}));
+ const settings=[{path:'/',placement:'sidebar_top',size:'large',legacy_hidden:false,legacy_target_url:'https://city-apart-dresden.de/new'}];
+ const hits=mergeSearchHits(publicBannerSearch([],settings,'80331 München',[],metadata));
+ assert.equal(hits.length,1);assert.equal(hits[0].title,'Öffentlicher neuer Name');assert.match(hits[0].excerpt,/München/);
+ assert.deepEqual(publicBannerSearch([],settings,'Old name',[],metadata.map(row=>({...row,rank:0}))),[]);
+ assert.deepEqual(publicBannerSearch([],settings,'City Apart',[],[]),[],'no stale static name leaks when DB says not visible');
+});
+
 test('case, umlauts, transliteration, ß, punctuation, multiword and prefix search', () => {
   for (const value of ['Österreich', 'Oesterreich', 'ÖSTERREICH']) assert.equal(normalizeSearch(value), 'osterreich');
   assert.equal(normalizeSearch('Straße'), 'strasse');

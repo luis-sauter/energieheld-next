@@ -9,10 +9,12 @@ import { InlineBannerContext } from "./inline-banner-context";
 import { CampaignSlot } from "./campaign-view";
 import styles from "./inline-banner-editor.module.css";
 import { bannerSizes, type BannerSize } from "@/lib/banner-presentation";
+import { BannerSearchFields } from './banner-search-fields';
+import type { BannerSearchMetadata } from '@/lib/banner-search-metadata';
 
 export function InlineBannerProvider({ options, children }: { options?: InlineBannerOptions; children: ReactNode }) {
   const router = useRouter();
-  const [overrides, setOverrides] = useState<Partial<Record<AdPlacementId, ActiveAd | null>>>({});
+  const [overrides, setOverrides] = useState<Partial<Record<AdPlacementId, (ActiveAd & { metadata?: BannerSearchMetadata }) | null>>>({});
   const [selected, setSelected] = useState<{ placement: AdPlacementId; banner?: InlineBanner } | null>(null);
   const [message, setMessage] = useState("");
   const [removedIds, setRemovedIds] = useState<string[]>([]);
@@ -34,7 +36,9 @@ export function InlineBannerProvider({ options, children }: { options?: InlineBa
     if (Object.hasOwn(overrides, placement)) {
       const updated = overrides[placement];
       return updated ? { id: updated.id, placement, target_url: updated.target_url, imageUrl: updated.imageUrl,
-        shared: false, source: updated.source === "legacy" ? "legacy" : "campaign",
+        shared: options!.banners.find(item => item.id === updated.id)?.shared ?? false,
+        metadata: updated.metadata ?? options!.banners.find(item => item.id === updated.id)?.metadata,
+        source: updated.source === "legacy" ? "legacy" : "campaign",
         editorial: options!.banners.find((item) => item.id === updated.id)?.editorial ?? updated.source !== "legacy", size: updated.banner_size } : undefined;
     }
     return options!.banners.find((item) => !removedIds.includes(item.id) && (campaignId ? item.id === campaignId : item.placement === placement));
@@ -50,6 +54,7 @@ export function InlineBannerProvider({ options, children }: { options?: InlineBa
     {message && <p className={styles.success} role="status">{message}</p>}
     {children}
     {selected && <InlineBannerDialog options={{ ...options, availability }} selected={selected} onClose={() => setSelected(null)}
+      onMetadataSaved={() => { setMessage('Die Suchdaten wurden gespeichert.'); setSelected(null); router.refresh(); }}
       onChanged={(ad) => { setOverrides((current) => ({ ...current, [ad.placement]: ad })); router.refresh(); }}
       onRemoved={(warning) => {
         if (selected.banner) setRemovedIds((current) => [...current, selected.banner!.id]);
@@ -57,8 +62,8 @@ export function InlineBannerProvider({ options, children }: { options?: InlineBa
         setMessage(warning || "Das Banner wurde entfernt. Der Platz ist wieder frei.");
         setSelected(null); setRevealPlacement(selected.placement); router.refresh();
       }}
-      onSaved={(ad) => {
-        setOverrides((current) => ({ ...current, ...(selected.banner ? { [selected.banner.placement]: null } : {}), [ad.placement]: ad }));
+      onSaved={(ad, metadata) => {
+        setOverrides((current) => ({ ...current, ...(selected.banner ? { [selected.banner.placement]: null } : {}), [ad.placement]: { ...ad, metadata } }));
         setMessage(ad.suppressed ? "Gespeichert. Ohne Bild bleibt das Banner öffentlich ausgeblendet." : "Das Banner wurde gespeichert und ist an seinem Platz sichtbar.");
         setSelected(null);
         setRevealPlacement(ad.placement);
@@ -67,13 +72,14 @@ export function InlineBannerProvider({ options, children }: { options?: InlineBa
   </InlineBannerContext.Provider>;
 }
 
-function InlineBannerDialog({ options, selected, onClose, onSaved, onChanged, onRemoved }: {
+export function InlineBannerDialog({ options, selected, onClose, onSaved, onChanged, onRemoved, onMetadataSaved }: {
   options: InlineBannerOptions;
   selected: { placement: AdPlacementId; banner?: InlineBanner };
   onClose: () => void;
-  onSaved: (ad: ActiveAd) => void;
+  onSaved: (ad: ActiveAd, metadata: BannerSearchMetadata) => void;
   onChanged: (ad: ActiveAd) => void;
   onRemoved: (warning?: string) => void;
+  onMetadataSaved: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const busyRef = useRef(false);
@@ -89,6 +95,8 @@ function InlineBannerDialog({ options, selected, onClose, onSaved, onChanged, on
   const [error, setError] = useState(options.error ?? "");
   const [notice, setNotice] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [metadata, setMetadata] = useState<BannerSearchMetadata>(selected.banner?.metadata ?? { name: '', postal_code: '', city: '', term_keys: [] });
+  const metadataOnly = Boolean(selected.banner?.source === 'campaign' && selected.banner.shared);
   const blocked = Boolean(options.availability[placement] && placement !== selected.banner?.placement);
   const canRemove = Boolean(selected.banner?.editorial || source === "legacy" || (selected.banner?.source === "legacy" && source === "campaign"));
   useEffect(() => {
@@ -103,7 +111,7 @@ function InlineBannerDialog({ options, selected, onClose, onSaved, onChanged, on
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busyRef.current || selected.banner?.shared || blocked || options.error) return;
+    if (busyRef.current || blocked || options.error) return;
     if (!adTargetUrl(url.trim())) { setError("Bitte geben Sie eine gültige Ziel-URL mit https:// oder http:// ein."); return; }
     if (!file && !preview && !selected.banner) { setError("Bitte wählen Sie ein Bannerbild."); return; }
     busyRef.current = true;
@@ -111,6 +119,12 @@ function InlineBannerDialog({ options, selected, onClose, onSaved, onChanged, on
     setError("");
     try {
       const form = mutationForm();
+      if (metadataOnly || (selected.banner && !file && url === selected.banner.target_url && size === (selected.banner.size ?? 'large'))) {
+        const result = await options.saveMetadata?.(form);
+        if (!result?.success) { setError(result?.error ?? 'Die Suchdaten konnten nicht gespeichert werden.'); return; }
+        onMetadataSaved();
+        return;
+      }
       if (file) {
         form.set("file_type", file.type);
         form.set("file_size", String(file.size));
@@ -123,7 +137,7 @@ function InlineBannerDialog({ options, selected, onClose, onSaved, onChanged, on
       }
       const result = await options.save(form);
       if (!result.success || !result.ad) { setError(result.error ?? "Das Banner konnte nicht gespeichert werden."); return; }
-      onSaved(result.ad);
+      onSaved(result.ad, metadata);
     } catch { setError("Speichern ist gerade nicht möglich. Bitte versuchen Sie es erneut."); }
     finally { busyRef.current = false; setBusy(false); }
   }
@@ -132,6 +146,8 @@ function InlineBannerDialog({ options, selected, onClose, onSaved, onChanged, on
     const form = new FormData();
     form.set("campaign_id", campaignId); form.set("placement", placement);
     form.set("target_url", url.trim()); form.set("size", size);
+    form.set('headline', metadata.name); form.set('banner_postal_code', metadata.postal_code); form.set('banner_city', metadata.city);
+    metadata.term_keys.forEach(key => form.append('banner_terms', key));
     if (source === "legacy") { form.set("legacy_id", selected.banner!.id); form.set("original_placement", selected.placement); }
     return form;
   }
@@ -168,8 +184,12 @@ function InlineBannerDialog({ options, selected, onClose, onSaved, onChanged, on
       <h2 id="inline-banner-title">{selected.banner ? "Banner bearbeiten" : "Banner hinzufügen"}</h2>
       <p>{options.label}</p>
       {!selected.banner && <p className={styles.hint}>Das Banner erscheint ab sofort, bis Sie es entfernen.</p>}
-      {selected.banner?.shared && <p role="alert">Dieses Banner wird in mehreren Bereichen verwendet. Bitte bearbeiten Sie es in der bestehenden Kampagnenverwaltung.</p>}
-      <fieldset disabled={busy || selected.banner?.shared} className={styles.fields}>
+      <p className={styles.hint}>Name, PLZ, Ort und Kategorien gelten für dieses Banner in allen Bereichen und machen es in der Suche auffindbar.</p>
+      <fieldset disabled={busy} className={styles.fields}>
+        <BannerSearchFields value={metadata} terms={options.terms ?? []} onChange={setMetadata} />
+      </fieldset>
+      {metadataOnly && <p className={styles.hint}>Bei gebuchten oder geteilten Bannern ändern Sie hier nur die Suchdaten. Bild, Ziel-URL und Buchung bleiben unverändert.</p>}
+      <fieldset disabled={busy || metadataOnly} className={styles.fields}>
         <label>{preview ? "Bild ersetzen" : "Bild hinzufügen"}<input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => chooseFile(event.target.files?.[0] ?? null)} /></label>
         {preview && selected.banner && canRemove &&
           <button type="button" className="button" disabled={Boolean(options.error)} onClick={() => remove("image")}>Bild entfernen</button>}
@@ -192,7 +212,7 @@ function InlineBannerDialog({ options, selected, onClose, onSaved, onChanged, on
       {notice && <p role="status">{notice}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
       <div className={styles.actions}>
-        <button type="submit" className="button button-primary" disabled={busy || selected.banner?.shared || blocked || Boolean(options.error)}>{busy ? "Speichert …" : "Banner speichern"}</button>
+        <button type="submit" className="button button-primary" disabled={busy || blocked || Boolean(options.error)}>{busy ? "Speichert …" : "Banner speichern"}</button>
         <button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button>
       </div>
       {selected.banner && !selected.banner.shared && canRemove &&

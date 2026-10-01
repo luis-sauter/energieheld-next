@@ -8,6 +8,7 @@ import { createAdminCampaign } from "@/app/(energieheld)/admin/werbung/actions";
 import { CampaignFacts, CampaignList, CampaignSlot } from "./campaign-view";
 import { CampaignForm, AdminCampaignForm } from "./campaign-form";
 import styles from "./advertising.module.css";
+import { loadBannerMetadata } from '@/lib/banner-search-metadata';
 type Params = { seite?: string; fehler?: string };
 export async function CampaignIndex({
   admin = false,
@@ -90,11 +91,13 @@ export async function CampaignDetail({
   id: string;
   admin?: boolean;
 }) {
-  const result = await loadAdCampaigns(await createClient(), admin, 1, id);
+  const client = await createClient();
+  const result = await loadAdCampaigns(client, admin, 1, id);
   if ("unauthenticated" in result && result.unauthenticated) redirect("/login");
   if ("access" in result) requireAdminAccess(result.access ?? "forbidden");
   const campaign = "campaigns" in result ? result.campaigns?.[0] : undefined;
   if (!campaign && !("error" in result && result.error)) notFound();
+  const metadata = admin && campaign ? await loadBannerMetadata(client, [`campaign:${campaign.id}`]) : undefined;
   return (
     <main id="hauptinhalt" className={`container ${styles.page}`}>
       <Link href={`${admin ? "/admin" : "/firma"}/werbung`}>
@@ -110,7 +113,7 @@ export async function CampaignDetail({
           {admin ? (
             <>
               <h3>Banner gestalten und zuordnen</h3>
-              <CampaignForm campaign={campaign} categoryIds={[]} admin />
+              <CampaignForm campaign={campaign} categoryIds={[]} admin bannerMetadata={metadata?.values.get(`campaign:${campaign.id}`)} bannerTerms={metadata?.terms} />
               <h3>Freigabe</h3>
               <CampaignSlot
                 placement={campaign.placement}

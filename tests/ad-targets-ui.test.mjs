@@ -73,6 +73,34 @@ const { presentedBanners } = await import("../src/lib/banner-presentation.ts");
 const { defaultSidebarOrder } = await import("../src/lib/sidebar-order.ts");
 const { SidebarOrderSlots } = await import("../src/components/admin/sidebar-order-editor.tsx");
 const { InlineBannerContext } = await import("../src/components/advertising/inline-banner-context.tsx");
+const { InlineBannerDialog } = await import('../src/components/advertising/inline-banner-editor.tsx');
+const { BannerSearchFields } = await import('../src/components/advertising/banner-search-fields.tsx');
+
+test('existing inline add/edit dialogs include the same public metadata on every supported banner page, including shared creatives',()=>{
+ const metadata={name:'City Apart Dresden',postal_code:'',city:'',term_keys:['theme:wellnessangebote']};
+ const terms=[{term_key:'theme:wellnessangebote',dimension:'theme',label:'Wellness'}];
+ for(const label of ['Startseite','Unterkünfte A–Z',...portalAdSections.flatMap(section=>section.areas.map(area=>area.label))]){
+   for(const banner of [undefined,{id:'existing',placement:'sidebar_top',source:'campaign',shared:true,metadata,target_url:'https://example.org/',imageUrl:'/image.png'}]){
+     const html=renderToStaticMarkup(createElement(InlineBannerDialog,{options:{label,availability:{},banners:[],terms},selected:{placement:'sidebar_top',banner},onClose(){},onSaved(){},onChanged(){},onRemoved(){},onMetadataSaved(){}}));
+     for(const name of ['Name / Bezeichnung','PLZ','Ort','Kategorien'])assert.ok(html.includes(name));
+     assert.match(html,/name="banner_terms"[^>]*value="theme:wellnessangebote"/);
+     assert.doesNotMatch(html,/disabled=""[^>]*>Banner speichern/);
+     if(banner) assert.match(html,/value="City Apart Dresden"/);
+   }
+ }
+ const admin=renderToStaticMarkup(createElement(CampaignForm,{campaign,categoryIds:[],admin:true,bannerMetadata:metadata,bannerTerms:terms}));
+ assert.match(admin,/Name \/ Bezeichnung/);assert.match(admin,/name="banner_city"/);assert.match(admin,/name="banner_postal_code"/);
+ const owner=renderToStaticMarkup(createElement(CampaignForm,{campaign,categoryIds:[]}));assert.doesNotMatch(owner,/name="banner_city"|name="banner_terms"/);
+});
+test('category controls preserve normalized multiple assignments rather than booking targets',()=>{
+ const value={name:'Banner',city:'',postal_code:'',term_keys:['theme:wellnessangebote','audience:familie']};
+ const html=renderToStaticMarkup(createElement(BannerSearchFields,{value,terms:[{term_key:'theme:wellnessangebote',dimension:'theme',label:'Wellness'},{term_key:'audience:familie',dimension:'audience',label:'Familie'}],onChange(){}}));
+ assert.equal((html.match(/checked=""/g)||[]).length,2);assert.doesNotMatch(html,/name="targets"/);
+ let changed;const element=BannerSearchFields({value,terms:[{term_key:'theme:wellnessangebote',dimension:'theme',label:'Wellness'}],onChange(next){changed=next;}});
+ function inputs(node){if(!node)return [];if(Array.isArray(node))return node.flatMap(inputs);return node.type==='input'?[node]:inputs(node.props?.children);}
+ inputs(element).find(node=>node.props.name==='banner_terms').props.onChange({target:{checked:false}});
+ assert.deepEqual(changed.term_keys,['audience:familie']);assert.deepEqual(value.term_keys,['theme:wellnessangebote','audience:familie']);
+});
 
 test("fixed positions A–L survive reversed rail input and C-to-A content previews on desktop/mobile markup", () => {
   const sources=[defaultSidebarOrder[2],defaultSidebarOrder[0],defaultSidebarOrder[1],...defaultSidebarOrder.slice(3)];
@@ -307,7 +335,7 @@ test("admin review exposes every target and explains removed assignments", () =>
   );
   const edit = render(CampaignForm, { campaign: { ...campaign, status: "approved", approved_start_date: "2030-10-02", approved_end_date: "2030-10-14" }, categoryIds: [], admin: true });
   assert.match(edit, /Banner speichern/);
-  assert.match(edit, /Überschrift für interne Vorschau/);
+  assert.match(edit, /Name \/ Bezeichnung/);
   assert.doesNotMatch(edit, /Anzeigenvorschau/);
   assert.match(edit, /Ausspielung ab/);
   assert.match(edit, /value="2030-10-02"/);
