@@ -3,23 +3,31 @@ import type { Metadata } from 'next';
 import { searchPortal } from '@/lib/portal-search';
 import { searchTypes, SEARCH_PAGE_SIZE, SEARCH_QUERY_LIMIT } from '@/lib/portal-search-values';
 import styles from './search.module.css';
+import { readTravelFilterValues } from '@/lib/reiseportal-filter-options';
+import { travelFilterParams } from '@/lib/reiseportal-facets';
+import { travelSearchReturnUrl, travelSearchUrl } from '@/lib/travel-search-intent';
 
-export const metadata: Metadata = { title: 'Portalsuche', robots: { index: false, follow: true } };
+export const metadata: Metadata = { title: 'Suchergebnisse', robots: { index: false, follow: true } };
 export const dynamic = 'force-dynamic';
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const result = await searchPortal(params.q, { type: params.typ, page: params.seite });
-  const href = (page: number) => `/suche?${new URLSearchParams({ q: result.query, ...(result.type ? { typ: result.type } : {}), seite: String(page) })}`;
+  const values = { ...readTravelFilterValues(params), query: result.query };
+  const origin = params.von === 'home' ? 'home' : 'directory';
+  const context = new URLSearchParams(travelSearchUrl(values, origin).split('?')[1]);
+  const href = (page: number) => { const next = new URLSearchParams(context); if (result.type) next.set('typ', result.type); next.set('seite', String(page)); return `/suche?${next}`; };
   return <main id="hauptinhalt" className={`container ${styles.page}`}>
-    <p className="eyebrow">DAS Reiseportal</p><h1>Portalsuche</h1>
-    <p>Unterkünfte, Reiseziele, Mottoreisen und Inhalte im gesamten Portal finden.</p>
-    <form action="/suche" method="get" role="search" aria-label="Portalsuche" className={styles.form}>
-      <div><label htmlFor="portal-query">Suchbegriff</label><input id="portal-query" name="q" type="search" defaultValue={result.query} maxLength={SEARCH_QUERY_LIMIT} placeholder="Zum Beispiel Österreich oder Wellness Bayern" /></div>
+    <Link className="text-link" href={travelSearchReturnUrl(values, origin)}>← Zur Suche zurück</Link>
+    <p className="eyebrow">DAS Reiseportal</p><h1>Suchergebnisse</h1>
+    <p>Ergebnisse aus dem gesamten Reiseportal. Ihre Reisefilter bleiben für die Rückkehr zur Suche erhalten.</p>
+    <form action="/suche" method="get" role="search" aria-label="Suche ändern" className={styles.form}>
+      <input type="hidden" name="von" value={origin} />
+      {Object.entries(travelFilterParams).filter(([key]) => key !== 'query').map(([key, name]) => values[key as keyof typeof values] && <input key={key} type="hidden" name={name} value={values[key as keyof typeof values]} />)}
+      <div><label htmlFor="portal-query">Suchbegriff ändern</label><input id="portal-query" name="q" type="search" defaultValue={result.query} maxLength={SEARCH_QUERY_LIMIT} /></div>
       <div><label htmlFor="portal-type">Ergebnistyp</label><select id="portal-type" name="typ" defaultValue={result.type ?? ''}><option value="">Alle Inhalte</option>
         {Object.entries(searchTypes).map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></div>
       <button type="submit" className="button button-primary">Suchen</button>
     </form>
-    <p>Passende Unterkünfte strukturiert filtern? <Link className="text-link" href="/unterkuenfte-a-z">Zum Reisefinder →</Link></p>
     {result.error ? <div className="empty-state" role="alert">{result.error}</div>
       : !result.query ? <p className="empty-state">Geben Sie einen Suchbegriff ein.</p>
       : <section aria-labelledby="search-results"><h2 id="search-results">{result.total} {result.total === 1 ? 'Ergebnis' : 'Ergebnisse'} für „{result.query}“</h2>

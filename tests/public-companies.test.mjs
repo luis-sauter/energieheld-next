@@ -394,7 +394,7 @@ test("homepage shows real travel cards beside the shared long rail and queries o
     { profile_id: basic.id, sort_order: 0 },
     { profile_id: premium.id, sort_order: 1 },
   ]);
-  const html = renderToStaticMarkup(await HomePage());
+  const html = renderToStaticMarkup(await HomePage({ searchParams: Promise.resolve({}) }));
   assert.match(html, /Bayerischer Wald/);
   assert.match(html, /Finde deinen passenden Urlaub/);
   assert.match(html, /\d+ (?:Unterkunft|Unterkünfte) anzeigen/);

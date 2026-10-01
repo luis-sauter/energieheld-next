@@ -558,7 +558,7 @@ test("company quality request form shows request states without granting decisio
 
 test("portal home follows the discovery wireframe with the shared advertising rail", async () => {
   const { default: Home } = await import("../src/app/(energieheld)/page.tsx");
-  const html = renderToStaticMarkup(await Home());
+  const html = renderToStaticMarkup(await Home({ searchParams: Promise.resolve({}) }));
   const ordered = [
     "travel-hero",
     'class="reise-finder"',

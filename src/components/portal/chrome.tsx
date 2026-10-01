@@ -6,7 +6,6 @@ import { MobileNavigation } from "./mobile-navigation";
 import { DesktopNavigation } from "./desktop-navigation";
 import { headerNavigation } from "./navigation-data";
 import { AccountMenu, type AccountIdentity } from "./account-menu";
-import { Icon } from "./icon";
 
 export function PortalHeader({ brand, access = "unauthenticated", identity }: { brand: BrandConfig; access?: AdminAccess; identity?: AccountIdentity }) {
   const navigation = headerNavigation(brand);
@@ -28,7 +27,6 @@ export function PortalHeader({ brand, access = "unauthenticated", identity }: { 
             />
           </Link>
           <DesktopNavigation items={navigation} />
-          <Link href="/suche" className="portal-search-entry" aria-label="Portalsuche öffnen"><Icon name="search" /></Link>
           <Link className="button header-cta" href="/registrieren">Unterkunft eintragen</Link>
           <AccountMenu access={access} identity={identity} />
           <MobileNavigation items={navigation} />

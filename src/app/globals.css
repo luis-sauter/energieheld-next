@@ -226,8 +226,6 @@ button {
 .desktop-nav > a:not(.button) {
   padding-block: 18px;
 }
-.portal-search-entry { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; flex-shrink: 0; color: var(--brand-primary); border-radius: 50%; }
-.portal-search-entry:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 2px; }
 @media (max-width: 500px) {
   .header-inner .brand { min-width: 0; flex-shrink: 1; }
   .header-inner .mobile-menu-label { display: none; }

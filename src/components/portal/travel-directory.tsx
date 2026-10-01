@@ -33,9 +33,10 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   const [values, setValues] = useState(initialValues);
   const listings = useMemo(() => [...preview, ...database], [preview, database]);
   const options = useMemo(() => availableTravelFilters(database, terms), [database, terms]);
-  const results = filterTravelListings(listings, values);
-  const databaseResults = filterTravelListings(database, values);
-  const previewResults = filterTravelListings(preview, values);
+  const filterValues = { ...values, query: "" };
+  const results = filterTravelListings(listings, filterValues);
+  const databaseResults = filterTravelListings(database, filterValues);
+  const previewResults = filterTravelListings(preview, filterValues);
   const editingAvailable = canReorder && Boolean(saveOrder && saveSidebarOrder) &&
     Object.values(values).every((value) => !value);
 

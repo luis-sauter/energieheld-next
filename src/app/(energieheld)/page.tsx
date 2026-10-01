@@ -9,7 +9,7 @@ import { destinations, travelThemes } from "@/data/reiseportal-discovery";
 import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
 import { HomeTravelFinder } from "@/components/portal/travel-finder";
-import { availableTravelFilters } from "@/lib/reiseportal-filter-options";
+import { availableTravelFilters, readTravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { loadPublicAds } from "@/lib/public-ads";
 import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
@@ -20,7 +20,8 @@ const featuredStays = ["bayerischer-wald", "hoeflehner", "pension-sonnenhof", "s
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const initialValues = readTravelFilterValues(await searchParams);
   const [ads, sidebarOrder, directory, terms, bannerOptions] = await Promise.all([
     loadPublicAds(undefined, "homepage"),
     loadPublicSidebarOrder(),
@@ -36,7 +37,7 @@ export default async function Home() {
   const searchableThemes = new Set(availableTravelFilters(directory.database, terms).themes.map((entry) => entry.slug));
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className="editorial-home discovery-home">
-    <HomeTravelFinder listings={[...directory.preview, ...directory.database]} terms={terms} error={directory.error} />
+    <HomeTravelFinder listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={terms} error={directory.error} />
 
     <nav className="container travel-quicklinks" aria-label="Schnell zu Reisethemen">
       {quickThemes.map((slug) => {
