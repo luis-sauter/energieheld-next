@@ -42,22 +42,28 @@ export function AdvertisingLayout({
   sidebarOrder = [...defaultSidebarOrder],
   sidebarEditor,
   editorEnabled = false,
+  collapseEmpty = false,
+  showEmptySlots = false,
 }: {
   children: ReactNode;
   ads?: ActiveAd[];
   sidebarOrder?: SidebarSlot[];
   sidebarEditor?: ReactNode;
   editorEnabled?: boolean;
+  collapseEmpty?: boolean;
+  showEmptySlots?: boolean;
 }) {
+  const hasRail = showEmptySlots || !collapseEmpty || ads.some((ad) => ad.placement !== "top_banner" && !ad.suppressed && ad.imageUrl);
+  const top = ads.find((ad) => ad.placement === "top_banner");
   const layout = (
     <div className="commercial-layout">
-      <CampaignSlot
+      {(!collapseEmpty || showEmptySlots || (top?.imageUrl && !top.suppressed)) && <CampaignSlot
         placement="top_banner"
-        ad={ads.find((ad) => ad.placement === "top_banner")}
-      />
-      <div className="commercial-columns">
+        ad={top}
+      />}
+      <div className={`commercial-columns${hasRail ? "" : " commercial-columns--no-rail"}`}>
         <div className="commercial-content">{children}</div>
-        <AdvertisingRail slots={sidebarOrder} ads={ads} editor={sidebarEditor} />
+        {hasRail && <AdvertisingRail slots={sidebarOrder} ads={ads} editor={sidebarEditor} />}
       </div>
     </div>
   );

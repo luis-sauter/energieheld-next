@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { bannerWidth, type BannerSize } from "@/lib/banner-presentation";
 import { useInlineBanners } from "./inline-banner-context";
 import {
   adPlacements,
@@ -16,12 +14,12 @@ import {
 import styles from "./advertising.module.css";
 import { energieheld } from "@/config/energieheld";
 
-function CreativeImage({ src, alt, size }: { src: string; alt: string; size?: BannerSize }) {
-  const [ratio, setRatio] = useState(1);
+function CreativeImage({ src, alt, width, height, mobile }: { src: string; alt: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"] }) {
   // Signed uploads have unknown dimensions; the browser must use each image's intrinsic ratio.
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} style={size ? { width: `${bannerWidth(size, ratio)}%`, marginInline: "auto" } : undefined}
-    onLoad={(event) => { const image = event.currentTarget; if (image.naturalHeight) setRatio(image.naturalWidth / image.naturalHeight); }} />;
+  const image = <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />;
+  return mobile ? <picture><source media="(max-width: 760px)" srcSet={mobile.imageUrl}
+    width={mobile.width} height={mobile.height} />{image}</picture> : image;
 }
 
 export function CampaignSlot({
@@ -47,7 +45,9 @@ export function CampaignSlot({
         key={displayAd.imageUrl}
         src={displayAd.imageUrl}
         alt={displayAd.headline}
-        size={displayAd.banner_size}
+        width={displayAd.image_width}
+        height={displayAd.image_height}
+        mobile={displayAd.mobile_image}
       />
     ) : (
       <div>
@@ -72,10 +72,12 @@ export function CampaignSlot({
       </div>}
       {displayAd ? (
         preview ? (
-          <div className={`${styles.creative} ${displayAd.imageUrl ? styles.imageCreative : ""}`}>{content}</div>
+          <div className={`${styles.creative} ${displayAd.imageUrl ? styles.imageCreative : ""}`}
+            data-size={placement === "top_banner" ? undefined : displayAd.banner_size}>{content}</div>
         ) : (
           <a
             className={`${styles.creative} ${displayAd.imageUrl ? styles.imageCreative : ""}`}
+            data-size={placement === "top_banner" ? undefined : displayAd.banner_size}
             href={adTargetUrl(displayAd.target_url) ?? "#"}
             rel="sponsored noopener noreferrer"
             target="_blank"

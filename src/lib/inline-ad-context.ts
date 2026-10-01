@@ -31,6 +31,7 @@ export type InlineBanner = {
   source?: "legacy" | "campaign";
   editorial?: boolean;
   size?: import("./banner-presentation").BannerSize;
+  legacy_source?: AdPlacementId;
 };
 export type InlineBannerResult = {
   error?: string;

@@ -13,6 +13,7 @@ export function sidebarContentToken(slot: SidebarSlot, ad?: ActiveAd, banner?: I
   const content = banner ?? ad;
   if (!content || ("suppressed" in content && content.suppressed && content.source !== "campaign")) return "";
   if (content.source !== "legacy") return content.id;
+  if (content.legacy_source) return `legacy:${content.legacy_source}`;
   const legacy = legacyBannerPreview.find((item) => item.id === content.id);
   return legacy ? `legacy:${defaultSidebarOrder[legacy.order]}` : `legacy:${slot}`;
 }

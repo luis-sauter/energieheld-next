@@ -1,6 +1,6 @@
 export const profileGroupSize = 6;
 export const profileRotationLimit = 30;
-export const profileRotationDelay = 30_000;
+export const profileRotationDelay = 15_000;
 
 // A UTC day is shared by server-rendered markup and hydration. Keep the
 // editorial order as the ring, and rotate separately within package tiers.

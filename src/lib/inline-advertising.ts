@@ -22,7 +22,7 @@ async function authorizedLegacy(client: SupabaseClient, path: string, form: Form
   if (settings.error || active.error || settings.rows.some((row) => row.placement === placement && row.legacy_hidden) ||
     (active.data ?? []).some((row: { placement: string }) => row.placement === placement)) return { error: denied };
   const setting = settings.rows.find((row) => row.placement === placement);
-  const legacy = legacyCreative(placement, setting?.legacy_placement ?? placement);
+  const legacy = legacyCreative(placement, setting?.legacy_placement ?? placement, path);
   if (!legacy || legacy.id !== form.get("legacy_id")) return { error: denied };
   return { context, legacy: { ...legacy, target_url: setting?.legacy_target_url || legacy.target_url, banner_size: setting?.size } };
 }

@@ -4,11 +4,11 @@
 .controls span { font-size: .85rem; }
 .rotation:focus-visible, .controls button:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 4px; }
 .page[hidden] { display: none; }
-.pages { --rows: 2; --card-height: 25rem; --gap: 1.25rem; min-height: calc(var(--rows) * var(--card-height) + (var(--rows) - 1) * var(--gap)); }
+.pages { --rows: 3; --card-height: 26rem; --gap: 1.25rem; min-height: calc(var(--rows) * var(--card-height) + (var(--rows) - 1) * var(--gap)); }
+.rotation .page :global(.accommodation-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .pages :global(.accommodation-grid) { gap: var(--gap); grid-auto-rows: var(--card-height); }
-.pages :global(.accommodation-card-image) { flex-shrink: 0; height: 10rem; aspect-ratio: auto; }
+.pages :global(.accommodation-card-image) { flex-shrink: 0; height: 12rem; aspect-ratio: auto; }
 .pages :global(.accommodation-card-copy) { min-height: 0; }
 .pages :global(.accommodation-card-copy h3) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; line-height: 1.4; }
 .pages :global(.accommodation-card-copy p) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
-@media (max-width: 1050px) { .pages { --rows: 3; } }
-@media (max-width: 700px) { .pages { --rows: 6; } }
+@media (max-width: 700px) { .pages { --rows: 6; } .rotation .page :global(.accommodation-grid) { grid-template-columns: 1fr; } }

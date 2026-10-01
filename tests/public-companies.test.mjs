@@ -329,7 +329,7 @@ test("profile ordering stays intact while old global banner order cannot move fi
   const html = renderToStaticMarkup(await DirectoryPage({ searchParams: Promise.resolve({}) }));
   assert.ok(html.indexOf(demos[1].name) < html.indexOf("Actual Firma"));
   const placements = [...html.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]);
-  assert.deepEqual(placements.slice(0, 4), ["top_banner", "sidebar_top", "sidebar_middle", "sidebar_bottom"]);
+  assert.deepEqual(placements.slice(0, 4), ["top_banner"]);
   api([real], false, [], order, sidebar);
   assert.throws(
     () => TradePage({ params: Promise.resolve({ slug: "daemmung" }), searchParams: Promise.resolve({}) }),
@@ -544,7 +544,7 @@ test("admin sees both inline order entries and the compact sidebar rail", async 
   assert.match(html, /Firmenreihenfolge bearbeiten/);
   assert.match(html, /Banner-Reihenfolge bearbeiten/);
   assert.equal((html.match(/Freier Werbeplatz/g) ?? []).length, 1);
-  assert.equal((html.match(/data-sidebar-slot=/g) ?? []).length, 10);
+  assert.equal((html.match(/data-sidebar-slot=/g) ?? []).length, 0);
   assert.match(html, /Beispielprofil/);
   assert.doesNotMatch(html, /Banner-Bearbeitung aktiv|Firma .* nach oben/);
   api([row]);

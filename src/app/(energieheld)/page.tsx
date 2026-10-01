@@ -65,6 +65,10 @@ export default async function Home() {
       </div>
     </section>
 
+    <div className="container premium-space">
+      <CampaignSlot placement="top_banner" ad={ads.find((ad) => ad.placement === "top_banner")} />
+    </div>
+
     <section className="section container" aria-labelledby="stays-title">
       <div className="section-heading"><div><p className="eyebrow">Aus dem Reiseportal</p><h2 id="stays-title">Ausgewählte Unterkünfte</h2></div>
         <Link className="text-link" href="/unterkuenfte-a-z">Alle Unterkünfte →</Link></div>
@@ -76,8 +80,6 @@ export default async function Home() {
         <AdvertisingRail slots={sidebarOrder} ads={ads} />
       </div>
     </section>
-    <div className="container premium-space">
-      <CampaignSlot placement="top_banner" ad={ads.find((ad) => ad.placement === "top_banner")} />
-    </div>
+
   </main></InlineBannerProvider>;
 }

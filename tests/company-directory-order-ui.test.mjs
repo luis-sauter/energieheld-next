@@ -45,6 +45,8 @@ const idB = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const realA = { ...listings[0], id: idA, isDemo: false, name: "Firma A", directoryPackage: undefined };
 const realB = { ...listings[1], id: idB, isDemo: false, name: "Firma B", directoryPackage: undefined };
 
+const { presentedBanners } = await import("../src/lib/banner-presentation.ts");
+
 test("demo packages affect only row presentation, including filtered trade rows", () => {
   const renderRow = (listing) => renderToStaticMarkup(createElement(ListingRow, {
     listing, categories: energieheld.categories, href: `/experten/${listing.slug}`,
@@ -120,7 +122,7 @@ test("company editor initially renders real and demo listing rows without contro
 
 test("sidebar editor shows the compact image rail and a separate admin entry", () => {
   const html = renderToStaticMarkup(createElement(DirectoryEditModeProvider, null,
-    createElement(SidebarOrderEditor, { ads: [], slots: ["sidebar_middle", "sidebar_top", ...defaultSidebarOrder.filter((slot) => !["sidebar_middle", "sidebar_top"].includes(slot))], saveOrder: async () => ({ success: "ok" }) })));
+    createElement(SidebarOrderEditor, { ads: presentedBanners([],[]), slots: ["sidebar_middle", "sidebar_top", ...defaultSidebarOrder.filter((slot) => !["sidebar_middle", "sidebar_top"].includes(slot))], saveOrder: async () => ({ success: "ok" }) })));
   assert.match(html, /Banner-Reihenfolge bearbeiten/);
   assert.equal((html.match(/data-placement=/g) ?? []).length, 10);
   assert.doesNotMatch(html, /Noch kein Banner|Freier Werbeplatz/);
@@ -157,7 +159,7 @@ test("travel order controls disable arrows across the Premium/Basic boundary", (
 
 test("active sidebar editor gives all twelve slots drag and arrow controls", () => {
   const html = renderToStaticMarkup(createElement(SidebarOrderSlots, {
-    ads: [], slots: [...defaultSidebarOrder], editing: true,
+    ads: presentedBanners([],[]), slots: [...defaultSidebarOrder], editing: true,
     busy: false, dragged: null, target: null,
     onPointerDown() {}, onPointerMove() {}, onPointerUp() {}, onMove() {},
   }));

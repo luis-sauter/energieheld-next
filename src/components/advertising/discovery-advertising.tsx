@@ -7,6 +7,6 @@ export function DiscoveryAdvertising({ data, children }: { data?: DiscoveryAdver
   if (!data) return children;
   const { ads, sidebarOrder, options } = data;
   return <InlineBannerProvider options={options}>
-    <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder}>{children}</AdvertisingLayout>
+    <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder} collapseEmpty showEmptySlots={Boolean(options)}>{children}</AdvertisingLayout>
   </InlineBannerProvider>;
 }

@@ -1,5 +1,5 @@
 import type { ActiveAd, AdPlacementId } from "./ad-values";
-import { legacyBannerPreview } from "../data/legacy-banner-preview";
+import { legacyBannerPages } from "../data/legacy-banner-pages";
 import { defaultSidebarOrder } from "./sidebar-order";
 
 export const bannerSizes = { small: "Klein", medium: "Mittel", large: "Groß" } as const;
@@ -16,13 +16,14 @@ export type BannerPresentation = {
   legacy_target_url: string | null;
   legacy_placement?: AdPlacementId | null;
 };
-export function legacyCreative(placement: AdPlacementId, source: AdPlacementId = placement): ActiveAd | undefined {
-  const creative = legacyBannerPreview.find((item) => defaultSidebarOrder[item.order] === source);
+export function legacyCreative(placement: AdPlacementId, source: AdPlacementId = placement, path = "/"): ActiveAd | undefined {
+  const creative = legacyBannerPages[path]?.find((item) => item.placement === source);
   return creative && { id: creative.id, placement, headline: creative.alt, body_text: null,
-    target_url: creative.targetUrl, image_path: null, imageUrl: creative.imageUrl, source: "legacy" };
+    target_url: creative.targetUrl, image_path: null, imageUrl: creative.imageUrl, source: "legacy",
+    banner_size: creative.size, image_width: creative.width, image_height: creative.height, legacy_source: source, mobile_image: creative.mobile };
 }
 // One resolver for public delivery and the admin's actual visible occupancy.
-export function presentedBanners(ads: ActiveAd[], presentations: BannerPresentation[]): ActiveAd[] {
+export function presentedBanners(ads: ActiveAd[], presentations: BannerPresentation[], path = "/"): ActiveAd[] {
   const slots = ["top_banner", ...defaultSidebarOrder] as AdPlacementId[];
   return slots.flatMap<ActiveAd>((placement) => {
     const setting = presentations.find((item) => item.placement === placement);
@@ -31,8 +32,8 @@ export function presentedBanners(ads: ActiveAd[], presentations: BannerPresentat
     if (live) return [{ ...live, source: "campaign" as const, banner_size: setting?.size }];
     if (setting?.legacy_hidden) return [{ id: `hidden:${placement}`, placement, headline: "", body_text: null,
       target_url: "", image_path: null, suppressed: true, source: "hidden" as const, banner_size: setting.size }];
-    const legacy = legacyCreative(placement, setting?.legacy_placement ?? placement);
-    return legacy ? [{ ...legacy, banner_size: setting?.size,
+    const legacy = legacyCreative(placement, setting?.legacy_placement ?? placement, path);
+    return legacy ? [{ ...legacy, banner_size: setting?.size ?? legacy.banner_size,
       target_url: setting?.legacy_target_url || legacy.target_url }]
       : setting?.legacy_placement ? [{ id: `hidden:${placement}`, placement, headline: "", body_text: null,
         target_url: "", image_path: null, suppressed: true, source: "hidden" as const }] : [];
