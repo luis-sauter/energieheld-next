@@ -59,9 +59,11 @@ export function ProfileRotation({ groups, count }: { groups: ReactNode[]; count:
       <button type="button" aria-label="Vorherige sechs Unterkünfte" onClick={() => move(-1)}>←</button>
       <span aria-live={focused ? "polite" : "off"} aria-atomic="true">Gruppe {page + 1} von {groups.length} · {count} Unterkünfte</span>
       <button type="button" aria-label="Nächste sechs Unterkünfte" onClick={() => move(1)}>→</button>
-      {!reducedMotion && <button type="button" aria-pressed={paused} onClick={() => setPaused((value) => !value)}>
+      <button type="button" aria-pressed={paused} disabled={reducedMotion}
+        title={reducedMotion ? "Bei reduzierter Bewegung ist der automatische Wechsel deaktiviert." : undefined}
+        onClick={() => setPaused((value) => !value)}>
         {paused ? "Automatisch wechseln" : "Automatischen Wechsel pausieren"}
-      </button>}
+      </button>
     </div>}
     <div className={groups.length > 1 ? styles.pages : undefined}>
       {groups.map((group, index) => <div key={index} hidden={index !== page} inert={index !== page}
