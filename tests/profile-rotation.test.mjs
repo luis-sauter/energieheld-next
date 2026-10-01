@@ -100,6 +100,8 @@ test("server HTML retains actual card links, only one group is exposed to keyboa
   assert.match(html, /Vorherige sechs Unterkünfte/);
   assert.match(html, /Nächste sechs Unterkünfte/);
   assert.match(html, /Gruppe 1 von 5/);
+  assert.match(html, /disabled="" title="Bei reduzierter Bewegung/);
+  assert.match(html, /Automatischen Wechsel pausieren/);
 });
 
 test("cards stay server components and existing lazy images; interaction makes no new data requests", () => {
