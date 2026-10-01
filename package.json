@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/build-portal-search-catalog.mjs && next dev",
+    "build": "node scripts/build-portal-search-catalog.mjs && next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit",
+    "typecheck": "node scripts/build-portal-search-catalog.mjs && next typegen && tsc --noEmit",
     "supabase": "supabase",
     "supabase:link": "supabase link --project-ref mbcvlqnxluyxznlnitbq",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node scripts/build-portal-search-catalog.mjs && node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
