@@ -4,7 +4,7 @@ import { checkAdmin } from "./admin-review";
 import { signAdImages } from "./ad-campaigns";
 import { berlinToday, adPlacements, type AdCampaign } from "./ad-values";
 import { inlineAdContext, matchesInlineAdContext, type InlineBannerOptions } from "./inline-ad-context";
-import { prepareInlineBanner, saveInlineBanner, removeInlineBanner } from "../app/(energieheld)/inline-banner-actions";
+import { prepareInlineBanner, saveInlineBanner, removeInlineBanner, reorderInlineBanners } from "../app/(energieheld)/inline-banner-actions";
 import { loadBannerPresentations } from "./banner-presentation-loader";
 import { presentedBanners } from "./banner-presentation";
 
@@ -42,6 +42,7 @@ export async function loadInlineBannerOptions(path: string): Promise<InlineBanne
     })), ...legacy.map((row) => ({ id: row.id, placement: row.placement, target_url: row.target_url,
       imageUrl: row.imageUrl, shared: false, source: "legacy" as const, size: row.banner_size, legacy_source: row.legacy_source }))], availability,
       error: loaded.error || booked.error || settings.error || mediaError ? "Banner und Platzbelegung konnten nicht vollständig geladen werden. Bitte laden Sie die Seite neu." : undefined,
-      prepare: prepareInlineBanner.bind(null, path), save: saveInlineBanner.bind(null, path), remove: removeInlineBanner.bind(null, path) };
+      prepare: prepareInlineBanner.bind(null, path), save: saveInlineBanner.bind(null, path), remove: removeInlineBanner.bind(null, path),
+      reorder: reorderInlineBanners.bind(null, path) };
   } catch { return; }
 }

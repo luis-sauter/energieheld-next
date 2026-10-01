@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from "react";
 import type { AdPlacementId, ActiveAd } from "@/lib/ad-values";
-import type { InlineBanner } from "@/lib/inline-ad-context";
+import type { InlineBanner, InlineBannerOptions } from "@/lib/inline-ad-context";
 
 export const InlineBannerContext = createContext<{
   overrides: Partial<Record<AdPlacementId, ActiveAd | null>>;
@@ -11,6 +11,7 @@ export const InlineBannerContext = createContext<{
   bannerAt?: (placement: AdPlacementId) => InlineBanner | undefined;
   canMove?: (placement: AdPlacementId) => boolean;
   reordered?: () => void;
+  reorder?: InlineBannerOptions["reorder"];
 } | null>(null);
 
 export const useInlineBanners = () => useContext(InlineBannerContext);
