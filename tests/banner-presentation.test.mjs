@@ -3,6 +3,23 @@ import assert from "node:assert/strict";
 import "./helpers/load-ts.mjs";
 const { bannerWidth, presentedBanners, legacyCreative } = await import("../src/lib/banner-presentation.ts");
 const { sidebarCreative } = await import("../src/lib/advertising-rail.ts");
+const { sidebarContentAt, sidebarContentToken } = await import("../src/lib/sidebar-content.ts");
+const { defaultSidebarOrder, moveSidebarSlot } = await import("../src/lib/sidebar-order.ts");
+
+test("reordering changes only content, never A–L identities; stored Legacy assignment reloads in A", () => {
+  const ads=presentedBanners([],[]);
+  const sources=moveSidebarSlot([...defaultSidebarOrder],2,0);
+  const rendered=defaultSidebarOrder.map((_,i)=>sidebarContentAt(ads,sources,i));
+  assert.deepEqual(rendered.slice(0,3).map(x=>x.placement),defaultSidebarOrder.slice(0,3));
+  assert.equal(rendered[0].id,"ferienanlage-nationalpark"); assert.equal(rendered[1].id,"city-apart-square");
+  const reload=presentedBanners([],[{placement:"sidebar_top",size:"small",legacy_hidden:false,
+    legacy_target_url:"https://example.org",legacy_placement:"sidebar_bottom"}]);
+  assert.equal(sidebarCreative("sidebar_top",reload).id,rendered[0].id);
+  assert.equal(sidebarContentToken("sidebar_top",reload[0]),"legacy:sidebar_bottom");
+  const empty=presentedBanners([],[{placement:"sidebar_top",size:"large",legacy_hidden:false,
+    legacy_target_url:null,legacy_placement:"sidebar_12"}]);
+  assert.equal(sidebarCreative("sidebar_top",empty),undefined,"no original fallback may fill a moved empty slot");
+});
 
 test("sizes use the measured 350×120 and 350×350 reference envelopes while preserving any actual ratio", () => {
   for (const [size,height] of [["small",120],["medium",235],["large",350]]) {

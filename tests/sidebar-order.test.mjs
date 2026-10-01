@@ -13,9 +13,9 @@ test("twelve stable sidebar positions exclude the separate top banner", () => {
   assert.equal(isSidebarOrder(defaultSidebarOrder.slice(0, 3)), false);
 });
 
-test("public order uses all stored positions and rejects corrupt rows", () => {
+test("public positions remain A–L even if historical rows were reordered", () => {
   const reversed = [...defaultSidebarOrder].reverse();
-  assert.deepEqual(orderedSidebarSlots(reversed.map((slot, sort_order) => ({ slot, sort_order }))), reversed);
+  assert.deepEqual(orderedSidebarSlots(reversed.map((slot, sort_order) => ({ slot, sort_order }))), [...defaultSidebarOrder]);
   for (const rows of [
     [],
     defaultSidebarOrder.slice(0, 3).map((slot, sort_order) => ({ slot, sort_order })),

@@ -143,6 +143,17 @@ test("removing a legacy image retains URL as a standard editorial draft without 
   assert.ok(!db.calls.some((call) => call.download || call.remove || call.sign));
 });
 
+test("moved Legacy content is edited/removed through its new fixed slot; former asset ID is rejected", async () => {
+  const settings=[{placement:"sidebar_top",legacy_placement:"sidebar_bottom",size:"small",legacy_hidden:false,legacy_target_url:"https://example.org/moved"}];
+  const db=client({settings});
+  const moved=form({campaign_id:"",legacy_id:"ferienanlage-nationalpark",placement:"sidebar_top",original_placement:"sidebar_top",action:"banner"});
+  assert.equal((await saveInlineAd(db,"/reiseziele/deutschland",moved)).ad.id,"ferienanlage-nationalpark");
+  assert.equal((await removeInlineAd(db,"/reiseziele/deutschland",moved)).removed,true);
+  const wrong=client({settings}); moved.set("legacy_id","city-apart-square");
+  assert.ok((await removeInlineAd(wrong,"/reiseziele/deutschland",moved)).error);
+  assert.ok(!wrong.calls.some(call=>call.rpc==='save_inline_ad_presentation'));
+});
+
 test("visitor and ordinary account cannot prepare uploads or save even with admin metadata", async () => {
   for (const options of [{ authenticated: false }, { admin: false }]) {
     const db = client(options);

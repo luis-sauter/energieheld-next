@@ -124,7 +124,7 @@ test("sidebar editor shows the compact image rail and a separate admin entry", (
   assert.match(html, /Banner-Reihenfolge bearbeiten/);
   assert.equal((html.match(/data-placement=/g) ?? []).length, 10);
   assert.doesNotMatch(html, /Noch kein Banner|Freier Werbeplatz/);
-  assert.ok(html.indexOf('data-placement="sidebar_middle"') < html.indexOf('data-placement="sidebar_top"'));
+  assert.ok(html.indexOf('data-placement="sidebar_top"') < html.indexOf('data-placement="sidebar_middle"'));
   assert.doesNotMatch(html, /top_banner|nach oben|nach unten|verschieben/);
 });
 
@@ -202,8 +202,9 @@ test("company action rechecks admin and sends one complete mixed payload to the 
   assert.doesNotMatch(failed.error, /private database details/);
 });
 
-test("sidebar action validates exact twelve slots, checks admin and sends one RPC", async () => {
+test("sidebar action moves content in the bound directory context without reordering slot identities", async () => {
   const slots = ["sidebar_bottom", "sidebar_top", "sidebar_middle", ...defaultSidebarOrder.slice(3)];
+  const expected = defaultSidebarOrder.map((slot) => `legacy:${slot}`);
   globalThis.__orderRevalidated = [];
   globalThis.__orderClient = client({ admin: false });
   assert.match((await saveSidebarOrder(slots)).error, /nicht berechtigt/);
@@ -211,12 +212,12 @@ test("sidebar action validates exact twelve slots, checks admin and sends one RP
   for (const bad of [null, slots.slice(1), [slots[0], ...slots.slice(0, -1)], [...slots.slice(0, -1), "top_banner"]])
     assert.match((await saveSidebarOrder(bad)).error, /ungültig/);
   assert.equal(globalThis.__orderClient.calls.some((call) => call.name), false);
-  assert.deepEqual(await saveSidebarOrder(slots), { success: "Die Banner-Reihenfolge wurde gespeichert." });
-  assert.deepEqual(globalThis.__orderClient.calls.filter((call) => call.name), [{ name: "reorder_ad_sidebar_slots", args: { p_slots: slots } }]);
-  assert.ok(globalThis.__orderRevalidated.includes("/experten"));
-  assert.ok(globalThis.__orderRevalidated.includes("/gewerke"));
+  assert.deepEqual(await saveSidebarOrder(slots, expected), { success: "Die Bannerinhalte wurden verschoben. Die Plätze A–L bleiben unverändert." });
+  assert.deepEqual(globalThis.__orderClient.calls.filter((call) => call.name), [{ name: "reorder_inline_ad_contents", args: {
+    p_target_type: "experts_directory", p_target_key: null, p_sources: slots, p_expected: expected,
+  } }]);
   assert.ok(globalThis.__orderRevalidated.includes("/unterkuenfte-a-z"));
-  assert.ok(globalThis.__orderRevalidated.includes("/"));
+  assert.deepEqual(globalThis.__orderRevalidated, ["/unterkuenfte-a-z"]);
   globalThis.__orderClient = client({ admin: true, rpcError: { message: "private database details" } });
-  assert.doesNotMatch((await saveSidebarOrder(slots)).error, /private database details/);
+  assert.doesNotMatch((await saveSidebarOrder(slots, expected)).error, /private database details/);
 });

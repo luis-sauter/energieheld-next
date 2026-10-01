@@ -48,5 +48,5 @@ test("media grips use immediate mouse and touch pointer reordering with rollback
 test("banner pointer movement ignores the same hovered target until a new target is reached", () => {
   const code = source("src/components/admin/sidebar-order-editor.tsx");
   assert.match(code, /if \(lastTargetRef\.current === over\) return;\s*lastTargetRef\.current = over;\s*setTarget\(over\);\s*setDraft/);
-  assert.match(code, /const result = await saveOrder\(draft\)/);
+  assert.match(code, /const result = await saveOrder\(draft, expectedRef.current\)/);
 });

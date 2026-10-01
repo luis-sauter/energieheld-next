@@ -25,7 +25,8 @@ export function orderedSidebarSlots(rows: { slot: string; sort_order: number }[]
     rows.some((row) => !Number.isInteger(row.sort_order) || row.sort_order < 0 || row.sort_order >= defaultSidebarOrder.length) ||
     new Set(rows.map((row) => row.sort_order)).size !== defaultSidebarOrder.length)
     return [...defaultSidebarOrder];
-  return [...rows].sort((a, b) => a.sort_order - b.sort_order).map((row) => row.slot) as SidebarSlot[];
+  // Historical sort_order moves content, never the identity of a position.
+  return [...defaultSidebarOrder];
 }
 
 export function moveSidebarSlot(slots: SidebarSlot[], from: number, to: number): SidebarSlot[] {

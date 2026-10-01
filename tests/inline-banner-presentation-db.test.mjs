@@ -77,6 +77,7 @@ before(async () => {
   await migration("20260930170000_editorial_ad_campaigns.sql");
   baseline = await snapshot(); securityBaseline = await securitySnapshot();
   await migration("20260930190000_inline_banner_presentation.sql");
+  await migration("20261001090000_fixed_banner_slot_contents.sql");
 });
 after(async () => db?.close());
 beforeEach(async () => db.exec("begin"));
@@ -115,6 +116,82 @@ const presentation = (campaign, size = "medium", hidden = true, key = null, plac
   rows("select save_inline_ad_presentation($1,$2,$3,$4,$5,$6,null)", [type,key,placement,campaign,size,hidden]);
 const remove = (id, full = false, key = null, placement = "top_banner", type = "homepage") =>
   rows("select remove_inline_ad_banner($1,$2,$3,$4,$5) as image", [id,type,key,placement,full]);
+const fixedSlots = ["sidebar_top","sidebar_middle","sidebar_bottom",...Array.from({length:9},(_,i)=>`sidebar_${String(i+4).padStart(2,"0")}`)];
+const legacyTokens = fixedSlots.map((slot,i)=>i<10?`legacy:${slot}`:"");
+const cToA = [fixedSlots[2],fixedSlots[0],fixedSlots[1],...fixedSlots.slice(3)];
+const reorderSql = "select reorder_inline_ad_contents('experts_directory',null,$1::text[],$2::text[])";
+async function inventory() { await actor(admin,"postgres"); const state=await snapshot(); await actor(); return state; }
+
+test("fixed-slot reorder is additive and only actual admins may invoke it", async () => {
+  assert.equal((await rows("select has_function_privilege('anon','reorder_inline_ad_contents(text,text,text[],text[])','EXECUTE') as allowed"))[0].allowed,false);
+  for (const [id,role] of [["","anon"],[owner,"authenticated"],[other,"authenticated"]]) {
+    await actor(id,role); await denied(reorderSql,[cToA,legacyTokens],/not authorized|permission denied/);
+  }
+  await actor();
+  for (const bad of [fixedSlots.slice(1),[fixedSlots[0],...fixedSlots.slice(0,-1)],['top_banner',...fixedSlots.slice(1)]])
+    await denied(reorderSql,[bad,legacyTokens],/invalid contents/);
+  await denied(reorderSql,[cToA,legacyTokens.map(()=>"forged")],/banner changed/);
+  assert.deepEqual(await inventory(),baseline);
+});
+
+test("C content becomes A; campaign target, URL, size and media reference move atomically and reload correctly", async () => {
+  const c = await create("experts_directory",null,"sidebar_bottom");
+  const data = await save(c); await approve(c.id); await actor();
+  await presentation(c.id,"small",true,null,"sidebar_bottom","experts_directory");
+  const objects = await rows("select * from storage.objects order by id");
+  const expected = [...legacyTokens]; expected[2]=c.id;
+  await db.query(reorderSql,[cToA,expected]);
+  const [target] = await rows("select placement from company_ad_campaign_targets where campaign_id=$1",[c.id]);
+  assert.equal(target.placement,"sidebar_top");
+  const [live] = await publicAds("experts_directory");
+  assert.equal(live.id,c.id); assert.equal(live.placement,"sidebar_top");
+  assert.equal(live.image_path,data.image_path); assert.equal(live.target_url,data.target_url);
+  await actor();
+  const settings = await rows("select placement,size,legacy_hidden,legacy_placement from ad_slot_presentations order by placement");
+  assert.equal(settings.find(x=>x.placement==="sidebar_top").size,"small");
+  assert.equal(settings.find(x=>x.placement==="sidebar_middle").legacy_placement,"sidebar_top");
+  assert.equal(settings.find(x=>x.placement==="sidebar_bottom").legacy_placement,"sidebar_middle");
+  assert.deepEqual(await rows("select * from storage.objects order by id"),objects);
+  // The existing remove/upload/URL/size routines now bind to A, never the former C.
+  await denied("select remove_inline_ad_banner($1,'experts_directory',null,'sidebar_bottom',true)",[c.id],/wrong banner context/);
+  await remove(c.id,true,null,"sidebar_top","experts_directory");
+  assert.equal((await publicAds("experts_directory")).length,0);
+  await actor(); assert.equal((await rows("select legacy_hidden from ad_slot_presentations where placement='sidebar_top'"))[0].legacy_hidden,true);
+  assert.deepEqual(await rows("select * from storage.objects order by id"),objects);
+});
+
+test("Legacy URL/size follow only their content; empty content remains empty and other pages/Premium unchanged", async () => {
+  await actor(); await presentation(null,"medium",false,null,"sidebar_bottom","experts_directory");
+  await db.query("select save_inline_ad_presentation('experts_directory',null,'sidebar_bottom',null,'medium',false,'https://example.org/legacy')");
+  await presentation(null,"small",false,null,"top_banner","experts_directory");
+  const unchanged = await inventory();
+  await db.query(reorderSql,[cToA,legacyTokens]);
+  const [a] = await rows("select * from ad_slot_presentations where placement='sidebar_top'");
+  assert.equal(a.legacy_placement,"sidebar_bottom"); assert.equal(a.size,"medium"); assert.equal(a.legacy_target_url,"https://example.org/legacy");
+  assert.equal((await rows("select size from ad_slot_presentations where placement='top_banner'"))[0].size,"small");
+  assert.deepEqual(await inventory(),unchanged);
+  assert.equal((await rows("select count(*)::int n from ad_slot_presentations where target_type='homepage'"))[0].n,0);
+  // Reject an old browser permutation after the first save.
+  await denied(reorderSql,[cToA,legacyTokens],/banner changed/);
+  const tokens=[`legacy:${fixedSlots[2]}`,`legacy:${fixedSlots[0]}`,`legacy:${fixedSlots[1]}`,...legacyTokens.slice(3)];
+  const lToA=[fixedSlots[11],...fixedSlots.slice(0,11)];
+  await db.query(reorderSql,[lToA,tokens]);
+  assert.equal((await rows("select legacy_placement from ad_slot_presentations where placement='sidebar_top'"))[0].legacy_placement,"sidebar_12");
+});
+
+test("future company bookings and shared campaigns cannot be moved, with complete rollback", async () => {
+  const c = await create("experts_directory",null,"sidebar_bottom"); await save(c); await approve(c.id);
+  await actor(admin,"postgres");
+  await db.query("insert into company_ad_campaign_targets(campaign_id,target_type,placement) values($1,'homepage','sidebar_12')",[c.id]);
+  const original = await snapshot(); await actor();
+  const expected=[...legacyTokens];expected[2]=c.id;
+  await denied(reorderSql,[cToA,expected],/shared banner/); assert.deepEqual(await inventory(),original);
+  await actor(admin,"postgres");
+  const company = baseline.campaigns.find(x=>x.status==='approved');
+  await db.query("insert into company_ad_campaign_targets(campaign_id,target_type,placement) values($1,'experts_directory','sidebar_top')",[company.id]);
+  const protectedState=await snapshot();await actor();
+  await denied(reorderSql,[cToA,expected],/company or shared banner/);assert.deepEqual(await inventory(),protectedState);
+});
 
 test("presentation migration rewrites no inventory or existing RPC, policy or grant", async () => {
   assert.deepEqual(await snapshot(), baseline);
