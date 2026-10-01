@@ -46,19 +46,21 @@ export function DiscoveryDetail({ entry, title, basePath, listings, advertising,
       {entry.image && <Image src={entry.image} alt={entry.alt} fill sizes="100vw" priority />}
       <div><p className="eyebrow">{title}</p><h1>{entry.title}</h1></div>
     </header>
-    <DiscoveryAdvertising data={advertising}><div className="discovery-detail-content">
-      <p className="discovery-intro">{entry.intro}</p>
-      {listings.length > 0 && <section className="section" aria-labelledby="related-stays">
+    <p className="discovery-intro">{entry.intro}</p>
+    <section className="discovery-stays" aria-labelledby="related-stays">
         <div className="section-heading"><div><p className="eyebrow">Aus dem Reiseportal</p><h2 id="related-stays">Passende Unterkünfte</h2></div></div>
+      <DiscoveryAdvertising data={advertising}><div className="discovery-detail-content">
+      {listings.length > 0 ? <>
         {rotateProfiles ? <>
           <ProfileRotation key={selected.map((listing) => listing.id).join(",")} count={selected.length}
             groups={profileGroups(selected).map((group, index) =>
               <div className="accommodation-grid" key={index}>{group.map((listing) =>
                 <AccommodationCard listing={listing} rotating key={listing.id} />)}</div>)} />
-          <Link className="text-link" href={`/unterkuenfte-a-z?thema=${entry.slug}`}>Alle passenden Unterkünfte ansehen →</Link>
+          <Link className="text-link" href={`/unterkuenfte-a-z?${basePath === "/reiseziele" ? "ziel" : "thema"}=${entry.slug}`}>Alle passenden Unterkünfte ansehen →</Link>
         </> : <div className="accommodation-grid">{listings.map((listing) => <AccommodationCard listing={listing} key={listing.id} />)}</div>}
-      </section>}
-      <Link className="text-link" href={basePath}>← Alle {title} ansehen</Link>
-    </div></DiscoveryAdvertising>
+      </> : <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}
+      </div></DiscoveryAdvertising>
+    </section>
+    <Link className="text-link discovery-back-link" href={basePath}>← Alle {title} ansehen</Link>
   </main>;
 }

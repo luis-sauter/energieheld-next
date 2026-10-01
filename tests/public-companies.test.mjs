@@ -76,7 +76,7 @@ const { default: HomePage } =
 const { reiseportalPreview } = await import("../src/data/reiseportal-preview.ts");
 const { importedJoomlaMedia } = await import("../src/data/reiseportal-import-media.ts");
 const verifiedJoomlaMedia = JSON.parse(source("src/data/reiseportal-legacy-provider-media.json"));
-const { withLegacyImages, loadReiseportalDirectory } = await import("../src/lib/reiseportal-directory.ts");
+const { withLegacyImages, loadReiseportalDirectory, loadReiseportalDestination } = await import("../src/lib/reiseportal-directory.ts");
 const { ListingRow } = await import("../src/components/portal/listing-row.tsx");
 const { energieheld } = await import("../src/config/energieheld.ts");
 const { listings: demos } = await import("../src/data/listings.ts");
@@ -1156,4 +1156,15 @@ test("private pending/rejected requests never produce public badges or request d
       /Persönlich verifiziert|Verifizierung angefragt|Verifizierungsanfrage/,
     );
   }
+});
+
+test('destination loader uses approved country records beyond former preview slugs and retains packages', async()=>{
+ const extra={...travelRow,id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',slug:'swiss-stay',display_name:'Swiss stay',country:'Schweiz'};
+ api([...legacyRows,extra,row,demoRow],false,[],undefined,null,[{profile_id:extra.id,package:'premium'}]);
+ assert.deepEqual((await loadReiseportalDestination('deutschland')).map(x=>x.slug),['bayerischer-wald']);
+ assert.equal((await loadReiseportalDestination('oesterreich')).length,2);
+ assert.equal((await loadReiseportalDestination('suedtirol-italien')).length,2);
+ const swiss=await loadReiseportalDestination('schweiz');
+ assert.equal(swiss.length,1);assert.equal(swiss[0].slug,'swiss-stay');assert.equal(swiss[0].directoryPackage,'premium');
+ assert.deepEqual(await loadReiseportalDestination('unknown'),[]);
 });

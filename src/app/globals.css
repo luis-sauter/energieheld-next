@@ -3014,7 +3014,7 @@ h6 {
 }
 .advertising-rail-creatives {
   display: grid;
-  gap: 10px;
+  gap: 14px;
 }
 .advertising-rail-creatives [data-placement] {
   margin: 0;
@@ -3409,7 +3409,11 @@ h6 {
 .discovery-detail-hero > div { padding: 34px; }
 .discovery-detail-hero h1,
 .discovery-detail-hero .eyebrow { color: var(--white); margin-bottom: 0; }
-.discovery-detail-content { max-width: 940px; padding-block: 32px 60px; }
+.discovery-detail-content { min-width: 0; }
+.discovery-detail > .discovery-intro { margin-block: 24px; max-width: 940px; }
+.discovery-stays > .section-heading { margin-bottom: 20px; }
+.discovery-stays .commercial-columns { margin-top: 20px; }
+.discovery-back-link { display: inline-block; margin-block: 28px 48px; }
 .discovery-intro { max-width: 760px; font-size: 1.08rem; }
 .discovery-detail .accommodation-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 1050px) {

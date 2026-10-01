@@ -133,6 +133,11 @@ export async function loadReiseportalTheme(theme: string) {
   return directory.database.filter((listing) => filterTravelDiscovery([listing], "", theme).length > 0);
 }
 
+export async function loadReiseportalDestination(destination: string) {
+  const directory = await loadReiseportalDirectory();
+  return filterTravelDiscovery(directory.database, destination, "");
+}
+
 export async function loadReiseportalListingBySlug(slug: string) {
   if (slug === demoSourceSlug) return { data: null, error: null };
   const result = await loadPublicCompanyBySlug(slug === demoPublicSlug ? demoSourceSlug : slug);
