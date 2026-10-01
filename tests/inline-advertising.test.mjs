@@ -8,6 +8,19 @@ const { travelThemes, destinations } = await import("../src/data/reiseportal-dis
 
 const id = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const image = `campaigns/${id}/creative/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.png`;
+
+test('editing and removing reordered content resolves its booking source on the server',async()=>{
+ const settings=['sidebar_top','sidebar_bottom'].map((placement,i)=>({placement,display_source:i?'sidebar_top':'sidebar_bottom',size:'medium',legacy_hidden:true}));
+ const db=client({settings,campaign:{is_editorial:true,targets:[target('mottoreisen/wellnessangebote','sidebar_bottom')]}});
+ const saved=await saveInlineAd(db,'/mottoreisen/wellnessangebote',form({placement:'sidebar_top'}));
+ assert.ok(saved.success,saved.error);assert.equal(saved.ad.placement,'sidebar_top');
+ assert.equal(db.calls.find(call=>call.rpc==='save_ad_campaign').data.p_data.targets[0].placement,'sidebar_bottom');
+ const removed=await removeInlineAd(db,'/mottoreisen/wellnessangebote',form({placement:'sidebar_top',action:'banner'}));
+ assert.ok(removed.success,removed.error);assert.equal(db.calls.find(call=>call.rpc==='remove_inline_ad_banner').data.p_placement,'sidebar_bottom');
+ const stale=client({settings,campaign:{targets:[target()]}});
+ assert.ok((await saveInlineAd(stale,'/mottoreisen/wellnessangebote',form({placement:'sidebar_top'}))).error);
+ assert.ok(!stale.calls.some(call=>call.rpc==='save_ad_campaign'));
+});
 const target = (key = "mottoreisen/wellnessangebote", placement = "top_banner") => ({ target_type: "portal_area", category_id: null, target_key: key, placement });
 const form = (values = {}) => {
   const data = new FormData();
@@ -194,7 +207,7 @@ test("invalid URL, placement or file metadata creates no draft or upload", async
 });
 
 test("existing single-target campaign preserves company, dates, contacts and metadata while editing exact context", async () => {
-  const db = client();
+  const db = client({campaign:{targets:[target("mottoreisen/wellnessangebote", "sidebar_12")]}});
   const result = await saveInlineAd(db, "/mottoreisen/wellnessangebote", form({ placement: "sidebar_12", targets: "homepage|top_banner", profile_id: "forged", internal_name: "forged", requested_end_date: "9999-12-31" }));
   assert.ok(result.success);
   const saved = db.calls.find((call) => call.rpc === "save_ad_campaign").data;

@@ -4,6 +4,21 @@ const {presentedBanners,legacyCreative}=await import('../src/lib/banner-presenta
 const {sidebarCreative}=await import('../src/lib/advertising-rail.ts');
 const {sidebarContentToken}=await import('../src/lib/sidebar-content.ts');
 const {defaultSidebarOrder}=await import('../src/lib/sidebar-order.ts');
+
+test('booking content maps independently to fixed display slots on every page, with identity fallback and unchanged metadata',()=>{
+ const slots=defaultSidebarOrder, settings=slots.map((placement,i)=>({placement,size:'medium',legacy_hidden:false,display_source:i===0?slots[2]:i===2?slots[0]:placement}));
+ const campaign={id:'shared-campaign',placement:slots[2],headline:'Original',target_url:'https://example.org',image_path:'private/file',imageUrl:'signed-url'};
+ for(const path of ['/','/unterkuenfte-a-z','/mottoreisen/natur-pur','/reiseziele/deutschland']){
+  const before=structuredClone(campaign), original=presentedBanners([campaign],[],path);
+  const result=presentedBanners([campaign],settings,path);
+  assert.equal(result.find(row=>row.id===campaign.id).placement,slots[0]);
+  assert.equal(result.find(row=>row.id===campaign.id).imageUrl,'signed-url');assert.deepEqual(campaign,before);
+  assert.equal(presentedBanners([campaign],[],path).find(row=>row.id===campaign.id).placement,slots[2]);
+  assert.equal(result.find(row=>row.placement==='top_banner')?.id,original.find(row=>row.placement==='top_banner')?.id);
+ }
+ const invalid=settings.map(row=>({...row,display_source:slots[0]}));
+ assert.equal(presentedBanners([campaign],invalid,'/').find(row=>row.id===campaign.id).placement,slots[2]);
+});
 test('20 audited page mappings, 133 proven creatives, no global pool on unproven pages',()=>{
  assert.equal(Object.keys(legacyBannerPages).length,20);assert.equal(Object.values(legacyBannerPages).flat().length,133);
  for(const path of ['/mottoreisen','/reiseziele','/unterkuenfte-a-z','/unknown']){assert.deepEqual(presentedBanners([],[],path),[]);assert.equal(sidebarCreative('sidebar_top',[]),undefined);}

@@ -8,6 +8,7 @@ const other = "22222222-2222-4222-8222-222222222222";
 const admin = "33333333-3333-4333-8333-333333333333";
 const visitor = "44444444-4444-4444-8444-444444444444";
 let db, today, baseline, securityBaseline;
+const displayMigration = async () => db.exec((await readFile(new URL('../supabase/migrations/20261001170000_banner_display_order.sql', import.meta.url),'utf8')).replace(/^BEGIN;|^COMMIT;/gm,''));
 const migration = async (name) => db.exec(await readFile(new URL(`../supabase/migrations/${name}`, import.meta.url), "utf8"));
 const rows = async (sql, params = []) => (await db.query(sql, params)).rows;
 
@@ -82,6 +83,55 @@ before(async () => {
 after(async () => db?.close());
 beforeEach(async () => db.exec("begin"));
 afterEach(async () => db.exec("rollback"));
+
+test('display migration preserves inventory, booking functions and permissions; only admin can reorder',async()=>{
+ const before=await snapshot(),security=await securitySnapshot();
+ await displayMigration();
+ assert.deepEqual(await snapshot(),before);assert.deepEqual(await securitySnapshot(),security);
+ for(const [id,role] of [['','anon'],[owner,'authenticated'],[other,'authenticated'],[visitor,'authenticated']]){
+  await actor(id,role);await denied(reorderSql,[cToA,legacyTokens],/not authorized|permission denied/);
+  await denied("update ad_slot_presentations set display_source='sidebar_bottom'",[],/permission denied/);
+ }
+ await actor();await rows(reorderSql,[cToA,legacyTokens]);
+ await actor('', 'anon');assert.equal((await rows("select display_source from ad_slot_presentations where placement='sidebar_top'"))[0].display_source,'sidebar_bottom');
+});
+
+test('company/shared display reorder and reload leave booking targets, campaigns, availability and other pages byte-identical',async()=>{
+ await displayMigration();await actor(admin,'postgres');
+ const campaign=baseline.campaigns.find(row=>row.status==='approved');
+ await db.query("update company_ad_campaigns set approved_start_date=$1,approved_end_date=$1 where id=$2",[today,campaign.id]);
+ await db.query("insert into company_ad_campaign_targets(campaign_id,target_type,placement) values($1,'experts_directory','sidebar_bottom')",[campaign.id]);
+ await db.query("insert into ad_slot_presentations(target_type,target_key,placement,size,legacy_hidden) values('homepage',null,'top_banner','small',true),('experts_directory',null,'sidebar_bottom','medium',true)");
+ const unchanged=await snapshot(), premium=await rows("select * from ad_slot_presentations where placement='top_banner'");
+ await actor();const availability=await rows("select * from get_ad_slot_availability($1,$1,null) order by target_type,placement",[today]);
+ const home=await rows("select * from get_active_ad_campaigns('homepage',null)");
+ const expected=[...legacyTokens];expected[2]=campaign.id;
+ await rows(reorderSql,[cToA,expected]);
+ assert.deepEqual(await inventory(),unchanged);
+ assert.deepEqual(await rows("select * from get_ad_slot_availability($1,$1,null) order by target_type,placement",[today]),availability);
+ assert.deepEqual(await rows("select * from get_active_ad_campaigns('homepage',null)"),home);
+ assert.equal((await rows("select * from get_active_ad_campaigns('experts_directory',null)"))[0].placement,'sidebar_bottom');
+ const persisted=await rows("select placement,display_source from ad_slot_presentations where target_type='experts_directory' order by placement");
+ assert.equal(persisted.find(row=>row.placement==='sidebar_top').display_source,'sidebar_bottom');
+ assert.deepEqual(await rows("select * from ad_slot_presentations where placement='top_banner'"),premium);
+ // Compose a second display move using visible-slot tokens, not booking targets.
+ const inverse=[fixedSlots[1],fixedSlots[2],fixedSlots[0],...fixedSlots.slice(3)];
+ const newTokens=[campaign.id,legacyTokens[0],legacyTokens[1],...legacyTokens.slice(3)];
+ await denied(reorderSql,[inverse,expected],/banner changed/);
+ await rows(reorderSql,[inverse,newTokens]);
+ assert.deepEqual(await inventory(),unchanged);
+ const reset=await rows("select placement,display_source from ad_slot_presentations where target_type='experts_directory'");
+ assert.ok(reset.every(row=>row.placement===row.display_source));
+ await denied(reorderSql,[[...fixedSlots.slice(0,11),'top_banner'],expected],/invalid contents/);
+});
+
+test('future company bookings do not block display movement and remain untouched',async()=>{
+ await displayMigration();await actor(admin,'postgres');
+ const campaign=baseline.campaigns.find(row=>row.status==='approved');
+ await db.query("insert into company_ad_campaign_targets(campaign_id,target_type,placement) values($1,'experts_directory','sidebar_bottom')",[campaign.id]);
+ const before=await snapshot();await actor();await rows(reorderSql,[cToA,legacyTokens]);
+ assert.deepEqual(await inventory(),before);
+});
 
 async function create(targetType = "homepage", targetKey = null, placement = "top_banner") {
   await actor();

@@ -11,6 +11,6 @@ export async function reorderInlineBannerContents(client: SupabaseClient, path: 
     return { error: "Die Banner-Reihenfolge ist ungültig. Bitte laden Sie die Seite neu." };
   const { error } = await client.rpc("reorder_inline_ad_contents", { p_target_type: context.target_type,
     p_target_key: context.target_key, p_sources: sources, p_expected: expected });
-  return error ? { error: "Die Bannerinhalte konnten nicht verschoben werden. Belegte Firmenplätze und gemeinsam verwendete Banner bleiben geschützt. Bitte laden Sie die Seite neu." }
+  return error ? { error: "Die Banner-Reihenfolge konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut." }
     : { success: "Die Bannerinhalte wurden verschoben. Die Plätze A–L bleiben unverändert." };
 }
