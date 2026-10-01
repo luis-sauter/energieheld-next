@@ -20,5 +20,5 @@ export default async function ThemeDetail({ params }: { params: Promise<{ slug: 
   const entry = travelThemes.find((item) => item.slug === slug);
   if (!entry) notFound();
   const [listings, advertising] = await Promise.all([loadReiseportalTheme(entry.slug), loadDiscoveryAdvertising(`/mottoreisen/${entry.slug}`)]);
-  return <DiscoveryDetail entry={entry} title="Mottoreisen" basePath="/mottoreisen" listings={listings} advertising={advertising} />;
+  return <DiscoveryDetail entry={entry} title="Mottoreisen" basePath="/mottoreisen" listings={listings} advertising={advertising} rotateProfiles />;
 }
