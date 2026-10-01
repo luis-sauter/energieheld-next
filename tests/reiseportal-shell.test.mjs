@@ -319,3 +319,15 @@ test("old public energy routes redirect to travel or home", async () => {
   );
   assert.throws(() => LegacyTrades(), /REDIRECT:\//);
 });
+
+test('destination details share six-card rotation, country links and the rubric layout',()=>{
+ const html=renderToStaticMarkup(createElement(DiscoveryDetail,{entry:destinations[0],title:'Reiseziele',basePath:'/reiseziele',listings:reiseportalPreview,rotateProfiles:true,advertising:{ads:[],sidebarOrder:[],options:undefined}}));
+ assert.match(html,/ziel=deutschland/);assert.doesNotMatch(html,/thema=deutschland/);
+ assert.ok(html.indexOf('discovery-intro')<html.indexOf('commercial-columns'));
+ assert.ok(html.indexOf('id="related-stays"')<html.indexOf('commercial-columns'));
+ const route=readFileSync(new URL('../src/app/(energieheld)/reiseziele/[slug]/page.tsx',import.meta.url),'utf8');
+ assert.match(route,/loadReiseportalDestination\(entry.slug\)/);assert.match(route,/rotateProfiles/);assert.doesNotMatch(route,/entry.previewSlugs|loadReiseportalFeatured/);
+ const css=readFileSync(new URL('../src/components/advertising/advertising.module.css',import.meta.url),'utf8');
+ assert.match(css,/\.imageCreative \{[^}]*border-radius: var\(--radius\)[^}]*overflow: hidden[^}]*box-shadow:/);
+ assert.match(css,/object-fit: contain/);
+});
