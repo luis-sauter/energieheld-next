@@ -71,7 +71,9 @@ export type ActiveAd = Pick<
   | "target_url"
   | "image_path"
   | "imageUrl"
-> & { banner_size?: import("./banner-presentation").BannerSize; source?: "legacy" | "campaign" | "hidden"; suppressed?: boolean };
+  > & { banner_size?: import("./banner-presentation").BannerSize; source?: "legacy" | "campaign" | "hidden"; suppressed?: boolean;
+    image_width?: number; image_height?: number; legacy_source?: AdPlacementId;
+    mobile_image?: { imageUrl: string; width: number; height: number } };
 export type AdFormState = { error?: string; success?: string };
 export function berlinToday(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {

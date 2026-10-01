@@ -3437,3 +3437,5 @@ h6 {
   .discovery-detail-hero { min-height: 260px; }
   .discovery-detail-hero > div { padding: 24px; }
 }
+
+.commercial-columns--no-rail { grid-template-columns: minmax(0, 1fr); }

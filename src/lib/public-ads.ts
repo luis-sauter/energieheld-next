@@ -16,7 +16,7 @@ export async function loadPublicAds(categoryId?: string, page: "directory" | "ho
       p_category_id: page === "portal_area" ? targetKey ?? null : categoryId ?? null,
     }), context ? loadBannerPresentations(client, context) : Promise.resolve({ rows: [], error: null })]);
     if (error || !data || settings.error) throw Error("Banner delivery unavailable");
-    return presentedBanners(await signAdImages(client, data as ActiveAd[]), settings.rows);
+    return presentedBanners(await signAdImages(client, data as ActiveAd[]), settings.rows, context?.path ?? "");
   } catch {
     // Do not resurrect a deleted static fallback when its persisted state is unavailable.
     return ["top_banner", ...defaultSidebarOrder].map((placement) => ({ id: `hidden:${placement}`,

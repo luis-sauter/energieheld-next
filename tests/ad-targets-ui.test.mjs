@@ -69,6 +69,7 @@ const { CampaignFacts, CampaignSlot } = await import(
 );
 const { AdvertisingRail } = await import("../src/components/advertising/advertising-rail.tsx");
 const { sidebarCreative } = await import("../src/lib/advertising-rail.ts");
+const { presentedBanners } = await import("../src/lib/banner-presentation.ts");
 const { defaultSidebarOrder } = await import("../src/lib/sidebar-order.ts");
 const { SidebarOrderSlots } = await import("../src/components/admin/sidebar-order-editor.tsx");
 const { InlineBannerContext } = await import("../src/components/advertising/inline-banner-context.tsx");
@@ -76,14 +77,14 @@ const { InlineBannerContext } = await import("../src/components/advertising/inli
 test("fixed positions A–L survive reversed rail input and C-to-A content previews on desktop/mobile markup", () => {
   const sources=[defaultSidebarOrder[2],defaultSidebarOrder[0],defaultSidebarOrder[1],...defaultSidebarOrder.slice(3)];
   const html=renderToStaticMarkup(createElement(SidebarOrderSlots,{
-    ads:[],slots:sources,editing:true,busy:false,dragged:null,target:null,
+    ads:presentedBanners([],[]),slots:sources,editing:true,busy:false,dragged:null,target:null,
     onPointerDown(){},onPointerMove(){},onPointerUp(){},onMove(){},
   }));
   const identities=[...html.matchAll(/data-sidebar-slot="([^"]+)"/g)].map(x=>x[1]);
   assert.deepEqual(identities,[...defaultSidebarOrder]);
   const first=html.slice(0,html.indexOf('data-sidebar-slot="sidebar_middle"'));
   assert.match(first,/Banner A/); assert.match(first,/ferienanlage-nationalpark/); assert.doesNotMatch(first,/Banner C/);
-  const rail=renderToStaticMarkup(createElement(AdvertisingRail,{ads:[],slots:[...defaultSidebarOrder].reverse()}));
+  const rail=renderToStaticMarkup(createElement(AdvertisingRail,{ads:presentedBanners([],[]),slots:[...defaultSidebarOrder].reverse()}));
   assert.ok(rail.indexOf('data-placement="sidebar_top"')<rail.indexOf('data-placement="sidebar_bottom"'));
 });
 const campaign = {
@@ -365,12 +366,12 @@ test("signed creative images have no fixed dimensions for portrait, square or wi
 test("public rail prefers active campaigns, fills only mapped slots, and has one label and CTA", () => {
   const live = { ...campaign, placement: "sidebar_top", imageUrl: "https://signed.example/live.jpg?token=private" };
   assert.equal(sidebarCreative("sidebar_top", [live]), live);
-  assert.match(sidebarCreative("sidebar_middle", [])?.imageUrl ?? "", /legacy-ads\/haus-salzburg\.jpg/);
+  assert.equal(sidebarCreative("sidebar_middle", []), undefined);
   assert.equal(sidebarCreative("sidebar_12", []), undefined);
   const html = render(AdvertisingRail, { slots: [...defaultSidebarOrder], ads: [live] });
   assert.match(html, /signed\.example\/live\.jpg\?token=private/);
   assert.doesNotMatch(html, /legacy-ads\/city-apart-square\.jpg/);
-  assert.equal((html.match(/<section\b/g) ?? []).length, 10);
+  assert.equal((html.match(/<section\b/g) ?? []).length, 1);
   assert.equal((html.match(/class="advertising-rail-label"/g) ?? []).length, 1);
   assert.equal((html.match(/Hier könnte Ihre Anzeige stehen/g) ?? []).length, 1);
   assert.doesNotMatch(html, /Freier Werbeplatz|<strong>|Mehr erfahren/);
@@ -382,7 +383,7 @@ test("public rail prefers active campaigns, fills only mapped slots, and has one
 
 test("admin reorder view renders twelve controls with dynamic first and last bounds", () => {
   const html = render(SidebarOrderSlots, {
-    ads: [], slots: [...defaultSidebarOrder], editing: true, busy: false,
+    ads: presentedBanners([],[]), slots: [...defaultSidebarOrder], editing: true, busy: false,
     dragged: null, target: null,
     onPointerDown() {}, onPointerMove() {}, onPointerUp() {}, onMove() {},
   });
@@ -457,7 +458,7 @@ test("inline banner controls are absent for public visitors and present at all a
   assert.doesNotMatch(visitor, /Banner hinzufügen|Banner bearbeiten/);
   const value = { overrides: {}, open() {} };
   const admin = renderToStaticMarkup(createElement(InlineBannerContext.Provider, { value },
-    createElement(AdvertisingRail, { ads: [], slots: [...defaultSidebarOrder] })));
+    createElement(AdvertisingRail, { ads: presentedBanners([],[]), slots: [...defaultSidebarOrder] })));
   assert.equal((admin.match(/Banner hinzufügen/g) ?? []).length, 2, "only K and L are empty; ten visible legacy banners are occupied");
   assert.equal((admin.match(/Banner bearbeiten/g) ?? []).length, 10);
   for (const slot of defaultSidebarOrder) assert.match(admin, new RegExp(`data-placement="${slot}"`));

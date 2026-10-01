@@ -120,23 +120,23 @@ test("failed, forged, non-admin, shared and company banner removals cannot remov
 test("legacy URL/size and deletion affect only the actual bound mapping; stale legacy controls are rejected", async () => {
   const legacyForm = () => form({ campaign_id: "", legacy_id: "city-apart-square", placement: "sidebar_top", original_placement: "sidebar_top", size: "medium" });
   const db = client();
-  const saved = await saveInlineAd(db, "/reiseziele/deutschland", legacyForm());
+  const saved = await saveInlineAd(db, "/", legacyForm());
   assert.ok(saved.success); assert.equal(saved.ad.source, "legacy");
   assert.equal(saved.ad.target_url, "https://example.org/new");
   const removal = legacyForm(); removal.set("action", "banner");
-  assert.equal((await removeInlineAd(db, "/reiseziele/deutschland", removal)).removed, true);
+  assert.equal((await removeInlineAd(db, "/", removal)).removed, true);
   assert.ok(!db.calls.some((call) => call.remove || call.rpc === "save_ad_campaign"));
   for (const config of [{ admin: false }, { active: [{ placement: "sidebar_top" }] },
     { settings: [{ placement: "sidebar_top", legacy_hidden: true }] }]) {
     const denied = client(config);
-    assert.ok((await removeInlineAd(denied, "/reiseziele/deutschland", removal)).error);
+    assert.ok((await removeInlineAd(denied, "/", removal)).error);
     assert.ok(!denied.calls.some((call) => call.rpc === "save_inline_ad_presentation"));
   }
 });
 
 test("removing a legacy image retains URL as a standard editorial draft without copying its static file", async () => {
   const db = client();
-  const result = await removeInlineAd(db, "/reiseziele/deutschland", form({ campaign_id: "", legacy_id: "city-apart-square",
+  const result = await removeInlineAd(db, "/", form({ campaign_id: "", legacy_id: "city-apart-square",
     placement: "sidebar_top", original_placement: "sidebar_top", action: "image" }));
   assert.ok(result.success); assert.equal(result.ad.suppressed, true); assert.equal(result.ad.id, id);
   assert.equal(db.row.status, "draft"); assert.equal(db.row.target_url, "https://city-apart-dresden.de/");
@@ -147,10 +147,10 @@ test("moved Legacy content is edited/removed through its new fixed slot; former 
   const settings=[{placement:"sidebar_top",legacy_placement:"sidebar_bottom",size:"small",legacy_hidden:false,legacy_target_url:"https://example.org/moved"}];
   const db=client({settings});
   const moved=form({campaign_id:"",legacy_id:"ferienanlage-nationalpark",placement:"sidebar_top",original_placement:"sidebar_top",action:"banner"});
-  assert.equal((await saveInlineAd(db,"/reiseziele/deutschland",moved)).ad.id,"ferienanlage-nationalpark");
-  assert.equal((await removeInlineAd(db,"/reiseziele/deutschland",moved)).removed,true);
+  assert.equal((await saveInlineAd(db,"/",moved)).ad.id,"ferienanlage-nationalpark");
+  assert.equal((await removeInlineAd(db,"/",moved)).removed,true);
   const wrong=client({settings}); moved.set("legacy_id","city-apart-square");
-  assert.ok((await removeInlineAd(wrong,"/reiseziele/deutschland",moved)).error);
+  assert.ok((await removeInlineAd(wrong,"/",moved)).error);
   assert.ok(!wrong.calls.some(call=>call.rpc==='save_inline_ad_presentation'));
 });
 
@@ -244,4 +244,9 @@ test("approval failure does not claim public success and keeps saved pending cre
   const db = client({ campaign: { status: "pending" }, reviewError: { message: "ad_booking_conflict" } });
   const result = await saveInlineAd(db, "/mottoreisen/wellnessangebote", form());
   assert.ok(result.error); assert.equal(result.success, undefined); assert.equal(db.row.status, "pending");
+});
+
+test('page-bound legacy IDs cannot edit a historical banner belonging to another page',async()=>{
+ for(const path of ['/mottoreisen/natur-pur','/mottoreisen','/unterkuenfte-a-z']){const db=client();const request=form({campaign_id:'',legacy_id:'city-apart-square',placement:'sidebar_top',original_placement:'sidebar_top',action:'banner'});assert.ok((await removeInlineAd(db,path,request)).error);assert.ok(!db.calls.some(c=>c.rpc==='save_inline_ad_presentation'||c.bucket));}
+ const db=client();const saved=await saveInlineAd(db,'/mottoreisen/natur-pur',form({campaign_id:'',legacy_id:'legacy-539',placement:'sidebar_top',original_placement:'sidebar_top',size:'medium'}));assert.ok(saved.success);assert.equal(saved.ad.id,'legacy-539');assert.equal(saved.ad.image_width,350);assert.equal(saved.ad.banner_size,'medium');
 });

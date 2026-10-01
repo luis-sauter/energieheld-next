@@ -260,3 +260,25 @@ test("wrong page/place, company campaigns, shared campaigns and stale legacy mut
   await actor(); await denied("select remove_inline_ad_banner($1,'homepage',null,'top_banner',true)",[c.id],/wrong banner context/);
   assert.equal((await rows("select status from company_ad_campaigns where id=$1",[c.id]))[0].status,"approved");
 });
+
+test('reconciled defaults are additive/idempotent, preserve editorial state and security; empty slots reorder without phantom content',async()=>{
+ const {legacyBannerPages}=await import('../src/data/legacy-banner-pages.ts');
+ await actor(admin,'postgres');
+ for(const path of Object.keys(legacyBannerPages).filter(x=>x.startsWith('/mottoreisen')||x.startsWith('/reiseziele'))){const [section,slug]=path.slice(1).split('/');await db.query('insert into ad_portal_areas values($1,$2,$3) on conflict do nothing',[path.slice(1),section,slug??null]);}
+ await db.exec("insert into ad_slot_presentations(target_type,target_key,placement,size,legacy_hidden,legacy_target_url,legacy_placement) values('homepage',null,'sidebar_middle','medium',true,'https://example.org/custom','sidebar_bottom')");
+ const original=(await rows("select * from ad_slot_presentations where target_type='homepage'"))[0];const dataBefore=await snapshot(),securityBefore=await securitySnapshot();
+ const sql=(await readFile(new URL('../supabase/migrations/20261001120000_reconciled_banner_defaults.sql',import.meta.url),'utf8')).replace(/\bBEGIN;|\bCOMMIT;/g,'');
+ await db.exec(sql);await db.exec(sql);
+ assert.equal((await rows('select count(*)::int as n from ad_slot_presentations'))[0].n,260);
+ assert.deepEqual((await rows("select * from ad_slot_presentations where target_type='homepage' and placement='sidebar_middle'"))[0],original);
+ assert.deepEqual(await snapshot(),dataBefore);assert.deepEqual(await securitySnapshot(),securityBefore);
+ assert.equal((await rows("select count(*)::int as n from ad_slot_presentations where target_type='experts_directory' and legacy_hidden"))[0].n,13);
+ await actor('','anon');assert.equal((await rows('select count(*)::int as n from ad_slot_presentations'))[0].n,260);await denied("update ad_slot_presentations set legacy_hidden=false",[],/permission denied/);
+ await actor(visitor);await denied("select save_inline_ad_presentation('homepage',null,'sidebar_top',null,'small',true,null)",[],/not authorized/);
+ const positions=['sidebar_top','sidebar_middle','sidebar_bottom',...Array.from({length:9},(_,i)=>'sidebar_'+String(i+4).padStart(2,'0'))];
+ await actor();const sources=[positions[1],positions[0],...positions.slice(2)];await rows("select reorder_inline_ad_contents('experts_directory',null,$1,$2)",[sources,Array(12).fill('')]);
+ assert.equal((await rows("select count(*)::int as n from ad_slot_presentations where target_type='experts_directory' and not legacy_hidden"))[0].n,0);
+ const natureSources=[positions[2],positions[0],positions[1],...positions.slice(3)];const expected=positions.map((p,i)=>i<9?'legacy:'+p:'');
+ await rows("select reorder_inline_ad_contents('portal_area','mottoreisen/natur-pur',$1,$2)",[natureSources,expected]);
+ assert.equal((await rows("select legacy_placement from ad_slot_presentations where target_key='mottoreisen/natur-pur' and placement='sidebar_top'"))[0].legacy_placement,'sidebar_bottom');
+});

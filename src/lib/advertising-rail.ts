@@ -5,7 +5,7 @@ import { legacyBannerPreview } from "../data/legacy-banner-preview";
 export function sidebarCreative(
   slot: SidebarSlot,
   ads: ActiveAd[],
-  fallback: readonly (typeof legacyBannerPreview)[number][] = legacyBannerPreview,
+  fallback: readonly (typeof legacyBannerPreview)[number][] = [],
 ): ActiveAd | undefined {
   const live = ads.find((ad) => ad.placement === slot);
   if (live?.suppressed) return undefined;

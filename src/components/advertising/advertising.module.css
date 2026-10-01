@@ -380,6 +380,12 @@
   height: auto;
   object-fit: contain;
 }
+/* Shared reference envelopes: 350×120, 350×235 and City Apart's 350×350.
+   Contain preserves every creative's ratio and reserves space before loading. */
+.imageCreative[data-size="small"] { aspect-ratio: 350 / 120; }
+.imageCreative[data-size="medium"] { aspect-ratio: 350 / 235; }
+.imageCreative[data-size="large"] { aspect-ratio: 1; }
+.imageCreative[data-size] img { width: 100%; height: 100%; object-fit: contain; }
 .creative strong {
   font-size: 21px;
 }

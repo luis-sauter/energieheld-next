@@ -15,7 +15,7 @@ test("reordering changes only content, never A–L identities; stored Legacy ass
   const reload=presentedBanners([],[{placement:"sidebar_top",size:"small",legacy_hidden:false,
     legacy_target_url:"https://example.org",legacy_placement:"sidebar_bottom"}]);
   assert.equal(sidebarCreative("sidebar_top",reload).id,rendered[0].id);
-  assert.equal(sidebarContentToken("sidebar_top",reload[0]),"legacy:sidebar_bottom");
+  assert.equal(sidebarContentToken("sidebar_top",reload.find(x=>x.placement==="sidebar_top")),"legacy:sidebar_bottom");
   const empty=presentedBanners([],[{placement:"sidebar_top",size:"large",legacy_hidden:false,
     legacy_target_url:null,legacy_placement:"sidebar_12"}]);
   assert.equal(sidebarCreative("sidebar_top",empty),undefined,"no original fallback may fill a moved empty slot");
@@ -35,11 +35,11 @@ test("sizes use the measured 350×120 and 350×350 reference envelopes while pre
 });
 test("one shared resolver recognizes legacy/live/empty slots and never emits a double creative", () => {
   const legacy = presentedBanners([],[]);
-  assert.equal(legacy.length,10); assert.equal(legacy[0].source,"legacy");
+  assert.equal(legacy.length,11); assert.equal(legacy[0].source,"legacy");
   const live={...legacyCreative("sidebar_top"),id:"campaign-id",image_path:"private/path"};
   const all=presentedBanners([live],[]);
   assert.equal(all.filter((row)=>row.placement==="sidebar_top").length,1);
-  assert.equal(all[0].source,"campaign"); assert.equal(sidebarCreative("sidebar_11",all),undefined);
+  assert.equal(all.find(x=>x.placement==="sidebar_top").source,"campaign"); assert.equal(sidebarCreative("sidebar_11",all),undefined);
 });
 test("persisted deletion prevents fallback resurrection after reload but a new campaign may fill the freed slot", () => {
   const hidden={placement:"sidebar_top",size:"medium",legacy_hidden:true,legacy_target_url:null};
@@ -54,5 +54,5 @@ test("unavailable private creative never exposes its legacy fallback; legacy URL
   assert.equal(sidebarCreative("sidebar_top",blocked),undefined);
   const changed=presentedBanners([],[{placement:"sidebar_middle",size:"small",legacy_hidden:false,legacy_target_url:"https://example.org/new"}]);
   assert.equal(changed.find((row)=>row.placement==="sidebar_middle").target_url,"https://example.org/new");
-  assert.equal(changed[0].target_url,"https://city-apart-dresden.de/");
+  assert.equal(changed.find(x=>x.placement==="sidebar_top").target_url,"https://city-apart-dresden.de/");
 });
