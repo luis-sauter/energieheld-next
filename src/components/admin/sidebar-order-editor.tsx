@@ -8,7 +8,7 @@ import { sidebarCreative } from "@/lib/advertising-rail";
 import type { ActiveAd } from "@/lib/ad-values";
 import { defaultSidebarOrder, isSidebarOrder, moveSidebarSlot, type SidebarSlot } from "@/lib/sidebar-order";
 import { sidebarContentAt, sidebarContentToken } from "@/lib/sidebar-content";
-import { useDirectoryEditMode } from "./directory-edit-mode";
+import { DirectoryEditModeProvider, useDirectoryEditMode } from "./directory-edit-mode";
 import { useInlineBanners } from "@/components/advertising/inline-banner-context";
 import styles from "./sidebar-order-editor.module.css";
 
@@ -220,4 +220,9 @@ export function SidebarOrderEditor({
         canMove={canMove} onMove={(from, to) => { if (canMove(from, to)) setDraft((current) => moveSidebarSlot(current, from, to)); }} />
     </div>
   );
+}
+
+// Other inline banner pages share the existing editor without directory controls.
+export function InlineSidebarOrderEditor(props: Parameters<typeof SidebarOrderEditor>[0]) {
+  return <DirectoryEditModeProvider><SidebarOrderEditor {...props} /></DirectoryEditModeProvider>;
 }

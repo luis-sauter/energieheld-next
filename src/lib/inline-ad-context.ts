@@ -50,4 +50,5 @@ export type InlineBannerOptions = {
   prepare: (form: FormData) => Promise<InlineBannerResult>;
   save: (form: FormData) => Promise<InlineBannerResult>;
   remove: (form: FormData) => Promise<InlineBannerResult>;
+  reorder?: (sources: import("./sidebar-order").SidebarSlot[], expected?: string[]) => Promise<InlineBannerResult>;
 };

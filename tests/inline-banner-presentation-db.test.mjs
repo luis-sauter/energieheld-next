@@ -278,7 +278,9 @@ test('reconciled defaults are additive/idempotent, preserve editorial state and 
  const positions=['sidebar_top','sidebar_middle','sidebar_bottom',...Array.from({length:9},(_,i)=>'sidebar_'+String(i+4).padStart(2,'0'))];
  await actor();const sources=[positions[1],positions[0],...positions.slice(2)];await rows("select reorder_inline_ad_contents('experts_directory',null,$1,$2)",[sources,Array(12).fill('')]);
  assert.equal((await rows("select count(*)::int as n from ad_slot_presentations where target_type='experts_directory' and not legacy_hidden"))[0].n,0);
+ const otherPagesBefore=await rows("select * from ad_slot_presentations where target_key is distinct from 'mottoreisen/natur-pur' or placement='top_banner' order by target_type,target_key,placement");
  const natureSources=[positions[2],positions[0],positions[1],...positions.slice(3)];const expected=positions.map((p,i)=>i<9?'legacy:'+p:'');
  await rows("select reorder_inline_ad_contents('portal_area','mottoreisen/natur-pur',$1,$2)",[natureSources,expected]);
  assert.equal((await rows("select legacy_placement from ad_slot_presentations where target_key='mottoreisen/natur-pur' and placement='sidebar_top'"))[0].legacy_placement,'sidebar_bottom');
+ assert.deepEqual(await rows("select * from ad_slot_presentations where target_key is distinct from 'mottoreisen/natur-pur' or placement='top_banner' order by target_type,target_key,placement"),otherPagesBefore);
 });

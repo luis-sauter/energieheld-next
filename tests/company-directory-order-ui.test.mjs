@@ -223,3 +223,34 @@ test("sidebar action moves content in the bound directory context without reorde
   globalThis.__orderClient = client({ admin: true, rpcError: { message: "private database details" } });
   assert.doesNotMatch((await saveSidebarOrder(slots, expected)).error, /private database details/);
 });
+
+test('shared inline action is server-authorized and page-bound on all supported banner pages',async()=>{
+ const {reorderInlineBanners}=await import('../src/app/(energieheld)/inline-banner-actions.ts');
+ const {inlineAdContext}=await import('../src/lib/inline-ad-context.ts');
+ const {legacyBannerPages}=await import('../src/data/legacy-banner-pages.ts');
+ const sources=[defaultSidebarOrder[2],defaultSidebarOrder[0],defaultSidebarOrder[1],...defaultSidebarOrder.slice(3)];
+ const expected=Array(12).fill('');
+ for(const path of Object.keys(legacyBannerPages)){
+  globalThis.__orderClient=client({admin:true});globalThis.__orderRevalidated=[];
+  assert.ok((await reorderInlineBanners(path,sources,expected)).success);
+  const context=inlineAdContext(path),rpc=globalThis.__orderClient.calls.find(call=>call.name);
+  assert.equal(rpc.args.p_target_type,context.target_type);assert.equal(rpc.args.p_target_key,context.target_key);
+  assert.deepEqual(rpc.args.p_sources,sources);assert.deepEqual(globalThis.__orderRevalidated,[path]);
+ }
+ for(const options of [{signedIn:false},{admin:false}]){
+  globalThis.__orderClient=client(options);assert.ok((await reorderInlineBanners('/',sources,expected)).error);
+  assert.equal(globalThis.__orderClient.calls.some(call=>call.name),false);
+ }
+ globalThis.__orderClient=client({admin:true});assert.ok((await reorderInlineBanners('/fake',sources,expected)).error);
+ assert.ok((await reorderInlineBanners('/', ['top_banner',...sources.slice(1)],expected)).error);
+});
+
+test('all inline rails reuse the existing editor once while public rendering remains unchanged',async()=>{
+ const rail=readFileSync(new URL('../src/components/advertising/advertising-rail.tsx',import.meta.url),'utf8');
+ assert.match(rail,/editor \?\? \(inline\?\.reorder/);assert.match(rail,/lazy\(\(\) => import/);
+ assert.match(rail,/saveOrder=\{inline.reorder\}/);
+ const {InlineSidebarOrderEditor}=await import('../src/components/admin/sidebar-order-editor.tsx');
+ const html=renderToStaticMarkup(createElement(InlineSidebarOrderEditor,{ads:presentedBanners([],[],'/mottoreisen/natur-pur'),slots:[...defaultSidebarOrder],saveOrder:async()=>({success:'ok'})}));
+ assert.equal((html.match(/Banner-Reihenfolge bearbeiten/g)||[]).length,1);
+ assert.ok(html.indexOf('Banner A')<html.indexOf('Banner C'));assert.doesNotMatch(html,/Premium-Banner/);
+});

@@ -39,7 +39,7 @@ export function InlineBannerProvider({ options, children }: { options?: InlineBa
     }
     return options!.banners.find((item) => !removedIds.includes(item.id) && (campaignId ? item.id === campaignId : item.placement === placement));
   }
-  return <InlineBannerContext.Provider value={{ overrides, bannerAt,
+  return <InlineBannerContext.Provider value={{ overrides, bannerAt, reorder: options.reorder,
     canMove: (placement) => { const banner = bannerAt(placement); return !options.error && (!banner || banner.source === "legacy" || (banner.editorial === true && !banner.shared)); },
     reordered: () => { setOverrides({}); setRemovedIds([]); },
     hasBanner: (placement) => Boolean(bannerAt(placement)), open(placement, campaignId) {
