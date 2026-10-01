@@ -15,7 +15,18 @@ export type BannerPresentation = {
   legacy_hidden: boolean;
   legacy_target_url: string | null;
   legacy_placement?: AdPlacementId | null;
+  display_source?: AdPlacementId | null;
 };
+// A bijection of booking/content sources to visible positions; Premium is never mapped.
+export function displaySource(placement: AdPlacementId, rows: BannerPresentation[]): AdPlacementId {
+  if (placement === "top_banner") return placement;
+  const sources = defaultSidebarOrder.map((slot) => rows.find((row) => row.placement === slot)?.display_source ?? slot);
+  if (new Set(sources).size !== 12 || sources.some((slot) => !defaultSidebarOrder.includes(slot as typeof defaultSidebarOrder[number]))) return placement;
+  return sources[defaultSidebarOrder.indexOf(placement as typeof defaultSidebarOrder[number])] ?? placement;
+}
+export function displayPlacement(source: AdPlacementId, rows: BannerPresentation[]): AdPlacementId {
+  return source === "top_banner" ? source : defaultSidebarOrder.find((slot) => displaySource(slot, rows) === source) ?? source;
+}
 export function legacyCreative(placement: AdPlacementId, source: AdPlacementId = placement, path = "/"): ActiveAd | undefined {
   const creative = legacyBannerPages[path]?.find((item) => item.placement === source);
   return creative && { id: creative.id, placement, headline: creative.alt, body_text: null,
@@ -25,7 +36,7 @@ export function legacyCreative(placement: AdPlacementId, source: AdPlacementId =
 // One resolver for public delivery and the admin's actual visible occupancy.
 export function presentedBanners(ads: ActiveAd[], presentations: BannerPresentation[], path = "/"): ActiveAd[] {
   const slots = ["top_banner", ...defaultSidebarOrder] as AdPlacementId[];
-  return slots.flatMap<ActiveAd>((placement) => {
+  const contents = slots.flatMap<ActiveAd>((placement) => {
     const setting = presentations.find((item) => item.placement === placement);
     const live = ads.find((ad) => ad.placement === placement);
     if (live?.image_path && !live.imageUrl) return [{ ...live, suppressed: true }];
@@ -37,5 +48,9 @@ export function presentedBanners(ads: ActiveAd[], presentations: BannerPresentat
       target_url: setting?.legacy_target_url || legacy.target_url }]
       : setting?.legacy_placement ? [{ id: `hidden:${placement}`, placement, headline: "", body_text: null,
         target_url: "", image_path: null, suppressed: true, source: "hidden" as const }] : [];
+  });
+  return slots.flatMap((placement) => {
+    const ad = contents.find((item) => item.placement === displaySource(placement, presentations));
+    return ad ? [{ ...ad, placement }] : [];
   });
 }

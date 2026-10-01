@@ -3,7 +3,7 @@ import { checkAdmin, isProfileId } from "./admin-review";
 import { prepareAdUpload, saveOwnAd, decideAd, signAdImages } from "./ad-campaigns";
 import { adPlacements, adTargetUrl, adTargetFormValue, berlinToday, type AdCampaign, type AdPlacementId } from "./ad-values";
 import { inlineAdContext, matchesInlineAdContext, type InlineBannerResult } from "./inline-ad-context";
-import { bannerSizes, legacyCreative, type BannerSize } from "./banner-presentation";
+import { bannerSizes, displaySource, displayPlacement, legacyCreative, type BannerSize } from "./banner-presentation";
 import { loadBannerPresentations } from "./banner-presentation-loader";
 
 const denied = "Dieses Banner kann auf dieser Seite nicht bearbeitet werden. Bitte laden Sie die Seite neu.";
@@ -45,13 +45,13 @@ async function authorizedCampaign(client: SupabaseClient, path: string, form: Fo
     .select("*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement)")
     .eq("id", id).maybeSingle();
   const campaign = data as AdCampaign | null;
-  if (error || !campaign || !campaign.targets.some((target) => matchesInlineAdContext(target, context))) return { error: denied };
+  if (error || !campaign || !campaign.targets.some((target) => matchesInlineAdContext(target, context) && target.placement === placement)) return { error: denied };
   // A shared creative must be edited deliberately in campaign management, never affect sibling pages silently.
   if (campaign.targets.length !== 1) return { error: "Dieses Banner wird in mehreren Bereichen verwendet. Bitte bearbeiten Sie es in der bestehenden Kampagnenverwaltung." };
   return { context, campaign, placement: placement as AdPlacementId };
 }
 
-export async function prepareInlineAdUpload(client: SupabaseClient, path: string, form: FormData): Promise<InlineBannerResult> {
+async function prepareInlineAdUploadAtSource(client: SupabaseClient, path: string, form: FormData): Promise<InlineBannerResult> {
   if (form.get("legacy_id")) {
     const legacy = await authorizedLegacy(client, path, form);
     if (!legacy.legacy) return { error: legacy.error };
@@ -76,7 +76,7 @@ export async function prepareInlineAdUpload(client: SupabaseClient, path: string
   return { ...result, campaignId: bound.campaign.id };
 }
 
-export async function saveInlineAd(client: SupabaseClient, path: string, input: FormData): Promise<InlineBannerResult> {
+async function saveInlineAdAtSource(client: SupabaseClient, path: string, input: FormData): Promise<InlineBannerResult> {
   const size = sizeValue(input);
   if (!size) return { error: "Bitte wählen Sie Klein, Mittel oder Groß." };
   if (!input.get("campaign_id") && input.get("legacy_id")) {
@@ -146,7 +146,7 @@ export async function saveInlineAd(client: SupabaseClient, path: string, input: 
   }
 }
 
-export async function removeInlineAd(client: SupabaseClient, path: string, form: FormData): Promise<InlineBannerResult> {
+async function removeInlineAdAtSource(client: SupabaseClient, path: string, form: FormData): Promise<InlineBannerResult> {
   const action = form.get("action");
   if (action !== "image" && action !== "banner") return { error: "Bitte wählen Sie eine gültige Aktion." };
   if (!sizeValue(form)) return { error: "Bitte wählen Sie Klein, Mittel oder Groß." };
@@ -161,7 +161,7 @@ export async function removeInlineAd(client: SupabaseClient, path: string, form:
       form.set("campaign_id", created.data);
       form.set("target_url", bound.legacy.target_url);
       form.set("size", bound.legacy.banner_size ?? "large");
-      const saved = await saveInlineAd(client, path, form);
+      const saved = await saveInlineAdAtSource(client, path, form);
       return saved.success ? { ...saved, success: "Das Bild wurde entfernt. Sie können jederzeit ein neues hinzufügen." } : saved;
     }
     const saved = await savePresentation(client, path, bound.legacy.placement, null, sizeValue(form) ?? "large");
@@ -188,3 +188,25 @@ export async function removeInlineAd(client: SupabaseClient, path: string, form:
     ad: action === "image" ? { ...bound.campaign, image_path: null, imageUrl: undefined,
       placement: bound.placement, source: "campaign", suppressed: true, banner_size: sizeValue(form) ?? "large" } : undefined };
 }
+
+// Translate only on the server. Existing upload/mutation authorization still applies at the booking source.
+async function atDisplaySource(client: SupabaseClient, path: string, input: FormData,
+  mutation: typeof saveInlineAdAtSource): Promise<InlineBannerResult> {
+  const context = inlineAdContext(path);
+  if (!context || await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
+  const settings = await loadBannerPresentations(client, context);
+  if (settings.error) return { error: denied };
+  const form = new FormData();
+  input.forEach((value, key) => form.append(key, value));
+  for (const key of ["placement", "original_placement"]) {
+    const value = form.get(key);
+    if (typeof value === "string" && Object.hasOwn(adPlacements, value)) form.set(key, displaySource(value as AdPlacementId, settings.rows));
+  }
+  const result = await mutation(client, path, form);
+  if (result.campaignId) input.set("campaign_id", result.campaignId);
+  return result.ad ? { ...result, ad: { ...result.ad, placement: displayPlacement(result.ad.placement, settings.rows) } } : result;
+}
+export const prepareInlineAdUpload = (client: SupabaseClient, path: string, form: FormData) => atDisplaySource(client, path, form, prepareInlineAdUploadAtSource);
+export const saveInlineAd = (client: SupabaseClient, path: string, form: FormData): Promise<InlineBannerResult> => sizeValue(form)
+  ? atDisplaySource(client, path, form, saveInlineAdAtSource) : Promise.resolve({ error: "Bitte wählen Sie Klein, Mittel oder Groß." });
+export const removeInlineAd = (client: SupabaseClient, path: string, form: FormData) => atDisplaySource(client, path, form, removeInlineAdAtSource);

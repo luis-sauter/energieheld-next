@@ -40,7 +40,7 @@ export function InlineBannerProvider({ options, children }: { options?: InlineBa
     return options!.banners.find((item) => !removedIds.includes(item.id) && (campaignId ? item.id === campaignId : item.placement === placement));
   }
   return <InlineBannerContext.Provider value={{ overrides, bannerAt, reorder: options.reorder,
-    canMove: (placement) => { const banner = bannerAt(placement); return !options.error && (!banner || banner.source === "legacy" || (banner.editorial === true && !banner.shared)); },
+    canMove: () => !options.error,
     reordered: () => { setOverrides({}); setRemovedIds([]); },
     hasBanner: (placement) => Boolean(bannerAt(placement)), open(placement, campaignId) {
     setMessage("");
@@ -178,7 +178,7 @@ function InlineBannerDialog({ options, selected, onClose, onSaved, onChanged, on
         <label>Bannergröße<select value={size} onChange={(event) => setSize(event.target.value as BannerSize)}>
           {Object.entries(bannerSizes).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
         </select></label>
-        <label>Bannerplatz<select value={placement} disabled={source === "legacy"} onChange={(event) => setPlacement(event.target.value as AdPlacementId)}>
+        <label>Bannerplatz<select value={placement} disabled={Boolean(selected.banner)} onChange={(event) => setPlacement(event.target.value as AdPlacementId)}>
           {Object.entries(adPlacements).map(([key, label]) => <option key={key} value={key}
             disabled={key !== selected.banner?.placement && Boolean(options.availability[key])}>
             {label}{options.availability[key] ? ` · ${options.availability[key]}` : " · Frei"}
