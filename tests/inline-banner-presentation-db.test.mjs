@@ -2,6 +2,7 @@ import test, { before, after, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createMediaTestDatabase } from "./helpers/media-database.mjs";
+import './helpers/load-ts.mjs';
 
 const owner = "11111111-1111-4111-8111-111111111111";
 const other = "22222222-2222-4222-8222-222222222222";
@@ -83,6 +84,32 @@ before(async () => {
 after(async () => db?.close());
 beforeEach(async () => db.exec("begin"));
 afterEach(async () => db.exec("rollback"));
+
+test('restore only proven A–Z visibility, retaining content/display order, other pages and booking/security; admin reorder persists',async()=>{
+ await displayMigration(); await actor(admin,'postgres');
+ for(const [i,placement] of ['top_banner',...fixedSlots].entries()){
+  const source=i===2?fixedSlots[3]:i===3?fixedSlots[1]:i===4?fixedSlots[2]:i===0?null:placement;
+  await db.query("insert into ad_slot_presentations(target_type,placement,size,legacy_hidden,legacy_placement) values('experts_directory',$1,$2,$3,$4)",[placement,i>=2&&i<=4?'large':'small',i!==2,source]);
+ }
+ await db.exec("insert into ad_slot_presentations(target_type,placement,size,legacy_hidden) values('homepage','sidebar_top','medium',true)");
+ const before=await rows('select * from ad_slot_presentations order by target_type,placement'),data=await snapshot(),security=await securitySnapshot();
+ const sql=(await readFile(new URL('../supabase/migrations/20261001213000_restore_directory_legacy_banners.sql',import.meta.url),'utf8')).replace(/^BEGIN;|^COMMIT;/gm,'');
+ await db.exec(sql); const restored=await rows('select * from ad_slot_presentations order by target_type,placement');
+ assert.deepEqual(restored,before.map(row=>({...row,legacy_hidden:row.target_type==='experts_directory'&&fixedSlots.slice(0,10).includes(row.legacy_placement)?false:row.legacy_hidden})));
+ await db.exec(sql);assert.deepEqual(await rows('select * from ad_slot_presentations order by target_type,placement'),restored);
+ assert.deepEqual(await snapshot(),data);assert.deepEqual(await securitySnapshot(),security);
+ const tokens=fixedSlots.map((slot,i)=>i<10?'legacy:'+(i===1?fixedSlots[3]:i===2?fixedSlots[1]:i===3?fixedSlots[2]:slot):'');
+ for(const [id,role] of [['','anon'],[owner,'authenticated']]){await actor(id,role);await denied(reorderSql,[cToA,tokens],/not authorized|permission denied/);}
+ await actor();await rows(reorderSql,[cToA,tokens]);
+ await actor('','anon');const loaded=await rows("select * from ad_slot_presentations where target_type='experts_directory' order by placement");
+ assert.equal(loaded.find(row=>row.placement===fixedSlots[0]).display_source,fixedSlots[2]);
+ const {presentedBanners}=await import('../src/lib/banner-presentation.ts');
+ const visible=presentedBanners([],loaded,'/unterkuenfte-a-z').filter(b=>!b.suppressed);
+ assert.equal(visible.length,10);assert.equal(visible[0].id,'haus-salzburg');
+ assert.deepEqual(visible.map(b=>b.placement),fixedSlots.slice(0,10));
+ await actor(admin,'postgres');assert.deepEqual(await snapshot(),data);assert.deepEqual(await securitySnapshot(),security);
+ assert.deepEqual(await rows("select * from ad_slot_presentations where target_type='homepage' order by placement"),before.filter(row=>row.target_type==='homepage'));
+});
 
 test('display migration preserves inventory, booking functions and permissions; only admin can reorder',async()=>{
  const before=await snapshot(),security=await securitySnapshot();

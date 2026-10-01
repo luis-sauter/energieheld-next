@@ -260,6 +260,6 @@ test("approval failure does not claim public success and keeps saved pending cre
 });
 
 test('page-bound legacy IDs cannot edit a historical banner belonging to another page',async()=>{
- for(const path of ['/mottoreisen/natur-pur','/mottoreisen','/unterkuenfte-a-z']){const db=client();const request=form({campaign_id:'',legacy_id:'city-apart-square',placement:'sidebar_top',original_placement:'sidebar_top',action:'banner'});assert.ok((await removeInlineAd(db,path,request)).error);assert.ok(!db.calls.some(c=>c.rpc==='save_inline_ad_presentation'||c.bucket));}
+ for(const path of ['/mottoreisen/natur-pur','/mottoreisen','/unterkuenfte-a-z']){const db=client();const request=form({campaign_id:'',legacy_id:path==='/unterkuenfte-a-z'?'legacy-539':'city-apart-square',placement:'sidebar_top',original_placement:'sidebar_top',action:'banner'});assert.ok((await removeInlineAd(db,path,request)).error);assert.ok(!db.calls.some(c=>c.rpc==='save_inline_ad_presentation'||c.bucket));}
  const db=client();const saved=await saveInlineAd(db,'/mottoreisen/natur-pur',form({campaign_id:'',legacy_id:'legacy-539',placement:'sidebar_top',original_placement:'sidebar_top',size:'medium'}));assert.ok(saved.success);assert.equal(saved.ad.id,'legacy-539');assert.equal(saved.ad.image_width,350);assert.equal(saved.ad.banner_size,'medium');
 });

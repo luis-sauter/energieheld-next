@@ -4,6 +4,21 @@ const {presentedBanners,legacyCreative}=await import('../src/lib/banner-presenta
 const {sidebarCreative}=await import('../src/lib/advertising-rail.ts');
 const {sidebarContentToken}=await import('../src/lib/sidebar-content.ts');
 const {defaultSidebarOrder}=await import('../src/lib/sidebar-order.ts');
+const {legacyBannerPreview}=await import('../src/data/legacy-banner-preview.ts');
+
+test('A–Z restores exactly the proven former rail without Premium and preserves saved B/D/C content order',()=>{
+ const path='/unterkuenfte-a-z',banners=legacyBannerPages[path];
+ assert.equal(banners.length,10);
+ assert.deepEqual(banners.map(({id,imageUrl,targetUrl,alt})=>({id,imageUrl,targetUrl,alt})),legacyBannerPreview.map(({id,imageUrl,targetUrl,alt})=>({id,imageUrl,targetUrl,alt})));
+ const settings=defaultSidebarOrder.map((placement,i)=>({placement,size:'small',legacy_hidden:i>=10,legacy_placement:i===1?defaultSidebarOrder[3]:i===2?defaultSidebarOrder[1]:i===3?defaultSidebarOrder[2]:placement,display_source:null}));
+ const result=presentedBanners([],settings,path).filter(b=>!b.suppressed);
+ assert.deepEqual(result.map(b=>b.id),[banners[0].id,banners[3].id,banners[1].id,banners[2].id,...banners.slice(4).map(b=>b.id)]);
+ assert.deepEqual(result.map(b=>b.placement),defaultSidebarOrder.slice(0,10));
+ assert.equal(result.some(b=>b.placement==='top_banner'),false);
+ const live={...result[0],id:'booked',image_path:'private',imageUrl:'signed'};
+ assert.equal(presentedBanners([live],settings,path).filter(b=>b.placement===defaultSidebarOrder[0]).length,1);
+ assert.equal(presentedBanners([live],settings,path)[0].id,'booked');
+});
 
 test('booking content maps independently to fixed display slots on every page, with identity fallback and unchanged metadata',()=>{
  const slots=defaultSidebarOrder, settings=slots.map((placement,i)=>({placement,size:'medium',legacy_hidden:false,display_source:i===0?slots[2]:i===2?slots[0]:placement}));
@@ -19,9 +34,9 @@ test('booking content maps independently to fixed display slots on every page, w
  const invalid=settings.map(row=>({...row,display_source:slots[0]}));
  assert.equal(presentedBanners([campaign],invalid,'/').find(row=>row.id===campaign.id).placement,slots[2]);
 });
-test('20 audited page mappings, 133 proven creatives, no global pool on unproven pages',()=>{
- assert.equal(Object.keys(legacyBannerPages).length,20);assert.equal(Object.values(legacyBannerPages).flat().length,133);
- for(const path of ['/mottoreisen','/reiseziele','/unterkuenfte-a-z','/unknown']){assert.deepEqual(presentedBanners([],[],path),[]);assert.equal(sidebarCreative('sidebar_top',[]),undefined);}
+test('20 audited page mappings, 143 proven creatives including restored A–Z, no global pool on unproven pages',()=>{
+ assert.equal(Object.keys(legacyBannerPages).length,20);assert.equal(Object.values(legacyBannerPages).flat().length,143);
+ for(const path of ['/mottoreisen','/reiseziele','/unknown']){assert.deepEqual(presentedBanners([],[],path),[]);assert.equal(sidebarCreative('sidebar_top',[]),undefined);}
  for(const [path,banners] of Object.entries(legacyBannerPages)){
   assert.equal(new Set(banners.map(b=>b.placement)).size,banners.length);
   for(const b of banners){assert.ok(existsSync(new URL('../public'+b.imageUrl,import.meta.url)));assert.match(b.targetUrl,/^https?:\/\//);assert.ok(b.width>0&&b.height>0);assert.equal(b.size,b.width===b.height?'large':'small');}

@@ -123,7 +123,20 @@ export const legacyBannerPages: Readonly<Record<string, readonly LegacyPageBanne
   ],
   "/mottoreisen": [],
   "/reiseziele": [],
-  "/unterkuenfte-a-z": [],
+  // Restore the proven pre-reconciliation A–Z rail (commit 5603997), scoped to this page.
+  // No historical Premium creative was rendered by that directory.
+  "/unterkuenfte-a-z": [
+    { id: "city-apart-square", placement: "sidebar_top", imageUrl: "/images/legacy-ads/city-apart-square.jpg", targetUrl: "https://city-apart-dresden.de/", alt: "City Apart Dresden", width: 350, height: 350, size: "large" },
+    { id: "haus-salzburg", placement: "sidebar_middle", imageUrl: "/images/legacy-ads/haus-salzburg.jpg", targetUrl: "https://haus-salzburg.de/", alt: "Haus Salzburg Bad Füssing", width: 350, height: 120, size: "small" },
+    { id: "ferienanlage-nationalpark", placement: "sidebar_bottom", imageUrl: "/images/legacy-ads/ferienanlage-nationalpark.jpg", targetUrl: "https://www.ferienanlage-am-nationalpark.de/", alt: "Ferienanlage am Nationalpark", width: 350, height: 120, size: "small" },
+    { id: "annis-romantikhaeuschen", placement: "sidebar_04", imageUrl: "/images/legacy-ads/annis-romantikhaeuschen.jpg", targetUrl: "https://www.annis-romantikhaeuschen.de/", alt: "Annis Romantikhäuschen", width: 350, height: 120, size: "small" },
+    { id: "fewo-sieber", placement: "sidebar_05", imageUrl: "/images/legacy-ads/fewo-sieber.jpg", targetUrl: "https://fewo-sieber.de/index.html", alt: "Ferienwohnung Sieber", width: 350, height: 120, size: "small" },
+    { id: "city-apart-wide", placement: "sidebar_06", imageUrl: "/images/legacy-ads/city-apart-wide.jpg", targetUrl: "https://city-apart-dresden.de/index.php", alt: "City Apart Dresden", width: 350, height: 120, size: "small" },
+    { id: "rodelpark-oderwitz", placement: "sidebar_07", imageUrl: "/images/legacy-ads/rodelpark-oderwitz.jpg", targetUrl: "https://rodelbahn-oderwitz.de/", alt: "Rodelbahn Oderwitz", width: 350, height: 120, size: "small" },
+    { id: "ferienbauernhof-buechele", placement: "sidebar_08", imageUrl: "/images/legacy-ads/ferienbauernhof-buechele.jpg", targetUrl: "https://www.ferienbauernhof-buechele.de/", alt: "Ferienbauernhof Büchele", width: 350, height: 120, size: "small" },
+    { id: "barfusspark", placement: "sidebar_09", imageUrl: "/images/legacy-ads/barfusspark.jpg", targetUrl: "https://www.barfusspark-schwackendorf.de/barfusspark/unser-barfusspark/", alt: "Barfußpark Schwackendorf", width: 350, height: 120, size: "small" },
+    { id: "neue-schaenke", placement: "sidebar_10", imageUrl: "/images/legacy-ads/neue-schaenke.jpg", targetUrl: "https://www.neue-schaenke.de/", alt: "Neue Schänke", width: 350, height: 120, size: "small" }
+  ],
   "/mottoreisen/natur-pur": [
     {
       "id": "legacy-367",
