@@ -89,7 +89,8 @@ test("editor, directory and gallery keep local preview, square framing and reduc
   assert.match(layout, /data-spacing-top=\{previewSpacing\.top\}/);
   assert.match(grid, /data-columns=\{previewColumns\}/);
   assert.match(directory, /\.row-logo\s*\{[^}]*aspect-ratio:\s*1;/s);
-  assert.match(source("src/components/portal/company-image.tsx"), /objectFit: "cover"/);
+  assert.match(source("src/components/portal/company-image.tsx"), /fit = "cover"/);
+  assert.match(source("src/components/portal/company-image.tsx"), /objectFit: fit/);
   assert.match(gallery, /prefers-reduced-motion: reduce/);
   assert.match(gallery, /window\.setTimeout\(advance, 4000\)/);
 });

@@ -31,6 +31,7 @@ export function ListingRow({
   travelLabels?: Record<string, string>;
 }) {
   const cardImage = listing.directoryImage ?? listing.logo ?? listing.images[0];
+  const isLogo = Boolean(cardImage && listing.logo?.src === cardImage.src);
   const premium = listing.directoryPackage === "premium" && (travel || Boolean(cardImage));
   const teaser = listing.tagline || (travel ? listing.description.replace(/\s+/g, " ").trim().slice(0, 240) : "");
   const tags = travel ? [...new Set((listing.travelTermKeys ?? []).flatMap((key) => travelLabels[key] ? [travelLabels[key]] : []))] : [];
@@ -44,9 +45,9 @@ export function ListingRow({
   return (
     <article className={`listing-row listing-row--${premium ? "premium" : "basic"}`}>
       {(premium || travel) && (
-        <div className="row-logo">
-          {cardImage ? <CompanyImage key={cardImage.src} image={cardImage} cover optimizeLocal={travel}
-            sizes={travel ? (premium ? "(max-width: 600px) 90vw, (max-width: 1000px) 32vw, 400px" : "104px") : undefined} /> : <span aria-label={`Kein Bild für ${listing.name}`}>{listing.initials}</span>}
+        <div className={`row-logo${travel && isLogo ? " row-logo--contain" : ""}`}>
+          {cardImage ? <CompanyImage key={cardImage.src} image={cardImage} cover fit={travel && isLogo ? "contain" : "cover"} optimizeLocal={travel}
+            sizes={travel ? (premium ? "(max-width: 600px) 160px, 220px" : "72px") : undefined} /> : <span aria-label={`Kein Bild für ${listing.name}`} className={travel ? "travel-image-fallback" : undefined}>{travel ? <Icon name="home" size={36} /> : listing.initials}</span>}
           {travel && premium && <span className="travel-premium-badge">Premium</span>}
         </div>
       )}
