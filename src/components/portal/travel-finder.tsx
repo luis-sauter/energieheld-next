@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Listing } from "@/types/portal";
@@ -12,13 +12,14 @@ import { SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
 type Options = ReturnType<typeof availableTravelFilters>;
 type FacetOptions = { slug: string; label: string }[];
 
-export function TravelFinder({ mode, listings, options, values, onChange, error }: {
+export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder }: {
   mode: "home" | "directory";
   listings: Listing[];
   options: Options;
   values: TravelFilterValues;
   onChange: (values: TravelFilterValues) => void;
   error?: string | null;
+  renderFinder?: (finder: ReactNode) => ReactNode;
 }) {
   const portalQuery = values.query.trim();
   const filterValues = { ...values, query: "" };
@@ -40,16 +41,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error 
   if (values.location) active.push({ key: "location", label: `Ort/PLZ: ${values.location}` });
   const reset = () => onChange(readTravelFilterValues({}));
 
-  return <section className="travel-hero" aria-labelledby="travel-hero-title">
-    {mode === "directory" ? <Image src="/reiseportal/redesign/unterkuenfte/hero.webp" alt="" fill sizes="100vw" priority className="directory-hero-image" /> : <video autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1}>
-      <source src="/reiseportal/hero-loop.mp4" type="video/mp4" />
-    </video>}
-    <div className="travel-hero-content container">
-      {mode === "directory" && <nav className="breadcrumbs" aria-label="Brotkrumennavigation"><Link href="/">Startseite</Link><span>›</span><span>Unterkünfte A–Z</span></nav>}
-      <p className="eyebrow">{mode === "directory" ? "UNTERKÜNFTE A–Z" : "DAS Reiseportal"}</p>
-      <h1 id="travel-hero-title">{mode === "directory" ? "Finde passende Unterkünfte" : "Finde deinen passenden Urlaub"}</h1>
-      <p>{mode === "directory" ? "Hotels, Pensionen, Ferienwohnungen und mehr – entdecke besondere Orte für deinen nächsten Urlaub." : "Sag uns, wie du reisen möchtest – wir zeigen dir passende Orte, Unterkünfte und Erlebnisse."}</p>
-      <form className="reise-finder" role="search" aria-label="Reisefinder" onSubmit={(event) => {
+  const finder = <form className="reise-finder" role="search" aria-label="Reisefinder" onSubmit={(event) => {
         event.preventDefault();
         if (portalQuery) { window.location.assign(travelSearchUrl(values, mode)); return; }
         if (count === 0 || error) return;
@@ -92,7 +84,18 @@ export function TravelFinder({ mode, listings, options, values, onChange, error 
             onClick={() => update(key, "")} aria-label={`${label} entfernen`}>{label} <span aria-hidden="true">×</span></button>)}
           <button type="button" className="reise-finder-reset" onClick={reset}>Alle Filter zurücksetzen</button>
         </div>}
-      </form>
+      </form>;
+
+  return <section className="travel-hero" aria-labelledby="travel-hero-title">
+    {mode === "directory" ? <Image src="/reiseportal/redesign/unterkuenfte/hero.webp" alt="" fill sizes="100vw" priority className="directory-hero-image" /> : <video autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1}>
+      <source src="/reiseportal/hero-loop.mp4" type="video/mp4" />
+    </video>}
+    <div className="travel-hero-content container">
+      {mode === "directory" && <nav className="breadcrumbs" aria-label="Brotkrumennavigation"><Link href="/">Startseite</Link><span>›</span><span>Unterkünfte A–Z</span></nav>}
+      <p className="eyebrow">{mode === "directory" ? "UNTERKÜNFTE A–Z" : "DAS Reiseportal"}</p>
+      <h1 id="travel-hero-title">{mode === "directory" ? "Finde passende Unterkünfte" : "Finde deinen passenden Urlaub"}</h1>
+      <p>{mode === "directory" ? "Hotels, Pensionen, Ferienwohnungen und mehr – entdecke besondere Orte für deinen nächsten Urlaub." : "Sag uns, wie du reisen möchtest – wir zeigen dir passende Orte, Unterkünfte und Erlebnisse."}</p>
+      {renderFinder ? renderFinder(finder) : finder}
     </div>
   </section>;
 }

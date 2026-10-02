@@ -11,6 +11,7 @@ export function CompanyImage({
   cover = false,
   sizes,
   optimizeLocal = false,
+  fit = "cover",
 }: {
   image: PortalImage;
   width?: number;
@@ -18,6 +19,7 @@ export function CompanyImage({
   cover?: boolean;
   sizes?: string;
   optimizeLocal?: boolean;
+  fit?: "cover" | "contain";
 }) {
   const [failed, setFailed] = useState(false);
   if (failed) return <span>Bild nicht verfügbar</span>;
@@ -28,7 +30,7 @@ export function CompanyImage({
       {...(cover ? { fill: true, sizes: sizes ?? "(max-width: 700px) 100vw, 200px" } : { width, height })}
       unoptimized={!(optimizeLocal && image.src.startsWith("/") && !image.src.startsWith("//"))}
       onError={() => setFailed(true)}
-      style={cover ? { objectFit: "cover" } : { objectFit: "contain", maxWidth: "100%", height: "auto" }}
+      style={cover ? { objectFit: fit } : { objectFit: "contain", maxWidth: "100%", height: "auto" }}
     />
   );
 }

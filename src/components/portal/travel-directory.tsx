@@ -55,11 +55,12 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   }, []);
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`travel-directory-page ${styles.page}`}>
-    <TravelFinder mode="directory" listings={listings} options={options} values={values} onChange={setValues} error={error} />
-    <div className="container trade-page travel-directory-content">
+    <TravelFinder mode="directory" listings={listings} options={options} values={values} onChange={setValues} error={error} renderFinder={(finder) =>
+    <div className="trade-page travel-directory-content">
       <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder} editorEnabled={editingAvailable}
         sidebarEditor={editingAvailable && saveSidebarOrder
           ? <SidebarOrderEditor ads={ads} slots={sidebarOrder} saveOrder={saveSidebarOrder} /> : undefined}>
+        {finder}
         <section id="unterkunft-ergebnisse" className="travel-results" aria-labelledby="travel-results-title">
           <div className="results-heading travel-results-heading">
             <div>
@@ -103,6 +104,6 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
             </div>}
         </section>
       </AdvertisingLayout>
-    </div>
+    </div>} />
   </main></InlineBannerProvider>;
 }
