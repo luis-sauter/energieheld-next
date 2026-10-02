@@ -1,0 +1,16 @@
+.card { display: block; min-width: 0; padding: 12px; background: var(--portal-card); border: 1px solid rgb(23 71 97 / 6%); border-radius: 18px; box-shadow: 0 8px 30px rgb(23 71 97 / 6%); text-decoration: none; transition: box-shadow .2s, transform .2s; }
+.image { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 10px; background: #e6f2f6; }
+.image img { object-fit: cover; }
+.content { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 21px 10px 13px; }
+.content h3 { margin: 0 0 7px; font-size: clamp(1.25rem, 2vw, 1.65rem); line-height: 1.2; }
+.text { display: block; color: var(--portal-ink); font-size: 1rem; line-height: 1.6; }
+.arrow { flex: 0 0 44px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #eaf5fa; color: var(--portal-primary-deep); font-size: 1.7rem; }
+.card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgb(23 71 97 / 12%); }
+.card:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 5px; }
+.compact { padding: 0; overflow: hidden; border-radius: 13px; }
+.compact .image { border-radius: 0; aspect-ratio: 16 / 10; }
+.compact .content { padding: 18px 16px; gap: 8px; }
+.compact h3 { font-size: 1.1rem; }
+.compact .text { font-size: .88rem; }
+.compact .arrow { flex-basis: 40px; width: 40px; height: 40px; }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }

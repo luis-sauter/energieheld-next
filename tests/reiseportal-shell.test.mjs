@@ -19,7 +19,7 @@ registerHooks({
       shortCircuit: true,
     };
     if (specifier.endsWith("/auth-actions")) return { url: 'data:text/javascript,export async function logout(){return {}}', shortCircuit: true };
-    if (specifier.endsWith("/discovery-advertising") && !specifier.includes("components/")) return { url: 'data:text/javascript,export async function loadDiscoveryAdvertising(){return undefined}', shortCircuit: true };
+    if (specifier.endsWith("/discovery-advertising") && !specifier.includes("components/")) return { url: 'data:text/javascript,export async function loadDiscoveryAdvertising(path){globalThis.__discoveryAdPaths?.push(path);return globalThis.__discoveryAdvertising}', shortCircuit: true };
     if (specifier.endsWith("/public-companies")) return {
       url: 'data:text/javascript,export async function loadPublicCompanyDirectory(){return globalThis.__travelDirectoryResult};export async function loadPublicCompanyBySlug(slug){globalThis.__travelLookups.push(slug);return globalThis.__travelDetailResult}',
       shortCircuit: true,
@@ -59,12 +59,13 @@ const { reiseportalPreview } = await import("../src/data/reiseportal-preview.ts"
 const { reiseziele, mottoreisen } = await import("../src/data/reiseportal-overviews.ts");
 const { destinations, travelThemes } = await import("../src/data/reiseportal-discovery.ts");
 const { ReiseOverview } = await import("../src/components/portal/reise-overview.tsx");
-const { DiscoveryDetail } = await import("../src/components/portal/discovery-detail.tsx");
+const { DiscoveryDetail, AccommodationCard } = await import("../src/components/portal/discovery-detail.tsx");
 const { ListingDetail } = await import("../src/components/portal/listing-detail.tsx");
 const { filterTravelDiscovery } = await import("../src/lib/reiseportal-search.ts");
 const destinationRoute = await import("../src/app/(energieheld)/reiseziele/[slug]/page.tsx");
 const themeRoute = await import("../src/app/(energieheld)/mottoreisen/[slug]/page.tsx");
 const { default: ThemeOverview } = await import("../src/app/(energieheld)/mottoreisen/page.tsx");
+const { default: DestinationOverview } = await import("../src/app/(energieheld)/reiseziele/page.tsx");
 const { PortalHeader, PortalFooter } = await import("../src/components/portal/chrome.tsx");
 const { headerNavigation } = await import("../src/components/portal/navigation-data.ts");
 const { accountMenuGroups } = await import("../src/components/portal/account-menu.tsx");
@@ -182,6 +183,66 @@ test("destination and motto overviews use only the current visible legacy groups
     "Familienurlaub", "Golfurlaub", "Tauchurlaub", "Urlaub am Wasser",
     "Campingurlaub", "Romantik zu zweit", "Wellnessangebote", "Geschäftsreisen",
   ]);
+});
+
+test("discovery cards retain signed profile images without sending them to the Next optimizer", () => {
+  for (const src of ['/reiseportal/example.webp', 'https://example.supabase.co/storage/v1/object/sign/company-media/profile.jpg?token=test']) {
+    const card = AccommodationCard({ listing: { ...reiseportalPreview[0], images: [{ src, alt: 'Profile image' }] } });
+    const image = card.props.children[0].props.children;
+    assert.equal(image.props.src, src);
+    assert.equal(image.props.unoptimized, src.startsWith('https://'));
+    assert.equal(image.props.loading, 'lazy');
+  }
+});
+
+test("destination redesign keeps eight real server-rendered links, one H1 and nine optimized images", async () => {
+  globalThis.__discoveryAdvertising = undefined;
+  globalThis.__discoveryAdPaths = [];
+  const html = renderToStaticMarkup(await DestinationOverview());
+  assert.deepEqual(globalThis.__discoveryAdPaths, ["/reiseziele"]);
+  assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
+  assert.match(html, /Reiseziele entdecken/);
+  assert.equal((html.match(/<h3\b/g) ?? []).length, 8);
+  for (const destination of destinations) assert.ok(html.includes(`href="/reiseziele/${destination.slug}"`));
+  for (const region of ["Sächsische Schweiz", "Hochkönig", "Blausee", "Gitschberg Jochtal"])
+    assert.ok(html.includes(`href="/suche?q=${encodeURIComponent(region)}"`));
+  assert.doesNotMatch(html, /Bayerischer Wald|Salzkammergut|Wallis|Jetzt Südtirol entdecken|Freier Werbeplatz/);
+  const images = [...html.matchAll(/src="(\/reiseportal\/redesign\/reiseziele\/[^\"]+)"/g)];
+  assert.equal(images.length, 9);
+  for (const [, src] of images) {
+    const asset = readFileSync(new URL(`../public${src}`, import.meta.url));
+    assert.equal(asset.subarray(8, 12).toString(), "WEBP");
+    assert.ok(asset.length < 400_000, `${src} exceeds asset budget`);
+  }
+  assert.equal((html.match(/loading="lazy"/g) ?? []).length, 8);
+  const css = readFileSync(new URL('../src/app/(energieheld)/reiseziele/reiseziele.module.css', import.meta.url), 'utf8');
+  assert.match(css, /\.countryGrid[^}]*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(max-width: 600px\)[\s\S]*\.countryGrid, \.regionGrid[^}]*minmax\(0, 1fr\)/);
+  const cardCss = readFileSync(new URL('../src/components/portal/editorial-image-card.module.css', import.meta.url), 'utf8');
+  assert.match(cardCss, /:focus-visible/);
+  assert.match(cardCss, /prefers-reduced-motion: reduce/);
+});
+
+test("destination redesign retains real shared banner delivery and admin provider between editorial sections", async () => {
+  const data = { ads: [{ id: 'existing', placement: 'sidebar_top', imageUrl: '/known-banner.jpg', headline: 'Existing banner', target_url: 'https://example.org/', banner_size: 'small' }], sidebarOrder: [] };
+  globalThis.__discoveryAdvertising = data;
+  try {
+    const html = renderToStaticMarkup(await DestinationOverview());
+    assert.ok(html.indexOf('href="/reiseziele/suedtirol-italien"') < html.indexOf('data-placement="sidebar_top"'));
+    assert.ok(html.indexOf('data-placement="sidebar_top"') < html.indexOf('Beliebte Orte &amp; Regionen'));
+    assert.match(html, /src="\/known-banner.jpg"/);
+    assert.match(html, /rel="sponsored noopener noreferrer"/);
+    assert.match(html, /target="_blank"/);
+    assert.doesNotMatch(html, /Banner hinzufügen|Banner bearbeiten/);
+    assert.deepEqual(data.ads.map(ad => ad.placement), ['sidebar_top']);
+    globalThis.__discoveryAdvertising = { ...data, options: { label: 'Reiseziele', availability: {}, banners: [], terms: [] } };
+    const admin = renderToStaticMarkup(await DestinationOverview());
+    assert.match(admin, /Banner hinzufügen/);
+    assert.match(admin, /data-placement="top_banner"/);
+  } finally {
+    globalThis.__discoveryAdvertising = undefined;
+    globalThis.__discoveryAdPaths = undefined;
+  }
 });
 
 test("four destinations and twelve themes have sourced images, links and detail routes", async () => {

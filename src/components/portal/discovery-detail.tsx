@@ -14,7 +14,7 @@ export function AccommodationCard({ listing, rotating = false }: { listing: List
       className={`accommodation-card-image${image ? "" : " accommodation-card-image--empty"}`}
       aria-label={`${listing.name} ansehen`}>
       {image
-        ? <Image src={image.src} alt={image.alt} fill loading="lazy" sizes={rotating
+        ? <Image src={image.src} alt={image.alt} fill loading="lazy" unoptimized={/^https?:\/\//.test(image.src)} sizes={rotating
           ? "(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 400px"
           : "(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw"} />
         : <span aria-hidden="true">{listing.initials}</span>}
