@@ -216,7 +216,8 @@ test("destination redesign keeps eight real server-rendered links, one H1 and ni
   }
   assert.equal((html.match(/loading="lazy"/g) ?? []).length, 8);
   const css = readFileSync(new URL('../src/app/(energieheld)/reiseziele/reiseziele.module.css', import.meta.url), 'utf8');
-  assert.match(css, /\.countryGrid[^}]*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.countryGrid[^}]*repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(max-width: 1000px\)[\s\S]*\.countryGrid, \.regionGrid[^}]*repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(css, /@media \(max-width: 600px\)[\s\S]*\.countryGrid, \.regionGrid[^}]*minmax\(0, 1fr\)/);
   const cardCss = readFileSync(new URL('../src/components/portal/editorial-image-card.module.css', import.meta.url), 'utf8');
   assert.match(cardCss, /:focus-visible/);
@@ -239,9 +240,36 @@ test("destination redesign retains real shared banner delivery and admin provide
     const admin = renderToStaticMarkup(await DestinationOverview());
     assert.match(admin, /Banner hinzufügen/);
     assert.match(admin, /data-placement="top_banner"/);
+    assert.match(admin, /<details data-destination-banner-management="true">/);
+    assert.match(admin, /Alle Bannerplätze verwalten/);
+    assert.doesNotMatch(admin, /<details[^>]*\bopen=/);
   } finally {
     globalThis.__discoveryAdvertising = undefined;
     globalThis.__discoveryAdPaths = undefined;
+  }
+});
+
+test("destination overview publicly displays at most one actual creative, Premium before fixed A–L", async () => {
+  const banner = (placement, name) => ({ id: name, placement, imageUrl: `/${name}.jpg`, headline: name, target_url: 'https://example.org/', banner_size: 'small' });
+  const cases = [
+    { ads: [banner('sidebar_bottom', 'C'), banner('sidebar_top', 'A'), banner('top_banner', 'Premium')], expected: 'Premium' },
+    { ads: [banner('sidebar_bottom', 'C'), banner('sidebar_middle', 'B'), banner('sidebar_top', 'A')], expected: 'A' },
+    { ads: [{ ...banner('sidebar_top', 'hidden'), suppressed: true }, banner('sidebar_middle', 'B')], expected: 'B' },
+    { ads: [{ ...banner('top_banner', 'no-image'), imageUrl: null }], expected: undefined },
+    { ads: [], expected: undefined },
+  ];
+  try {
+    for (const { ads, expected } of cases) {
+      const before = JSON.stringify(ads);
+      globalThis.__discoveryAdvertising = { ads, sidebarOrder: [] };
+      const html = renderToStaticMarkup(await DestinationOverview());
+      assert.equal((html.match(/data-placement=/g) ?? []).length, expected ? 1 : 0);
+      if (expected) assert.ok(html.includes(`src="/${expected}.jpg"`));
+      assert.doesNotMatch(html, /Freier Werbeplatz|Banner hinzufügen|Alle Bannerplätze verwalten/);
+      assert.equal(JSON.stringify(ads), before, 'presentation must not modify slots or campaign data');
+    }
+  } finally {
+    globalThis.__discoveryAdvertising = undefined;
   }
 });
 

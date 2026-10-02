@@ -11,10 +11,10 @@ const countryAlts = ["See und bewaldete Berghänge in Deutschland", "Sommerliche
   "Schweizer Berglandschaft mit See", "Grüne Bergwiesen in Südtirol"];
 // Short editorial teasers refer to regions with verified public portal content.
 const countryTeasers = [
-  "Von der Sächsischen Schweiz bis in die Berge: Entdecken Sie passende Gastgeber in Deutschland.",
-  "Bergurlaub im Salzburger Land – entdecken Sie den Hochkönig und weitere Lieblingsorte in Österreich.",
-  "Klare Seen und stille Natur: Entdecken Sie die Schweiz und Gastgeber wie am Blausee.",
-  "Sonnige Bergwiesen und alpine Ausblicke: Entdecken Sie Meransen und die Region Gitschberg Jochtal.",
+  "Von der Sächsischen Schweiz bis in die Berge.",
+  "Bergurlaub rund um den Hochkönig und im Salzburger Land.",
+  "Klare Seen und stille Natur – entdecken Sie den Blausee.",
+  "Sonnige Bergwiesen rund um Meransen und Gitschberg Jochtal.",
 ];
 const regions = [
   { title: "Sächsische Schweiz", text: "Deutschland", query: "Sächsische Schweiz", image: "saechsische-schweiz", alt: "Sandsteinfelsen über einem bewaldeten Tal" },
@@ -45,11 +45,12 @@ export default async function DestinationsPage() {
         <h2 id="countries-title" className={styles.sectionTitle}>Wohin zieht es Sie?</h2>
         <div className={styles.countryGrid}>
           {destinations.map((entry, index) => <EditorialImageCard key={entry.slug} title={entry.title}
+            sizes="(max-width: 600px) calc(100vw - 48px), (max-width: 1000px) 45vw, 290px"
             text={countryTeasers[index]} href={`/reiseziele/${entry.slug}`} image={`${imageRoot}/${entry.slug}.webp`} alt={countryAlts[index]} />)}
         </div>
       </section>
       <div className={styles.advertising}>
-        <DiscoveryAdvertising data={advertising}>{null}</DiscoveryAdvertising>
+        <DiscoveryAdvertising data={advertising} compact>{null}</DiscoveryAdvertising>
       </div>
       <section className={styles.regions} aria-labelledby="regions-title">
         <div className={styles.sectionHeading}>
