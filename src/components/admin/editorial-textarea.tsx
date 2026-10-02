@@ -11,6 +11,7 @@ export function EditorialTextarea(props: ComponentProps<"textarea">) {
     field.style.height = "auto";
     field.style.height = `${field.scrollHeight}px`;
   }
+  useLayoutEffect(() => { fit(); }, [props.value]);
   useLayoutEffect(() => {
     const field = ref.current;
     if (!field) return;

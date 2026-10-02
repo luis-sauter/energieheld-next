@@ -237,3 +237,47 @@
 .pairedImageEditor > .imageTileActions button { font-size: 12px; min-height: 34px; padding: 6px 9px; background: var(--white); box-shadow: 0 2px 8px rgb(20 50 65 / .08); }
 .layoutBlock[data-editorial-pair="true"] > .editableBlock { position: relative; background: transparent !important; box-shadow: none !important; }
 .layoutBlock[data-editorial-pair="true"] > .editableBlock > .blockResizeGrip { position: absolute; right: 8px; bottom: 8px; z-index: 4; margin: 0; }
+
+/* One compact pair bar; secondary actions are reachable without owning the page. */
+.pairBar { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 6px; }
+.pairBar .pairControls { margin: 0; padding: 0; gap: 6px 10px; }
+.pairBar button { min-height: 36px; }
+.sectionMenu, .imageMenu { position: relative; }
+.sectionMenu > summary, .imageMenu > summary { cursor: pointer; list-style: none; padding: 8px; border-radius: 6px; font-size: 13px; color: var(--brand-primary); background: var(--white); }
+.sectionMenu > summary:focus-visible, .imageMenu > summary:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+.sectionMenu > .blockToolbar { position: absolute; right: 0; top: 100%; z-index: 6; width: min(320px, calc(100vw - 48px)); margin: 4px 0 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); box-shadow: 0 6px 20px rgb(20 50 65 / .1); }
+.sectionMenu:not([open]) > .blockToolbar { display: none; }
+.sectionMenu .blockType { display: none; }
+.imageMenu[open] > button { position: absolute; top: 100%; right: 0; width: 180px; z-index: 5; }
+.pairedImageEditor > .imageTileActions { justify-content: flex-end; }
+.contentEditor [data-text-image] .headingForm textarea,
+.contentEditor [data-text-image] textarea[data-editorial-heading] { font-size: clamp(22px, 2.2vw, 28px); line-height: 1.25; font-weight: 700; color: var(--brand-primary); }
+.headingForm textarea { font: inherit; font-size: 22px; font-weight: 650; color: var(--brand-primary); width: 100%; }
+.contentEditor [data-text-image] .blockForm textarea:hover,
+.contentEditor [data-text-image] .headingForm textarea:hover,
+.contentEditor [data-text-image] .field textarea:hover { border: 0; }
+.contentEditor [data-text-image] .field:focus-within textarea { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.contentEditor [data-text-image] .specialSection { gap: 0; }
+.contentEditor [data-text-image] .headingForm { margin: 0; }
+.contentEditor [data-text-image] .sectionPart[data-part="heading"] { margin-bottom: 12px; }
+.contentEditor [data-text-image] .blockForm:has([data-editorial-heading]) { margin-bottom: 12px; }
+.layoutBlock[data-editorial-pair="true"] > .editableBlock > .blockResizeGrip { opacity: 0; pointer-events: none; }
+.layoutBlock[data-editorial-pair="true"] > .editableBlock:is(:hover,:focus-within) > .blockResizeGrip { opacity: 1; pointer-events: auto; }
+.insertArea { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0; }
+.insertArea .addButton { width: auto; min-height: 34px; padding: 5px 12px; font-size: 12px; border: 0; background: transparent; }
+.insertArea .blockPicker, .insertArea .blockForm { flex-basis: 100%; }
+@media (max-width: 640px) {
+  .pairBar { gap: 4px; }
+  .pairBar .pairControls { flex: 1 1 100%; gap: 4px; }
+  .pairBar .adjacentOptions { gap: 4px; }
+  .pairBar button { font-size: 11px; padding: 5px 6px; }
+  .sectionMenu > .blockToolbar { left: 0; right: auto; }
+  .pairedImageEditor > .imageTileActions { top: 6px; left: 6px; right: 6px; }
+}
+
+.contentEditor [data-text-image] .blockForm textarea,
+.contentEditor [data-text-image] .headingForm textarea,
+.contentEditor [data-text-image] .field textarea { overflow: hidden; resize: none; border: 0; padding: 0; background: transparent; text-align: inherit; box-sizing: border-box; }
+.contentEditor [data-text-image] .headingForm textarea,
+.contentEditor [data-text-image] .blockForm textarea[data-editorial-heading] { min-height: 1.25em; }
+.contentEditor [data-text-image] .field textarea { font-weight: 400; }

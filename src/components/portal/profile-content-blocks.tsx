@@ -1,7 +1,7 @@
 import type { ProfileContentBlock, ProfileBlockImage, EditorialItem } from "@/lib/profile-content";
 import type { Listing } from "@/types/portal";
 import Image from "next/image";
-import { normalizeImageGridConfig, publicImageGridColumns } from "@/lib/image-grid-layout";
+import { normalizeImageGridConfig, publicImageGridColumns, editorialImageAspectRatio } from "@/lib/image-grid-layout";
 import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment } from "@/lib/content-block-layout";
 import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";
 import { imageCaptionPresentation } from "@/lib/image-caption";
@@ -29,14 +29,14 @@ export function ProfileBlockImage({ image, crop }: { image: ProfileBlockImage; c
     style={imageCropStyle(crop ?? image)} />;
 }
 
-export function BlockImageGrid({ block }: { block: ProfileContentBlock }) {
+export function BlockImageGrid({ block, editorial = false }: { block: ProfileContentBlock; editorial?: boolean }) {
   const images = block.images ?? [];
   if (!images.length) return null;
   const config = normalizeImageGridConfig(block.config);
   return <div className={styles.frame}>
     <div className={styles.grid} data-columns={publicImageGridColumns(config.columns, images.length)}>
     {images.map((image) => <figure key={image.id} className={styles.figure}>
-      <div className={styles.tile} style={{ aspectRatio: config.aspect_ratio }}><ProfileBlockImage image={image} /></div>
+      <div className={styles.tile} style={{ aspectRatio: editorial ? editorialImageAspectRatio(config) : config.aspect_ratio }}><ProfileBlockImage image={image} /></div>
       {imageCaptionPresentation(image).caption && <figcaption className={styles.caption}>{imageCaptionPresentation(image).caption}</figcaption>}
     </figure>)}
     </div>
@@ -65,7 +65,7 @@ export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[]
         style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
         <TextImageSection
           text={[...row.left, ...row.right].filter((block) => block.type !== "image_grid").map((block) => renderBlock(block, true))}
-          image={[...row.left, ...row.right].filter((block) => block.type === "image_grid").map((block) => <BlockImageGrid key={block.id} block={block} />)}
+          image={[...row.left, ...row.right].filter((block) => block.type === "image_grid").map((block) => <BlockImageGrid key={block.id} block={block} editorial />)}
           textWidth={normalizeBlockLayout(text?.config).width_percent}
           imageWidth={normalizeBlockLayout([...row.left, ...row.right].find((block) => block.type === "image_grid")?.config).width_percent}
           imageFirst={row.left[0].type === "image_grid"} textAlign={frame.text_align} />
@@ -105,7 +105,7 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
     sections.push(<div key={item.key} className="profile-content-block"
       data-spacing-top={frame.spacing_top} data-spacing-bottom={frame.spacing_bottom}
       style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
-      <TextImageSection text={section} image={<BlockImageGrid block={image} />}
+      <TextImageSection text={section} image={<BlockImageGrid block={image} editorial />}
         textWidth={item.layout.width_percent} imageWidth={normalizeBlockLayout(image.config).width_percent}
         imageFirst={normalizeBlockLayout(image.config).offset_percent < item.layout.offset_percent} />
     </div>);

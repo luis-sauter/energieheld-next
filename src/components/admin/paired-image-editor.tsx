@@ -21,14 +21,16 @@ export function PairedImageEditor({ block, saveImage, busy, onRemove }: {
   }
   function close() { if (!saving.current) dialog.current?.close(); }
   return <div className={styles.pairedImageEditor}>
-    {block.images?.length ? <BlockImageGrid block={block} /> : <p>Bild auswählen und hochladen.</p>}
+    {block.images?.length ? <BlockImageGrid block={block} editorial /> : <p>Bild auswählen und hochladen.</p>}
     <div className={styles.imageTileActions}>
       <button ref={trigger} type="button" className="button" disabled={busy} onClick={() => {
         setOpened(true); dialog.current?.showModal();
       }}>Bild bearbeiten</button>
+      <details className={styles.imageMenu}><summary aria-label="Weitere Bildaktionen">⋯</summary>
       <button type="button" className="button" disabled={busy} onClick={() => {
         if (window.confirm("Bild neben diesem Abschnitt wirklich entfernen?")) void onRemove("delete", block.id);
       }}>Bild daneben entfernen</button>
+      </details>
     </div>
     <dialog ref={dialog} className={styles.imageDialog} aria-labelledby={`image-tools-${block.id}`}
       onCancel={(event) => { if (saving.current) event.preventDefault(); }}
@@ -37,7 +39,7 @@ export function PairedImageEditor({ block, saveImage, busy, onRemove }: {
         <h2 id={`image-tools-${block.id}`}>Bild bearbeiten</h2>
         <button type="button" className="button" disabled={pending} onClick={close} autoFocus>Schließen</button>
       </header>
-      {opened && <InlineImageGridEditor block={block} saveAction={saveImage} onBusyChange={onBusyChange} />}
+      {opened && <InlineImageGridEditor block={block} saveAction={saveImage} onBusyChange={onBusyChange} editorial />}
     </dialog>
   </div>;
 }

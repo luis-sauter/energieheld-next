@@ -60,3 +60,9 @@ export function resizeImageGridFromPointer(start: {
   const ratio = Math.max(0.6, Math.min(3, Math.round(tileWidth / tileHeight * 100) / 100));
   return { width, ratio };
 }
+
+// Paired editorial imagery is landscape, even when an older stored frame is tall.
+// Wider image shares use a flatter frame; persisted crop and source stay untouched.
+export function editorialImageAspectRatio(config: ImageGridConfig): number {
+  return Math.max(config.width_percent >= 75 ? 2 : 1.5, config.aspect_ratio);
+}
