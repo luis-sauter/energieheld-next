@@ -20,14 +20,20 @@ export function ListingRow({
   categories,
   href,
   showVerification = true,
+  travel = false,
+  travelLabels = {},
 }: {
   listing: Listing;
   categories: Category[];
   href: string;
   showVerification?: boolean;
+  travel?: boolean;
+  travelLabels?: Record<string, string>;
 }) {
   const cardImage = listing.directoryImage ?? listing.logo ?? listing.images[0];
-  const premium = listing.directoryPackage === "premium" && Boolean(cardImage);
+  const premium = listing.directoryPackage === "premium" && (travel || Boolean(cardImage));
+  const teaser = listing.tagline || (travel ? listing.description.replace(/\s+/g, " ").trim().slice(0, 240) : "");
+  const tags = travel ? [...new Set((listing.travelTermKeys ?? []).flatMap((key) => travelLabels[key] ? [travelLabels[key]] : []))] : [];
   const address = [
     listing.location.street,
     [listing.location.postalCode, listing.location.city].filter(Boolean).join(" "),
@@ -37,9 +43,11 @@ export function ListingRow({
   const phoneHref = listing.contact.phone.replace(/[^\d+]/g, "");
   return (
     <article className={`listing-row listing-row--${premium ? "premium" : "basic"}`}>
-      {premium && cardImage && (
+      {(premium || travel) && (
         <div className="row-logo">
-          <CompanyImage key={cardImage.src} image={cardImage} cover />
+          {cardImage ? <CompanyImage key={cardImage.src} image={cardImage} cover optimizeLocal={travel}
+            sizes={travel ? (premium ? "(max-width: 600px) 90vw, (max-width: 1000px) 32vw, 400px" : "104px") : undefined} /> : <span aria-label={`Kein Bild für ${listing.name}`}>{listing.initials}</span>}
+          {travel && premium && <span className="travel-premium-badge">Premium</span>}
         </div>
       )}
       <div className="row-content">
@@ -49,12 +57,14 @@ export function ListingRow({
             <QualitySeal note={listing.verification.public_note} />
           )}
         </div>
+        {travel && <p className="row-location"><Icon name="pin" size={16} />{[listing.location.city, listing.location.country].filter(Boolean).join(" · ")}</p>}
         <div className="row-categories">
           {categories
             .filter((category) => listing.categoryIds.includes(category.id))
             .map((category) => <span className="row-category" key={category.id}>{category.name}</span>)}
         </div>
-        {listing.tagline && <p className="row-tagline">{listing.tagline}</p>}
+        {teaser && <p className="row-tagline">{teaser}{travel && !listing.tagline && listing.description.length > 240 ? " …" : ""}</p>}
+        {tags.length > 0 && <ul className="travel-card-tags" aria-label="Reisemerkmale">{tags.map((tag) => <li key={tag}>{tag}</li>)}</ul>}
         {premium && listing.businessAreas && <p className="row-business-areas">{listing.businessAreas}</p>}
         {listing.isDemo && <span className="badge row-demo">{listing.demoLabel ?? "Beispielprofil"}</span>}
       </div>
@@ -69,7 +79,7 @@ export function ListingRow({
         {premium && website && (
           <p><Icon name="globe" size={15} /><a href={website} target="_blank" rel="noopener noreferrer">{listing.contact.website}</a></p>
         )}
-        <Link className="row-profile-link" href={href}>Unternehmensprofil</Link>
+        <Link className="row-profile-link" href={href}>{travel ? (premium ? "Zum Unternehmensprofil" : "Zum Profil") : "Unternehmensprofil"}{travel && <Icon name="arrow" size={18} />}</Link>
       </div>
     </article>
   );
