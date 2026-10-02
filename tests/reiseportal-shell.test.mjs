@@ -11,7 +11,7 @@ registerHooks({
     if (specifier.endsWith(".module.css")) return { url: 'data:text/javascript,export default {}', shortCircuit: true };
     if (specifier === "server-only") return { url: "data:text/javascript,export {}", shortCircuit: true };
     if (specifier === "next/navigation") return {
-      url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")};export function useRouter(){return {refresh(){}}}',
+      url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")};export function useRouter(){return {refresh(){}}};export function useSearchParams(){return globalThis.__mottoSearchParams??null}',
       shortCircuit: true,
     };
     if (specifier === "next/link" || specifier === "next/image") return {
@@ -336,6 +336,17 @@ test("motto redesign renders all twelve genuine themes and eight accessible pres
   assert.match(css, /repeat\(4, minmax\(0, 1fr\)\)/);
   assert.match(css, /max-width: 1000px[\s\S]*repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(css, /max-width: 600px[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
+});
+
+test("motto selection follows the current URL even when a same-page navigation retains initial props", async () => {
+  const { MottoFilter } = await import('../src/components/portal/motto-filter.tsx');
+  try {
+    for (const group of ['aktiv', 'wasser', 'erholung', 'alle']) {
+      globalThis.__mottoSearchParams = new URLSearchParams(group === 'alle' ? '' : `gruppe=${group}`);
+      const html = renderToStaticMarkup(createElement(MottoFilter, { initialGroup: 'business' }));
+      assert.match(html, new RegExp(`data-active-group="${group}"`));
+    }
+  } finally { globalThis.__mottoSearchParams = undefined; }
 });
 
 test("compact promo uses the campaign copy and editable image without changing ordinary image creatives", async () => {
