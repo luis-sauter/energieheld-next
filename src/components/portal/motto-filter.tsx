@@ -14,7 +14,10 @@ export function MottoFilter({ initialGroup, children }: { initialGroup: MottoGro
     if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     const group = mottoGroup(link.dataset.mottoGroup);
-    if (group !== active) history.pushState(null, "", link.href);
+    if (group !== active) {
+      const url = new URL(link.href);
+      history.pushState(null, "", url.pathname + url.search);
+    }
   }
   return <div id="themen" className={styles.filter} data-active-group={active}>
     <nav className={styles.navigation} aria-label="Mottoreisen nach Interesse filtern">
