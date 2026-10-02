@@ -1,15 +1,24 @@
-.page { background: var(--portal-surface); padding-bottom: clamp(48px, 6vw, 88px); }
-.hero { position: relative; isolation: isolate; min-height: 490px; display: flex; align-items: flex-start; background: #d8edf8; }
-.heroImage { z-index: -2; object-fit: cover; object-position: center 55%; }
+.page { --portal-primary: #217ca3; --portal-primary-deep: #145d80; background: linear-gradient(#fff 52%, #fffbf7); padding-bottom: clamp(48px, 6vw, 88px); }
+.hero { position: relative; isolation: isolate; min-height: 420px; display: flex; align-items: flex-start; background: #e9f7ff; }
+.heroImage { z-index: -2; object-fit: cover; object-position: center 55%; filter: brightness(1.06); }
 .hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgb(250 253 255 / 95%) 0%, rgb(250 253 255 / 87%) 30%, rgb(250 253 255 / 32%) 62%, transparent 85%); }
 .heroContent { padding-block: 32px 96px; }
 .breadcrumbs { display: flex; gap: 12px; align-items: center; margin-bottom: 35px; font-size: .88rem; color: var(--portal-primary-deep); }
 .breadcrumbs a { text-decoration: none; padding-block: 8px; }
-.hero .heading { max-width: 640px; margin: 0 0 22px; color: var(--portal-primary-deep); font-size: clamp(2.7rem, 5.4vw, 4.7rem); line-height: 1.05; letter-spacing: -.035em; }
+.hero .heading { max-width: 760px; margin: 0 0 22px; color: var(--portal-primary-deep); font-size: clamp(2.7rem, 4.6vw, 4rem); line-height: 1.05; letter-spacing: -.035em; }
 .hero p { max-width: 475px; margin: 0; color: var(--portal-ink); font-size: clamp(1.05rem, 1.8vw, 1.25rem); line-height: 1.65; }
 .countries { position: relative; margin-top: -36px; padding-bottom: clamp(38px, 5vw, 60px); }
 .countries > .sectionTitle { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.countryGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.countryGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.countryGrid > a, .regionGrid > a { background: #fff; border-color: #e9f1f5; box-shadow: 0 8px 24px rgb(33 124 163 / 5%); border-radius: 14px; }
+.countryGrid > a { padding: 10px; }
+.countryGrid > a > div { padding: 18px 8px 12px; gap: 8px; }
+.countryGrid h3 { font-size: clamp(1.1rem, 1.7vw, 1.4rem); }
+.countryGrid > a > div > div > span { font-size: .94rem; line-height: 1.55; color: #455f70; }
+.countryGrid [aria-hidden="true"], .regionGrid [aria-hidden="true"] { background: #edf8fd; color: #14678e; }
+.countryGrid a:hover [aria-hidden="true"], .regionGrid a:hover [aria-hidden="true"] { background: #fff0e6; color: #914516; }
+.countryGrid img, .regionGrid img { filter: brightness(1.06); }
+.regionGrid > a > div { padding: 16px; }
 .sectionTitle { margin: 0 0 10px; font-size: clamp(1.8rem, 3.1vw, 2.6rem); line-height: 1.15; letter-spacing: -.025em; }
 .sectionHeading { margin-bottom: 26px; }
 .sectionHeading p { margin: 0; color: var(--portal-ink); line-height: 1.6; }
@@ -22,8 +31,13 @@
 .advertising :global(.commercial-sidebar) { width: 100%; max-width: none; }
 .advertising :global(.advertising-rail-creatives) { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 24px; }
 .advertising :global(.commercial-layout) { margin: 0; }
+.advertising [data-destination-promo] { padding: 20px; border-radius: 16px; background: linear-gradient(110deg, #fff5ec, #f2faff); }
+.advertising [data-destination-promo] [data-placement]:not([data-placement="top_banner"]) { max-width: 350px; margin-inline: auto; }
+.advertising [data-destination-banner-management] { margin-top: 16px; padding: 16px; border: 1px solid #e1eff6; border-radius: 12px; background: #f8fcff; }
+.advertising summary { cursor: pointer; color: var(--portal-primary-deep); font-weight: 700; padding: 8px; }
+.advertising summary:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 3px; }
 @media (max-width: 1000px) {
-  .regionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .countryGrid, .regionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hero { min-height: 440px; }
   .hero::after { background: linear-gradient(90deg, rgb(250 253 255 / 95%), rgb(250 253 255 / 78%) 46%, rgb(250 253 255 / 15%)); }
 }
