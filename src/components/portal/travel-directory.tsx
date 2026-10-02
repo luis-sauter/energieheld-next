@@ -57,7 +57,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`travel-directory-page ${styles.page}`}>
     <TravelFinder mode="directory" listings={listings} options={options} values={values} onChange={setValues} error={error} renderFinder={(finder) =>
     <div className="trade-page travel-directory-content">
-      <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder} editorEnabled={editingAvailable}
+      <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder} editorEnabled={editingAvailable} premiumInSidebar showEmptySlots={Boolean(bannerOptions)}
         sidebarEditor={editingAvailable && saveSidebarOrder
           ? <SidebarOrderEditor ads={ads} slots={sidebarOrder} saveOrder={saveSidebarOrder} /> : undefined}>
         {finder}
