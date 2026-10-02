@@ -30,3 +30,6 @@
 @media (max-width: 640px) {
   .editorialPair { grid-template-columns: minmax(0, 1fr) !important; gap: 20px; padding: 16px; }
 }
+.editorialBlock { padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+.editorialBlock h2 { margin-top: 0; margin-bottom: 12px; }
+.editorialBlock p { line-height: 1.7; }

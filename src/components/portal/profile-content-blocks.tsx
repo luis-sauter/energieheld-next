@@ -48,7 +48,7 @@ export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[]
   function renderBlock(block: ProfileContentBlock, paired: boolean, groupAlign?: TextAlignment) {
     const layout = normalizeBlockLayout(block.config);
     const align = block.type === "image_grid" ? undefined : normalizeTextBlockLayout(block.config).text_align;
-    return <section className="detail-section profile-content-block" key={block.id}
+    return <section className={`detail-section profile-content-block ${styles.editorialBlock}`} key={block.id}
       data-spacing-top={layout.spacing_top} data-spacing-bottom={layout.spacing_bottom}
       style={{ width: paired ? "100%" : `${layout.width_percent}%`, marginLeft: paired ? 0 : `${layout.offset_percent}%`, textAlign: groupAlign ?? align }}>
       {block.type === "heading" ? <h2>{block.content.text}</h2>
@@ -91,7 +91,7 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
     flush();
     const body = item.kind === "about" ? listing.description : listing.businessAreas;
     if (item.hidden || !body && (!item.hasHeadingRow || item.headingHidden) && !item.imageBlock?.images?.length) continue;
-    const section = <section key={item.key} className="detail-section profile-content-block profile-editorial-section"
+    const section = <section key={item.key} className={`detail-section profile-content-block profile-editorial-section ${styles.editorialBlock}`}
       data-spacing-top={item.layout.spacing_top} data-spacing-bottom={item.layout.spacing_bottom}
       style={{ width: item.imageBlock ? "100%" : `${item.layout.width_percent}%`,
         marginLeft: item.imageBlock ? 0 : `${item.layout.offset_percent}%`, textAlign: item.layout.text_align }}>
