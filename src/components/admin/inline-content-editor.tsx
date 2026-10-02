@@ -2,18 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ProfileEditorialContent } from "@/components/portal/profile-content-blocks";
+import { ProfileEditorialContent, TextImageSection } from "@/components/portal/profile-content-blocks";
 import type { Listing } from "@/types/portal";
 import { InlineImageGridEditor } from "./inline-image-grid-editor";
 import { InlineBlockLayout } from "./inline-block-layout";
-import { BlockImageGrid } from "@/components/portal/profile-content-blocks";
 import type { MediaState } from "@/lib/company-media";
 import type { ContentBlockType, EditorialItem, HeadingSlot, ProfileContentBlock } from "@/lib/profile-content";
 import styles from "./inline-profile.module.css";
 import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment } from "@/lib/content-block-layout";
 import { useInlineEditorHistory } from "./inline-editor-history";
-import { contentBlockRows, contentColumn } from "@/lib/content-block-rows";
-import rowStyles from "@/components/portal/profile-content-blocks.module.css";
+import { contentBlockRows } from "@/lib/content-block-rows";
+import { PairedImageEditor } from "./paired-image-editor";
+import { EditorialTextarea } from "./editorial-textarea";
 import { adjacentImageLayout, type ImageShare, type ImageSide } from "@/lib/adjacent-image-layout";
 import { uploadPreparedAdminMedia } from "@/lib/admin-media-upload";
 import { AdjacentImagePreview } from "./adjacent-image-preview";
@@ -60,7 +60,7 @@ export function SectionPartFrame({ sectionKey, part, align, missing, saveAction,
   }
   const label = part === "heading" ? "Überschrift" : "Text";
   return <div className={styles.sectionPart} data-part={part} style={{ textAlign: previewAlign }}>
-    <strong>{label} separat bearbeiten</strong>
+    <span className={styles.partLabel}>{label}</span>
     {!removed && <div className={styles.partControls} role="group" aria-label={`${label} ausrichten`}>
       {(["left", "center", "right"] as const).map((choice) => <button key={choice} type="button" className="button"
         aria-label={`${label} ${choice === "left" ? "links" : choice === "center" ? "mittig" : "rechts"}`}
@@ -367,7 +367,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
           <label>{block.type === "heading" ? "Überschrift" : "Text"}
             {block.type === "heading"
               ? <input name="text" defaultValue={block.content.text} required maxLength={200} disabled={busy || history.busy} />
-              : <textarea name="text" defaultValue={block.content.text} required maxLength={10000} rows={5} disabled={busy || history.busy} />}
+              : <EditorialTextarea name="text" defaultValue={block.content.text} required maxLength={10000} aria-label="Text" disabled={busy || history.busy} />}
           </label>
           <div className={styles.blockActions}>
             <button className="button" disabled={busy || history.busy}>{busy ? "Wird gespeichert …" : "Block speichern"}</button>
@@ -379,16 +379,8 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
   }
 
   function renderPairedImage(block: ProfileContentBlock) {
-    return <div key={block.id} className={styles.pairedImageEditor}>
-      {block.images?.length ? <BlockImageGrid block={block} /> : <p>Bild auswählen und hochladen.</p>}
-      <details className={styles.pairedImageTools} open={!block.images?.length}>
-        <summary>Bild bearbeiten · Ausschnitt, Ersetzen und Beschreibung</summary>
-        <InlineImageGridEditor block={block} saveAction={saveImage} />
-      </details>
-      <button type="button" className="button" disabled={busy || history.busy}
-        onClick={() => { if (window.confirm("Bild neben diesem Abschnitt wirklich entfernen?"))
-          void saveBlock("delete", block.id); }}>Bild daneben entfernen</button>
-    </div>;
+    return <PairedImageEditor key={block.id} block={block} saveImage={saveImage}
+      busy={busy || history.busy} onRemove={saveBlock} />;
   }
 
   function renderAdjacentAction(textId: string, text: string, paired = false) {
@@ -480,12 +472,9 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
               onClick={() => void setPairLayout(text.id, image.id, side, share)}>{share} % Bild / {100 - share} % Text</button>)}
           </div>
         </div>}
-        <div className={rowStyles.contentRow}>
-          {columns.map((column) => <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
-            key={column[0].id} style={{ gridColumn: contentColumn(column[0]) }}>
-            {column.map((block) => block.type === "image_grid" ? renderPairedImage(block) : renderEditableBlock(block, true))}
-          </div>)}
-        </div>
+        <TextImageSection text={columns.flat().filter((block) => block.type !== "image_grid").map((block) => renderEditableBlock(block, true))}
+          image={image ? renderPairedImage(image) : null} textWidth={textLayout?.width_percent ?? 50}
+          imageWidth={imageLayout?.width_percent ?? 50} imageFirst={side === "left"} />
       </>;
       if (!image || !text) return <div key={row.left[0].id}>{pairContent}</div>;
       const pairMembers = columns.flat();
@@ -547,7 +536,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       for (const [key, value] of Object.entries(values)) form.set(key, value);
       return run(form);
     }
-    editorial.push(<InlineBlockLayout key={item.key} block={synthetic} sectionHidden={item.hidden}
+    editorial.push(<InlineBlockLayout key={item.key} block={synthetic} editorialPair={Boolean(shownImage)} sectionHidden={item.hidden}
       sectionLabel={item.kind === "about" ? "Beschreibung" : "Tätigkeitsbereiche"}
       busy={busy || history.busy} first={index === 0} last={index === items.length - 1} save={saveSpecial}>
       {item.hidden && <p role="status">Dieser Abschnitt ist öffentlich ausgeblendet.</p>}
@@ -566,16 +555,9 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
             {choice} % Bild / {100 - choice} % Text</button>)}
         </div>
       </div>}
-      {shownImage ? <div className={rowStyles.contentRow}>
-        <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
-          style={{ gridColumn: `${textLayout.offset_percent + 1} / span ${textLayout.width_percent}` }}>
-          {renderSpecial(item)}
-        </div>
-        <div className={`${rowStyles.contentColumn} ${styles.pairedEditorColumn}`}
-          style={{ gridColumn: contentColumn(shownImage) }}>
-          {renderPairedImage(shownImage)}
-        </div>
-      </div> : <>{renderSpecial(item)}{renderAdjacentAction(item.key,
+      {shownImage ? <TextImageSection text={renderSpecial(item)} image={renderPairedImage(shownImage)}
+        textWidth={textLayout.width_percent} imageWidth={normalizeBlockLayout(shownImage.config).width_percent}
+        imageFirst={normalizeBlockLayout(shownImage.config).offset_percent < textLayout.offset_percent} /> : <>{renderSpecial(item)}{renderAdjacentAction(item.key,
         item.kind === "about" ? listing.description ?? "" : listing.businessAreas ?? "")}</>}
     </InlineBlockLayout>);
   }

@@ -9,6 +9,7 @@ import type { ProfileValues, ProfileFormState } from "@/lib/company-profile";
 import type { MediaRow, MediaState, SignedMedia } from "@/lib/company-media";
 import styles from "./inline-profile.module.css";
 import { splitProfileContent, type ProfileContentBlock } from "@/lib/profile-content";
+import { EditorialTextarea } from "./editorial-textarea";
 import { FixedHeadingEditor, InlineContentEditor, SectionPartFrame } from "./inline-content-editor";
 import type { EditorialItem } from "@/lib/profile-content";
 import { InlineEditorHistoryContext, useInlineEditorHistoryController } from "./inline-editor-history";
@@ -53,7 +54,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
     } };
     return <label className={styles.field} htmlFor={common.id}>
       <span>{label}</span>
-      {multiline ? <textarea {...common} rows={name === "description" ? 7 : 3} /> : <input {...common} type={name === "public_email" ? "email" : name === "website" ? "url" : name === "phone" ? "tel" : "text"} required={name === "display_name"} />}
+      {multiline ? (name === "description" || name === "business_areas" ? <EditorialTextarea {...common} /> : <textarea {...common} rows={3} />) : <input {...common} type={name === "public_email" ? "email" : name === "website" ? "url" : name === "phone" ? "tel" : "text"} required={name === "display_name"} />}
     </label>;
   }
   const inlineFields: InlineProfileFields = {

@@ -175,3 +175,65 @@
   .blockToolbar { align-items: flex-start; }
   .layoutBlock .editableBlock { width: 100% !important; margin-left: 0 !important; }
 }
+
+/* Inline inputs inherit the editorial text measure instead of replacing it. */
+.pairControls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin: 0 0 12px; padding: 8px 0; border: 0; background: transparent; }
+.pairControls strong { flex-basis: 100%; font-size: 13px; }
+.pairControls button { padding: 6px 9px; min-height: 36px; font-size: 12px; }
+.pairedImageEditor { position: relative; padding: 0; border: 0; gap: 8px; }
+.imageDialog { width: min(920px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 20px; border: 1px solid var(--line); border-radius: 16px; color: var(--text); background: var(--white); }
+.imageDialog::backdrop { background: rgb(15 40 55 / .45); }
+.imageDialogHeader { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+.imageDialogHeader h2 { margin: 0; }
+.partLabel { font-size: 12px; color: var(--muted); }
+.contentEditor [data-text-image] .layoutBlock { padding: 0; margin: 0; border: 0; background: transparent; }
+.contentEditor [data-text-image] .editableBlock { padding: 0 !important; border: 0 !important; margin: 0 !important; }
+.contentEditor [data-text-image] .blockToolbar { padding: 0; margin: 0 0 8px; border: 0; background: transparent; }
+.contentEditor [data-text-image] .blockType { display: none; }
+.contentEditor [data-text-image] .sectionPart { padding: 0; border: 0; gap: 6px; }
+.contentEditor [data-text-image] .sectionPart > .partLabel { display: none; }
+.contentEditor [data-text-image] .specialSection { gap: 14px; }
+.contentEditor [data-text-image] .headingForm { margin: 0; }
+.contentEditor [data-text-image] .headingForm label > span,
+.contentEditor [data-text-image] .field > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.contentEditor [data-text-image] .blockForm label { font-size: 0; gap: 0; }
+.contentEditor [data-text-image] .headingForm input,
+.contentEditor [data-text-image] .blockForm input { font-size: clamp(22px, 2.2vw, 28px); font-weight: 700; line-height: 1.25; }
+.contentEditor [data-text-image] .headingForm input,
+.contentEditor [data-text-image] .blockForm input,
+.contentEditor [data-text-image] .blockForm textarea,
+.contentEditor [data-text-image] .field textarea { border: 1px solid transparent; background: transparent; padding: 0; border-radius: 3px; text-align: inherit; }
+.contentEditor [data-text-image] .blockForm textarea,
+.contentEditor [data-text-image] .field textarea { font-size: 16px; line-height: 1.7; resize: vertical; min-height: 1.7em; }
+.contentEditor [data-text-image] input:hover,
+.contentEditor [data-text-image] textarea:hover { border-color: var(--line); }
+.contentEditor [data-text-image] input:focus-visible,
+.contentEditor [data-text-image] textarea:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.contentEditor [data-text-image] .partControls button,
+.contentEditor [data-text-image] .sectionPart > button,
+.contentEditor [data-text-image] .blockActions button,
+.contentEditor [data-text-image] .headingForm > button { padding: 5px 8px; min-height: 34px; font-size: 12px; }
+
+.layoutBlock[data-editorial-pair="true"] { border: 0; padding: 0; background: transparent; }
+.layoutBlock[data-editorial-pair="true"] > .editableBlock { border: 0 !important; padding: 0 !important; }
+/* Part controls float around the text, never change the public text measure. */
+.contentEditor [data-text-image] .layoutBlock,
+.contentEditor [data-text-image] .sectionPart,
+.contentEditor [data-text-image] .headingForm,
+.contentEditor [data-text-image] .blockForm { position: relative; }
+.contentEditor [data-text-image] .blockToolbar,
+.contentEditor [data-text-image] .partControls { position: absolute; bottom: 100%; left: 0; z-index: 3; padding: 4px; margin: 0 0 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--white); opacity: 0; pointer-events: none; }
+.contentEditor [data-text-image] .blockActions,
+.contentEditor [data-text-image] .headingForm > button,
+.contentEditor [data-text-image] .sectionPart > button { position: absolute; top: 100%; right: 0; z-index: 3; margin-top: 4px; opacity: 0; pointer-events: none; }
+.contentEditor [data-text-image] .layoutBlock:is(:hover, :focus-within) > .blockToolbar,
+.contentEditor [data-text-image] .layoutBlock:is(:hover, :focus-within) .blockActions,
+.contentEditor [data-text-image] .sectionPart:is(:hover, :focus-within) .partControls,
+.contentEditor [data-text-image] .sectionPart:is(:hover, :focus-within) > button,
+.contentEditor [data-text-image] .sectionPart:is(:hover, :focus-within) .headingForm > button { opacity: 1; pointer-events: auto; }
+.contentEditor [data-text-image] .blockForm:has(input) { margin-bottom: 12px; }
+.contentEditor [data-text-image] .headingForm { margin-bottom: 12px; }
+.pairedImageEditor > .imageTileActions { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 2; margin: 0; }
+.pairedImageEditor > .imageTileActions button { font-size: 12px; min-height: 34px; padding: 6px 9px; background: var(--white); box-shadow: 0 2px 8px rgb(20 50 65 / .08); }
+.layoutBlock[data-editorial-pair="true"] > .editableBlock { position: relative; background: transparent !important; box-shadow: none !important; }
+.layoutBlock[data-editorial-pair="true"] > .editableBlock > .blockResizeGrip { position: absolute; right: 8px; bottom: 8px; z-index: 4; margin: 0; }
