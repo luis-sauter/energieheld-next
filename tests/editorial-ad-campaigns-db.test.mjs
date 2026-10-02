@@ -80,6 +80,35 @@ after(async () => db?.close());
 beforeEach(async () => db.exec("begin"));
 afterEach(async () => db.exec("rollback"));
 
+test("verified Reiseziele seed adds one profile-free editable editorial campaign and changes no existing data/security", async () => {
+  const id = '7f1c06f6-9946-4f0e-90bc-7fb9499ed010';
+  const image = `campaigns/${id}/creative/ee4dcb6a-2ccc-4c4a-9a83-9d278a80d010.webp`;
+  const sql = (await readFile(new URL('../supabase/migrations/20261002090000_seed_reiseziele_editorial_promo.sql', import.meta.url),'utf8')).replace(/^BEGIN;|^COMMIT;/gm,'');
+  const before = await snapshot(), rights = await securitySnapshot();
+  await denied(sql, [], /Upload the verified editorial creative first/);
+  await db.query("insert into storage.objects(bucket_id,name) values('ad-media',$1)",[image]);
+  await db.exec(sql);
+  const after = await snapshot();
+  const [campaign] = after.campaigns.filter(row => row.id === id);
+  assert.equal(campaign.profile_id, null);
+  assert.equal(campaign.is_editorial, true);
+  assert.equal(campaign.status, 'approved');
+  assert.equal(campaign.image_path, image);
+  assert.equal(after.targets.filter(row => row.campaign_id === id).length, 1);
+  after.campaigns = after.campaigns.filter(row => row.id !== id);
+  after.targets = after.targets.filter(row => row.campaign_id !== id);
+  after.objects = after.objects.filter(row => row.name !== image);
+  assert.deepEqual(after, before);
+  assert.deepEqual(await securitySnapshot(), rights);
+  await denied(sql, [], /already exists/);
+  assert.equal((await publicAds('portal_area','reiseziele')).filter(row => row.id === id).length, 1);
+  await actor(visitor);
+  assert.equal((await rows('select id from company_ad_campaigns where id=$1',[id])).length, 0);
+  await denied("select save_ad_campaign($1,'{}'::jsonb,false)",[id],/not editable/);
+  await actor();
+  assert.equal((await rows('select id from company_ad_campaigns where id=$1',[id])).length, 1);
+});
+
 async function create(targetType = "homepage", targetKey = null, placement = "top_banner") {
   await actor();
   const id = (await rows("select create_editorial_ad_campaign($1,$2,$3) as id", [targetType, targetKey, placement]))[0].id;

@@ -1,31 +1,64 @@
 import Image from "next/image";
 import Link from "next/link";
-import { DiscoveryCard } from "@/components/portal/reise-overview";
+import { EditorialImageCard } from "@/components/portal/editorial-image-card";
+import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
+import { MottoFilter } from "@/components/portal/motto-filter";
+import { mottoGroup, mottoPresentation } from "@/lib/motto-presentation";
 import { travelThemes } from "@/data/reiseportal-discovery";
 import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
 import { loadDiscoveryAdvertising } from "@/lib/discovery-advertising";
+import destinationStyles from "../reiseziele/reiseziele.module.css";
+import styles from "./mottoreisen.module.css";
 
+const imageRoot = "/reiseportal/redesign/mottoreisen";
+const inspirations = [
+  { title: "Aktiv in der Natur", text: "Wandern, Radfahren & mehr", group: "aktiv", image: "wanderurlaub" },
+  { title: "Einfach entspannen", text: "Wellness & Erholung", group: "erholung", image: "wellnessangebote" },
+  { title: "Reisen mit der Familie", text: "Gemeinsame Erlebnisse", group: "familie", image: "familienurlaub" },
+  { title: "Genuss & besondere Momente", text: "Zeit für Romantik zu zweit", group: "genuss", image: "romantik-zu-zweit" },
+];
 export const metadata = { title: "Mottoreisen" };
 export const dynamic = "force-dynamic";
-export default async function MottoTravelPage() {
-  const advertising = await loadDiscoveryAdvertising("/mottoreisen");
-  return <main id="hauptinhalt" className="container trade-page discovery-page motto-page">
-    <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
-      <Link href="/">Startseite</Link><span>›</span><span>Mottoreisen</span>
-    </nav>
-    <section className="motto-intro" aria-labelledby="motto-heading">
-      <div>
-        <p className="eyebrow">Reisen nach Interesse</p>
-        <h1 id="motto-heading">Mottoreisen</h1>
+export default async function MottoTravelPage({ searchParams }: { searchParams?: Promise<{ gruppe?: string }> } = {}) {
+  const [advertising, params] = await Promise.all([loadDiscoveryAdvertising("/mottoreisen"), searchParams ?? Promise.resolve({ gruppe: undefined })]);
+  return <main id="hauptinhalt" className={`${destinationStyles.page} ${styles.page}`}>
+    <section className={destinationStyles.hero} aria-labelledby="motto-heading">
+      <Image className={destinationStyles.heroImage} src={`${imageRoot}/hero.webp`} alt="Zwei Reisende mit Blick über einen sonnigen Alpensee"
+        fill sizes="(max-width: 600px) 1440px, 100vw" preload />
+      <div className={`${destinationStyles.heroContent} container`}>
+        <nav className={destinationStyles.breadcrumbs} aria-label="Brotkrumennavigation">
+          <Link href="/">Startseite</Link><span aria-hidden="true">›</span><span aria-current="page">Mottoreisen</span>
+        </nav>
+        <h1 id="motto-heading" className={destinationStyles.heading}>Mottoreisen</h1>
         <p>Vielleicht geht es Ihnen aber gar nicht so sehr um ein bestimmtes Ziel, sondern Sie möchten eher einem speziellen Motto folgen? Auch damit kann DAS-Reiseportal.com dienen.</p>
-        <p>Suchen Sie sich Ihr Traumziel unter den Golfreisen, den Wellnessangeboten, Geschäftsreisen oder unter den Reisen rund um das Wasser.</p>
+        <p className={styles.introDetail}>Suchen Sie sich Ihr Traumziel unter den Golfreisen, den Wellnessangeboten, Geschäftsreisen oder unter den Reisen rund um das Wasser.</p>
       </div>
-      <div className="motto-intro-image"><Image src="/reiseportal/mottoreisen-intro.jpg" alt="Originales Mottoreisen-Motiv aus dem Reiseportal" fill sizes="(max-width: 700px) 100vw, 50vw" priority /></div>
     </section>
-    <DiscoveryAdvertising data={advertising}><section className="section" aria-labelledby="motto-grid-heading">
-      <div className="section-heading"><div><h2 id="motto-grid-heading">Reisen nach Ihrem Motto</h2></div></div>
-      <div className="discovery-grid">{travelThemes.map((entry) =>
-        <DiscoveryCard key={entry.slug} entry={entry} basePath="/mottoreisen" />)}</div>
-    </section></DiscoveryAdvertising>
+    <div className="container">
+      <section className={styles.themes} aria-labelledby="motto-grid-heading">
+        <h2 id="motto-grid-heading" className={styles.visuallyHidden}>Reisen nach Ihrem Motto</h2>
+        <MottoFilter initialGroup={mottoGroup(params.gruppe)}>
+          <div className={styles.themeGrid}>
+            {travelThemes.map(entry => <div key={entry.slug} data-groups={mottoPresentation[entry.slug].groups.join(" ")}>
+              <EditorialImageCard compact title={entry.title} text="" href={`/mottoreisen/${entry.slug}`}
+                icon={<TravelThemeIcon slug={entry.slug} />} image={`${imageRoot}/${entry.slug}.webp`} alt={mottoPresentation[entry.slug].alt} />
+            </div>)}
+          </div>
+        </MottoFilter>
+      </section>
+      <div className={destinationStyles.advertising}>
+        <DiscoveryAdvertising data={advertising} compact>{null}</DiscoveryAdvertising>
+      </div>
+      <section aria-labelledby="inspiration-heading">
+        <div className={destinationStyles.sectionHeading}>
+          <h2 id="inspiration-heading" className={destinationStyles.sectionTitle}>Beliebte Reisemotive</h2>
+          <p>Lassen Sie sich von unseren vorhandenen Themen inspirieren.</p>
+        </div>
+        <div className={destinationStyles.regionGrid}>
+          {inspirations.map(item => <EditorialImageCard key={item.group} compact title={item.title} text={item.text}
+            href={`/mottoreisen?gruppe=${item.group}#themen`} image={`${imageRoot}/${item.image}.webp`} alt={mottoPresentation[item.image].alt} />)}
+        </div>
+      </section>
+    </div>
   </main>;
 }

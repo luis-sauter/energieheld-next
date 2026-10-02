@@ -306,9 +306,51 @@ test("four destinations and twelve themes have sourced images, links and detail 
     assert.match(detail, new RegExp(`${slug}\\.jpg`));
   }
   const overview = renderToStaticMarkup(await ThemeOverview());
-  assert.match(overview, /mottoreisen-intro\.jpg/);
+  assert.match(overview, /redesign\/mottoreisen\/hero\.webp/);
   assert.match(overview, /Vielleicht geht es Ihnen aber gar nicht so sehr um ein bestimmtes Ziel/);
   await assert.rejects(destinationRoute.default({ params: Promise.resolve({ slug: "unbekannt" }) }), /NOT_FOUND/);
+});
+
+test("motto redesign renders all twelve genuine themes and eight accessible presentation filters", async () => {
+  globalThis.__discoveryAdvertising = undefined;
+  const { mottoGroups, mottoPresentation } = await import('../src/lib/motto-presentation.ts');
+  assert.equal(mottoGroups.length, 8);
+  assert.deepEqual(Object.keys(mottoPresentation), travelThemes.map(entry => entry.slug));
+  for (const group of ['alle', ...mottoGroups.slice(1).map(item => item.id)]) {
+    const html = renderToStaticMarkup(await ThemeOverview({searchParams:Promise.resolve({gruppe:group})}));
+    assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
+    assert.match(html, new RegExp(`data-active-group="${group}"`));
+    assert.equal((html.match(/data-motto-group=/g) ?? []).length, 8);
+    for (const entry of travelThemes) {
+      assert.ok(html.includes(`href="/mottoreisen/${entry.slug}"`));
+      const image = readFileSync(new URL(`../public/reiseportal/redesign/mottoreisen/${entry.slug}.webp`, import.meta.url));
+      assert.ok(image.length < 400_000);
+      assert.ok(mottoPresentation[entry.slug].groups.length > 0);
+    }
+    assert.match(html, /Beliebte Reisemotive/);
+    assert.match(html, /aria-current="true"/);
+    assert.match(html, /role="status"/);
+    assert.doesNotMatch(html, /Freier Werbeplatz/);
+  }
+  const css = readFileSync(new URL('../src/app/(energieheld)/mottoreisen/mottoreisen.module.css', import.meta.url),'utf8');
+  assert.match(css, /repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(css, /max-width: 1000px[\s\S]*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /max-width: 600px[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
+});
+
+test("compact promo uses the campaign copy and editable image without changing ordinary image creatives", async () => {
+  globalThis.__discoveryAdvertising = { ads: [{id:'promo',placement:'top_banner',imageUrl:'/promo.webp',headline:'Südtirol – Natur und Genuss',body_text:'Portal-eigene Reiseinspiration',target_url:'https://das-reiseportal.com/reiseziele/suedtirol-italien'}],sidebarOrder:[] };
+  try {
+    const html = renderToStaticMarkup(await DestinationOverview());
+    assert.match(html, /Reiseinspiration/);
+    assert.match(html, /Portal-eigene Reiseinspiration/);
+    assert.match(html, /href="\/reiseziele\/suedtirol-italien"/);
+    assert.equal((html.match(/data-placement=/g) ?? []).length, 1);
+    globalThis.__discoveryAdvertising.ads[0].target_url = 'https://example.com/holiday';
+    const commercial = renderToStaticMarkup(await DestinationOverview());
+    assert.doesNotMatch(commercial, /Portal-eigene Reiseinspiration|Jetzt entdecken/);
+    assert.match(commercial, /href="https:\/\/example.com\/holiday"/);
+  } finally { globalThis.__discoveryAdvertising = undefined; }
 });
 
 test("travel search filters destinations and only source-tagged preview themes", () => {

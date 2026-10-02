@@ -1,0 +1,22 @@
+.filter { scroll-margin-top: 20px; }
+.navigation { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.navigation a { display: flex; align-items: center; justify-content: center; flex: 1 1 125px; gap: 10px; min-height: 48px; padding: 10px 14px; border-radius: 999px; background: #f1f7fa; color: #145d80; text-decoration: none; font-size: .9rem; white-space: nowrap; }
+.navigation svg { width: 24px; height: 24px; flex: 0 0 24px; }
+.navigation a:hover { box-shadow: inset 0 0 0 1px #217ca3; }
+.navigation a:focus-visible { outline: 3px solid #217ca3; outline-offset: 3px; }
+.filter[data-active-group="aktiv"] [data-groups]:not([data-groups~="aktiv"]),
+.filter[data-active-group="erholung"] [data-groups]:not([data-groups~="erholung"]),
+.filter[data-active-group="familie"] [data-groups]:not([data-groups~="familie"]),
+.filter[data-active-group="wasser"] [data-groups]:not([data-groups~="wasser"]),
+.filter[data-active-group="natur"] [data-groups]:not([data-groups~="natur"]),
+.filter[data-active-group="genuss"] [data-groups]:not([data-groups~="genuss"]),
+.filter[data-active-group="business"] [data-groups]:not([data-groups~="business"]) { display: none; }
+.filter[data-active-group="alle"] [data-motto-group="alle"],
+.filter[data-active-group="aktiv"] [data-motto-group="aktiv"],
+.filter[data-active-group="erholung"] [data-motto-group="erholung"],
+.filter[data-active-group="familie"] [data-motto-group="familie"],
+.filter[data-active-group="wasser"] [data-motto-group="wasser"],
+.filter[data-active-group="natur"] [data-motto-group="natur"],
+.filter[data-active-group="genuss"] [data-motto-group="genuss"],
+.filter[data-active-group="business"] [data-motto-group="business"] { background: #145d80; color: #fff; }
+.status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
