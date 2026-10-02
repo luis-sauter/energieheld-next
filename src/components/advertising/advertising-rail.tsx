@@ -14,15 +14,18 @@ const InlineOrderEditor = lazy(() => import("@/components/admin/sidebar-order-ed
 export function AdvertisingRail({
   ads,
   editor,
+  premium,
 }: {
   slots: SidebarSlot[];
   ads: ActiveAd[];
   editor?: ReactNode;
+  premium?: ReactNode;
 }) {
   const inline = useInlineBanners();
   return (
     <aside className="commercial-sidebar advertising-rail" aria-label="Werbeanzeigen">
       <p className="advertising-rail-label">Anzeige</p>
+      {premium}
       {editor ?? (inline?.reorder ? <Suspense fallback={<p role="status">Banner-Steuerung lädt …</p>}>
         <InlineOrderEditor ads={ads} slots={[...defaultSidebarOrder]} saveOrder={inline.reorder} />
       </Suspense> : (

@@ -83,5 +83,9 @@ test('structured zero state is honest while free text still submits globally wit
  const html=renderToStaticMarkup(createElement(ListingRow,{listing:item,categories:[],href:'/logo',travel:true}));
  assert.match(html,/row-logo--contain/);assert.match(html,/object-fit:contain/);
  const css=source('src/components/portal/travel-directory.module.css');
- assert.match(css,/220px/);assert.match(css,/72px/);assert.match(css,/background: rgb\(255 255 255 \/ 88%\)/);
+ assert.match(css,/220px/);assert.match(css,/72px/);assert.match(css,/background: rgb\(255 255 255 \/ 96%\)/);
+ assert.match(code,/premiumInSidebar showEmptySlots=\{Boolean\(bannerOptions\)\}/);
+ assert.match(css,/\.listing-row--premium \.travel-card-tags\) \{ margin-top: auto/);
+ assert.match(css,/\.listing-row--premium \.row-contact\).*align-self: stretch/);
+ assert.match(css,/height: 640px/);
  });

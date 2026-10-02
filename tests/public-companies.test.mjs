@@ -337,7 +337,9 @@ test("profile ordering stays intact while old global banner order cannot move fi
   );
   api([real], false, [], order, sidebar);
   const travel = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({}) }));
-  assert.deepEqual([...travel.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]).slice(0, 4), placements.slice(0, 4));
+  const travelPlacements = [...travel.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(travelPlacements.slice(0, 4), ["sidebar_top", "sidebar_middle", "sidebar_bottom", "sidebar_04"]);
+  assert.ok(!travelPlacements.includes("top_banner"), "A–Z does not invent an empty public Premium above the finder");
 });
 
 test("portal ads use the existing two-argument projection and exact public presentation scope", async () => {

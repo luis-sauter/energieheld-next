@@ -361,6 +361,8 @@
   grid-row: 2/4;
   align-self: center;
 }
+:global(.advertising-rail) .banner .empty { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+:global(.advertising-rail) .banner .empty a { grid-column: 1; grid-row: auto; }
 .banner .creative:not(.imageCreative) {
   min-height: 160px;
   grid-template-columns: 1fr 1.7fr;

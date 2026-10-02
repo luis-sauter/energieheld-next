@@ -44,6 +44,7 @@ export function AdvertisingLayout({
   editorEnabled = false,
   collapseEmpty = false,
   showEmptySlots = false,
+  premiumInSidebar = false,
 }: {
   children: ReactNode;
   ads?: ActiveAd[];
@@ -52,18 +53,18 @@ export function AdvertisingLayout({
   editorEnabled?: boolean;
   collapseEmpty?: boolean;
   showEmptySlots?: boolean;
+  premiumInSidebar?: boolean;
 }) {
-  const hasRail = showEmptySlots || !collapseEmpty || ads.some((ad) => ad.placement !== "top_banner" && !ad.suppressed && ad.imageUrl);
+  const hasRail = showEmptySlots || !collapseEmpty || ads.some((ad) => (premiumInSidebar || ad.placement !== "top_banner") && !ad.suppressed && ad.imageUrl);
   const top = ads.find((ad) => ad.placement === "top_banner");
+  const premiumSlot = ((!collapseEmpty && !premiumInSidebar) || showEmptySlots || (top?.imageUrl && !top.suppressed))
+    ? <CampaignSlot placement="top_banner" ad={top} /> : undefined;
   const layout = (
     <div className="commercial-layout">
-      {(!collapseEmpty || showEmptySlots || (top?.imageUrl && !top.suppressed)) && <CampaignSlot
-        placement="top_banner"
-        ad={top}
-      />}
+      {!premiumInSidebar && premiumSlot}
       <div className={`commercial-columns${hasRail ? "" : " commercial-columns--no-rail"}`}>
         <div className="commercial-content">{children}</div>
-        {hasRail && <AdvertisingRail slots={sidebarOrder} ads={ads} editor={sidebarEditor} />}
+        {hasRail && <AdvertisingRail slots={sidebarOrder} ads={ads} editor={sidebarEditor} premium={premiumInSidebar ? premiumSlot : undefined} />}
       </div>
     </div>
   );
