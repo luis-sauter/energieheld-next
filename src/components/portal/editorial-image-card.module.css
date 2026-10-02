@@ -5,6 +5,7 @@
 .content h3 { margin: 0 0 7px; font-size: clamp(1.25rem, 2vw, 1.65rem); line-height: 1.2; }
 .text { display: block; color: var(--portal-ink); font-size: 1rem; line-height: 1.6; }
 .arrow { flex: 0 0 44px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #eaf5fa; color: var(--portal-primary-deep); font-size: 1.7rem; }
+.icon { flex: 0 0 42px; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #edf8fd; color: #217ca3; }
 .card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgb(23 71 97 / 12%); }
 .card:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 5px; }
 .compact { padding: 0; overflow: hidden; border-radius: 13px; }

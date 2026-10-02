@@ -447,3 +447,20 @@
   background: var(--surface);
   border-left-color: var(--brand-accent);
 }
+
+/* Opt-in compact editorial presentation; regular ad creatives remain unchanged. */
+.editorialPromo .imageCreative { position: relative; overflow: hidden; background: #fff3e8; min-height: 260px; }
+.editorialPromo .imageCreative img { width: 100%; height: auto; object-fit: contain; }
+.editorialPromo .imageCreative::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #fff3e8 0%, rgb(255 243 232 / 96%) 25%, rgb(255 243 232 / 60%) 48%, transparent 72%); }
+.editorialPromo .promoCopy { position: absolute; z-index: 1; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; max-width: 55%; padding: clamp(18px, 3vw, 36px); color: #145d80; }
+.editorialPromo .promoCopy strong { font-size: clamp(1.3rem, 2.4vw, 2rem); line-height: 1.2; }
+.editorialPromo .promoCopy p { margin: 12px 0; color: #455f70; line-height: 1.5; }
+.editorialPromo .promoLabel { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; }
+.editorialPromo .promoCta { display: inline-flex; align-items: center; gap: 16px; background: #ff8a4c; color: #1a2731; border-radius: 8px; padding: 12px 18px; font-weight: 700; }
+@media (max-width: 700px) {
+  .editorialPromo .imageCreative img { min-height: 0; }
+  .editorialPromo .imageCreative::after { display: none; }
+  .editorialPromo .promoCopy { position: relative; max-width: none; background: #fff3e8; }
+}
+
+.editorialPromo .promoCta span { margin: 0; color: inherit; }

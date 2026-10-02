@@ -16,7 +16,7 @@ export function DiscoveryAdvertising({ data, children, compact = false }: { data
     return <InlineBannerProvider options={options}>
       {children}
       {(featured || options) && <div data-destination-promo>
-        <CampaignSlot placement={featured?.placement ?? "top_banner"} ad={featured} />
+        <CampaignSlot placement={featured?.placement ?? "top_banner"} ad={featured} editorialPromo />
       </div>}
       {options && <details data-destination-banner-management>
         <summary>Alle Bannerplätze verwalten</summary>

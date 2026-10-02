@@ -1,0 +1,16 @@
+.page { padding-bottom: clamp(48px, 6vw, 88px); }
+.themes { position: relative; margin-top: -30px; padding-bottom: 36px; }
+.visuallyHidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.themeGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.themeGrid > div { min-width: 0; }
+.themeGrid a { background: #fff; border-color: #e9f1f5; box-shadow: 0 8px 24px rgb(33 124 163 / 5%); border-radius: 14px; }
+.themeGrid a > span:first-child { aspect-ratio: 3 / 1; }
+.themeGrid a > div { padding: 10px; gap: 8px; min-height: 66px; }
+.themeGrid h3 { font-size: 1rem; margin: 0; }
+.themeGrid a > div > div { flex: 1; min-width: 0; }
+.themeGrid a > div > span:last-child { flex-basis: 28px; width: 28px; height: 28px; font-size: 1.3rem; }
+.themeGrid [data-groups~="natur"] a > div > span:first-child { background: #f0f8e5; color: #4b711f; }
+.themeGrid [data-groups~="erholung"] a > div > span:first-child { background: #fff1e8; color: #9d431c; }
+@media (max-width: 1000px) { .themeGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .themeGrid { grid-template-columns: minmax(0, 1fr); } .themes { margin-top: -24px; } }
+.page .introDetail { font-size: 1rem; margin-top: 12px; }

@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./editorial-image-card.module.css";
+import type { ReactNode } from "react";
 
-export function EditorialImageCard({ title, text, href, image, alt, compact = false, sizes }: {
+export function EditorialImageCard({ title, text, href, image, alt, compact = false, sizes, icon }: {
   title: string;
   text: string;
   href: string;
@@ -10,6 +11,7 @@ export function EditorialImageCard({ title, text, href, image, alt, compact = fa
   alt: string;
   compact?: boolean;
   sizes?: string;
+  icon?: ReactNode;
 }) {
   return <Link href={href} className={`${styles.card}${compact ? ` ${styles.compact}` : ""}`}>
     <span className={styles.image}>
@@ -19,7 +21,8 @@ export function EditorialImageCard({ title, text, href, image, alt, compact = fa
           : "(max-width: 600px) calc(100vw - 48px), (max-width: 1340px) 45vw, 600px")} />
     </span>
     <div className={styles.content}>
-      <div><h3>{title}</h3><span className={styles.text}>{text}</span></div>
+      {icon && <span className={styles.icon} aria-hidden="true">{icon}</span>}
+      <div><h3>{title}</h3>{text && <span className={styles.text}>{text}</span>}</div>
       <span className={styles.arrow} aria-hidden="true">→</span>
     </div>
   </Link>;

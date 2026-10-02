@@ -28,17 +28,25 @@ export function CampaignSlot({
   preview = false,
   showLabel = true,
   reordering = false,
+  editorialPromo = false,
 }: {
   placement: AdPlacementId;
   ad?: ActiveAd;
   preview?: boolean;
   showLabel?: boolean;
   reordering?: boolean;
+  editorialPromo?: boolean;
 }) {
   const inline = useInlineBanners();
   const ad = inline && !preview && !reordering && Object.hasOwn(inline.overrides, placement) ? inline.overrides[placement] ?? undefined : initialAd;
   if (!preview && !inline && ad?.suppressed) return null;
   const displayAd = !preview && (ad?.suppressed || !ad?.imageUrl) ? undefined : ad;
+  const destination = adTargetUrl(displayAd?.target_url ?? "");
+  const portalDestination = destination && new URL(destination).hostname === "das-reiseportal.com";
+  const promo = editorialPromo && portalDestination && displayAd?.imageUrl && displayAd.body_text;
+  // Portal-owned links stay on the current portal, including branch previews.
+  const href = promo && destination
+    ? new URL(destination).pathname + new URL(destination).search + new URL(destination).hash : destination ?? "#";
   const content = displayAd && (
     displayAd.imageUrl ? (
       <CreativeImage
@@ -59,7 +67,7 @@ export function CampaignSlot({
   );
   return (
     <section
-      className={`${styles.slot} ${placement === "top_banner" ? styles.banner : ""}`}
+      className={`${styles.slot} ${placement === "top_banner" ? styles.banner : ""} ${promo ? styles.editorialPromo : ""}`}
       data-placement={placement}
       aria-label={`Anzeige – ${adPlacements[placement]}`}
     >
@@ -78,11 +86,17 @@ export function CampaignSlot({
           <a
             className={`${styles.creative} ${displayAd.imageUrl ? styles.imageCreative : ""}`}
             data-size={placement === "top_banner" ? undefined : displayAd.banner_size}
-            href={adTargetUrl(displayAd.target_url) ?? "#"}
+            href={href}
             rel="sponsored noopener noreferrer"
             target="_blank"
           >
             {content}
+            {promo && <div className={styles.promoCopy}>
+              <span className={styles.promoLabel}>Reiseinspiration</span>
+              <strong>{displayAd.headline}</strong>
+              <p>{displayAd.body_text}</p>
+              <span className={styles.promoCta}>Jetzt entdecken <span aria-hidden="true">→</span></span>
+            </div>}
           </a>
         )
       ) : (
