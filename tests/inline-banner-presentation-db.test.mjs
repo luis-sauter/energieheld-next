@@ -389,3 +389,52 @@ test('reconciled defaults are additive/idempotent, preserve editorial state and 
  assert.equal((await rows("select legacy_placement from ad_slot_presentations where target_key='mottoreisen/natur-pur' and placement='sidebar_top'"))[0].legacy_placement,'sidebar_bottom');
  assert.deepEqual(await rows("select * from ad_slot_presentations where target_key is distinct from 'mottoreisen/natur-pur' or placement='top_banner' order by target_type,target_key,placement"),otherPagesBefore);
 });
+
+
+async function cropSnapshot() { await actor(admin,'postgres');const result=await snapshot();await actor();return result; }
+const cropMigration = async () => { await actor(admin,'postgres'); await db.exec((await readFile(new URL('../supabase/migrations/20261002160000_ad_presentation_crop.sql',import.meta.url),'utf8')).replace(/^BEGIN;|^COMMIT;/gm,''));await actor(); };
+const saveCrop = (id,ref,placement='top_banner',type='homepage',key=null,values=[24.5,73.5,1.7]) => rows('select save_inline_ad_crop($1,$2,$3,$4,$5,$6,$7,$8)',[type,key,placement,id,ref,...values]);
+test('crop migration is additive: old presentation, booking, search/media security unchanged; only admins can persist a crop',async()=>{
+ await actor(admin,'postgres');
+ await db.exec("insert into ad_slot_presentations(target_type,placement,size,legacy_placement) values('experts_directory','sidebar_top','large','sidebar_top')");
+ const data=await cropSnapshot(),security=await securitySnapshot(),settings=await rows('select * from ad_slot_presentations order by target_type,target_key,placement');
+ await cropMigration();
+ assert.deepEqual(await cropSnapshot(),data); assert.deepEqual(await securitySnapshot(),security);
+ const current=await rows('select * from ad_slot_presentations order by target_type,target_key,placement');
+ assert.deepEqual(current.map(row=>Object.fromEntries(Object.entries(row).filter(([key])=>!['focus_x','focus_y','zoom','crop_reference'].includes(key)))),settings);
+ assert.ok(current.every(row=>row.crop_reference===null&&row.focus_x===null&&row.focus_y===null&&row.zoom===null));
+ for(const [user,role] of [['','anon'],[owner,'authenticated'],[visitor,'authenticated']]){
+  await actor(user,role);
+  assert.equal((await rows("select has_table_privilege(current_user,'ad_slot_presentations','UPDATE') as allowed"))[0].allowed,false);
+  await denied("update ad_slot_presentations set focus_x=10",[],/permission denied/);
+  await denied("select save_inline_ad_crop('experts_directory',null,'sidebar_top',null,'legacy:city-apart-square',20,30,1.5)",[],/permission denied|not authorized/);
+  assert.equal((await rows("select focus_x from ad_slot_presentations where target_type='experts_directory'"))[0].focus_x,null);
+ }
+ await actor(); await saveCrop(null,'legacy:city-apart-square','sidebar_top','experts_directory');
+ const stored=(await rows("select * from ad_slot_presentations where target_type='experts_directory'"))[0];
+ assert.equal(Number(stored.focus_x),24.5);assert.equal(Number(stored.focus_y),73.5);assert.equal(Number(stored.zoom),1.7);
+ assert.equal(stored.size,'large');assert.equal(stored.legacy_placement,'sidebar_top');
+ await actor('','anon');assert.equal((await rows("select crop_reference from ad_slot_presentations where target_type='experts_directory'"))[0].crop_reference,'legacy:city-apart-square');
+ assert.deepEqual(await cropSnapshot(),data); assert.deepEqual(await securitySnapshot(),security);
+});
+test('editorial/company crop binds exact page, booking source and current image; shared creatives remain protected',async()=>{
+ await cropMigration();
+ const c=await create();const uploaded=await save(c);await approve(c.id);await actor();await presentation(c.id,'medium');
+ const data=await cropSnapshot(),security=await securitySnapshot();
+ const ref='campaign:'+c.id+':'+uploaded.image_path;
+ await saveCrop(c.id,ref);
+ assert.deepEqual(await cropSnapshot(),data);assert.deepEqual(await securitySnapshot(),security);
+ await denied('select save_inline_ad_crop($1,null,$2,$3,$4,20,30,1.5)',['experts_directory','top_banner',c.id,ref],/wrong banner context/);
+ await denied('select save_inline_ad_crop($1,null,$2,$3,$4,20,30,1.5)',['homepage','sidebar_top',c.id,ref],/wrong banner context/);
+ await denied("select save_inline_ad_crop('homepage',null,'top_banner',$1,$2,20,30,1.5)",[c.id,'campaign:'+c.id+':old-image'],/wrong banner context/);
+ for(const values of [[-1,50,1],[50,101,1],[50,50,3.1],[22.22,50,1],[null,50,1]])
+  await denied("select save_inline_ad_crop('homepage',null,'top_banner',$1,$2,$3,$4,$5)",[c.id,ref,...values],/check constraint/);
+ await actor(admin,'postgres');await db.query("insert into company_ad_campaign_targets(campaign_id,target_type,placement) values($1,'experts_directory','sidebar_top')",[c.id]);
+ await actor();await denied("select save_inline_ad_crop('homepage',null,'top_banner',$1,$2,20,30,1.5)",[c.id,ref],/wrong banner context/);
+ // A booked single-target company creative uses the same narrow, admin-only presentation operation.
+ const company=data.campaigns.find(row=>!row.is_editorial&&row.image_path);
+ const target=data.targets.find(row=>row.campaign_id===company.id);
+ await presentation(company.id,'small',true,null,target.placement);const before=await cropSnapshot();
+ await saveCrop(company.id,'campaign:'+company.id+':'+company.image_path,target.placement);
+ assert.deepEqual(await cropSnapshot(),before);
+});

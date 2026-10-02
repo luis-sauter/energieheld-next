@@ -8,8 +8,10 @@ import type { InlineBannerOptions, InlineBanner } from "@/lib/inline-ad-context"
 import { InlineBannerContext } from "./inline-banner-context";
 import { CampaignSlot } from "./campaign-view";
 import styles from "./inline-banner-editor.module.css";
-import { bannerSizes, type BannerSize } from "@/lib/banner-presentation";
+import { bannerCropRatio, bannerSizes, type BannerSize } from "@/lib/banner-presentation";
 import { BannerSearchFields } from './banner-search-fields';
+import { ImageCropControls } from "../admin/image-crop-controls";
+import { imageCropStyle, normalizeImageCrop, type ImageCrop } from "@/lib/image-crop";
 import type { BannerSearchMetadata } from '@/lib/banner-search-metadata';
 
 export function InlineBannerProvider({ options, children }: { options?: InlineBannerOptions; children: ReactNode }) {
@@ -36,6 +38,7 @@ export function InlineBannerProvider({ options, children }: { options?: InlineBa
     if (Object.hasOwn(overrides, placement)) {
       const updated = overrides[placement];
       return updated ? { id: updated.id, placement, target_url: updated.target_url, imageUrl: updated.imageUrl,
+        crop: updated.crop, image_width: updated.image_width, image_height: updated.image_height, mobile_image: updated.mobile_image,
         shared: options!.banners.find(item => item.id === updated.id)?.shared ?? false,
         metadata: updated.metadata ?? options!.banners.find(item => item.id === updated.id)?.metadata,
         source: updated.source === "legacy" ? "legacy" : "campaign",
@@ -91,12 +94,19 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
   const [url, setUrl] = useState(selected.banner?.target_url ?? "");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState(selected.banner?.imageUrl ?? "");
+  const [crop, setCrop] = useState(() => normalizeImageCrop(selected.banner?.crop));
+  const [cropDirty, setCropDirty] = useState(false);
+  const [naturalRatio, setNaturalRatio] = useState<number | null>(selected.banner?.image_width && selected.banner.image_height ? selected.banner.image_width / selected.banner.image_height : null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(options.error ?? "");
   const [notice, setNotice] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [metadata, setMetadata] = useState<BannerSearchMetadata>(selected.banner?.metadata ?? { name: '', postal_code: '', city: '', term_keys: [] });
   const metadataOnly = Boolean(selected.banner?.source === 'campaign' && selected.banner.shared);
+  const originalMetadata = selected.banner?.metadata;
+  const metadataUnchanged = originalMetadata && metadata.name === originalMetadata.name &&
+    metadata.postal_code === originalMetadata.postal_code && metadata.city === originalMetadata.city &&
+    JSON.stringify([...metadata.term_keys].sort()) === JSON.stringify([...originalMetadata.term_keys].sort());
   const blocked = Boolean(options.availability[placement] && placement !== selected.banner?.placement);
   const canRemove = Boolean(selected.banner?.editorial || source === "legacy" || (selected.banner?.source === "legacy" && source === "campaign"));
   useEffect(() => {
@@ -120,9 +130,14 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
     try {
       const form = mutationForm();
       if (metadataOnly || (selected.banner && !file && url === selected.banner.target_url && size === (selected.banner.size ?? 'large'))) {
-        const result = await options.saveMetadata?.(form);
-        if (!result?.success) { setError(result?.error ?? 'Die Suchdaten konnten nicht gespeichert werden.'); return; }
-        onMetadataSaved();
+        if (!cropDirty || metadataOnly || !metadataUnchanged) {
+          const result = await options.saveMetadata?.(form);
+          if (!result?.success) { setError(result?.error ?? 'Die Suchdaten konnten nicht gespeichert werden.'); return; }
+        }
+        if (cropDirty && !metadataOnly) {
+          if (!await persistCrop(form)) return;
+          onSaved(currentPreview(), metadata);
+        } else onMetadataSaved();
         return;
       }
       if (file) {
@@ -137,11 +152,33 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
       }
       const result = await options.save(form);
       if (!result.success || !result.ad) { setError(result.error ?? "Das Banner konnte nicht gespeichert werden."); return; }
-      onSaved(result.ad, metadata);
+      if (cropDirty) {
+        setFile(null); setCampaignId(result.ad.source === "legacy" ? "" : result.ad.id);
+        setSource(result.ad.source === "legacy" ? "legacy" : "campaign");
+        form.set("campaign_id", result.ad.source === "legacy" ? "" : result.ad.id);
+        if (result.ad.source !== "legacy") form.delete("legacy_id");
+        if (!await persistCrop(form)) return;
+      }
+      onSaved({ ...result.ad, crop: cropDirty ? crop : !file ? selected.banner?.crop : undefined }, metadata);
     } catch { setError("Speichern ist gerade nicht möglich. Bitte versuchen Sie es erneut."); }
     finally { busyRef.current = false; setBusy(false); }
   }
 
+  function currentPreview(): ActiveAd {
+    return { id: campaignId || selected.banner?.id || "", placement, image_path: null, imageUrl: preview,
+      headline: metadata.name, body_text: null, target_url: url, banner_size: size,
+      image_width: selected.banner?.image_width, image_height: selected.banner?.image_height, mobile_image: selected.banner?.mobile_image,
+      source: source === "legacy" ? "legacy" : "campaign", crop: cropDirty ? crop : selected.banner?.crop };
+  }
+  async function persistCrop(form: FormData) {
+    form.set("focus_x", String(crop.focus_x)); form.set("focus_y", String(crop.focus_y)); form.set("zoom", String(crop.zoom));
+    const result = await options.saveCrop?.(form);
+    if (!result?.success) { setError(result?.error ?? "Der Bildausschnitt konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."); return false; }
+    return true;
+  }
+  function changeCrop(next: ImageCrop | ((old: ImageCrop) => ImageCrop)) {
+    setCropDirty(true); setCrop(next);
+  }
   function mutationForm() {
     const form = new FormData();
     form.set("campaign_id", campaignId); form.set("placement", placement);
@@ -160,7 +197,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
       if (!result.success) { setError(result.error || "Entfernen ist gerade nicht möglich."); return; }
       if (result.removed) { onRemoved(result.warning); return; }
       if (result.ad) {
-        setFile(null); setPreview(""); setSource("campaign"); setCampaignId(result.ad.id);
+        setFile(null); setPreview(""); setCrop(normalizeImageCrop(null)); setCropDirty(false); setSource("campaign"); setCampaignId(result.ad.id);
         if (fileInput.current) fileInput.current.value = "";
         setNotice(result.warning || result.success); onChanged(result.ad);
       }
@@ -173,6 +210,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
     if (!["image/jpeg", "image/png", "image/webp"].includes(next.type) || next.size <= 0 || next.size > 5242880) {
       setError("Bitte wählen Sie JPEG, PNG oder WebP mit maximal 5 MB."); return;
     }
+    setCrop(normalizeImageCrop(null)); setCropDirty(false); setNaturalRatio(null);
     setFile(next);
     setPreview(URL.createObjectURL(next));
     setError("");
@@ -194,6 +232,22 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
         {preview && selected.banner && canRemove &&
           <button type="button" className="button" disabled={Boolean(options.error)} onClick={() => remove("image")}>Bild entfernen</button>}
         <small>JPEG, PNG oder WebP · maximal 5 MB</small>
+        {preview && !metadataOnly && <>
+          {/* Determine the actual Premium ratio, including a newly selected local image. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={preview} alt="" hidden onLoad={event => {
+            const image = event.currentTarget;
+            if (image.naturalWidth && image.naturalHeight) setNaturalRatio(image.naturalWidth / image.naturalHeight);
+          }} />
+          {(placement !== "top_banner" || naturalRatio) && <ImageCropControls crop={crop} setCrop={changeCrop}
+            ratio={bannerCropRatio(size, placement, naturalRatio ?? 1)} alt={metadata.name || "Banner"} disabled={busy || Boolean(options.error)}
+            renderImage={value => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={preview} alt={metadata.name || "Banner"} draggable={false}
+                style={{ ...imageCropStyle(value), display: "block", width: "100%", height: "100%", position: "absolute", inset: 0 }} />
+            )} />}
+          {!cropDirty && !selected.banner?.crop && <small>Der Ausschnitt wird erst gespeichert, wenn Sie ihn bearbeiten. Bis dahin bleibt das vollständige Bild sichtbar.</small>}
+        </>}
         <label>Ziel-URL<input type="url" required maxLength={2048} value={url} placeholder="https://" onChange={(event) => setUrl(event.target.value)} /></label>
         <label>Bannergröße<select value={size} onChange={(event) => setSize(event.target.value as BannerSize)}>
           {Object.entries(bannerSizes).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
@@ -207,7 +261,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
       </fieldset>
       {blocked && <p className={styles.hint}>Dieser Platz ist bereits belegt oder angefragt. Bitte wählen Sie einen freien Bannerplatz.</p>}
       {preview && <InlineBannerContext.Provider value={null}><CampaignSlot placement={placement} preview
-        ad={{ id: campaignId, placement, image_path: null, imageUrl: preview, headline: "Banner-Vorschau", body_text: null, target_url: url, banner_size: size }} /></InlineBannerContext.Provider>}
+        ad={{ ...currentPreview(), crop: cropDirty ? crop : !file ? selected.banner?.crop : undefined }} /></InlineBannerContext.Provider>}
       {!preview && selected.banner && <p className={styles.hint}>Ohne Bild wird das Banner öffentlich nicht angezeigt. Sie können hier jederzeit ein Bild hinzufügen.</p>}
       {notice && <p role="status">{notice}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}

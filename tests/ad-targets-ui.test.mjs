@@ -364,7 +364,10 @@ test("top and sidebar image creatives are linked banners without public text car
   assert.match(empty, /Freier Werbeplatz|Werbemöglichkeiten entdecken/);
   const css = readFileSync(new URL("../src/components/advertising/advertising.module.css", import.meta.url), "utf8");
   assert.match(css, /\.imageCreative img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/);
-  assert.doesNotMatch(css, /object-fit:\s*cover|max-height:\s*220px/);
+  // Cover is opt-in crop only; unedited creatives retain the original contain rules.
+  const cropCss = css.slice(css.indexOf('.imageCreative .cropFrame'));
+  assert.doesNotMatch(css.slice(0, css.indexOf('.imageCreative .cropFrame')), /object-fit:\s*cover|max-height:\s*220px/);
+  assert.match(cropCss, /\.cropImage[^}]*object-fit:\s*cover/);
 });
 
 test("signed creative images have no fixed dimensions for portrait, square or wide uploads", () => {

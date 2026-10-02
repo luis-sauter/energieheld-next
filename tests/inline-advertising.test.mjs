@@ -293,3 +293,25 @@ test('page-bound legacy IDs cannot edit a historical banner belonging to another
  for(const path of ['/mottoreisen/natur-pur','/mottoreisen','/unterkuenfte-a-z']){const db=client();const request=form({campaign_id:'',legacy_id:path==='/unterkuenfte-a-z'?'legacy-539':'city-apart-square',placement:'sidebar_top',original_placement:'sidebar_top',action:'banner'});assert.ok((await removeInlineAd(db,path,request)).error);assert.ok(!db.calls.some(c=>c.rpc==='save_inline_ad_presentation'||c.bucket));}
  const db=client();const saved=await saveInlineAd(db,'/mottoreisen/natur-pur',form({campaign_id:'',legacy_id:'legacy-539',placement:'sidebar_top',original_placement:'sidebar_top',size:'medium'}));assert.ok(saved.success);assert.equal(saved.ad.id,'legacy-539');assert.equal(saved.ad.image_width,350);assert.equal(saved.ad.banner_size,'medium');
 });
+
+
+test('crop-only mutations authorize the page/source and never alter campaign, booking, metadata or Storage',async()=>{
+ const {saveInlineAdCrop}=await import('../src/lib/inline-advertising.ts');
+ const settings=[{placement:'sidebar_top',display_source:'sidebar_bottom'},{placement:'sidebar_bottom',display_source:'sidebar_top'}];
+ const db=client({settings,campaign:{targets:[target('mottoreisen/wellnessangebote','sidebar_bottom')]}});
+ const before=structuredClone(db.row);
+ const saved=await saveInlineAdCrop(db,'/mottoreisen/wellnessangebote',form({placement:'sidebar_top',focus_x:'25',focus_y:'75',zoom:'1.5'}));
+ assert.ok(saved.success,saved.error);assert.deepEqual(db.row,before);
+ const writes=db.calls.filter(x=>x.rpc);assert.deepEqual(writes.map(x=>x.rpc),['save_inline_ad_crop']);
+ assert.equal(writes[0].data.p_placement,'sidebar_bottom');assert.equal(writes[0].data.p_reference,'campaign:'+id+':'+image);
+ assert.ok(!db.calls.some(x=>x.bucket));
+ for(const config of [{admin:false},{authenticated:false},{campaign:{targets:[target(),target('reiseziele/deutschland')]} }]){
+  const blocked=client(config);assert.ok((await saveInlineAdCrop(blocked,'/mottoreisen/wellnessangebote',form({focus_x:'25',focus_y:'75',zoom:'1.5'}))).error);
+  assert.ok(!blocked.calls.some(x=>x.rpc==='save_inline_ad_crop'));
+ }
+ const legacy=client();const result=await saveInlineAdCrop(legacy,'/unterkuenfte-a-z',form({campaign_id:'',legacy_id:'city-apart-square',placement:'sidebar_top',original_placement:'sidebar_top',focus_x:'20',focus_y:'80',zoom:'2'}));
+ assert.ok(result.success,result.error);assert.equal(legacy.calls.find(x=>x.rpc==='save_inline_ad_crop').data.p_reference,'legacy:city-apart-square');
+ assert.ok(!legacy.calls.some(x=>x.bucket));
+ assert.ok((await saveInlineAdCrop(client(),'/reiseziele/schweiz',form({focus_x:'20',focus_y:'80',zoom:'2'}))).error);
+ assert.ok((await saveInlineAdCrop(client(),'/mottoreisen/wellnessangebote',form({focus_x:'-1',focus_y:'80',zoom:'2'}))).error);
+});

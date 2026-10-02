@@ -1,9 +1,10 @@
+import { parseImageCrop } from "./image-crop";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { checkAdmin, isProfileId } from "./admin-review";
 import { prepareAdUpload, saveOwnAd, decideAd, signAdImages } from "./ad-campaigns";
 import { adPlacements, adTargetUrl, adTargetFormValue, berlinToday, type AdCampaign, type AdPlacementId } from "./ad-values";
 import { inlineAdContext, matchesInlineAdContext, type InlineBannerResult } from "./inline-ad-context";
-import { bannerSizes, displaySource, displayPlacement, legacyCreative, type BannerSize } from "./banner-presentation";
+import { bannerSizes, bannerCropReference, displaySource, displayPlacement, legacyCreative, type BannerSize } from "./banner-presentation";
 import { loadBannerPresentations } from "./banner-presentation-loader";
 import { legacyBannerKey, saveBannerMetadata, validateBannerMetadata } from './banner-search-metadata';
 
@@ -234,4 +235,22 @@ export const saveInlineAdMetadata = (client: SupabaseClient, path: string, form:
   const bound = await authorizedCampaign(client, path, input, false, true);
   if (!bound.campaign) return { error: bound.error };
   return saveBannerMetadata(client, input, bound.campaign.id);
+});
+
+// Only presentation columns change; use the same server-bound source and authorization.
+export const saveInlineAdCrop = (client: SupabaseClient, path: string, form: FormData) => atDisplaySource(client, path, form, async (client, path, input) => {
+ const crop = parseImageCrop(input.get('focus_x'), input.get('focus_y'), input.get('zoom'));
+ if (!crop) return { error: 'Bitte prüfen Sie den Bildausschnitt.' };
+ const legacy = !input.get('campaign_id') && input.get('legacy_id') ? await authorizedLegacy(client,path,input) : null;
+ const bound = legacy ? null : await authorizedCampaign(client,path,input,false);
+ const ad = legacy?.legacy ?? bound?.campaign;
+ const context = legacy?.context ?? bound?.context;
+ if (!ad || !context) return { error: legacy?.error ?? bound?.error ?? denied };
+ if (!legacy && !ad.image_path) return { error: 'Bitte fügen Sie zuerst ein Bild hinzu.' };
+ const saved = await client.rpc('save_inline_ad_crop', { p_target_type:context.target_type,p_target_key:context.target_key,
+  p_placement:input.get('placement'),p_campaign_id:legacy?null:ad.id,
+  p_reference:bannerCropReference({...ad,source:legacy?'legacy':'campaign'}),
+  p_focus_x:crop.focus_x,p_focus_y:crop.focus_y,p_zoom:crop.zoom });
+ return saved.error ? { error: 'Der Bildausschnitt konnte nicht gespeichert werden. Bitte laden Sie das Banner neu.' }
+  : {success:'Der Bildausschnitt wurde gespeichert.'};
 });

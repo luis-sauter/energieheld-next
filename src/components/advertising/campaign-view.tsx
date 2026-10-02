@@ -1,5 +1,7 @@
 "use client";
 
+import { imageCropStyle } from "@/lib/image-crop";
+import { bannerCropRatio } from "@/lib/banner-presentation";
 import Link from "next/link";
 import { useInlineBanners } from "./inline-banner-context";
 import {
@@ -14,10 +16,10 @@ import {
 import styles from "./advertising.module.css";
 import { energieheld } from "@/config/energieheld";
 
-function CreativeImage({ src, alt, width, height, mobile }: { src: string; alt: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"] }) {
+function CreativeImage({ src, alt, width, height, mobile, crop }: { src: string; alt: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"]; crop?: ActiveAd["crop"] }) {
   // Signed uploads have unknown dimensions; the browser must use each image's intrinsic ratio.
   // eslint-disable-next-line @next/next/no-img-element
-  const image = <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />;
+  const image = <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" className={crop ? styles.cropImage : undefined} style={crop ? imageCropStyle(crop) : undefined} />;
   return mobile ? <picture><source media="(max-width: 760px)" srcSet={mobile.imageUrl}
     width={mobile.width} height={mobile.height} />{image}</picture> : image;
 }
@@ -47,8 +49,11 @@ export function CampaignSlot({
   // Portal-owned links stay on the current portal, including branch previews.
   const href = promo && destination
     ? new URL(destination).pathname + new URL(destination).search + new URL(destination).hash : destination ?? "#";
+  const crop = displayAd?.crop;
   const content = displayAd && (
     displayAd.imageUrl ? (
+      crop ? <span className={styles.cropFrame}
+        style={crop && placement !== "top_banner" ? {aspectRatio:bannerCropRatio(displayAd.banner_size ?? "large",placement)} : undefined}>
       <CreativeImage
         key={displayAd.imageUrl}
         src={displayAd.imageUrl}
@@ -57,6 +62,10 @@ export function CampaignSlot({
         height={displayAd.image_height}
         mobile={displayAd.mobile_image}
       />
+      {/* The natural original reserves Premium geometry; crop applies only when explicitly saved. */}
+      <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline} mobile={displayAd.mobile_image} crop={crop} />
+      </span> : <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline}
+        width={displayAd.image_width} height={displayAd.image_height} mobile={displayAd.mobile_image} />
     ) : (
       <div>
         <strong>{displayAd.headline || "Ihre Überschrift"}</strong>

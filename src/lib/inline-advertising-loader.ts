@@ -4,7 +4,7 @@ import { checkAdmin } from "./admin-review";
 import { signAdImages } from "./ad-campaigns";
 import { berlinToday, adPlacements, type AdCampaign } from "./ad-values";
 import { inlineAdContext, matchesInlineAdContext, type InlineBannerOptions } from "./inline-ad-context";
-import { prepareInlineBanner, saveInlineBanner, removeInlineBanner, reorderInlineBanners, saveInlineBannerMetadata } from "../app/(energieheld)/inline-banner-actions";
+import { prepareInlineBanner, saveInlineBanner, removeInlineBanner, reorderInlineBanners, saveInlineBannerMetadata, saveInlineBannerCrop } from "../app/(energieheld)/inline-banner-actions";
 import { loadBannerPresentations } from "./banner-presentation-loader";
 import { displayPlacement, presentedBanners } from "./banner-presentation";
 import { loadBannerMetadata, legacyBannerKey } from './banner-search-metadata';
@@ -50,12 +50,14 @@ export async function loadInlineBannerOptions(path: string): Promise<InlineBanne
       target_url: row.target_url, imageUrl: row.imageUrl, shared: row.targets.length !== 1,
       source: "campaign" as const, editorial: Boolean(row.is_editorial),
       metadata: { ...(metadata.values.get(`campaign:${row.id}`) ?? { postal_code: '', city: '', term_keys: [] }), name: row.headline },
+      crop: presentedBanners([row], settings.rows, path).find(ad => ad.id === row.id)?.crop,
       size: settings.rows.find((setting) => setting.placement === row.placement)?.size,
     })), ...legacy.map((row) => ({ id: row.id, placement: row.placement, target_url: row.target_url,
-      imageUrl: row.imageUrl, shared: false, source: "legacy" as const, size: row.banner_size, legacy_source: row.legacy_source,
+      crop: row.crop, mobile_image:row.mobile_image, image_width:row.image_width,image_height:row.image_height, imageUrl: row.imageUrl, shared: false, source: "legacy" as const, size: row.banner_size, legacy_source: row.legacy_source,
       metadata: metadata.values.get(legacyKey(row.id)) ?? { name: row.headline, postal_code: '', city: '', term_keys: [] } }))], availability, terms: metadata.terms,
       error: loaded.error || booked.error || settings.error || mediaError ? "Banner und Platzbelegung konnten nicht vollständig geladen werden. Bitte laden Sie die Seite neu." : undefined,
       prepare: prepareInlineBanner.bind(null, path), save: saveInlineBanner.bind(null, path), remove: removeInlineBanner.bind(null, path),
+      saveCrop: saveInlineBannerCrop.bind(null, path),
       saveMetadata: saveInlineBannerMetadata.bind(null, path),
       reorder: reorderInlineBanners.bind(null, path) };
   } catch { return; }

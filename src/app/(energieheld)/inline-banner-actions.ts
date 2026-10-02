@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { prepareInlineAdUpload, saveInlineAd, removeInlineAd, saveInlineAdMetadata } from "@/lib/inline-advertising";
+import { prepareInlineAdUpload, saveInlineAd, removeInlineAd, saveInlineAdMetadata, saveInlineAdCrop } from "@/lib/inline-advertising";
 import { inlineAdContext } from "@/lib/inline-ad-context";
 import { reorderInlineBannerContents } from "@/lib/inline-banner-order";
 import type { SidebarSlot } from "@/lib/sidebar-order";
@@ -42,4 +42,11 @@ export async function saveInlineBanner(path: string, form: FormData) {
     if (inlineAdContext(path, true)) revalidatePath('/', 'layout');
     return result;
   } catch { return { error: "Speichern ist gerade nicht möglich. Bitte versuchen Sie es erneut." }; }
+}
+
+export async function saveInlineBannerCrop(path: string, form: FormData) {
+ try { const result=await saveInlineAdCrop(await createClient(),path,form);
+  if (result.success) revalidatePath(path);
+  return result;
+ } catch { return {error:'Der Bildausschnitt konnte gerade nicht gespeichert werden.'}; }
 }

@@ -23,6 +23,8 @@ export function matchesInlineAdContext(target: AdTarget, context: InlineAdContex
 }
 
 export type InlineBanner = {
+  crop?: import("./image-crop").ImageCrop;
+  image_width?: number; image_height?: number; mobile_image?: ActiveAd["mobile_image"];
   id: string;
   placement: AdPlacementId;
   target_url: string;
@@ -50,6 +52,7 @@ export type InlineBannerOptions = {
   availability: Record<string, string>;
   error?: string;
   terms?: import('./banner-search-metadata').BannerSearchTerm[];
+  saveCrop?: (form: FormData) => Promise<InlineBannerResult>;
   saveMetadata?: (form: FormData) => Promise<InlineBannerResult>;
   prepare: (form: FormData) => Promise<InlineBannerResult>;
   save: (form: FormData) => Promise<InlineBannerResult>;

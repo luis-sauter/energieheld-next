@@ -56,3 +56,22 @@ test("unavailable private creative never exposes its legacy fallback; legacy URL
   assert.equal(changed.find((row)=>row.placement==="sidebar_middle").target_url,"https://example.org/new");
   assert.equal(changed.find(x=>x.placement==="sidebar_top").target_url,"https://city-apart-dresden.de/");
 });
+
+
+test('opt-in crop follows its actual creative through fixed-slot display reorder, and stale/other-page images never inherit it',async()=>{
+ const {bannerCropRatio,bannerCropReference}=await import('../src/lib/banner-presentation.ts');
+ const base=legacyCreative('sidebar_top','sidebar_top','/unterkuenfte-a-z');
+ const crop={focus_x:25,focus_y:75,zoom:1.5};
+ const settings=[{placement:'sidebar_top',size:'large',legacy_hidden:false,display_source:'sidebar_bottom',...crop,crop_reference:bannerCropReference(base)},
+  {placement:'sidebar_bottom',size:'small',legacy_hidden:false,display_source:'sidebar_top'}];
+ assert.equal(presentedBanners([],[], '/unterkuenfte-a-z').find(x=>x.id===base.id).crop,undefined);
+ assert.deepEqual(presentedBanners([],settings,'/unterkuenfte-a-z').find(x=>x.placement==='sidebar_bottom').crop,crop);
+ const campaign={...base,id:'new',source:'campaign',image_path:'private/new'};
+ assert.equal(presentedBanners([campaign],settings,'/unterkuenfte-a-z').find(x=>x.id==='new').crop,undefined);
+ const explicit=[{...settings[0],crop_reference:bannerCropReference(campaign)}];
+ assert.deepEqual(presentedBanners([campaign],explicit,'/unterkuenfte-a-z').find(x=>x.id==='new').crop,crop);
+ assert.equal(presentedBanners([{...campaign,image_path:'private/replaced'}],explicit,'/unterkuenfte-a-z').find(x=>x.id==='new').crop,undefined);
+ assert.equal(presentedBanners([campaign],[],'/reiseziele').find(x=>x.id==='new').crop,undefined);
+ for(const [size,ratio] of [['small',350/120],['medium',350/235],['large',1]]) assert.ok(Math.abs(bannerCropRatio(size,'sidebar_top')-ratio)<1e-12);
+ assert.equal(bannerCropRatio('large','top_banner',2048/333),2048/333);
+});
