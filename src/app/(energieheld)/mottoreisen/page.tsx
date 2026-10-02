@@ -56,7 +56,7 @@ export default async function MottoTravelPage({ searchParams }: { searchParams?:
         </div>
         <div className={destinationStyles.regionGrid}>
           {inspirations.map(item => <EditorialImageCard key={item.group} compact title={item.title} text={item.text}
-            href={`/mottoreisen?gruppe=${item.group}#themen`} image={`${imageRoot}/${item.image}.webp`} alt={mottoPresentation[item.image].alt} />)}
+            href={`/mottoreisen?gruppe=${item.group}`} image={`${imageRoot}/${item.image}.webp`} alt={mottoPresentation[item.image].alt} />)}
         </div>
       </section>
     </div>
