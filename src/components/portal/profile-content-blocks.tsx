@@ -6,7 +6,22 @@ import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment } fr
 import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";
 import { imageCaptionPresentation } from "@/lib/image-caption";
 import styles from "./profile-content-blocks.module.css";
-import { contentBlockRows, contentColumn } from "@/lib/content-block-rows";
+import { contentBlockRows } from "@/lib/content-block-rows";
+
+// Shared public/editor composition; DOM order defines mobile reading order.
+export function TextImageSection({ text, image, textWidth, imageWidth, imageFirst, textAlign }: {
+  text: React.ReactNode; image: React.ReactNode; textWidth: number; imageWidth: number;
+  imageFirst: boolean; textAlign?: TextAlignment;
+}) {
+  const textColumn = <div key="text" className={styles.editorialText} style={{ textAlign }}>{text}</div>;
+  const imageColumn = <div key="image" className={styles.editorialImage}>{image}</div>;
+  return <div className={styles.editorialPair} data-text-image="true" data-image-side={imageFirst ? "left" : "right"}
+    style={{ gridTemplateColumns: imageFirst
+      ? `minmax(0, ${imageWidth}fr) minmax(0, ${textWidth}fr)`
+      : `minmax(0, ${textWidth}fr) minmax(0, ${imageWidth}fr)` }}>
+    {imageFirst ? [imageColumn, textColumn] : [textColumn, imageColumn]}
+  </div>;
+}
 
 export function ProfileBlockImage({ image, crop }: { image: ProfileBlockImage; crop?: ImageCrop }) {
   return <Image src={image.src} alt={imageCaptionPresentation(image).alt} fill unoptimized
@@ -48,10 +63,12 @@ export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[]
         text_align: normalizeTextBlockLayout(text?.config).text_align, ...text?.pair_layout });
       return <div key={row.left[0].id} className="profile-content-block" data-spacing-top={frame.spacing_top} data-spacing-bottom={frame.spacing_bottom}
         style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
-        <div className={styles.contentRow}>
-          {[row.left, row.right].map((column) => <div className={styles.contentColumn} key={column[0].id}
-            style={{ gridColumn: contentColumn(column[0]) }}>{column.map((block) => renderBlock(block, true, frame.text_align))}</div>)}
-        </div>
+        <TextImageSection
+          text={[...row.left, ...row.right].filter((block) => block.type !== "image_grid").map((block) => renderBlock(block, true))}
+          image={[...row.left, ...row.right].filter((block) => block.type === "image_grid").map((block) => <BlockImageGrid key={block.id} block={block} />)}
+          textWidth={normalizeBlockLayout(text?.config).width_percent}
+          imageWidth={normalizeBlockLayout([...row.left, ...row.right].find((block) => block.type === "image_grid")?.config).width_percent}
+          imageFirst={row.left[0].type === "image_grid"} textAlign={frame.text_align} />
       </div>;
     })}
   </>;
@@ -88,10 +105,9 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
     sections.push(<div key={item.key} className="profile-content-block"
       data-spacing-top={frame.spacing_top} data-spacing-bottom={frame.spacing_bottom}
       style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
-      <div className={styles.contentRow}>
-      <div className={styles.contentColumn} style={{ gridColumn: `${item.layout.offset_percent + 1} / span ${item.layout.width_percent}` }}>{section}</div>
-      <div className={styles.contentColumn} style={{ gridColumn: contentColumn(image) }}><BlockImageGrid block={image} /></div>
-      </div>
+      <TextImageSection text={section} image={<BlockImageGrid block={image} />}
+        textWidth={item.layout.width_percent} imageWidth={normalizeBlockLayout(image.config).width_percent}
+        imageFirst={normalizeBlockLayout(image.config).offset_percent < item.layout.offset_percent} />
     </div>);
   }
   flush();

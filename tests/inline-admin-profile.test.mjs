@@ -639,16 +639,18 @@ test("About and business areas show independent image controls and public side-b
       saveBlockImage: async () => ({}) }));
     assert.equal((html.match(/Abschnitt und Bild anordnen/g) ?? []).length, 2);
     assert.equal((html.match(/Bild daneben entfernen/g) ?? []).length, 2);
-    assert.equal((html.match(/Bild bearbeiten · Ausschnitt, Ersetzen und Beschreibung/g) ?? []).length, 2);
+    assert.equal((html.match(/<button[^>]*>Bild bearbeiten<\/button>/g) ?? []).length, 2);
+    assert.equal((html.match(/aria-labelledby="image-tools-/g) ?? []).length, 2);
     assert.doesNotMatch(html, /Bild daneben hinzufügen/);
-    assert.match(html, new RegExp(`grid-column:${textOffset + 1} / span ${100 - share}`));
-    assert.match(html, new RegExp(`grid-column:${imageOffset + 1} / span ${share}`));
+    const columns = `minmax(0, ${side === "left" ? share : 100 - share}fr) minmax(0, ${side === "left" ? 100 - share : share}fr)`;
+    assert.ok(html.includes(columns));
+    assert.match(html, new RegExp(`data-image-side="${side}"`));
     const publicHtml = renderToStaticMarkup(createElement(ProfileEditorialContent, {
       items: editorialItems(blocks, listing.name), listing,
     }));
     assert.equal((publicHtml.match(/<img /g) ?? []).length, 2);
-    assert.match(publicHtml, new RegExp(`grid-column:${imageOffset + 1} / span ${share}`));
-    assert.match(publicHtml, new RegExp(`grid-column:${textOffset + 1} / span ${100 - share}`));
+    assert.ok(publicHtml.includes(columns));
+    assert.match(publicHtml, new RegExp(`data-image-side="${side}"`));
   }
 });
 
@@ -671,7 +673,7 @@ test("field-bound heading, body and adjacent image keep independent editing and 
   }));
   assert.match(publicHtml, /<h2 style="text-align:center">Über Redaktionelle Firma<\/h2>/);
   assert.match(publicHtml, /<p style="text-align:right">Öffentliche Beschreibung<\/p>/);
-  assert.match(publicHtml, /grid-column:76 \/ span 25/);
+  assert.ok(publicHtml.includes("minmax(0, 75fr) minmax(0, 25fr)"));
   const editorHtml = renderToStaticMarkup(createElement(InlineProfileEditor, { listing, categories: [], values,
     media: { images: [] }, rows: [], contentBlocks: blocks, contentAvailable: true,
     imagesAvailable: true, initialEditing: true, saveProfile: async () => ({}),

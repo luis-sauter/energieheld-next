@@ -16,9 +16,10 @@ import type { MediaState } from "@/lib/company-media";
 import gridStyles from "@/components/portal/profile-content-blocks.module.css";
 import styles from "./inline-profile.module.css";
 
-export function InlineImageGridEditor({ block, saveAction }: {
+export function InlineImageGridEditor({ block, saveAction, onBusyChange }: {
   block: ProfileContentBlock;
   saveAction: (form: FormData) => Promise<MediaState>;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const router = useRouter();
   const history = useInlineEditorHistory();
@@ -73,6 +74,7 @@ export function InlineImageGridEditor({ block, saveAction }: {
     if (busyRef.current || history.busy) return false;
     busyRef.current = true;
     setBusy(true);
+    onBusyChange?.(true);
     setFeedback({});
     try {
       const result = await saveAction(data);
@@ -89,6 +91,7 @@ export function InlineImageGridEditor({ block, saveAction }: {
     } finally {
       busyRef.current = false;
       setBusy(false);
+      onBusyChange?.(false);
       setProgress("");
     }
   }
@@ -149,6 +152,7 @@ export function InlineImageGridEditor({ block, saveAction }: {
     if (busyRef.current || !file) return;
     busyRef.current = true;
     setBusy(true);
+    onBusyChange?.(true);
     setFeedback({});
     setProgress("Upload wird vorbereitet …");
     const prepare = form("prepare");
@@ -168,6 +172,7 @@ export function InlineImageGridEditor({ block, saveAction }: {
     } finally {
       busyRef.current = false;
       setBusy(false);
+      onBusyChange?.(false);
       setProgress("");
     }
   }

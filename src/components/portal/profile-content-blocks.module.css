@@ -18,3 +18,15 @@
   .contentColumn { grid-column: 1 / -1 !important; }
   .grid { grid-template-columns: minmax(0, 1fr) !important; }
 }
+
+/* Identical content surface in public view and editor; tools live outside it. */
+.editorialPair { display: grid; align-items: center; gap: clamp(20px, 3vw, 36px); padding: clamp(16px, 2.5vw, 28px); border: 1px solid #e4edf0; border-radius: 18px; background: #fffefd; }
+.editorialText, .editorialImage { min-width: 0; overflow-wrap: anywhere; }
+.editorialText { display: grid; gap: 14px; }
+.editorialText :global(.profile-content-block) { padding: 0 !important; border: 0 !important; background: transparent; box-shadow: none !important; margin: 0 !important; width: 100% !important; margin-left: 0 !important; }
+.editorialText h2 { margin: 0 0 12px; font-size: clamp(22px, 2.2vw, 28px); line-height: 1.25; color: var(--brand-primary); }
+.editorialText p { margin: 0; font-size: 16px; line-height: 1.7; white-space: pre-wrap; }
+.editorialImage .tile { border-radius: 12px; }
+@media (max-width: 640px) {
+  .editorialPair { grid-template-columns: minmax(0, 1fr) !important; gap: 20px; padding: 16px; }
+}

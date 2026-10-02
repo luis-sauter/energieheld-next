@@ -6,10 +6,10 @@ import { blockPositionOffset, dragBlockOffset, hasPersistedBlockLayout,
   normalizeBlockLayout, normalizeTextBlockLayout, type BlockSpacing, type TextAlignment } from "@/lib/content-block-layout";
 import styles from "./inline-profile.module.css";
 
-export function InlineBlockLayout({ block, busy, first, last, save, children, sectionHidden, sectionLabel, pairedPart = false }: {
+export function InlineBlockLayout({ block, busy, first, last, save, children, sectionHidden, sectionLabel, pairedPart = false, editorialPair = false }: {
   block: ProfileContentBlock; busy: boolean; first: boolean; last: boolean;
   save: (intent: string, blockId: string, values?: Record<string, string>) => Promise<boolean>;
-  children: ReactNode; sectionHidden?: boolean; sectionLabel?: string; pairedPart?: boolean;
+  children: ReactNode; sectionHidden?: boolean; sectionLabel?: string; pairedPart?: boolean; editorialPair?: boolean;
 }) {
   const special = block.id.startsWith("section:");
   const pair = block.id.startsWith("pair:");
@@ -113,7 +113,7 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
   const spacings: { value: BlockSpacing; label: string }[] = [
     { value: "small", label: "klein" }, { value: "normal", label: "normal" }, { value: "large", label: "groß" },
   ];
-  return <div className={styles.layoutBlock} data-pair={pair || undefined}>
+  return <div className={styles.layoutBlock} data-pair={pair || undefined} data-editorial-pair={pair || editorialPair || undefined}>
     <div className={styles.blockToolbar} aria-label="Block bearbeiten">
       <strong className={styles.blockType}>Blocktyp: {pair ? "Text + Bild" : special ? sectionLabel ?? "Redaktioneller Abschnitt" : block.type === "heading" ? "Überschrift" : block.type === "text" ? "Text" : "Bild"}</strong>
       {pairedPart ? <>
