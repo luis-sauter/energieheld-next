@@ -1,0 +1,109 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync,existsSync} from 'node:fs';
+import {registerHooks,createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import {createElement} from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {transpileModule,ModuleKind,JsxEmit} from 'typescript';
+const require=createRequire(import.meta.url);
+const reactUrl=pathToFileURL(require.resolve('react')).href;
+let states=[],cursor=0;
+globalThis.__cropHooks={state(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>states[i]=typeof value==='function'?value(states[i]):value];}};
+registerHooks({
+ resolve(specifier,context,next){
+  if(specifier==='react' && context.parentURL?.endsWith('.tsx'))return{shortCircuit:true,url:'data:text/javascript,'+encodeURIComponent(`import * as R from ${JSON.stringify(reactUrl)};export const createContext=R.createContext,useContext=R.useContext;export const useState=v=>globalThis.__cropHooks.state(v),useRef=v=>({current:v}),useEffect=()=>{};`)};
+  if(specifier==='next/navigation')return{shortCircuit:true,url:'data:text/javascript,export function useRouter(){return {refresh(){}}}'};
+  if(specifier==='next/link')return{shortCircuit:true,url:'data:text/javascript,export default "a"'};
+  if(specifier.endsWith('/supabase/client'))return{shortCircuit:true,url:'data:text/javascript,export function createClient(){throw Error("Unexpected upload")}'};
+  if(specifier.endsWith('.module.css'))return{shortCircuit:true,url:'data:text/javascript,export default new Proxy({}, {get:(_,key)=>key})'};
+  if(specifier.startsWith('@/')||specifier.startsWith('.')){
+   const url=specifier.startsWith('@/')?new URL('../src/'+specifier.slice(2),import.meta.url):new URL(specifier,context.parentURL);
+   for(const ext of ['.ts','.tsx'])if(existsSync(new URL(url.href+ext)))return next(url.href+ext,context);
+  }return next(specifier,context);
+ },load(url,context,next){if(url.endsWith('.tsx'))return{shortCircuit:true,format:'module',source:transpileModule(readFileSync(new URL(url),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX}}).outputText};return next(url,context);}
+});
+const {BannerSearchFields}=await import('../src/components/advertising/banner-search-fields.tsx');
+const {ImageCropControls}=await import('../src/components/admin/image-crop-controls.tsx');
+const {InlineBannerDialog}=await import('../src/components/advertising/inline-banner-editor.tsx');
+const {CampaignSlot}=await import('../src/components/advertising/campaign-view.tsx');
+function nodes(node){if(!node)return[];if(Array.isArray(node))return node.flatMap(nodes);if(typeof node!=='object')return[];return[node,...nodes(node.props?.children)];}
+const find=(tree,predicate)=>nodes(tree).find(predicate);
+const render=(props)=>{cursor=0;return InlineBannerDialog(props);};
+test('categories start collapsed, count selected values, retain multiple choices through closing/re-render/reload',()=>{
+ const terms=Array.from({length:50},(_,i)=>({term_key:'theme:t'+i,label:'Thema '+i,dimension:'theme'}));
+ let value={name:'Banner',postal_code:'12345',city:'Ort',term_keys:['theme:t1','theme:t2']};
+ const render=()=>BannerSearchFields({value,terms,onChange:next=>value=next});
+ let tree=render();assert.equal(find(tree,n=>n.type==='details').props.open,undefined);
+ assert.deepEqual(find(tree,n=>n.type==='summary').props.children,['Kategorien · ',2,' ausgewählt']);
+ find(tree,n=>n.type==='input'&&n.props.value==='theme:t3').props.onChange({target:{checked:true}});
+ tree=render();assert.equal(find(tree,n=>n.type==='input'&&n.props.value==='theme:t1').props.checked,true);
+ assert.equal(find(tree,n=>n.type==='summary').props.children[1],3);
+ find(tree,n=>n.type==='input'&&n.props.value==='theme:t2').props.onChange({target:{checked:false}});
+ tree=render();assert.deepEqual(value.term_keys,['theme:t1','theme:t3']);assert.equal(find(tree,n=>n.type==='details').props.open,undefined);
+ const css=readFileSync(new URL('../src/components/advertising/banner-search-fields.module.css',import.meta.url),'utf8');
+ assert.match(css,/summary:focus-visible/);assert.match(css,/max-height: 280px/);assert.match(css,/overflow-y: auto/);
+});
+test('shared profile/banner crop controls execute pan, arrows, zoom, center and reset, and block changes during save',()=>{
+ let crop={focus_x:50,focus_y:50,zoom:1};const setCrop=value=>crop=typeof value==='function'?value(crop):value;
+ const render=(disabled=false)=>ImageCropControls({crop,setCrop,ratio:350/120,disabled,renderImage:()=>null});
+ let tree=render();const frame=find(tree,n=>n.props?.onPointerDown);
+ const target={getBoundingClientRect:()=>({width:350,height:120}),setPointerCapture(){},hasPointerCapture:()=>true,releasePointerCapture(){}};
+ frame.props.onPointerDown({pointerType:'touch',pointerId:1,clientX:0,clientY:0,currentTarget:target,preventDefault(){}});
+ frame.props.onPointerMove({pointerId:1,clientX:35,clientY:-12,currentTarget:target});assert.equal(crop.focus_x,30);assert.equal(crop.focus_y,70);
+ frame.props.onPointerUp({pointerId:1,clientX:35,clientY:-12,currentTarget:target});
+ tree=render();find(tree,n=>n.props?.['aria-label']==='Zoom erhöhen').props.onClick();assert.equal(crop.zoom,1.1);
+ tree=render();find(tree,n=>n.type==='button'&&n.props.children==='Zentrieren').props.onClick();assert.deepEqual(crop,{focus_x:50,focus_y:50,zoom:1.1});
+ tree=render();find(tree,n=>n.props?.['aria-label']==='Bild nach rechts').props.onClick();assert.equal(crop.focus_x,45);
+ tree=render();find(tree,n=>n.type==='button'&&n.props.children==='Zurücksetzen').props.onClick();assert.deepEqual(crop,{focus_x:50,focus_y:50,zoom:1});
+ assert.ok(nodes(render(true)).filter(n=>n.type==='button').every(n=>n.props.disabled));
+});
+test('dialog crop is opt-in, sizes update immediately; crop-only save uses presentation action, shared banner hides crop',async()=>{
+ states=[];const calls=[];let saved;
+ const banner={id:'existing',source:'campaign',placement:'sidebar_top',imageUrl:'/existing.png',target_url:'https://example.org',size:'small',shared:false,editorial:true,metadata:{name:'Existing',postal_code:'',city:'',term_keys:[]}};
+ const props={selected:{placement:banner.placement,banner},options:{label:'Startseite',banners:[banner],availability:{},saveMetadata:async()=>{throw Error('Crop must not mutate search metadata');},saveCrop:async form=>{calls.push(Object.fromEntries(form));return{success:'ok'};},save:async()=>{throw Error('Crop must not save campaign');}},onSaved:ad=>saved=ad,onMetadataSaved(){},onClose(){}};
+ let tree=render(props);let controls=find(tree,n=>n.type===ImageCropControls);assert.equal(controls.props.ratio,350/120);
+ assert.equal(find(tree,n=>n.type===CampaignSlot).props.ad.crop,undefined);
+ find(tree,n=>n.type==='select'&&n.props.value==='small').props.onChange({target:{value:'medium'}});
+ tree=render(props);assert.ok(Math.abs(find(tree,n=>n.type===ImageCropControls).props.ratio-350/235)<1e-12);
+ find(tree,n=>n.type==='select'&&n.props.value==='medium').props.onChange({target:{value:'small'}});
+ controls=find(render(props),n=>n.type===ImageCropControls);controls.props.setCrop({focus_x:25,focus_y:75,zoom:1.5});
+ tree=render(props);assert.deepEqual(find(tree,n=>n.type===CampaignSlot).props.ad.crop,{focus_x:25,focus_y:75,zoom:1.5});
+ await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});
+ assert.equal(calls.length,1);assert.equal(calls[0].campaign_id,'existing');assert.equal(calls[0].focus_x,'25');assert.equal(calls[0].focus_y,'75');assert.equal(calls[0].zoom,'1.5');assert.deepEqual(saved.crop,{focus_x:25,focus_y:75,zoom:1.5});
+ states=[];tree=render({...props,selected:{placement:banner.placement,banner:{...banner,shared:true}}});assert.equal(find(tree,n=>n.type===ImageCropControls),undefined);
+ states=[];tree=render({...props,selected:{placement:banner.placement}});assert.equal(find(tree,n=>n.type===ImageCropControls),undefined);
+});
+
+
+
+test('new local image previews before upload and Premium uses natural ratio',async()=>{
+ states=[];let submitted=0;
+ const props={selected:{placement:'top_banner'},options:{label:'Reiseziele',banners:[],availability:{},saveMetadata:async()=>({success:'ok'}),saveCrop:async()=>({error:'Crop fehlgeschlagen'}),save:async()=>{submitted++;return{success:'ok',ad:{id:'new',placement:'top_banner',imageUrl:'/saved.png',target_url:'https://example.org',source:'campaign'}};}},onSaved(){throw Error('Must not report successful crop');},onClose(){}};
+ let tree=render(props);const input=find(tree,n=>n.type==='input'&&n.props.type==='file');
+ input.props.onChange({target:{files:[new File(['image'],'new.png',{type:'image/png'})]}});
+ tree=render(props);const measure=find(tree,n=>n.type==='img'&&n.props.hidden);assert.match(measure.props.src,/^blob:/);
+ measure.props.onLoad({currentTarget:{naturalWidth:2048,naturalHeight:333}});
+ tree=render(props);assert.equal(find(tree,n=>n.type===ImageCropControls).props.ratio,2048/333);
+ assert.match(find(tree,n=>n.type===CampaignSlot).props.ad.imageUrl,/^blob:/);
+ assert.equal(submitted,0,'local preview does not upload');
+ URL.revokeObjectURL(measure.props.src);
+});
+test('public rendering uses crop only when explicit, retains natural legacy and signed URLs, meaningful alt and clickable creative',()=>{
+ const ad={id:'test',placement:'sidebar_top',image_path:'private/path',imageUrl:'https://private.example/image?token=test',headline:'Banner name',body_text:null,target_url:'https://example.org',banner_size:'small',image_width:350,image_height:120};
+ const normal=renderToStaticMarkup(createElement(CampaignSlot,{placement:ad.placement,ad}));
+ assert.doesNotMatch(normal,/cropFrame|cropImage|scale\(/);assert.match(normal,/width="350" height="120"/);
+ const cropped=renderToStaticMarkup(createElement(CampaignSlot,{placement:ad.placement,ad:{...ad,crop:{focus_x:25,focus_y:75,zoom:1.5}}}));
+ assert.match(cropped,/cropFrame/);assert.match(cropped,/object-position:25% 75%/);assert.match(cropped,/scale\(1.5\)/);assert.match(cropped,/alt="Banner name"/);
+ assert.match(cropped,/rel="sponsored noopener noreferrer" target="_blank"/);assert.match(cropped,/private.example/);
+ assert.match(cropped,/loading="lazy" decoding="async"/);
+});
+
+test('crop save failure reports error and does not close or claim success',async()=>{
+ states=[];let closed=false;
+ const banner={id:'existing',source:'campaign',placement:'sidebar_top',imageUrl:'/existing.png',target_url:'https://example.org',size:'small',shared:false,metadata:{name:'Existing',postal_code:'',city:'',term_keys:[]}};
+ const props={selected:{placement:banner.placement,banner},options:{label:'Mottoreisen',banners:[banner],availability:{},saveCrop:async()=>({error:'Crop fehlgeschlagen'})},onSaved:()=>closed=true,onClose:()=>closed=true};
+ let tree=render(props);find(tree,n=>n.type===ImageCropControls).props.setCrop({focus_x:20,focus_y:80,zoom:2});
+ tree=render(props);await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});
+ assert.equal(closed,false);assert.equal(find(render(props),n=>n.props?.role==='alert').props.children,'Crop fehlgeschlagen');
+});

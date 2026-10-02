@@ -2,3 +2,8 @@
 .categories p { font-size: 14px; color: var(--muted); }
 .categories label { display: flex !important; align-items: center; gap: 10px !important; min-height: 44px; font-weight: 400 !important; }
 .categories input[type="checkbox"] { width: 20px !important; min-height: 20px !important; height: 20px; padding: 0; flex: 0 0 20px; }
+
+.disclosure { min-width: 0; border: 1px solid var(--line); border-radius: 8px; }
+.disclosure summary { cursor: pointer; padding: 12px; min-height: 44px; }
+.disclosure summary:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 2px; }
+.disclosure .categories { max-height: 280px; overflow-y: auto; border: 0; }

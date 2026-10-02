@@ -1,3 +1,4 @@
+import { hasPersistedImageCrop, type ImageCrop } from "./image-crop";
 import type { ActiveAd, AdPlacementId } from "./ad-values";
 import { legacyBannerPages } from "../data/legacy-banner-pages";
 import { defaultSidebarOrder } from "./sidebar-order";
@@ -9,7 +10,14 @@ const referenceHeights = { small: 120 / 350, medium: (120 + 350) / 2 / 350, larg
 export function bannerWidth(size: BannerSize, imageRatio: number) {
   return Math.min(1, referenceHeights[size] * imageRatio) * 100;
 }
+export function bannerCropRatio(size: BannerSize, placement: AdPlacementId, naturalRatio = 350 / 120) {
+  return placement === "top_banner" ? naturalRatio : 1 / referenceHeights[size];
+}
+export function bannerCropReference(ad: Pick<ActiveAd, "id" | "source" | "image_path">) {
+  return ad.source === "legacy" ? `legacy:${ad.id}` : `campaign:${ad.id}:${ad.image_path}`;
+}
 export type BannerPresentation = {
+  focus_x?: number | null; focus_y?: number | null; zoom?: number | null; crop_reference?: string | null;
   placement: AdPlacementId;
   size: BannerSize;
   legacy_hidden: boolean;
@@ -51,6 +59,9 @@ export function presentedBanners(ads: ActiveAd[], presentations: BannerPresentat
   });
   return slots.flatMap((placement) => {
     const ad = contents.find((item) => item.placement === displaySource(placement, presentations));
-    return ad ? [{ ...ad, placement }] : [];
+    const setting = presentations.find(row => row.placement === displaySource(placement, presentations));
+    const crop: ImageCrop | undefined = ad && setting?.crop_reference === bannerCropReference(ad) && hasPersistedImageCrop(setting)
+      ? { focus_x: setting.focus_x, focus_y: setting.focus_y, zoom: setting.zoom } : undefined;
+    return ad ? [{ ...ad, placement, crop }] : [];
   });
 }
