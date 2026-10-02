@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 registerHooks({
   resolve(specifier, context, next) {
+    if (specifier === "next/link" || specifier === "next/image") return { url: `data:text/javascript,export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`, shortCircuit: true };
     if (specifier.startsWith("@/") || specifier.startsWith(".")) {
       const base = specifier.startsWith("@/")
         ? new URL("../src/" + specifier.slice(2), import.meta.url) : new URL(specifier, context.parentURL);
@@ -54,7 +55,7 @@ const options = availableTravelFilters(listings, terms);
 const render = (values, mode = "directory") => renderToStaticMarkup(createElement(TravelFinder,
   { mode, listings, options, values, onChange() {} }));
 
-test("both routes use the same video finder and show actual initial totals", () => {
+test("both routes use the same finder and show actual initial totals", () => {
   const home = source("src/app/(energieheld)/page.tsx");
   assert.match(home, /<HomeTravelFinder listings=/);
   assert.match(home, /searchableThemes\.has\(entry\.slug\)/);
@@ -63,8 +64,10 @@ test("both routes use the same video finder and show actual initial totals", () 
   assert.match(source("src/components/portal/travel-finder.tsx"), /window\.location\.assign\(travelFilterUrl\(values\)\)/);
   assert.match(source("src/components/portal/travel-directory.tsx"), /<TravelFinder mode="directory"/);
   const html = render(readTravelFilterValues({}));
-  assert.match(html, /hero-loop\.mp4/);
-  assert.match(html, /Finde deinen passenden Urlaub/);
+  assert.match(html, /redesign\/unterkuenfte\/hero\.webp/);
+  assert.match(html, /Finde passende Unterkünfte/);
+  assert.doesNotMatch(html, /<video/);
+  assert.match(render(readTravelFilterValues({}), "home"), /hero-loop\.mp4/);
   assert.match(html, /2 Unterkünfte anzeigen/);
   assert.match(html, /aria-live="polite"/);
   assert.doesNotMatch(html, /Jahreszeit|Zeitraum/);
@@ -130,4 +133,18 @@ test('results remain a compact continuation and no separate header search entry 
   assert.match(page, /name="von"/); assert.match(page, /travelFilterParams/);
   assert.doesNotMatch(source('src/components/portal/chrome.tsx'), /Portalsuche öffnen|href="\/suche"/);
   assert.match(source('src/components/portal/travel-finder.tsx'), /popstate/);
+});
+
+test('structured directory submit scrolls to results and respects reduced motion', () => {
+  const previousWindow=globalThis.window, previousDocument=globalThis.document;
+  try {
+    for(const reduced of [true,false]) {
+      let scrolling;
+      globalThis.window={matchMedia(){return {matches:reduced}}};
+      globalThis.document={getElementById(id){assert.equal(id,'unterkunft-ergebnisse');return {scrollIntoView(options){scrolling=options}}}};
+      const form=formIn(TravelFinder({mode:'directory',listings,options,values:readTravelFilterValues({}),onChange(){}}));
+      form.props.onSubmit({preventDefault(){}});
+      assert.deepEqual(scrolling,{behavior:reduced?'instant':'smooth'});
+    }
+  } finally {globalThis.window=previousWindow;globalThis.document=previousDocument;}
 });

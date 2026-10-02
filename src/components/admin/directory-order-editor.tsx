@@ -15,6 +15,7 @@ export function DirectoryOrderRows({
   basePath = "/experten",
   showVerification = true,
   premiumFirst = false,
+  travelLabels,
   editing,
   busy,
   dragged,
@@ -29,6 +30,7 @@ export function DirectoryOrderRows({
   basePath?: string;
   showVerification?: boolean;
   premiumFirst?: boolean;
+  travelLabels?: Record<string, string>;
   editing: boolean;
   busy: boolean;
   dragged: string | null;
@@ -55,10 +57,10 @@ export function DirectoryOrderRows({
               <button type="button" aria-label={`Firma ${listing.name} nach unten`} disabled={busy || index === listings.length - 1 || (premiumFirst && (listing.directoryPackage === "premium") !== (listings[index + 1]?.directoryPackage === "premium"))}
                 onClick={() => onMove(index, index + 1)}>↓</button>
             </div>
-            <ListingRow listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} />
+            <ListingRow listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} travel={basePath === "/unterkuenfte"} travelLabels={travelLabels} />
           </div>
         ) : (
-          <ListingRow key={directoryItemKey(listing)} listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} />
+          <ListingRow key={directoryItemKey(listing)} listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} travel={basePath === "/unterkuenfte"} travelLabels={travelLabels} />
         )
       ))}
     </div>
@@ -73,6 +75,7 @@ export function DirectoryOrderEditor({
   basePath = "/experten",
   showVerification = true,
   premiumFirst = false,
+  travelLabels,
 }: {
   listings: Listing[];
   hiddenDemoKeys?: string[];
@@ -81,6 +84,7 @@ export function DirectoryOrderEditor({
   basePath?: string;
   showVerification?: boolean;
   premiumFirst?: boolean;
+  travelLabels?: Record<string, string>;
 }) {
   const router = useRouter();
   const { mode, setMode } = useDirectoryEditMode();
@@ -197,7 +201,7 @@ export function DirectoryOrderEditor({
       )}
       {message && !editing && <p className={styles.success} role="status">{message}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <DirectoryOrderRows listings={shown} categories={categories} basePath={basePath} showVerification={showVerification} premiumFirst={premiumFirst}
+      <DirectoryOrderRows listings={shown} categories={categories} basePath={basePath} showVerification={showVerification} premiumFirst={premiumFirst} travelLabels={travelLabels}
         editing={editing} busy={busy} dragged={dragged} target={target}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
         onMove={(from, to) => setDraft((ids) => moveDirectoryId(ids, from, to, groups))} />

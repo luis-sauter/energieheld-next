@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import type { Listing } from "@/types/portal";
 import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, type TravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { filterTravelListings, travelFacetCount, travelFilterParams, travelFilterUrl, type TravelFacet } from "@/lib/reiseportal-facets";
@@ -39,19 +41,20 @@ export function TravelFinder({ mode, listings, options, values, onChange, error 
   const reset = () => onChange(readTravelFilterValues({}));
 
   return <section className="travel-hero" aria-labelledby="travel-hero-title">
-    <video autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1}>
+    {mode === "directory" ? <Image src="/reiseportal/redesign/unterkuenfte/hero.webp" alt="" fill sizes="100vw" priority className="directory-hero-image" /> : <video autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1}>
       <source src="/reiseportal/hero-loop.mp4" type="video/mp4" />
-    </video>
+    </video>}
     <div className="travel-hero-content container">
-      <p className="eyebrow">DAS Reiseportal</p>
-      <h1 id="travel-hero-title">Finde deinen passenden Urlaub</h1>
-      <p>Sag uns, wie du reisen möchtest – wir zeigen dir passende Orte, Unterkünfte und Erlebnisse.</p>
+      {mode === "directory" && <nav className="breadcrumbs" aria-label="Brotkrumennavigation"><Link href="/">Startseite</Link><span>›</span><span>Unterkünfte A–Z</span></nav>}
+      <p className="eyebrow">{mode === "directory" ? "UNTERKÜNFTE A–Z" : "DAS Reiseportal"}</p>
+      <h1 id="travel-hero-title">{mode === "directory" ? "Finde passende Unterkünfte" : "Finde deinen passenden Urlaub"}</h1>
+      <p>{mode === "directory" ? "Hotels, Pensionen, Ferienwohnungen und mehr – entdecke besondere Orte für deinen nächsten Urlaub." : "Sag uns, wie du reisen möchtest – wir zeigen dir passende Orte, Unterkünfte und Erlebnisse."}</p>
       <form className="reise-finder" role="search" aria-label="Reisefinder" onSubmit={(event) => {
         event.preventDefault();
         if (portalQuery) { window.location.assign(travelSearchUrl(values, mode)); return; }
         if (count === 0 || error) return;
         if (mode === "home") window.location.assign(travelFilterUrl(values));
-        else document.getElementById("unterkunft-ergebnisse")?.scrollIntoView({ behavior: "smooth" });
+        else document.getElementById("unterkunft-ergebnisse")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
       }}>
         <div className="reise-finder-grid">
           {facets.filter(({ entries }) => entries.length > 0).map(({ key, label, all, entries }) =>

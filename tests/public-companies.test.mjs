@@ -959,7 +959,7 @@ test("database errors never expose demos in directory, detail or metadata", asyn
   }
 });
 
-test("real Basic directory keeps signed logo off the row while detail displays sorted gallery", async () => {
+test("travel Basic directory reuses real signed thumbnail while detail displays sorted gallery", async () => {
   api([
     {
       ...travelRow,
@@ -991,7 +991,10 @@ test("real Basic directory keeps signed logo off the row while detail displays s
     await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({ q: "Test Firma" }) }),
   );
   assert.match(directory, /listing-row--basic/);
-  assert.doesNotMatch(directory, /row-logo|alt="Logo von Test Firma"/);
+  assert.match(directory, /row-logo/);
+  assert.match(directory, /alt="Logo von Test Firma"/);
+  assert.match(directory, /token=temporary/);
+  assert.doesNotMatch(directory, /travel-premium-badge/);
   const detail = renderToStaticMarkup(
     await Detail({ params: Promise.resolve({ slug: row.slug }) }),
   );
