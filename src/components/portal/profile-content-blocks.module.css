@@ -1,4 +1,4 @@
-.frame { max-width: 100%; margin-inline: auto; }
+.frame { width: 100%; max-width: 100%; margin-inline: auto; }
 .contentRow { display: grid; grid-template-columns: repeat(100, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 0; column-gap: 0; }
 .contentColumn { min-width: 0; }
 .grid { display: grid; gap: 10px; width: 100%; min-width: 0; }
@@ -20,9 +20,9 @@
 }
 
 /* Identical content surface in public view and editor; tools live outside it. */
-.editorialPair { display: grid; align-items: center; gap: clamp(20px, 3vw, 36px); padding: clamp(16px, 2.5vw, 28px); border: 1px solid #e4edf0; border-radius: 18px; background: #fffefd; }
+.editorialPair { display: grid; align-items: center; gap: clamp(20px, 2.5vw, 32px); padding: clamp(12px, 1.5vw, 20px); border: 1px solid #edf1f2; border-radius: 12px; background: #fffefd; }
 .editorialText, .editorialImage { min-width: 0; overflow-wrap: anywhere; }
-.editorialText { display: grid; gap: 14px; }
+.editorialText { display: grid; gap: 0; width: 100%; max-width: 65ch; justify-self: center; }
 .editorialText :global(.profile-content-block) { padding: 0 !important; border: 0 !important; background: transparent; box-shadow: none !important; margin: 0 !important; width: 100% !important; margin-left: 0 !important; }
 .editorialText h2 { margin: 0 0 12px; font-size: clamp(22px, 2.2vw, 28px); line-height: 1.25; color: var(--brand-primary); }
 .editorialText p { margin: 0; font-size: 16px; line-height: 1.7; white-space: pre-wrap; }

@@ -11,15 +11,16 @@ import { useInlineEditorHistory } from "./inline-editor-history";
 import { InlineImageCropEditor } from "./inline-image-crop-editor";
 import { uploadPreparedAdminMedia } from "@/lib/admin-media-upload";
 import { moveImageId } from "@/lib/media-order";
-import { hasPersistedImageGridSize, imageGridSlots, normalizeImageGridConfig, resizeImageGridFromPointer } from "@/lib/image-grid-layout";
+import { hasPersistedImageGridSize, imageGridSlots, normalizeImageGridConfig, resizeImageGridFromPointer, editorialImageAspectRatio } from "@/lib/image-grid-layout";
 import type { MediaState } from "@/lib/company-media";
 import gridStyles from "@/components/portal/profile-content-blocks.module.css";
 import styles from "./inline-profile.module.css";
 
-export function InlineImageGridEditor({ block, saveAction, onBusyChange }: {
+export function InlineImageGridEditor({ block, saveAction, onBusyChange, editorial = false }: {
   block: ProfileContentBlock;
   saveAction: (form: FormData) => Promise<MediaState>;
   onBusyChange?: (busy: boolean) => void;
+  editorial?: boolean;
 }) {
   const router = useRouter();
   const history = useInlineEditorHistory();
@@ -49,6 +50,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange }: {
   const previewColumns = columnOverride?.base === columns ? columnOverride.value : columns;
   const resizeAvailable = hasPersistedImageGridSize(block.config);
   const [size, setSize] = useState(() => ({ width: config.width_percent, ratio: config.aspect_ratio }));
+  const displayRatio = editorial ? editorialImageAspectRatio({ ...config, aspect_ratio: size.ratio }) : size.ratio;
   const sizeRef = useRef(size);
   useEffect(() => {
     if (resizeDrag.current) return;
@@ -116,7 +118,8 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange }: {
   }
   function adjustSize(ratioChange: number) {
     const width = sizeRef.current.width;
-    const ratio = Math.max(0.6, Math.min(3, Math.round((sizeRef.current.ratio + ratioChange) * 100) / 100));
+    const minimum = editorial ? editorialImageAspectRatio({ ...config, aspect_ratio: 0.6 }) : 0.6;
+    const ratio = Math.max(minimum, Math.min(3, Math.round((displayRatio + ratioChange) * 100) / 100));
     preview(width, ratio);
     void saveSize(width, ratio);
   }
@@ -129,7 +132,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange }: {
     event.currentTarget.setPointerCapture(event.pointerId);
     resizeDrag.current = {
       pointerId: event.pointerId, x: event.clientX, y: event.clientY,
-      width: sizeRef.current.width, ratio: sizeRef.current.ratio,
+      width: sizeRef.current.width, ratio: displayRatio,
       parentWidth, tileWidth,
     };
   }
@@ -137,7 +140,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange }: {
     const drag = resizeDrag.current;
     if (!drag || event.pointerId !== drag.pointerId) return;
     const next = resizeImageGridFromPointer(drag, 0, event.clientY - drag.y);
-    preview(drag.width, next.ratio);
+    preview(drag.width, editorial ? editorialImageAspectRatio({ ...config, aspect_ratio: next.ratio }) : next.ratio);
   }
   function finishResize(event: ReactPointerEvent<HTMLButtonElement>, cancel = false) {
     const drag = resizeDrag.current;
@@ -231,7 +234,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange }: {
     <div ref={gridRef} className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={previewColumns}>
       {imageGridSlots(previewColumns, visibleImages).map((image, index) => image ? <figure key={image.id} className={styles.imageTile}
         data-block-image-id={image.id}>
-        <div className={gridStyles.tile} style={{ aspectRatio: size.ratio }}><ProfileBlockImage image={image} /></div>
+        <div className={gridStyles.tile} style={{ aspectRatio: displayRatio }}><ProfileBlockImage image={image} /></div>
         {imageCaptionPresentation(image).caption && <figcaption className={gridStyles.caption}>{imageCaptionPresentation(image).caption}</figcaption>}
         <div className={styles.imageTileActions}>
           <button type="button" className={`${styles.dragHint} ${styles.imageReorderHandle}`}
@@ -275,7 +278,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange }: {
           if (activeCropId === image.id) setActiveCropId(null);
           const data = form("remove"); data.set("image_id", image.id); void run(data);
         }}>Bild löschen</button>
-      </figure> : <label key={`empty-${index}`} className={styles.emptyImageTile} style={{ aspectRatio: size.ratio }}>
+      </figure> : <label key={`empty-${index}`} className={styles.emptyImageTile} style={{ aspectRatio: displayRatio }}>
         <span>+ Bild hinzufügen</span>
         <input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || history.busy}
           onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} />
@@ -285,7 +288,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange }: {
       <div className={styles.resizeButtons} role="group" aria-label="Bildhöhe">
         <button type="button" className="button" aria-label="Bildblock flacher" disabled={busy || history.busy || size.ratio >= 3}
           onClick={() => adjustSize(0.1)}>Höhe −</button>
-        <button type="button" className="button" aria-label="Bildblock höher" disabled={busy || history.busy || size.ratio <= 0.6}
+        <button type="button" className="button" aria-label="Bildblock höher" disabled={busy || history.busy || displayRatio <= (editorial ? editorialImageAspectRatio({ ...config, aspect_ratio: 0.6 }) : 0.6)}
           onClick={() => adjustSize(-0.1)}>Höhe +</button>
       </div>
       <small role="status">Bildhöhe anpassen</small>
@@ -297,7 +300,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange }: {
     </div>}
     </div>
     {activeImage && hasPersistedImageCrop(activeImage) && <InlineImageCropEditor key={activeImage.id}
-      image={activeImage} ratio={size.ratio} save={saveCrop} cancel={() => setActiveCropId(null)} />}
+      image={activeImage} ratio={displayRatio} save={saveCrop} cancel={() => setActiveCropId(null)} />}
     {progress && <p role="status">{progress}</p>}
     {busy && !progress && <p role="status">Änderung wird gespeichert …</p>}
     {feedback.error && <p role="alert" className={styles.error}>{feedback.error}</p>}

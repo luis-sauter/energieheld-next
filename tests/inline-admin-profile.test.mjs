@@ -596,7 +596,7 @@ test("text blocks expose image-beside-text setup and paired blocks expose live s
   const paired = renderToStaticMarkup(createElement(InlineProfileEditor, { ...common, contentBlocks: [
     { ...textBlock, config: { ...textBlock.config, width_percent: 75 } }, imageBlock,
   ] }));
-  assert.match(paired, /Text \+ Bild nebeneinander/);
+  assert.match(paired, /aria-label="Abschnitt bearbeiten"/);
   assert.match(paired, /Bild links/);
   assert.match(paired, /Bild rechts/);
   assert.match(paired, /25 % Bild \/ 75 % Text/);

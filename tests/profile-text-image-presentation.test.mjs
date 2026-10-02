@@ -49,7 +49,7 @@ test('editor uses the same surface, compact inline input and modal instead of ex
  const css=readFileSync(new URL('../src/components/portal/profile-content-blocks.module.css',import.meta.url),'utf8');assert.match(css,/editorialPair \{ display: grid; align-items: center; gap: clamp/);assert.match(css,/@media \(max-width: 640px\) \{\s*\.editorialPair \{ grid-template-columns: minmax\(0, 1fr\) !important/);
 });
 const {InlineContentEditor}=await import('../src/components/admin/inline-content-editor.tsx');
-function nodes(node){if(!node)return[];if(Array.isArray(node))return node.flatMap(nodes);if(typeof node!=='object')return[];return[node,...nodes(node.props?.children)];}
+function nodes(node){if(!node)return[];if(Array.isArray(node))return node.flatMap(nodes);if(typeof node!=='object')return[];return[node,...nodes(node.props?.children),...nodes(node.props?.pairToolbar)];}
 test('executed editor changes both sides and all ratios before saving finishes',async()=>{
  hookState=[];
  const blocks=[block('heading','heading',50,0,'Heading'),block('text','text',50,0,'Body'),block('image','image_grid',50,50)];
@@ -63,8 +63,39 @@ test('executed editor changes both sides and all ratios before saving finishes',
  tree=render();const ratioButton=nodes(tree).find(n=>n.type==='button'&&n.props.children?.[0]===share&&n.props.children?.[1]===' % Bild / ');
  ratioButton.props.onClick();tree=render();const html=renderToStaticMarkup(tree);
  assert.ok(html.includes(`minmax(0, ${side==='left'?share:100-share}fr) minmax(0, ${side==='left'?100-share:share}fr)`));
- assert.match(html,/value="Heading"/);assert.match(html,/>Body<\/textarea>/);
+ assert.match(html,/>Heading<\/textarea>/);assert.match(html,/>Body<\/textarea>/);
  resolveSave({success:'saved'});await new Promise(resolve=>setImmediate(resolve));
  assert.equal(calls.at(-1).intent,'pair-layout');assert.equal(calls.at(-1).text_block_id,'text');assert.equal(calls.at(-1).image_block_id,'image');
  }
+});
+
+test('paired portrait frames are bounded without mutating media, standalone frames remain intact',()=>{
+ for(const share of [25,50,75]){
+  const text=block('text','text',100-share,0,'Short body'),img=block('image','image_grid',share,100-share);
+  img.config.aspect_ratio=0.6;const before=JSON.stringify(img);
+  const pair=renderToStaticMarkup(createElement(ProfileContentBlocks,{blocks:[text,img]}));
+  assert.match(pair,new RegExp('aspect-ratio:'+(share===75?'2':'1.5')));
+  assert.match(pair,/src="\/real-image.webp"/);assert.match(pair,/object-fit:cover/);
+  assert.equal(JSON.stringify(img),before);
+  assert.match(renderToStaticMarkup(createElement(ProfileContentBlocks,{blocks:[img]})),/aspect-ratio:0.6/);
+ }
+});
+test('paired secondary controls live in one closed section menu and image remains visible outside its dialog',()=>{
+ hookState=[];hookCursor=0;
+ const blocks=[block('heading','heading',50,0,'Heading'),block('text','text',50,0,'Body'),block('image','image_grid',50,50)];
+ const html=renderToStaticMarkup(InlineContentEditor({blocks,items:blocks.map(block=>({kind:'block',key:block.id,block})),listing:{id:'profile'},renderSpecial:()=>null,editing:true,available:true,imagesAvailable:true,saveAction:async()=>({success:'saved'}),saveImage:async()=>({success:'saved'})}));
+ assert.equal((html.match(/class="pairBar"/g)||[]).length,1);
+ assert.match(html,/<details class="sectionMenu"><summary aria-label="Abschnitt bearbeiten">/);
+ assert.doesNotMatch(html,/<details class="sectionMenu" open/);
+ assert.match(html,/<details class="sectionMenu">[\s\S]*Duplizieren[\s\S]*Abschnitt ausblenden[\s\S]*Abschnitt löschen/);
+ assert.match(html,/<div class="pairedImageEditor">[\s\S]*<img[\s\S]*Bild bearbeiten[\s\S]*<dialog/);
+});
+
+test('captionless image frame fills its grid column and paired typography cannot scroll or resize',()=>{
+ const imageCss=readFileSync(new URL('../src/components/portal/profile-content-blocks.module.css',import.meta.url),'utf8');
+ assert.match(imageCss,/\.frame \{ width: 100%; max-width: 100%/);
+ const editorCss=readFileSync(new URL('../src/components/admin/inline-profile.module.css',import.meta.url),'utf8');
+ assert.match(editorCss,/\.field textarea \{ overflow: hidden; resize: none; border: 0; padding: 0/);
+ assert.match(imageCss,/max-width: 65ch/);
+ assert.doesNotMatch(imageCss,/editorialPair[^}]*min-height/);
 });

@@ -119,7 +119,7 @@ export function FixedHeadingEditor({ slot, sectionKey, value, defaultText, align
     <form className={styles.headingForm} onSubmit={submit}>
     <label htmlFor={`fixed-${slot}`}>
       <span>Überschrift</span>
-      <input id={`fixed-${slot}`} value={text} maxLength={200} disabled={busy}
+      <EditorialTextarea id={`fixed-${slot}`} value={text} maxLength={200} disabled={busy}
         onChange={(event) => { setText(event.target.value); setFeedback({}); }} />
     </label>
     <button className="button" disabled={busy}>{busy ? "Wird gespeichert …" : "Überschrift speichern"}</button>
@@ -366,7 +366,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
         }}>
           <label>{block.type === "heading" ? "Überschrift" : "Text"}
             {block.type === "heading"
-              ? <input name="text" defaultValue={block.content.text} required maxLength={200} disabled={busy || history.busy} />
+              ? <EditorialTextarea data-editorial-heading name="text" defaultValue={block.content.text} required maxLength={200} disabled={busy || history.busy} />
               : <EditorialTextarea name="text" defaultValue={block.content.text} required maxLength={10000} aria-label="Text" disabled={busy || history.busy} />}
           </label>
           <div className={styles.blockActions}>
@@ -457,9 +457,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       const side = imageLayout && textLayout && imageLayout.offset_percent < textLayout.offset_percent ? "left" : "right";
       const share = imageLayout && ([25, 50, 75] as number[]).includes(imageLayout.width_percent)
         ? imageLayout.width_percent as ImageShare : 50;
-      const pairContent = <>
-        {image && text && imageLayout && <div className={styles.pairControls} aria-label="Text und Bild anordnen">
-          <strong>Text + Bild nebeneinander</strong>
+      const pairToolbar = image && text && imageLayout && <div className={styles.pairControls} aria-label="Text und Bild anordnen">
           <div className={styles.adjacentOptions} role="group" aria-label="Bildposition">
             {(["left", "right"] as const).map((choice) => <button key={choice} type="button" className="button"
               aria-pressed={side === choice} disabled={busy || history.busy}
@@ -471,7 +469,8 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
               aria-pressed={imageLayout.width_percent === share} disabled={busy || history.busy}
               onClick={() => void setPairLayout(text.id, image.id, side, share)}>{share} % Bild / {100 - share} % Text</button>)}
           </div>
-        </div>}
+        </div>;
+      const pairContent = <>
         <TextImageSection text={columns.flat().filter((block) => block.type !== "image_grid").map((block) => renderEditableBlock(block, true))}
           image={image ? renderPairedImage(image) : null} textWidth={textLayout?.width_percent ?? 50}
           imageWidth={imageLayout?.width_percent ?? 50} imageFirst={side === "left"} />
@@ -491,7 +490,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
         for (const [key, value] of Object.entries(values)) form.set(key, value);
         return run(form);
       }
-      return <InlineBlockLayout key={row.left[0].id} block={pairBlock} save={savePair}
+      return <InlineBlockLayout key={row.left[0].id} block={pairBlock} save={savePair} pairToolbar={pairToolbar}
         busy={busy || history.busy} first={Math.min(...indices) === 0} last={Math.max(...indices) === items.length - 1}
         sectionHidden={pairMembers.every((block) => items.find((item) => item.key === block.id)?.hidden)}>
         {pairContent}
@@ -536,12 +535,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       for (const [key, value] of Object.entries(values)) form.set(key, value);
       return run(form);
     }
-    editorial.push(<InlineBlockLayout key={item.key} block={synthetic} editorialPair={Boolean(shownImage)} sectionHidden={item.hidden}
-      sectionLabel={item.kind === "about" ? "Beschreibung" : "Tätigkeitsbereiche"}
-      busy={busy || history.busy} first={index === 0} last={index === items.length - 1} save={saveSpecial}>
-      {item.hidden && <p role="status">Dieser Abschnitt ist öffentlich ausgeblendet.</p>}
-      {specialImage && <div className={styles.pairControls} aria-label="Abschnitt und Bild anordnen">
-        <strong>Text + Bild nebeneinander</strong>
+    const pairToolbar = specialImage && <div className={styles.pairControls} aria-label="Abschnitt und Bild anordnen">
         <div className={styles.adjacentOptions} role="group" aria-label="Bildposition">
           {(["left", "right"] as const).map((choice) => <button key={choice} type="button" className="button"
             aria-pressed={(preview?.side ?? side) === choice} disabled={busy || history.busy}
@@ -554,7 +548,12 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
             onClick={() => void setPairLayout(item.key, specialImage.id, (preview?.side ?? side) as ImageSide, choice)}>
             {choice} % Bild / {100 - choice} % Text</button>)}
         </div>
-      </div>}
+      </div>;
+    editorial.push(<InlineBlockLayout key={item.key} block={synthetic} editorialPair={Boolean(shownImage)} pairToolbar={pairToolbar} sectionHidden={item.hidden}
+      sectionLabel={item.kind === "about" ? "Beschreibung" : "Tätigkeitsbereiche"}
+      busy={busy || history.busy} first={index === 0} last={index === items.length - 1} save={saveSpecial}>
+      {item.hidden && <p role="status">Dieser Abschnitt ist öffentlich ausgeblendet.</p>}
+
       {shownImage ? <TextImageSection text={renderSpecial(item)} image={renderPairedImage(shownImage)}
         textWidth={textLayout.width_percent} imageWidth={normalizeBlockLayout(shownImage.config).width_percent}
         imageFirst={normalizeBlockLayout(shownImage.config).offset_percent < textLayout.offset_percent} /> : <>{renderSpecial(item)}{renderAdjacentAction(item.key,
