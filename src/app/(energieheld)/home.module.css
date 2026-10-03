@@ -1,0 +1,89 @@
+.page { background: var(--white); }
+.page :global(.travel-hero) { min-height: 650px; }
+.page :global(.travel-hero)::after {
+  background: linear-gradient(90deg, rgb(250 247 242 / 94%), rgb(250 247 242 / 70%) 42%, rgb(250 247 242 / 12%) 80%);
+}
+.page :global(.travel-hero-content) { padding-block: clamp(48px, 6vw, 88px) 66px; }
+.page :global(.travel-hero h1) { max-width: 740px; font-size: clamp(2.5rem, 5.1vw, 4.5rem); letter-spacing: -.045em; }
+.page :global(.reise-finder) {
+  margin-top: 30px;
+  background: rgb(255 255 255 / 96%);
+  border: 0;
+  box-shadow: 0 12px 36px rgb(23 71 97 / 10%);
+  border-radius: 16px;
+}
+.page :global(.reise-finder input), .page :global(.reise-finder select) { border-color: rgb(30 90 122 / 16%); }
+.page :global(.reise-finder input:focus-visible), .page :global(.reise-finder select:focus-visible) { border-color: var(--portal-primary); }
+.page :global(.reise-finder-submit) { grid-column: span 2; }
+.page :global(#reise-finder-hint) { margin: 8px 0 0; font-size: .8rem; line-height: 1.5; color: var(--muted); }
+.quicklinks { padding-block: 22px 8px; gap: 10px; }
+.quicklinks a { min-height: 92px; padding: 12px 6px; background: var(--brand-surface); border: 0; box-shadow: none; border-radius: 12px; }
+.quicklinks a:hover, .quicklinks a:focus-visible { box-shadow: none; transform: none; background: var(--category-blue); }
+.quicklinks :global(.travel-quicklink-icon) { width: 36px; height: 36px; background: transparent; }
+.page :global(.section) { padding-block: clamp(44px, 5vw, 72px); }
+.page :global(.section-heading) { margin-bottom: 28px; gap: 20px; }
+.page :global(.section-heading h2) { font-size: clamp(1.7rem, 2.7vw, 2.5rem); letter-spacing: -.025em; line-height: 1.15; }
+.page :global(.section-heading .eyebrow) { margin-bottom: 10px; }
+.page :global(.section-heading .text-link) { flex-shrink: 0; }
+.mosaic { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); grid-template-rows: repeat(3, 145px); gap: 18px; }
+.mosaic :global(.discovery-card) { display: grid; grid-template-columns: minmax(0, 1fr); position: relative; border: 0; border-radius: 16px; box-shadow: none; }
+.mosaic :global(.discovery-card:first-child) { grid-row: span 3; }
+.mosaic :global(.discovery-card-image) { aspect-ratio: auto; height: 100%; min-height: 0; }
+.mosaic :global(.discovery-card-image)::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgb(26 39 49 / 78%), transparent 80%); }
+.mosaic :global(.discovery-card-title) { position: absolute; bottom: 0; width: 100%; color: white; padding: 18px 22px; font-size: 1.1rem; }
+.mosaic :global(.discovery-card:first-child .discovery-card-title) { padding: 28px; font-size: clamp(1.5rem, 2.5vw, 2rem); }
+.mosaic :global(.discovery-card:hover), .mosaic :global(.discovery-card:focus-visible) { transform: none; box-shadow: none; }
+.destinations { background: var(--brand-surface); }
+.destinations :global(.discovery-card) { border: 0; border-radius: 14px; box-shadow: 0 4px 16px rgb(23 71 97 / 4%); }
+.destinations :global(.discovery-card-image) { aspect-ratio: 1.25; }
+.destinations :global(.discovery-card-title) { padding: 20px; font-size: 1.1rem; }
+.premium { padding-block: 32px 0; }
+.premium:empty { display: none; }
+.stays :global(.commercial-columns) { grid-template-columns: minmax(0, 1fr) minmax(230px, 280px); gap: 32px; }
+.stays :global(.accommodation-grid) { gap: 24px; align-items: stretch; }
+.stays :global(.accommodation-card) { border: 0; border-radius: 14px; box-shadow: none; background: var(--brand-surface); }
+.stays :global(.accommodation-card-image) { aspect-ratio: 1.7; }
+.stays :global(.accommodation-card-copy) { padding: 20px; }
+.stays :global(.accommodation-card-copy .eyebrow) { font-size: .72rem; letter-spacing: .04em; }
+.stays :global(.accommodation-card-copy h3) { font-size: 1.2rem; line-height: 1.25; }
+.stays :global(.accommodation-card-copy p:not(.eyebrow)) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.provider { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(24px, 4vw, 48px); margin-bottom: 56px; border-radius: 16px; background: var(--category-blue); }
+.provider h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); line-height: 1.2; margin-bottom: 12px; }
+.provider p:not(:global(.eyebrow)) { max-width: 620px; margin-bottom: 0; }
+.provider :global(.button) { flex-shrink: 0; }
+.page a:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 5px; }
+.mosaic a:focus-visible { outline-offset: 4px; }
+@media (max-width: 1100px) {
+  .quicklinks { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .stays :global(.commercial-columns) { grid-template-columns: minmax(0, 1fr); }
+  .stays :global(.advertising-rail-creatives) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+  .destinations :global(.discovery-card-image) { aspect-ratio: 1.7; }
+  .mosaic { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  .page :global(.travel-hero) { min-height: auto; }
+  .page :global(.travel-hero-content) { padding-block: 38px; }
+  .page :global(.travel-hero h1) { font-size: clamp(2.3rem, 9vw, 3rem); }
+  .page :global(.reise-finder) { padding: 18px; margin-top: 24px; }
+  .page :global(.reise-finder-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .page :global(.reise-finder label:has(input)), .page :global(.reise-finder-submit) { grid-column: 1 / -1; }
+  .page :global(.reise-finder input), .page :global(.reise-finder select) { min-height: 48px; margin-top: 6px; }
+  .page :global(.section-heading) { align-items: flex-start; gap: 12px; }
+  .quicklinks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quicklinks a { flex-direction: row; justify-content: flex-start; text-align: left; min-height: 64px; padding: 12px; gap: 8px; }
+  .quicklinks :global(.travel-quicklink-icon) { flex-shrink: 0; }
+  .mosaic { grid-template-columns: minmax(0, 1fr); grid-template-rows: 260px repeat(3, 125px); gap: 12px; }
+  .mosaic :global(.discovery-card:first-child) { grid-row: auto; }
+  .mosaic :global(.discovery-card:first-child .discovery-card-title) { padding: 22px; font-size: 1.5rem; }
+  .destinations :global(.discovery-card-image) { aspect-ratio: 1.7; }
+  .destinations :global(.discovery-card-title) { padding: 16px 20px; }
+  .stays :global(.accommodation-grid) { gap: 18px; }
+  .stays :global(.advertising-rail-creatives) { grid-template-columns: minmax(0, 1fr); }
+  .provider { flex-direction: column; align-items: flex-start; gap: 24px; margin-bottom: 32px; }
+}
+@media (max-width: 360px) {
+  .page :global(.reise-finder-grid) { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page :global(.discovery-card), .quicklinks a { transition: none; transform: none; }
+}
