@@ -21,7 +21,7 @@ registerHooks({
     if (specifier.endsWith("/auth-actions")) return { url: 'data:text/javascript,export async function logout(){return {}}', shortCircuit: true };
     if (specifier.endsWith("/discovery-advertising") && !specifier.includes("components/")) return { url: 'data:text/javascript,export async function loadDiscoveryAdvertising(path){globalThis.__discoveryAdPaths?.push(path);return globalThis.__discoveryAdvertising}', shortCircuit: true };
     if (specifier.endsWith("/public-companies")) return {
-      url: 'data:text/javascript,export async function loadPublicCompanyDirectory(){return globalThis.__travelDirectoryResult};export async function loadPublicCompanyBySlug(slug){globalThis.__travelLookups.push(slug);return globalThis.__travelDetailResult}',
+      url: 'data:text/javascript,export async function loadPublicCompanyDirectory(){return globalThis.__travelDirectoryResult};export async function loadPublicCompanyProfileIndex(){return []};export async function loadPublicCompanyBySlug(slug){globalThis.__travelLookups.push(slug);return globalThis.__travelDetailResult}',
       shortCircuit: true,
     };
     if (specifier.endsWith("/public-travel-taxonomy")) return {

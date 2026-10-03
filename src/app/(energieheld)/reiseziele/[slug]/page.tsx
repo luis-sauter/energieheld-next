@@ -3,6 +3,7 @@ import { destinations } from "@/data/reiseportal-discovery";
 import { DiscoveryDetail } from "@/components/portal/discovery-detail";
 import { loadReiseportalDestination } from "@/lib/reiseportal-directory";
 import { loadDiscoveryAdvertising } from "@/lib/discovery-advertising";
+import { discoveryMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,9 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return { title: destinations.find((entry) => entry.slug === slug)?.title ?? "Reiseziel" };
+  const entry = destinations.find((entry) => entry.slug === slug);
+  if (!entry) notFound();
+  return discoveryMetadata(entry, "destination");
 }
 
 export default async function DestinationDetail({ params }: { params: Promise<{ slug: string }> }) {

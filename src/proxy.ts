@@ -1,8 +1,12 @@
 import type { NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
+import { robotsHeader } from "@/lib/site-seo";
 
 export async function proxy(request: NextRequest) {
-  return updateSession(request);
+  const response = await updateSession(request);
+  const robots = robotsHeader(request.nextUrl.pathname);
+  if (robots) response.headers.set("X-Robots-Tag", robots);
+  return response;
 }
 
 export const config = {

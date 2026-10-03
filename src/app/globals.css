@@ -2139,6 +2139,17 @@ button {
   padding: 10px;
   font-size: 0.74rem;
 }
+
+.breadcrumb-item { display: inline-flex; align-items: baseline; gap: .6rem; min-width: 0; overflow-wrap: anywhere; }
+.breadcrumb-separator { flex-shrink: 0; }
+.breadcrumbs { flex-wrap: wrap; }
+.travel-relations { margin-block: 32px; padding-block: 24px; border-top: 1px solid var(--portal-border, #dce8ef); }
+.travel-relations h2 { font-size: 1.35rem; }
+.travel-relations ul { display: flex; flex-wrap: wrap; gap: 10px 20px; padding: 0; list-style: none; }
+.travel-relations a { display: inline-block; padding-block: 6px; }
+.travel-relations dl { display: flex; flex-wrap: wrap; gap: 12px 28px; }
+.travel-relations dt { font-weight: 600; }
+.travel-relations dd { margin: 4px 0 0; }
 .active-travel-filters {
   grid-column: 1/-1;
   display: grid;

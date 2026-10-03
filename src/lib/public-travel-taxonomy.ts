@@ -4,6 +4,13 @@ import type { PublicTravelTerm } from "./reiseportal-filter-options";
 
 type Assignment = { profile_id: string; term_key: string };
 
+export async function loadPublicProfileTravelTerms(profileId: string): Promise<PublicTravelTerm[]> {
+  const { data, error } = await createPublicClient().from("company_profile_travel_terms")
+    .select("term_key,travel_terms(term_key,dimension,slug,label)").eq("profile_id", profileId).order("term_key");
+  if (error) throw new Error("Die Reiseinformationen konnten nicht geladen werden.");
+  return (data ?? []).flatMap(row => row.travel_terms ?? []) as unknown as PublicTravelTerm[];
+}
+
 export async function loadPublicTravelTerms(): Promise<PublicTravelTerm[]> {
   const client = createPublicClient();
   const { data, error } = await client.from("travel_terms")

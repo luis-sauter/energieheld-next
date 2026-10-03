@@ -22,6 +22,7 @@ const stubs = {
 };
 registerHooks({
  resolve(specifier,context,next){
+  if(specifier === 'server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
   if(specifier === "react" && context.parentURL?.startsWith("data:"))return next(specifier,{...context,parentURL:import.meta.url});
   if(stubs[specifier])return {url:'data:text/javascript,'+encodeURIComponent(stubs[specifier]),shortCircuit:true};
   if(specifier.endsWith('.css'))return {url:'data:text/javascript,export default '+encodeURIComponent(JSON.stringify(Object.fromEntries(['page','quicklinks','mosaic','destinations','premium','stays','provider','inspiration','showcase','featuredStay','recommendations','partners'].map(k=>[k,k])))),shortCircuit:true};

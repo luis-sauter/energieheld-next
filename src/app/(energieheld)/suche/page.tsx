@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { searchPortal } from '@/lib/portal-search';
 import { searchTypes, SEARCH_PAGE_SIZE, SEARCH_QUERY_LIMIT } from '@/lib/portal-search-values';
 import styles from './search.module.css';
@@ -7,7 +7,7 @@ import { readTravelFilterValues } from '@/lib/reiseportal-filter-options';
 import { travelFilterParams } from '@/lib/reiseportal-facets';
 import { travelSearchReturnUrl, travelSearchUrl } from '@/lib/travel-search-intent';
 
-export const metadata: Metadata = { title: 'Suchergebnisse', robots: { index: false, follow: true } };
+export const metadata = pageMetadata({ title: 'Suchergebnisse', description: 'Öffentliche Inhalte im DAS Reiseportal durchsuchen und passende Seiten entdecken.', noindex: true });
 export const dynamic = 'force-dynamic';
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;

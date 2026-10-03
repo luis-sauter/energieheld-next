@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import type { Listing } from "@/types/portal";
 import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, type TravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { filterTravelListings, travelFacetCount, travelFilterParams, travelFilterUrl, type TravelFacet } from "@/lib/reiseportal-facets";
 import { travelSearchUrl, travelSearchReturnUrl } from "@/lib/travel-search-intent";
 import { SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
+import { Breadcrumbs } from "./breadcrumbs";
+import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 
 type Options = ReturnType<typeof availableTravelFilters>;
 type FacetOptions = { slug: string; label: string }[];
@@ -91,7 +92,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
       <source src="/reiseportal/hero-loop.mp4" type="video/mp4" />
     </video>}
     <div className="travel-hero-content container">
-      {mode === "directory" && <nav className="breadcrumbs" aria-label="Brotkrumennavigation"><Link href="/">Startseite</Link><span>›</span><span>Unterkünfte A–Z</span></nav>}
+      {mode === "directory" && <Breadcrumbs items={portalBreadcrumbs("Unterkünfte A–Z", "/unterkuenfte-a-z")} />}
       <p className="eyebrow">{mode === "directory" ? "UNTERKÜNFTE A–Z" : "DAS Reiseportal"}</p>
       <h1 id="travel-hero-title">{mode === "directory" ? "Finde passende Unterkünfte" : "Finde deinen passenden Urlaub"}</h1>
       <p>{mode === "directory" ? "Hotels, Pensionen, Ferienwohnungen und mehr – entdecke besondere Orte für deinen nächsten Urlaub." : "Sag uns, wie du reisen möchtest – wir zeigen dir passende Orte, Unterkünfte und Erlebnisse."}</p>
