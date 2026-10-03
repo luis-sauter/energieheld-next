@@ -3,6 +3,8 @@ import { InlineBannerProvider } from "@/components/advertising/inline-banner-edi
 import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
 import { CampaignSlot } from "@/components/advertising/campaign-view";
 import { AdvertisingRail } from "@/components/advertising/advertising-rail";
+import { reiseportalPreview } from "@/data/reiseportal-preview";
+import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
 import { DiscoveryCard } from "@/components/portal/reise-overview";
 import { destinations, travelThemes } from "@/data/reiseportal-discovery";
@@ -18,7 +20,14 @@ import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
 
 const featuredThemes = ["natur-pur", "familienurlaub", "wanderurlaub", "wellnessangebote"];
 const quickThemes = ["wellnessangebote", "familienurlaub", "wanderurlaub", "romantik-zu-zweit", "campingurlaub", "radwandern", "urlaub-am-wasser", "golfurlaub"];
-const featuredStays = ["bayerischer-wald", "hoeflehner", "pension-sonnenhof", "schafhuber"];
+// Editorial selection, not package ranking. These provider-matched originals
+// were visually checked for this showcase; profile galleries remain unchanged.
+const featuredStays = [
+  { slug: "golfhotel-andreus", image: importedJoomlaMedia["golfhotel-andreus"].images[3] },
+  ...["bayerischer-wald", "hoeflehner", "schafhuber"].map((slug) => ({
+    slug, image: reiseportalPreview.find((listing) => listing.slug === slug)?.images[slug === "schafhuber" ? 3 : 0],
+  })),
+];
 
 export const dynamic = "force-dynamic";
 
@@ -32,9 +41,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     loadInlineBannerOptions("/"),
   ]);
   const bySlug = new Map(directory.database.map((listing) => [listing.slug, listing]));
-  const featured = featuredStays.flatMap((slug) => {
+  const featured = featuredStays.flatMap(({ slug, image }) => {
     const listing = bySlug.get(slug);
-    return listing ? [listing] : [];
+    return listing && image && !listing.isDemo && !listing.isPreview ? [{ ...listing, images: [image] }] : [];
   });
   const searchableThemes = new Set(availableTravelFilters(directory.database, terms).themes.map((entry) => entry.slug));
 
@@ -77,21 +86,27 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
       </div>
     </div></section>
 
-    <div className={`container premium-space ${styles.premium}`}>
-      <CampaignSlot placement="top_banner" ad={ads.find((ad) => ad.placement === "top_banner")} />
-    </div>
-
     <section className={`section container ${styles.stays}`} aria-labelledby="stays-title">
       <div className="section-heading"><div><p className="eyebrow">Aus dem Reiseportal</p><h2 id="stays-title">Ausgewählte Unterkünfte</h2></div>
         <Link className="text-link" href="/unterkuenfte-a-z">Alle Unterkünfte →</Link></div>
-      <div className="commercial-columns">
-        <div className="accommodation-grid">
-          {featured.map((listing) =>
-            <AccommodationCard key={listing.id} listing={listing} sizes="(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 430px" />)}
+      <div className={styles.showcase}>
+        {featured[0] && <div className={styles.featuredStay}>
+          <AccommodationCard listing={featured[0]} sizes="(max-width: 1100px) calc(100vw - 48px), 620px" />
+        </div>}
+        <div className={styles.recommendations}>
+          {featured.slice(1).map((listing) => <AccommodationCard key={listing.id} listing={listing}
+            sizes="(max-width: 700px) 32vw, (max-width: 1100px) 180px, 200px" />)}
         </div>
-        <AdvertisingRail slots={sidebarOrder} ads={ads} />
       </div>
     </section>
+
+    <section className={styles.partners} aria-labelledby="partners-title"><div className="section container">
+      <div className="section-heading"><div><p className="eyebrow">Anzeigen</p><h2 id="partners-title">Partner & Gastgeber</h2></div></div>
+      <div className={styles.premium}>
+        <CampaignSlot placement="top_banner" ad={ads.find((ad) => ad.placement === "top_banner")} />
+      </div>
+      <AdvertisingRail slots={sidebarOrder} ads={ads} />
+    </div></section>
 
     <section className={`${styles.provider} container`} aria-labelledby="provider-title">
       <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Deine Unterkunft auf DAS Reiseportal</h2>
