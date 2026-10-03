@@ -565,8 +565,9 @@ test("portal home follows the discovery wireframe with the shared advertising ra
     "travel-quicklinks",
     "Inspiration &amp; Themenwelten",
     'id="destinations-title"',
-    'data-placement="top_banner"',
     'id="stays-title"',
+    'id="partners-title"',
+    'data-placement="top_banner"',
     'class="commercial-sidebar advertising-rail"',
   ];
   let last = -1;

@@ -6,7 +6,7 @@ import { transpileModule, ModuleKind, JsxEmit } from 'typescript';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 const read = path => readFileSync(new URL('../'+path,import.meta.url),'utf8');
-const slugs = ['bayerischer-wald','hoeflehner','pension-sonnenhof','schafhuber'];
+const slugs = ['golfhotel-andreus','bayerischer-wald','hoeflehner','schafhuber'];
 const profiles = slugs.map(slug=>({id:slug,slug,name:slug,initials:'AB',tagline:'Bestehender Profiltext',description:'',categoryIds:[],travelTermKeys:['theme:natur-pur'],location:{city:'Ort',country:'Deutschland',postalCode:'',region:''},images:[{src:'/reiseportal/hero.jpg',alt:'Vorhandenes Foto'}],services:[],isDemo:false,contact:{email:'',phone:'',website:''}}));
 globalThis.homeFixture = {profiles, ads:[{id:'existing',placement:'top_banner'}], calls:[]};
 const stubs = {
@@ -24,7 +24,7 @@ registerHooks({
  resolve(specifier,context,next){
   if(specifier === "react" && context.parentURL?.startsWith("data:"))return next(specifier,{...context,parentURL:import.meta.url});
   if(stubs[specifier])return {url:'data:text/javascript,'+encodeURIComponent(stubs[specifier]),shortCircuit:true};
-  if(specifier.endsWith('.css'))return {url:'data:text/javascript,export default '+encodeURIComponent(JSON.stringify(Object.fromEntries(['page','quicklinks','mosaic','destinations','premium','stays','provider','inspiration'].map(k=>[k,k])))),shortCircuit:true};
+  if(specifier.endsWith('.css'))return {url:'data:text/javascript,export default '+encodeURIComponent(JSON.stringify(Object.fromEntries(['page','quicklinks','mosaic','destinations','premium','stays','provider','inspiration','showcase','featuredStay','recommendations','partners'].map(k=>[k,k])))),shortCircuit:true};
   if(specifier==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
   if(specifier==='next/image')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export default function Image({fill,unoptimized,priority,...p}){return createElement("img",p);}'),shortCircuit:true};
   if(specifier.startsWith('@/')||specifier.startsWith('.')){
@@ -73,4 +73,51 @@ test('homepage presentation is scoped, responsive, reserves image geometry and r
  assert.match(css,/@media \(max-width: 700px\)/);assert.match(css,/repeat\(2, minmax\(0, 1fr\)\)/);
  assert.match(css,/@media \(prefers-reduced-motion: reduce\)/);assert.match(css,/aspect-ratio: 1.7/);
  assert.doesNotMatch(read('src/app/(energieheld)/page.tsx'),/use client|maps.googleapis|iframe/);
+});
+test('editorial showcase separates one featured stay and three compact recommendations from all homepage ads', async () => {
+ const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
+ assert.equal((html.match(/<article class="accommodation-card"/g)||[]).length,4);
+ assert.match(html,/<div class="featuredStay"><article/);
+ const recommendations=html.split('<div class="recommendations">')[1].split('</section>')[0];
+ assert.equal((recommendations.match(/<article/g)||[]).length,3);
+ const stays=html.split('aria-labelledby="stays-title"')[1].split('</section>')[0];
+ assert.doesNotMatch(stays,/Werbeanzeigen|data-placement/);
+ assert.ok(html.indexOf('stays-title') < html.indexOf('partners-title'));
+ assert.ok(html.indexOf('partners-title') < html.indexOf('data-placement="top_banner"'));
+ assert.ok(html.indexOf('Werbeanzeigen') < html.indexOf('provider-title'));
+ assert.match(html,/data-ad-count="1"/);
+});
+test('curation uses visually checked provider originals without changing canonical profile galleries or accepting demo profiles', async () => {
+ const original=JSON.stringify(profiles);
+ const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
+ for(const [slug,file] of [['golfhotel-andreus','04'],['bayerischer-wald','01'],['hoeflehner','01'],['schafhuber','04']]) {
+  const src='/reiseportal/unterkuenfte/'+slug+'/'+file+'.jpg';
+  assert.match(html,new RegExp(src));assert.ok(existsSync(new URL('../public'+src,import.meta.url)));
+ }
+ assert.equal(JSON.stringify(profiles),original);
+ try {
+  globalThis.homeFixture.profiles=profiles.map(p=>({...p,isDemo:true}));
+  assert.doesNotMatch(renderToStaticMarkup(await Home({searchParams:Promise.resolve({})})),/class="accommodation-card"/);
+ } finally {globalThis.homeFixture.profiles=profiles;}
+});
+test('homepage ad grid preserves stored size and crop renderer and shared vertical reorder interaction', () => {
+ const css=read('src/app/(energieheld)/home.module.css');
+ assert.match(css,/repeat\(3, minmax\(0, 1fr\)\)/);
+ assert.match(css,/grid-row: span 3/);
+ assert.match(css,/aria-label\$="verschieben"/);
+ assert.match(css,/max-width: 400px/);
+ assert.doesNotMatch(css,/object-fit: (?:cover|fill)|grid-auto-flow: dense/);
+ assert.doesNotMatch(read('src/app/(energieheld)/page.tsx'),/update\(|delete\(|insert\(|company_ad_campaign_targets/);
+});
+
+test('all existing Premium and A–J ads reach the unchanged shared advertising components', async () => {
+ const original=globalThis.homeFixture.ads;
+ try {
+  globalThis.homeFixture.ads=[{id:'premium',placement:'top_banner'},...['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sidebar_05','sidebar_06','sidebar_07','sidebar_08','sidebar_09','sidebar_10'].map((placement,i)=>({id:'legacy-'+i,placement}))];
+  const before=JSON.stringify(globalThis.homeFixture.ads);
+  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
+  assert.match(html,/data-ad-count="11"/);
+  assert.equal((html.match(/data-placement="top_banner"/g)||[]).length,1);
+  assert.equal(JSON.stringify(globalThis.homeFixture.ads),before);
+ } finally {globalThis.homeFixture.ads=original;}
 });

@@ -37,16 +37,41 @@
 .destinations :global(.discovery-card) { border: 0; border-radius: 14px; box-shadow: 0 4px 16px rgb(23 71 97 / 4%); }
 .destinations :global(.discovery-card-image) { aspect-ratio: 1.25; }
 .destinations :global(.discovery-card-title) { padding: 20px; font-size: 1.1rem; }
-.premium { padding-block: 32px 0; }
+.showcase { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.stays :global(.accommodation-card) { min-width: 0; border: 1px solid rgb(30 90 122 / 10%); border-radius: 16px; box-shadow: 0 4px 18px rgb(23 71 97 / 4%); background: white; }
+.stays :global(.accommodation-card-copy) { padding: 20px; gap: 8px; }
+.stays :global(.accommodation-card-copy .eyebrow) { font-size: .72rem; letter-spacing: .04em; margin: 0; }
+.stays :global(.accommodation-card-copy h3) { font-size: 1.2rem; line-height: 1.25; margin: 0; }
+.stays :global(.accommodation-card-copy p:not(.eyebrow)) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0; }
+.featuredStay :global(.accommodation-card-image) { aspect-ratio: 1.65; }
+.featuredStay :global(.accommodation-card-copy h3) { font-size: clamp(1.4rem, 2vw, 1.8rem); }
+.recommendations { display: grid; gap: 14px; }
+.recommendations :global(.accommodation-card) { display: grid; grid-template-columns: minmax(110px, .75fr) minmax(0, 1.25fr); }
+.recommendations :global(.accommodation-card-image) { aspect-ratio: auto; min-height: 154px; height: 100%; }
+.recommendations :global(.accommodation-card-copy) { padding: 16px 18px; }
+.recommendations :global(.accommodation-card-copy p:not(.eyebrow)) { font-size: .85rem; line-height: 1.45; }
+.recommendations :global(.text-link) { font-size: .85rem; }
+.partners { background: var(--brand-surface); margin-bottom: 48px; }
+.premium { margin-bottom: 24px; }
 .premium:empty { display: none; }
-.stays :global(.commercial-columns) { grid-template-columns: minmax(0, 1fr) minmax(230px, 280px); gap: 32px; }
-.stays :global(.accommodation-grid) { gap: 24px; align-items: stretch; }
-.stays :global(.accommodation-card) { border: 0; border-radius: 14px; box-shadow: none; background: var(--brand-surface); }
-.stays :global(.accommodation-card-image) { aspect-ratio: 1.7; }
-.stays :global(.accommodation-card-copy) { padding: 20px; }
-.stays :global(.accommodation-card-copy .eyebrow) { font-size: .72rem; letter-spacing: .04em; }
-.stays :global(.accommodation-card-copy h3) { font-size: 1.2rem; line-height: 1.25; }
-.stays :global(.accommodation-card-copy p:not(.eyebrow)) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.partners :global(.advertising-rail) { padding: 0; }
+.partners :global(.advertising-rail-label) { display: none; }
+.partners :global(.advertising-rail-creatives), .partners :global(.advertising-rail > div) {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start;
+}
+.partners :global([data-sidebar-slot]) { margin: 0; }
+.partners :global([data-placement]) { margin-bottom: 0; }
+.partners :global(.advertising-rail-creatives > section:has([data-size="large"])),
+.partners :global([data-sidebar-slot]:has([data-size="large"])) { grid-row: span 3; }
+.partners :global(.advertising-rail-creatives > section:has([data-size="medium"])),
+.partners :global([data-sidebar-slot]:has([data-size="medium"])) { grid-row: span 2; }
+/* Keep the shared reorder editor's vertical pointer/keyboard geometry intact.
+   Dialogs are outside this layout; only its direct toolbar spans the grid. */
+.partners :global(.advertising-rail > div > div:not([data-sidebar-slot])),
+.partners :global(.advertising-rail > div > p) { grid-column: 1 / -1; }
+.partners :global(.advertising-rail > div:has(button[aria-label$="verschieben"])) { display: block; }
+.partners :global(.advertising-rail > div:has(button[aria-label$="verschieben"]) [data-sidebar-slot]) { max-width: 400px; margin-bottom: 18px; }
+.partners :global(.advertise-link) { margin-top: 22px; }
 .provider { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(24px, 4vw, 48px); margin-bottom: 56px; border-radius: 16px; background: var(--category-blue); }
 .provider h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); line-height: 1.2; margin-bottom: 12px; }
 .provider p:not(:global(.eyebrow)) { max-width: 620px; margin-bottom: 0; }
@@ -55,8 +80,12 @@
 .mosaic a:focus-visible { outline-offset: 4px; }
 @media (max-width: 1100px) {
   .quicklinks { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .stays :global(.commercial-columns) { grid-template-columns: minmax(0, 1fr); }
-  .stays :global(.advertising-rail-creatives) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+  .showcase { grid-template-columns: minmax(0, 1fr); }
+  .featuredStay :global(.accommodation-card) { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+  .featuredStay :global(.accommodation-card-image) { aspect-ratio: 1.7; height: 100%; }
+  .recommendations { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .recommendations :global(.accommodation-card) { grid-template-columns: minmax(100px, .7fr) minmax(0, 1fr); }
+  .partners :global(.advertising-rail-creatives), .partners :global(.advertising-rail > div) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .destinations :global(.discovery-card-image) { aspect-ratio: 1.7; }
   .mosaic { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
 }
@@ -77,8 +106,14 @@
   .mosaic :global(.discovery-card:first-child .discovery-card-title) { padding: 22px; font-size: 1.5rem; }
   .destinations :global(.discovery-card-image) { aspect-ratio: 1.7; }
   .destinations :global(.discovery-card-title) { padding: 16px 20px; }
-  .stays :global(.accommodation-grid) { gap: 18px; }
-  .stays :global(.advertising-rail-creatives) { grid-template-columns: minmax(0, 1fr); }
+  .featuredStay :global(.accommodation-card) { display: flex; }
+  .featuredStay :global(.accommodation-card-image) { height: auto; }
+  .recommendations { grid-template-columns: minmax(0, 1fr); }
+  .recommendations :global(.accommodation-card-image) { min-height: 155px; }
+  .partners { margin-bottom: 32px; }
+  .partners :global(.advertising-rail-creatives), .partners :global(.advertising-rail > div) { grid-template-columns: minmax(0, 1fr); }
+  .partners :global([data-sidebar-slot]:has([data-size])),
+  .partners :global(.advertising-rail-creatives > section:has([data-size])) { grid-row: auto; }
   .provider { flex-direction: column; align-items: flex-start; gap: 24px; margin-bottom: 32px; }
 }
 @media (max-width: 360px) {
