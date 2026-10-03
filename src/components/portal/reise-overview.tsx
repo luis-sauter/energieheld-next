@@ -4,10 +4,10 @@ import type { DiscoveryEntry } from "@/data/reiseportal-discovery";
 import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
 import type { DiscoveryAdvertisingData } from "@/lib/discovery-advertising";
 
-export function DiscoveryCard({ entry, basePath }: { entry: DiscoveryEntry; basePath: string }) {
+export function DiscoveryCard({ entry, basePath, sizes }: { entry: DiscoveryEntry; basePath: string; sizes?: string }) {
   return <Link className="discovery-card" href={`${basePath}/${entry.slug}`}>
     <span className={`discovery-card-image${entry.image ? "" : " discovery-card-image-fallback"}`}>
-      {entry.image && <Image src={entry.image} alt={entry.alt} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" />}
+      {entry.image && <Image src={entry.image} alt={entry.alt} fill loading="lazy" sizes={sizes ?? "(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw"} />}
     </span>
     <span className="discovery-card-title">{entry.title}<span aria-hidden="true">→</span></span>
   </Link>;
