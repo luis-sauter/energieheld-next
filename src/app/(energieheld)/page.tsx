@@ -17,6 +17,16 @@ import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 import styles from "./home.module.css";
 import { mottoPresentation } from "@/lib/motto-presentation";
 import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
+import { pageMetadata, type SearchParameters } from "@/lib/seo";
+import { siteSeo } from "@/lib/site-seo";
+import { jsonLdGraph, websiteSchema } from "@/lib/seo-schema";
+import { JsonLd } from "@/components/portal/json-ld";
+
+const site = siteSeo();
+export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParameters> }) {
+  return pageMetadata({ title: site.defaultTitle, description: site.defaultDescription, path: "/", home: true,
+    noindex: Object.values(await searchParams).some(Boolean) });
+}
 
 const featuredThemes = ["natur-pur", "familienurlaub", "wanderurlaub", "wellnessangebote"];
 const quickThemes = ["wellnessangebote", "familienurlaub", "wanderurlaub", "romantik-zu-zweit", "campingurlaub", "radwandern", "urlaub-am-wasser", "golfurlaub"];
@@ -48,6 +58,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const searchableThemes = new Set(availableTravelFilters(directory.database, terms).themes.map((entry) => entry.slug));
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
+    <JsonLd data={jsonLdGraph(websiteSchema())} />
     <HomeTravelFinder listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={terms} error={directory.error} />
 
     <nav className={`container travel-quicklinks ${styles.quicklinks}`} aria-label="Schnell zu Reisethemen">

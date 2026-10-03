@@ -6,6 +6,12 @@ import { DiscoveryAdvertising } from "@/components/advertising/discovery-adverti
 import type { DiscoveryAdvertisingData } from "@/lib/discovery-advertising";
 import { ProfileRotation } from "./profile-rotation";
 import { profileGroups, selectRotatingProfiles } from "@/lib/profile-rotation";
+import { Breadcrumbs } from "./breadcrumbs";
+import { portalBreadcrumbs } from "@/lib/breadcrumbs";
+import { JsonLd } from "./json-ld";
+import { jsonLdGraph, breadcrumbSchema, collectionSchema } from "@/lib/seo-schema";
+import { relatedTravelPages } from "@/lib/travel-relations";
+import { TravelRelations } from "./travel-relations";
 
 export function AccommodationCard({ listing, rotating = false, sizes }: { listing: Listing; rotating?: boolean; sizes?: string }) {
   const image = listing.images[0];
@@ -37,11 +43,16 @@ export function DiscoveryDetail({ entry, title, basePath, listings, advertising,
   rotateProfiles?: boolean;
 }) {
   const selected = rotateProfiles ? selectRotatingProfiles(listings, entry.slug) : listings;
+  const breadcrumbs = portalBreadcrumbs(entry.title, `${basePath}/${entry.slug}`, { name: title, path: basePath });
+  const relations = relatedTravelPages(listings);
   return <main id="hauptinhalt" className="container trade-page discovery-detail">
-    <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
-      <Link href="/">Startseite</Link><span>›</span>
-      <Link href={basePath}>{title}</Link><span>›</span><span>{entry.title}</span>
-    </nav>
+    <JsonLd data={jsonLdGraph([breadcrumbSchema(breadcrumbs), collectionSchema({
+      name: entry.title, description: entry.intro, path: `${basePath}/${entry.slug}`,
+      about: basePath === "/reiseziele" ? { "@type": "Place", name: entry.title }
+        : { "@type": "DefinedTerm", name: entry.title, termCode: `theme:${entry.slug}` },
+      items: selected.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })),
+    })])} />
+    <Breadcrumbs items={breadcrumbs} />
     <header className="discovery-detail-hero">
       {entry.image && <Image src={entry.image} alt={entry.alt} fill sizes="100vw" priority />}
       <div><p className="eyebrow">{title}</p><h1>{entry.title}</h1></div>
@@ -61,6 +72,8 @@ export function DiscoveryDetail({ entry, title, basePath, listings, advertising,
       </> : <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}
       </div></DiscoveryAdvertising>
     </section>
+    <TravelRelations title={basePath === "/reiseziele" ? "Reisethemen mit passenden Gastgebern" : "Reiseziele mit passenden Gastgebern"}
+      links={basePath === "/reiseziele" ? relations.themes : relations.destinations} />
     <Link className="text-link discovery-back-link" href={basePath}>← Alle {title} ansehen</Link>
   </main>;
 }

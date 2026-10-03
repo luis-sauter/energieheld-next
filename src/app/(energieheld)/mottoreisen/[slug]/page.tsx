@@ -3,6 +3,7 @@ import { travelThemes } from "@/data/reiseportal-discovery";
 import { DiscoveryDetail } from "@/components/portal/discovery-detail";
 import { loadReiseportalTheme } from "@/lib/reiseportal-directory";
 import { loadDiscoveryAdvertising } from "@/lib/discovery-advertising";
+import { discoveryMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,9 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return { title: travelThemes.find((entry) => entry.slug === slug)?.title ?? "Mottoreise" };
+  const entry = travelThemes.find((entry) => entry.slug === slug);
+  if (!entry) notFound();
+  return discoveryMetadata(entry, "theme");
 }
 
 export default async function ThemeDetail({ params }: { params: Promise<{ slug: string }> }) {

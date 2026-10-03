@@ -954,10 +954,11 @@ test("database errors never expose demos in directory, detail or metadata", asyn
     );
     assert.ok(html.includes(PUBLIC_COMPANIES_ERROR));
     assert.ok(!html.includes(demo.name));
-    assert.deepEqual(
-      await detailMetadata({ params: Promise.resolve({ slug: demo.slug }) }),
-      { title: "Unternehmensprofil" },
-    );
+    const metadata = await detailMetadata({ params: Promise.resolve({ slug: demo.slug }) });
+    assert.equal(metadata.title, "Profil derzeit nicht verfügbar");
+    assert.equal(metadata.robots.index, false);
+    assert.equal(metadata.alternates, undefined);
+    assert.ok(!JSON.stringify(metadata).includes(demo.name));
   }
 });
 
@@ -1028,7 +1029,10 @@ test("live demo detail uses its actual media and address without energy-sector c
 });
 
 test("old Höflehner URL redirects to the ASCII slug", async () => {
-  await assert.rejects(Detail({ params: Promise.resolve({ slug: "höflehner" }) }), /REDIRECT:\/unterkuenfte\/hoeflehner/);
+  for (const slug of ["höflehner", "h%C3%B6flehner", "h%c3%b6flehner"]) {
+    await assert.rejects(Detail({ params: Promise.resolve({ slug }) }), /REDIRECT:\/unterkuenfte\/hoeflehner/);
+    await assert.rejects(detailMetadata({ params: Promise.resolve({ slug }) }), /REDIRECT:\/unterkuenfte\/hoeflehner/);
+  }
 });
 
 test("real approved profile has an inquiry dialog even without public email; demos remain disabled", async () => {

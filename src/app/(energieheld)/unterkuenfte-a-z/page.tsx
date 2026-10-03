@@ -2,9 +2,12 @@ import { DirectoryPage } from "@/components/portal/directory-page";
 import { checkAdmin } from "@/lib/admin-review";
 import { createClient } from "@/lib/supabase/server";
 import { saveCompanyDirectoryOrder, saveSidebarOrder } from "../experten/order-actions";
+import { directoryMetadata, type SearchParameters } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Unterkünfte A–Z" };
+export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParameters> }) {
+  return directoryMetadata(await searchParams);
+}
 
 export default async function AccommodationsPage({
   searchParams,

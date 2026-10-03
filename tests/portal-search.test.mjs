@@ -61,7 +61,7 @@ test('legacy banners use actual public resolution, hiding, replacement and page-
 test('SSR search UI, noindex follow, ad links and bounded single-RPC provider retain independent finder', async () => {
   const page = await readFile(new URL('../src/app/(energieheld)/suche/page.tsx', import.meta.url), 'utf8');
   const provider = await readFile(new URL('../src/lib/portal-search.ts', import.meta.url), 'utf8');
-  assert.match(page, /index: false, follow: true/); assert.match(page, /method="get"/);
+  assert.match(page, /pageMetadata\(\{[^\n]*noindex: true/); assert.match(page, /method="get"/);
   assert.match(page, /htmlFor="portal-query"/); assert.match(page, /sponsored noopener noreferrer/);
   assert.match(page, /travelSearchReturnUrl/); assert.doesNotMatch(page, /use client|dangerouslySetInnerHTML/);
   assert.equal((provider.match(/\.rpc\(/g) ?? []).length, 1); assert.doesNotMatch(provider, /signAdImages|loadReiseportalDirectory|createSigned/);

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { loadReiseportalListingBySlug } from "@/lib/reiseportal-directory";
+import { loadAccommodationPage } from "@/lib/accommodation-page";
 import { ListingDetail } from "@/components/portal/listing-detail";
 import { InquiryDialog } from "@/components/leads/inquiry-dialog";
 import { createClient } from "@/lib/supabase/server";
@@ -15,17 +15,31 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { loadPublicProfileContent, splitProfileContent } from "@/lib/profile-content";
 import { ProfileEditorialContent } from "@/components/portal/profile-content-blocks";
 import { isLiveDemoProfile } from "@/lib/reiseportal-demo";
+import { pageMetadata, profileMetadata, indexableProfile } from "@/lib/seo";
+import { portalBreadcrumbs } from "@/lib/breadcrumbs";
+import { Breadcrumbs } from "@/components/portal/breadcrumbs";
+import { JsonLd } from "@/components/portal/json-ld";
+import { jsonLdGraph, breadcrumbSchema, profileSchema } from "@/lib/seo-schema";
+import { relatedTravelPages } from "@/lib/travel-relations";
+import { TravelRelations } from "@/components/portal/travel-relations";
 
 export const dynamic = "force-dynamic";
+function redirectLegacySlug(slug: string) {
+  // Next's route params can retain URL encoding; this is one verified alias.
+  if (slug === "höflehner" || slug.toLowerCase() === "h%c3%b6flehner")
+    permanentRedirect("/unterkuenfte/hoeflehner");
+}
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  if (slug === "höflehner") permanentRedirect("/unterkuenfte/hoeflehner");
-  const result = await loadReiseportalListingBySlug(slug);
-  return { title: result.data?.name ?? "Unternehmensprofil" };
+  redirectLegacySlug(slug);
+  const result = await loadAccommodationPage(slug);
+  if (result.error) return pageMetadata({ title: "Profil derzeit nicht verfügbar", description: result.error, noindex: true });
+  if (!result.data) notFound();
+  return profileMetadata(result.data);
 }
 
 export default async function AccommodationDetail({
@@ -34,11 +48,12 @@ export default async function AccommodationDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  if (slug === "höflehner") permanentRedirect("/unterkuenfte/hoeflehner");
-  const result = await loadReiseportalListingBySlug(slug);
+  redirectLegacySlug(slug);
+  const result = await loadAccommodationPage(slug);
   if (result.error)
     return (
       <main id="hauptinhalt" className="container detail-page">
+        <h1>Profil derzeit nicht verfügbar</h1>
         <div className="empty-state" role="alert">
           <p>{result.error}</p>
         </div>
@@ -46,6 +61,8 @@ export default async function AccommodationDetail({
     );
   const listing = result.data;
   if (!listing) notFound();
+  const breadcrumbs = portalBreadcrumbs(listing.name, `/unterkuenfte/${listing.slug}`, { name: "Unterkünfte A–Z", path: "/unterkuenfte-a-z" });
+  const relations = indexableProfile(listing) ? relatedTravelPages([listing]) : { themes: [], destinations: [] };
   const liveDemo = isLiveDemoProfile(listing);
   const storedProfile = !listing.isPreview && isProfileId(listing.id) && (!listing.isDemo || liveDemo);
   const content = storedProfile && !liveDemo
@@ -75,13 +92,8 @@ export default async function AccommodationDetail({
   }
   return (
     <main id="hauptinhalt" className="container detail-page">
-      <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
-        <Link href="/">Startseite</Link>
-        <span>/</span>
-        <Link href="/unterkuenfte-a-z">Unterkünfte A–Z</Link>
-        <span>/</span>
-        <span>{listing.name}</span>
-      </nav>
+      <JsonLd data={indexableProfile(listing) ? jsonLdGraph([breadcrumbSchema(breadcrumbs), ...profileSchema(listing, result.terms)]) : null} />
+      <Breadcrumbs items={breadcrumbs} />
       {editorData ? <InlineProfileEditor
         listing={listing}
         categories={[]}
@@ -118,6 +130,7 @@ export default async function AccommodationDetail({
           ) : undefined
         }
       />}
+      <TravelRelations title="Reiseinformationen und passende Rubriken" links={[...relations.destinations, ...relations.themes]} facts={result.terms} />
       <Link className="text-link back-link" href="/unterkuenfte-a-z">
         ← Zurück zu Unterkünfte A–Z
       </Link>

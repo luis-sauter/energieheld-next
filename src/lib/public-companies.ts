@@ -15,6 +15,23 @@ const publicFields =
 // that grant is deployed; the existing city-level map remains available.
 const publicFieldsWithoutStreet = publicFields.replace("website,street,postal_code", "website,postal_code");
 
+// Sitemap data: no signed media, contact details or session client required.
+export async function loadPublicCompanyProfileIndex() {
+  const client = createPublicClient();
+  const profiles: { id: string; status: string; slug: string; display_name: string;
+    tagline: string | null; description: string | null; business_areas: string | null;
+    company_profile_categories: { category_id: string }[] }[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await client.from("company_profiles")
+      .select("id,status,slug,display_name,tagline,description,business_areas,company_profile_categories(category_id)")
+      .eq("status", "approved").order("id").range(offset, offset + 499);
+    if (error) throw new Error(PUBLIC_COMPANIES_ERROR);
+    const rows = data ?? [];
+    profiles.push(...rows.filter(row => row.status === "approved"));
+    if (rows.length < 500) return profiles;
+  }
+}
+
 type PublicProfile = {
   id: string;
   status: string;

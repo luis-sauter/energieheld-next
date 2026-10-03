@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Icon } from "@/components/portal/icon";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Für Unternehmen" };
+export const metadata = pageMetadata({ title: "Für Gastgeber und Reiseanbieter", description: "Stellen Sie Ihre Unterkunft oder Ihr Unternehmen im DAS Reiseportal vor. Erfahren Sie, wie Registrierung und Freigabe Ihres Anbieterprofils funktionieren.", path: "/fuer-unternehmen" });
 export default function ProvidersPage() {
   return (
     <main id="hauptinhalt" className="container provider-page">

@@ -5,7 +5,7 @@ import legacyDirectoryMedia from "../data/reiseportal-legacy-directory-media.jso
 import verifiedProviderMedia from "../data/reiseportal-legacy-provider-media.json" with { type: "json" };
 import type { Listing } from "@/types/portal";
 import { directoryItemKey } from "./company-directory-order";
-import { loadPublicCompanyBySlug, loadPublicCompanyDirectory } from "./public-companies";
+import { loadPublicCompanyBySlug, loadPublicCompanyDirectory, loadPublicCompanyProfileIndex } from "./public-companies";
 import { demoProfileId, demoPublicSlug, demoSourceSlug } from "./reiseportal-demo";
 import { loadPublicTravelAssignments } from "./public-travel-taxonomy";
 import { filterTravelDiscovery } from "./reiseportal-search";
@@ -14,9 +14,17 @@ import { createPublicClient } from "./supabase/public";
 const oldEnergyContent = /energieheld|energieberatung|photovoltaik|heizung|dämmung|dachsanierung|smart home|fachbetrieb|sanierung/i;
 
 // Keep energy-category profiles and energy copy out of the public travel directory.
-function travelVisible(listing: Listing) {
+function travelVisible(listing: Pick<Listing, "slug" | "name" | "categoryIds" | "tagline" | "description" | "businessAreas">) {
   return listing.slug !== demoSourceSlug && listing.categoryIds.length === 0 &&
     !oldEnergyContent.test([listing.name, listing.tagline, listing.description, listing.businessAreas].join(" "));
+}
+
+export async function loadReiseportalProfileIndex() {
+  const rows = await loadPublicCompanyProfileIndex();
+  return rows.filter(row => travelVisible({ slug: row.slug, name: row.display_name,
+    tagline: row.tagline ?? "", description: row.description ?? "", businessAreas: row.business_areas ?? "",
+    categoryIds: row.company_profile_categories.map(category => category.category_id) }))
+    .map(row => ({ id: row.id, slug: row.slug, isDemo: false, isPreview: false }));
 }
 
 // This is the approved, existing test profile, presented under a travel-safe

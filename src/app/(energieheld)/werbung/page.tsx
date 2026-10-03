@@ -1,5 +1,6 @@
 import Link from "next/link";
-export const metadata = { title: "Werbung auf DAS Reiseportal" };
+import { pageMetadata } from "@/lib/seo";
+export const metadata = pageMetadata({ title: "Werbung auf DAS Reiseportal", description: "Werbeplätze, Bereiche und Zeiträume im DAS Reiseportal kennenlernen. Anzeigen werden geprüft und unabhängig von Profilranking und Qualitätssiegel ausgeliefert.", path: "/werbung" });
 export default function AdvertisingPage() {
   return (
     <main id="hauptinhalt" className="container provider-page">

@@ -16,6 +16,11 @@ import { ListingRow } from "./listing-row";
 import { Icon } from "./icon";
 import { TravelDirectory } from "./travel-directory";
 import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
+import { JsonLd } from "./json-ld";
+import { jsonLdGraph, breadcrumbSchema, collectionSchema } from "@/lib/seo-schema";
+import { portalBreadcrumbs } from "@/lib/breadcrumbs";
+import { hubDescriptions, indexableProfile } from "@/lib/seo";
+import { filterTravelListings } from "@/lib/reiseportal-facets";
 
 export async function DirectoryPage({ searchParams, trade, mode = "energy", canReorder = false,
   saveOrder, saveSidebarOrder }: {
@@ -32,10 +37,15 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
       loadReiseportalDirectory(), loadPublicTravelTerms(), loadPublicAds(undefined), loadPublicSidebarOrder(),
       loadInlineBannerOptions("/unterkuenfte-a-z"),
     ]);
-    return <TravelDirectory initialValues={readTravelFilterValues(params)} database={loaded.database}
+    const initialValues = readTravelFilterValues(params);
+    const shown = filterTravelListings(loaded.database, { ...initialValues, query: "" }).filter(indexableProfile);
+    return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Unterkünfte A–Z", "/unterkuenfte-a-z")),
+      collectionSchema({ name: "Unterkünfte A–Z", description: hubDescriptions.directory, path: "/unterkuenfte-a-z",
+        items: shown.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
+      <TravelDirectory initialValues={initialValues} database={loaded.database}
       preview={loaded.preview} terms={terms} error={loaded.error} ads={ads} sidebarOrder={sidebarOrder}
       canReorder={canReorder} hiddenOrderKeys={loaded.hiddenOrderKeys}
-      saveOrder={saveOrder} saveSidebarOrder={saveSidebarOrder} bannerOptions={bannerOptions} />;
+      saveOrder={saveOrder} saveSidebarOrder={saveSidebarOrder} bannerOptions={bannerOptions} /></>;
   }
 
   const read = (key: string) => typeof params[key] === "string" ? params[key] as string : "";

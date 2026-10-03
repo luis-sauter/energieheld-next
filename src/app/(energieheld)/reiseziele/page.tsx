@@ -1,10 +1,16 @@
 import Image from "next/image";
-import Link from "next/link";
 import { EditorialImageCard } from "@/components/portal/editorial-image-card";
 import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
 import { destinations } from "@/data/reiseportal-discovery";
 import { loadDiscoveryAdvertising } from "@/lib/discovery-advertising";
 import styles from "./reiseziele.module.css";
+import { pageMetadata, hubDescriptions } from "@/lib/seo";
+import { portalBreadcrumbs } from "@/lib/breadcrumbs";
+import { Breadcrumbs } from "@/components/portal/breadcrumbs";
+import { JsonLd } from "@/components/portal/json-ld";
+import { jsonLdGraph, breadcrumbSchema, collectionSchema } from "@/lib/seo-schema";
+
+const breadcrumbs = portalBreadcrumbs("Reiseziele", "/reiseziele");
 
 const imageRoot = "/reiseportal/redesign/reiseziele";
 const countryAlts = ["See und bewaldete Berghänge in Deutschland", "Sommerliche See- und Berglandschaft in Österreich",
@@ -23,18 +29,19 @@ const regions = [
   { title: "Gitschberg Jochtal", text: "Südtirol / Italien", query: "Gitschberg Jochtal", image: "gitschberg-jochtal", alt: "Südtiroler Almwiesen mit Bergblick" },
 ];
 
-export const metadata = { title: "Reiseziele" };
+export const metadata = pageMetadata({ title: "Reiseziele – Länder und Regionen entdecken", description: hubDescriptions.destinations,
+  path: "/reiseziele", image: "/reiseportal/destinations/oesterreich.jpg" });
 export const dynamic = "force-dynamic";
 export default async function DestinationsPage() {
   const advertising = await loadDiscoveryAdvertising("/reiseziele");
   return <main id="hauptinhalt" className={styles.page}>
+    <JsonLd data={jsonLdGraph([breadcrumbSchema(breadcrumbs), collectionSchema({ name: "Reiseziele", description: hubDescriptions.destinations,
+      path: "/reiseziele", items: destinations.map(entry => ({ name: entry.title, path: `/reiseziele/${entry.slug}` })) })])} />
     <section className={styles.hero} aria-labelledby="reiseziele-title">
       <Image className={styles.heroImage} src={`${imageRoot}/hero.webp`} alt="Blick über einen Alpensee mit zwei Wandernden am Aussichtspunkt"
         fill sizes="(max-width: 600px) 1440px, 100vw" preload />
       <div className={`${styles.heroContent} container`}>
-        <nav className={styles.breadcrumbs} aria-label="Brotkrumennavigation">
-          <Link href="/">Startseite</Link><span aria-hidden="true">›</span><span aria-current="page">Reiseziele</span>
-        </nav>
+        <Breadcrumbs items={breadcrumbs} className={styles.breadcrumbs} />
         <h1 id="reiseziele-title" className={styles.heading}>Reiseziele entdecken</h1>
         <p>Neue Lieblingsorte zwischen Seen, grünen Tälern und Bergen.
           Entdecken Sie Deutschland, Österreich, die Schweiz und Südtirol / Italien.</p>

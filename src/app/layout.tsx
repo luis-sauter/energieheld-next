@@ -1,16 +1,8 @@
-import type { Metadata } from "next";
+import { rootMetadata } from "@/lib/seo";
 import type { ReactNode } from "react";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: {
-    default: "DAS Reiseportal",
-    template: "%s | DAS Reiseportal",
-  },
-  description:
-    "Reiseziele, Mottoreisen und Unterkünfte im deutschsprachigen Raum entdecken.",
-  robots: { index: false, follow: false },
-};
+export const metadata = rootMetadata();
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
