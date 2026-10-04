@@ -47,24 +47,21 @@ test('public notice is absent without dates and selects precisely one current ch
  assert.equal(publicFreshnessLabel({checked_at:'2025-01-01',content_updated_at:'2024-01-01'}).label,'Zuletzt geprüft');
 });
 const listing=companyProfileListing({id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',slug:'real-hotel',display_name:'Real Hotel',description:'Actual profile text',company_profile_categories:[]},{images:[]});
-test('public profile server HTML contains one discreet notice after content, no internal state',()=>{
- for(const [dates,label] of [[{checked_at:'2025-01-01',content_updated_at:null},'Zuletzt geprüft'],[{checked_at:null,content_updated_at:'2026-10-04'},'Zuletzt aktualisiert']]){
-  const html=renderToStaticMarkup(createElement(ListingDetail,{listing:{...listing,freshness:dates},categories:[],presentation:'company'}));
-  assert.equal((html.match(/profile-freshness-public/g)||[]).length,1);assert.match(html,new RegExp(label));
-  assert.ok(html.indexOf('Actual profile text')<html.indexOf(label));assert.doesNotMatch(html,/content_revision|reviewed_revision|content_update_source|Datenqualität|überfällig/);
- }
- const html=renderToStaticMarkup(createElement(ListingDetail,{listing,categories:[],presentation:'company'}));assert.doesNotMatch(html,/Zuletzt geprüft|Zuletzt aktualisiert/);
+test('public profile HTML ignores even stale freshness projections and exposes no dates/status/actions',()=>{
+ const html=renderToStaticMarkup(createElement(ListingDetail,{listing:{...listing,freshness:{checked_at:'2026-10-04',content_updated_at:'2026-10-03'}},categories:[],presentation:'company'}));
+ assert.match(html,/Actual profile text/);
+ assert.doesNotMatch(html,/profile-freshness|Zuletzt geprüft|Zuletzt aktualisiert|content_revision|reviewed_revision|Datenqualität|Als geprüft markieren|2026-10-04/);
 });
 test('review UI stays compact, explicitly separate from save, disabled during pending/unsaved work',()=>{
  const html=renderToStaticMarkup(createElement(ProfileFreshness,{state:initial,review:async()=>({}),disabled:true}));
  assert.match(html,/Datenqualität: Noch nicht geprüft/);assert.match(html,/<button[^>]+disabled/);assert.match(html,/Als geprüft markieren/);assert.match(html,/Speichern allein bestätigt keine Prüfung/);
  assert.doesNotMatch(html,/content_revision|reviewed_revision|user_id/);
 });
-test('schema dateModified is only actual content change, never review or deploy time',()=>{
+test('public schema has no freshness projection or invented modification time',()=>{
  const config=siteSeo({SITE_URL:'https://portal.example',NODE_ENV:'production',SITE_INDEXING:'enabled'});
  const page=s=>profileSchema({...listing,freshness:s},[],config).find(x=>x['@type']==='WebPage');
  assert.equal(page({checked_at:'2026-10-04',content_updated_at:null}).dateModified,undefined);
- assert.equal(page({checked_at:'2026-10-04',content_updated_at:'2026-01-01'}).dateModified,'2026-01-01');
+ assert.equal(page({checked_at:'2026-10-04',content_updated_at:'2026-01-01'}).dateModified,undefined);
 });
 function client({admin=true,user=true,matched=true,error=null}={}){
  const calls=[];return {calls,auth:{getUser:async()=>({data:{user:user?{id:'admin-id'}:null},error:null})},
@@ -82,10 +79,18 @@ test('review server action passes expected revision and reports stale content un
  assert.deepEqual(globalThis.freshnessClient.calls,[{name:'review_profile_content',args:{p_profile_id:listing.id,p_expected_revision:4}}]);
  globalThis.freshnessClient=client({error:{code:'PT409'}});assert.match((await reviewInlineProfile(listing.id,listing.slug,4)).error,/zwischenzeitlich geändert/);
 });
-test('directory loads no per-card freshness, detail loads dates once and survives freshness outages',async()=>{
+test('public directory and detail load no freshness data or RPC',async()=>{
  const row={id:listing.id,slug:listing.slug,status:'approved',display_name:'Real Hotel',company_profile_categories:[],company_profile_images:[]};
  const calls=[];globalThis.freshnessPublicClient={from(table){return {select(){return this;},eq(){return this;},order(){return this;},range:async()=>({data:table==='company_profiles'?[row]:[],error:null}),maybeSingle:async()=>({data:row,error:null})};},rpc:async(name,args)=>{calls.push([name,args]);return {data:[{checked_at:null,content_updated_at:'2026-10-04'}],error:null};}};
  const directory=await loadPublicCompanies();assert.equal(directory.error,null);assert.equal(directory.data.length,1);assert.equal(calls.length,0);assert.equal(directory.data[0].freshness,undefined);
- const detail=await loadPublicCompanyBySlug(row.slug);assert.equal(detail.data.freshness.content_updated_at,'2026-10-04');assert.equal(calls.length,1);
+ const detail=await loadPublicCompanyBySlug(row.slug);assert.equal(detail.data.freshness,undefined);assert.equal(calls.length,0);
  globalThis.freshnessPublicClient.rpc=async()=>{throw Error('Offline');};const fallback=await loadPublicCompanyBySlug(row.slug);assert.equal(fallback.error,null);assert.equal(fallback.data.freshness,undefined);
+});
+
+test('compact profile header reuses review UI while leaving full details only in edit mode',()=>{
+ const html=renderToStaticMarkup(createElement(ProfileFreshness,{state:checked,review:async()=>({}),disabled:false,compact:true}));
+ assert.match(html,/Aktuell geprüft/); assert.match(html,/Zuletzt geprüft: 4. Oktober 2026/); assert.match(html,/Als geprüft markieren/);
+ assert.doesNotMatch(html,/Nächste Prüfung|Speichern allein|Quelle/);
+ const editor=readFileSync(new URL('../src/components/admin/inline-profile-editor.tsx',import.meta.url),'utf8');
+ assert.match(editor,/adminAction=\{editing \? undefined/); assert.match(editor,/editing && freshness && reviewFreshness/); assert.match(editor,/review=\{reviewFreshness\}[^>]+compact/);
 });

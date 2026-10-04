@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { FreshnessStatus, freshnessSymbols } from "@/components/admin/freshness-status";
+import type { AdminFreshnessStatuses } from "@/lib/profile-freshness";
 import styles from "./travel-directory.module.css";
 import type { ActiveAd } from "@/lib/ad-values";
 import type { SidebarSlot } from "@/lib/sidebar-order";
@@ -16,7 +18,7 @@ import { InlineBannerProvider } from "@/components/advertising/inline-banner-edi
 import type { InlineBannerOptions } from "@/lib/inline-ad-context";
 
 export function TravelDirectory({ initialValues, database, preview, terms, error, ads, sidebarOrder,
-  canReorder, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions }: {
+  canReorder, freshnessStatuses, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions }: {
   initialValues: TravelFilterValues;
   database: Listing[];
   preview: Listing[];
@@ -25,23 +27,26 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   ads: ActiveAd[];
   sidebarOrder: SidebarSlot[];
   canReorder: boolean;
+  freshnessStatuses?: AdminFreshnessStatuses | null;
   bannerOptions?: InlineBannerOptions;
   hiddenOrderKeys: string[];
   saveOrder?: (ids: string[]) => Promise<{ success?: string; error?: string }>;
   saveSidebarOrder?: (slots: SidebarSlot[]) => Promise<{ success?: string; error?: string }>;
 }) {
+  const [reviewFilter, setReviewFilter] = useState("");
   const [values, setValues] = useState(initialValues);
   const listings = useMemo(() => [...preview, ...database], [preview, database]);
   const options = useMemo(() => availableTravelFilters(database, terms), [database, terms]);
   const filterValues = { ...values, query: "" };
-  const results = filterTravelListings(listings, filterValues);
+  const results = filterTravelListings(listings, filterValues).filter(listing =>
+    !freshnessStatuses || !reviewFilter || freshnessStatuses[listing.id] === reviewFilter);
   const databaseResults = filterTravelListings(database, filterValues);
   const travelLabels = Object.fromEntries(terms.map((term) => [term.term_key, term.label]));
   const premiumResults = results.filter((listing) => listing.directoryPackage === "premium");
   const basicResults = results.filter((listing) => listing.directoryPackage !== "premium");
   const previewResults = filterTravelListings(preview, filterValues);
   const editingAvailable = canReorder && Boolean(saveOrder && saveSidebarOrder) &&
-    Object.values(values).every((value) => !value);
+    !reviewFilter && Object.values(values).every((value) => !value);
 
   useEffect(() => {
     const nextUrl = travelFilterUrl(values);
@@ -81,26 +86,34 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
               </button>
             </div>
           </div>
+          {freshnessStatuses !== undefined && <div className="admin-freshness-filter">
+            {freshnessStatuses ? <label>Prüfstatus
+              <select value={reviewFilter} onChange={event => setReviewFilter(event.target.value)}>
+                <option value="">Alle</option>
+                {Object.keys(freshnessSymbols).map(status => <option key={status} value={status}>{status}</option>)}
+              </select>
+            </label> : <p role="alert">Die Prüfstände konnten nicht geladen werden. Bitte laden Sie die Seite erneut.</p>}
+          </div>}
           {error && <div className="empty-state" role="alert"><p>{error}</p></div>}
           {!error && editingAvailable && saveOrder && databaseResults.length > 0 ? <>
             <DirectoryOrderEditor listings={databaseResults} hiddenDemoKeys={hiddenOrderKeys} saveOrder={saveOrder}
-              categories={[]} basePath="/unterkuenfte" showVerification={false} premiumFirst travelLabels={travelLabels} />
+              categories={[]} basePath="/unterkuenfte" showVerification={false} premiumFirst travelLabels={travelLabels} freshnessStatuses={freshnessStatuses ?? undefined} />
             {previewResults.length > 0 && <div className="listing-rows">{previewResults.map((listing) =>
-              <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} />)}</div>}
+              <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} adminStatus={freshnessStatuses?.[listing.id] ? <FreshnessStatus status={freshnessStatuses[listing.id]} /> : undefined} />)}</div>}
           </> : !error && results.length > 0 ? <>
             {premiumResults.length > 0 && <section className="travel-package-group" aria-labelledby="premium-title">
               <header className="travel-package-heading"><h2 id="premium-title">Premium-Unterkünfte</h2><p>Unterkünfte mit erweitertem Profil im Reiseportal.</p></header>
               <div className="listing-rows">{premiumResults.map((listing) => <ListingRow key={listing.id} listing={listing} categories={[]}
-                href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} />)}</div>
+                href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} adminStatus={freshnessStatuses?.[listing.id] ? <FreshnessStatus status={freshnessStatuses[listing.id]} /> : undefined} />)}</div>
             </section>}
             {basicResults.length > 0 && <section className="travel-package-group" aria-labelledby="basic-title">
               <header className="travel-package-heading"><h2 id="basic-title">Weitere Unterkünfte</h2><p>Weitere Gastgeber aus dem Reiseportal – kompakt und übersichtlich.</p></header>
               <div className="listing-rows">{basicResults.map((listing) => <ListingRow key={listing.id} listing={listing} categories={[]}
-                href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} />)}</div>
+                href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} adminStatus={freshnessStatuses?.[listing.id] ? <FreshnessStatus status={freshnessStatuses[listing.id]} /> : undefined} />)}</div>
             </section>}
           </> : !error && <div className="empty-state" role="status">
               <p>Für diese Kombination haben wir aktuell keine passende Unterkunft.</p>
-              <button type="button" className="button" onClick={() => setValues(readTravelFilterValues({}))}>Alle Filter zurücksetzen</button>
+              <button type="button" className="button" onClick={() => { setValues(readTravelFilterValues({})); setReviewFilter(""); }}>Alle Filter zurücksetzen</button>
             </div>}
         </section>
       </AdvertisingLayout>

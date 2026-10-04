@@ -1,4 +1,3 @@
-import { publicFreshnessLabel, freshnessDate } from '@/lib/content-freshness';
 import type { Category, Listing, Location } from "@/types/portal";
 import { formatLocation, googleMapsLocation } from "@/lib/listings";
 import { Badge } from "./listings";
@@ -358,10 +357,6 @@ export function ListingDetail({
             </section>
           )}
           {qualityArea}
-          {(() => {
-            const notice = publicFreshnessLabel(listing.freshness);
-            return notice ? <p className="profile-freshness-public">{notice.label}: <time dateTime={notice.date}>{freshnessDate(notice.date)}</time></p> : null;
-          })()}
         </div>
       </div>
     </>

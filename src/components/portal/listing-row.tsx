@@ -22,6 +22,7 @@ export function ListingRow({
   showVerification = true,
   travel = false,
   travelLabels = {},
+  adminStatus,
 }: {
   listing: Listing;
   categories: Category[];
@@ -29,6 +30,7 @@ export function ListingRow({
   showVerification?: boolean;
   travel?: boolean;
   travelLabels?: Record<string, string>;
+  adminStatus?: React.ReactNode;
 }) {
   const cardImage = listing.directoryImage ?? listing.logo ?? listing.images[0];
   const isLogo = Boolean(cardImage && listing.logo?.src === cardImage.src);
@@ -81,6 +83,7 @@ export function ListingRow({
           <p><Icon name="globe" size={15} /><a href={website} target="_blank" rel="noopener noreferrer">{listing.contact.website}</a></p>
         )}
         <Link className="row-profile-link" href={href}>{travel ? (premium ? "Zum Unternehmensprofil" : "Zum Profil") : "Unternehmensprofil"}{travel && <Icon name="arrow" size={18} />}</Link>
+        {adminStatus}
       </div>
     </article>
   );

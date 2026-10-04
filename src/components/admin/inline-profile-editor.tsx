@@ -146,7 +146,10 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       mapLocation={editing ? mapLocation : undefined}
       originalDemoMedia={originalDemoMedia}
       contactAction={editing ? undefined : contactAction}
-      adminAction={editing ? undefined : <button type="button" className={`button ${styles.editButton}`} onClick={() => { setFeedback({}); setEditing(true); }}>Profil bearbeiten</button>}
+      adminAction={editing ? undefined : <div className="profile-admin-actions">
+        <button type="button" className={`button ${styles.editButton}`} onClick={() => { setFeedback({}); setEditing(true); }}>Profil bearbeiten</button>
+        {freshness && reviewFreshness && <ProfileFreshness state={freshness} review={reviewFreshness} disabled={busy || mediaEditor.busy || history.busy || dirty} compact />}
+      </div>}
       inlineFields={editing ? inlineFields : undefined}
       aboutHeading={content.aboutHeading}
       businessHeading={content.businessHeading}

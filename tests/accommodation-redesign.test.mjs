@@ -11,7 +11,7 @@ registerHooks({
     if (specifier.endsWith('.module.css')) return {url:'data:text/javascript,export default {}',shortCircuit:true};
     if (specifier.endsWith('inline-banner-editor')) return {url:'data:text/javascript,export function InlineBannerProvider({children}){return children}',shortCircuit:true};
     if (specifier.endsWith('/trades')) return {url:'data:text/javascript,export function AdvertisingLayout({children}){return children}',shortCircuit:true};
-    if (specifier.includes('/admin/')) return {url:'data:text/javascript,export function DirectoryOrderEditor(){return null};export function SidebarOrderEditor(){return null}',shortCircuit:true};
+    if (specifier.includes('/admin/') && !specifier.endsWith('/freshness-status')) return {url:'data:text/javascript,export function DirectoryOrderEditor(){return null};export function SidebarOrderEditor(){return null}',shortCircuit:true};
     if (specifier.startsWith('@/') || specifier.startsWith('.')) {
       const base = specifier.startsWith('@/') ? new URL('../src/'+specifier.slice(2), import.meta.url) : new URL(specifier,context.parentURL);
       for(const ext of ['.ts','.tsx']) if(existsSync(new URL(base.href+ext))) return next(base.href+ext,context);
