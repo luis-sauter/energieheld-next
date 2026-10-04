@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { signProfileVideo, changeAuthorizedProfileVideo } from "./profile-video";
 import type { PortalImage } from "@/types/portal";
 
 export const MEDIA_BUCKET = "company-media";
@@ -14,9 +15,11 @@ export type MediaProfile = {
   id: string;
   display_name: string;
   logo_path?: string | null;
+  video_path?: string | null;
   company_profile_images?: MediaRow[];
 };
 export type SignedMedia = {
+  video?: { src: string; poster?: string };
   logo?: PortalImage;
   images: (PortalImage & { id: string })[];
 };
@@ -32,6 +35,7 @@ const errorMessage =
 export async function signCompanyMedia(
   client: SupabaseClient,
   profile: MediaProfile,
+  includeVideo = false,
 ): Promise<SignedMedia> {
   const rows = [...(profile.company_profile_images ?? [])].sort(
     (a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id),
@@ -40,7 +44,8 @@ export async function signCompanyMedia(
     profile.logo_path,
     ...rows.map((row) => row.storage_path),
   ].filter((path): path is string => Boolean(path));
-  if (!paths.length) return { images: [] };
+  const video = includeVideo ? await signProfileVideo(client, profile) : undefined;
+  if (!paths.length) return video ? { images: [], video } : { images: [] };
   if (paths.some((path) => !path.startsWith(`profiles/${profile.id}/`)))
     throw new Error("Invalid media reference");
   const { data, error } = await client.storage
@@ -55,6 +60,7 @@ export async function signCompanyMedia(
     return value;
   };
   return {
+    ...(video ? { video } : {}),
     logo: profile.logo_path
       ? { src: src(profile.logo_path), alt: `Logo von ${profile.display_name}` }
       : undefined,
@@ -118,11 +124,13 @@ export async function changeOwnCompanyMedia(
   const { data: profile, error: profileError } = await client
     .from("company_profiles")
     .select(
-      "id,logo_path,company_profile_images(id,storage_path,alt_text,sort_order)",
+      "id,logo_path,video_path,company_profile_images(id,storage_path,alt_text,sort_order)",
     )
     .eq("company_id", company.id)
     .maybeSingle();
   if (profileError || !profile) return { error: errorMessage };
+  if (["prepare-video", "video-upload", "video-remove"].includes(String(form.get("intent"))))
+    return changeAuthorizedProfileVideo(client, profile, form);
   const rows = (profile.company_profile_images as MediaRow[]).sort(
     (a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id),
   );

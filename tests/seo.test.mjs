@@ -10,6 +10,7 @@ registerHooks({
  resolve(s,c,next) {
   if(s==='server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
   if(s.endsWith('.module.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
+  if(s==='@/components/portal/travel-finder')return {url:'data:text/javascript,export function SearchTravelFinder(){return null}',shortCircuit:true};
   if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
   if(s==='next/navigation')return {url:'data:text/javascript,export function notFound(){throw Error("NOT_FOUND")};export function permanentRedirect(path){throw Error("REDIRECT:"+path)}',shortCircuit:true};
   if(s==='@/components/portal/discovery-detail')return {url:'data:text/javascript,export function DiscoveryDetail(){return null}',shortCircuit:true};

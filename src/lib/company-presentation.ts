@@ -53,6 +53,7 @@ export function companyProfileListing(
       phone: profile.phone ?? "",
       website: profile.website ?? "",
     },
+    ...(media.video ? { video: { ...media.video, poster: media.images[0]?.src } } : {}),
     images: media.images,
     logo: media.logo,
     services: [],

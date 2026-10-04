@@ -19,6 +19,8 @@ export async function saveCompanyMedia(
   }
   if (result.unauthenticated) redirect("/login");
   if (result.success) {
+    revalidatePath("/unterkuenfte", "layout");
+    revalidatePath("/unterkuenfte-a-z");
     revalidatePath("/firma");
     revalidatePath("/firma/profil");
     revalidatePath("/firma/profil/gestalten");

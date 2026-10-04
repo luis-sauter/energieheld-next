@@ -20,10 +20,11 @@ export async function loadPublicCompanyProfileIndex() {
   const client = createPublicClient();
   const profiles: { id: string; status: string; slug: string; display_name: string;
     tagline: string | null; description: string | null; business_areas: string | null;
+    city?: string | null; postal_code?: string | null; region?: string | null; country?: string | null;
     company_profile_categories: { category_id: string }[] }[] = [];
   for (let offset = 0; ; offset += 500) {
     const { data, error } = await client.from("company_profiles")
-      .select("id,status,slug,display_name,tagline,description,business_areas,company_profile_categories(category_id)")
+      .select("id,status,slug,display_name,tagline,description,business_areas,city,postal_code,region,country,company_profile_categories(category_id)")
       .eq("status", "approved").order("id").range(offset, offset + 499);
     if (error) throw new Error(PUBLIC_COMPANIES_ERROR);
     const rows = data ?? [];
@@ -55,9 +56,10 @@ type PublicProfile = {
 };
 async function toListing(
   client: SupabaseClient,
-  row: PublicProfile,
+  row: PublicProfile & { video_path?: string | null },
+  includeVideo = false,
 ): Promise<Listing> {
-  const media = await signCompanyMedia(client, row);
+  const media = await signCompanyMedia(client, row, includeVideo);
   return companyProfileListing(row, media);
 }
 
@@ -141,14 +143,14 @@ export async function loadPublicCompanyBySlug(
     const client = createPublicClient();
     let { data, error } = await client
       .from("company_profiles")
-      .select(publicFields)
+      .select(`${publicFields},video_path`)
       .eq("status", "approved")
       .eq("slug", slug)
       .maybeSingle();
     if (error?.code === "42501") {
       ({ data, error } = await client
         .from("company_profiles")
-        .select(publicFieldsWithoutStreet)
+        .select(`${publicFieldsWithoutStreet},video_path`)
         .eq("status", "approved")
         .eq("slug", slug)
         .maybeSingle());
@@ -157,7 +159,7 @@ export async function loadPublicCompanyBySlug(
     return {
       data:
         data?.status === "approved"
-          ? await toListing(client, data as PublicProfile)
+          ? await toListing(client, data as PublicProfile, true)
           : null,
       error: null,
     };

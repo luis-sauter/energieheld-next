@@ -3,6 +3,7 @@ import { formatLocation, googleMapsLocation } from "@/lib/listings";
 import { Badge } from "./listings";
 import { CompanyLogo } from "./company-image";
 import { Icon } from "./icon";
+import { ProfileHeaderMedia } from "./profile-header-media";
 import { ImageGallery } from "./image-gallery";
 import { QualitySeal } from "@/components/quality/quality-seal";
 
@@ -235,11 +236,9 @@ export function ListingDetail({
       </div>
       <div className="profile-head-grid">
       <div className="profile-header-media">
-        {listing.video ? <video className="profile-video" src={listing.video.src} poster={listing.video.poster}
-          controls playsInline preload="metadata" aria-label={`Video von ${listing.name}`} />
-          : galleryEditor ?? (listing.images.length
+        {galleryEditor ?? <ProfileHeaderMedia key={listing.video?.src ?? "gallery"} video={listing.video} name={listing.name} gallery={listing.images.length
             ? <ImageGallery images={listing.images} isDemo={listing.isDemo && !originalDemoMedia} />
-            : <div className="gallery-empty"><p>Noch keine Profilbilder vorhanden.</p></div>)}
+            : <div className="gallery-empty"><p>Noch keine Profilbilder vorhanden.</p></div>} />}
       </div>
         <ContactSection
           listing={listing}
