@@ -32,7 +32,7 @@ export function ProfileVideoEditor({ video, name, gallery, save, disabled = fals
         if (window.confirm("Das Profilvideo entfernen und wieder die Galerie anzeigen?")) void mutate();
       }}>Video entfernen</button>}
       <input ref={input} type="file" accept={VIDEO_ACCEPT} aria-label="Profilvideo auswählen" hidden onChange={event => { const file = event.target.files?.[0]; if (file) void mutate(file); }} />
-      <small>MP4 oder WebM · maximal 25 MB · ersetzt die Galerie im Profilkopf</small>
+      <small>MP4 oder WebM · maximal 100 MB · ersetzt die Galerie im Profilkopf</small>
     </div>
     {busy && <p role="status">{busy}</p>}
     {feedback.error && <p role="alert">{feedback.error}</p>}
