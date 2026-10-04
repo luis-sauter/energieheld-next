@@ -72,6 +72,31 @@ test('admin filter intersects travel filters without becoming a public URL facet
  const src=readFileSync(new URL('../src/components/portal/travel-directory.tsx',import.meta.url),'utf8');
  assert.match(src,/travelFilterUrl\(values\)/);assert.doesNotMatch(src,/travelFilterUrl\([^)]*reviewFilter/);
 });
+test('review-need filter excludes current Demo and overview counts all matching profiles, not just filtered ones',()=>{
+ globalThis.reviewFilter='needs-review';
+ const tree=directoryTree({freshnessStatuses:statusMap});
+ assert.deepEqual(nodes(tree,n=>n.type===ListingRow).map(n=>n.props.listing.id),listings.slice(0,3).map(l=>l.id));
+ const overview=nodes(tree,n=>n.props?.className==='admin-freshness-summary')[0];
+ const html=renderToStaticMarkup(overview);assert.match(html,/Prüfbedarf 3/);
+ for(const label of ['Ungeprüft','Geändert','Überfällig','Geprüft'])assert.ok(html.includes(`${label} 1`));
+ assert.ok(html.includes('Prüfung erforderlich 0'));
+});
+test('status pill appears beside profile name, never below the CTA',()=>{
+ const html=renderToStaticMarkup(createElement(ListingRow,{listing:listings[0],categories:[],href:'/profile',travel:true,adminStatus:createElement(FreshnessStatus,{status:statuses[0]})}));
+ assert.ok(html.indexOf('admin-freshness-status')<html.indexOf('row-profile-link'));
+ assert.match(html,/<div class="row-heading">[\s\S]*?<h3>[\s\S]*?Ungeprüft[\s\S]*?<\/div>/);
+});
+
+test('withdrawn review has its own filter and contributes once to review need',()=>{
+ const withdrawnMap={...statusMap,[listings[3].id]:'Prüfung erforderlich'};
+ globalThis.reviewFilter='Prüfung erforderlich';
+ const tree=directoryTree({freshnessStatuses:withdrawnMap});
+ assert.deepEqual(nodes(tree,n=>n.type===ListingRow).map(n=>n.props.listing.id),[listings[3].id]);
+ const html=renderToStaticMarkup(nodes(tree,n=>n.props?.className==='admin-freshness-summary')[0]);
+ assert.match(html,/Prüfbedarf 4/); assert.match(html,/Prüfung erforderlich 1/); assert.match(html,/Geprüft 0/);
+ globalThis.reviewFilter='needs-review';
+ assert.equal(nodes(directoryTree({freshnessStatuses:withdrawnMap}),n=>n.type===ListingRow).length,4);
+});
 test('single batch query uses central status and projects no revision/actor/date fields',async()=>{
  const rows=statuses.map((_,i)=>({profile_id:listings[i].id,content_revision:i===1?2:1,reviewed_revision:i===0?null:1,reviewed_at:i===0?null:i===2?'2020-01-01':new Date().toISOString()}));
  const calls=[];

@@ -1,30 +1,57 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { freshnessStatus, freshnessDate, freshnessDueDate, type ContentFreshness } from "@/lib/content-freshness";
+import { freshnessStatus, freshnessStates, freshnessContextDate, freshnessDate, freshnessDueDate, type ContentFreshness } from "@/lib/content-freshness";
 import { FreshnessStatus } from "./freshness-status";
 
-export function ProfileFreshness({ state, review, disabled, compact = false }: {
+type Feedback = { error?: string; success?: string };
+export function ProfileFreshness({ state, review, withdraw, disabled, compact = false }: {
   state: ContentFreshness;
-  review: (revision: number) => Promise<{ error?: string; success?: string }>;
+  review: (revision: number) => Promise<Feedback>;
+  withdraw?: (revision: number, reviewedAt: string) => Promise<Feedback>;
   disabled: boolean;
   compact?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState<{ error?: string; success?: string }>({});
+  const [confirming, setConfirming] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback>({});
+  const status = freshnessStatus(state);
+  const action = freshnessStates[status].action;
+  const contextDate = freshnessContextDate(state, status);
+  const canWithdraw = Boolean(withdraw && state.reviewed_at && !state.review_invalidated_at);
+  useEffect(() => {
+    if (!feedback.success) return;
+    const timer = setTimeout(() => setFeedback({}), 4000);
+    return () => clearTimeout(timer);
+  }, [feedback.success]);
+  async function perform(operation: () => Promise<Feedback>) {
+    setBusy(true); setFeedback({});
+    try { setFeedback(await operation()); }
+    catch { setFeedback({ error: "Die Prüfaktion konnte nicht gespeichert werden. Bitte versuchen Sie es erneut." }); }
+    finally { setBusy(false); setConfirming(false); router.refresh(); }
+  }
   return <section className={compact ? "profile-freshness-compact" : "profile-freshness-editor"} aria-label="Datenqualität">
-    {compact ? <FreshnessStatus status={freshnessStatus(state)} /> : <strong>Datenqualität: {freshnessStatus(state)}</strong>}
-    {!compact && state.content_updated_at && <p>Zuletzt geändert: {freshnessDate(state.content_updated_at)} · {({ admin: "Redaktion", provider: "Anbieter", import: "Import", system: "System" })[state.content_update_source ?? "system"]}</p>}
-    {state.reviewed_at && <p>Zuletzt geprüft: {freshnessDate(state.reviewed_at)}</p>}
-    {!compact && state.reviewed_at && state.reviewed_revision === state.content_revision && <p>Nächste Prüfung: {freshnessDate(freshnessDueDate(state.reviewed_at))}</p>}
-    {!compact && <p>Prüfen Sie den gesamten gespeicherten Profilinhalt. Speichern allein bestätigt keine Prüfung.</p>}
-    <button type="button" className="button" disabled={disabled || busy} onClick={async () => {
-      setBusy(true); setFeedback({});
-      try { setFeedback(await review(state.content_revision)); }
-      catch { setFeedback({ error: "Die Prüfung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut." }); }
-      finally { setBusy(false); router.refresh(); }
-    }}>{busy ? "Prüfung wird gespeichert …" : "Als geprüft markieren"}</button>
+    <FreshnessStatus status={status} compact={false} />
+    {compact ? contextDate && <span className="profile-freshness-date">{contextDate.label}: {freshnessDate(contextDate.date)}</span> : <div className="profile-freshness-metadata">
+      {state.reviewed_at && <span>Zuletzt geprüft: {freshnessDate(state.reviewed_at)}</span>}
+      {state.review_invalidated_at && <span>Zurückgezogen: {freshnessDate(state.review_invalidated_at)}</span>}
+      {!state.review_invalidated_at && state.reviewed_at && state.reviewed_revision === state.content_revision && <span>Nächste Prüfung: {freshnessDate(freshnessDueDate(state.reviewed_at))}</span>}
+      {status === "Seit Prüfung geändert" && state.content_updated_at && <span>Geändert: {freshnessDate(state.content_updated_at)} · {({ admin: "Redaktion", provider: "Anbieter", import: "Import", system: "System" })[state.content_update_source ?? "system"]}</span>}
+    </div>}
+    {action && <button type="button" className="button" disabled={disabled || busy} onClick={() => perform(() => review(state.content_revision))}>
+      {busy ? "Prüfaktion wird gespeichert …" : action}
+    </button>}
+    {canWithdraw && !confirming && <details className="profile-freshness-menu">
+      <summary aria-label="Weitere Prüfaktionen">⋯</summary>
+      <button type="button" disabled={disabled || busy} onClick={() => { setFeedback({}); setConfirming(true); }}>Prüfung zurückziehen</button>
+    </details>}
+    {confirming && <div className="profile-freshness-confirm" role="group" aria-label="Prüfung zurückziehen bestätigen">
+      <p>Der aktuelle Prüfstatus wird zurückgezogen. Das Profil erscheint anschließend wieder unter „Prüfbedarf“. Fortfahren?</p>
+      <button type="button" className="button" disabled={disabled || busy} onClick={() => perform(() => withdraw!(state.content_revision, state.reviewed_at!))}>{busy ? "Prüfaktion wird gespeichert …" : "Rücknahme bestätigen"}</button>
+      <button type="button" className="button" disabled={busy} onClick={() => setConfirming(false)}>Rücknahme abbrechen</button>
+    </div>}
+    {!compact && action && <small>Speichern bestätigt keine Prüfung.</small>}
     {feedback.error && <p role="alert">{feedback.error}</p>}
     {feedback.success && <p role="status">{feedback.success}</p>}
   </section>;

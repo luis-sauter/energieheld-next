@@ -8,7 +8,7 @@ export type AdminFreshnessStatuses = Record<string, ReturnType<typeof freshnessS
 export async function loadAdminFreshnessStatuses(client: SupabaseClient, ids: string[]): Promise<AdminFreshnessStatuses | null> {
   if (!ids.length) return {};
   const { data, error } = await client.from("profile_content_freshness")
-    .select("profile_id,content_revision,reviewed_revision,reviewed_at")
+    .select("profile_id,content_revision,reviewed_revision,reviewed_at,review_invalidated_at")
     .in("profile_id", [...new Set(ids)]);
   if (error) return null;
   const now = new Date();
@@ -18,7 +18,7 @@ export async function loadAdminFreshnessStatuses(client: SupabaseClient, ids: st
 }
 export async function loadAdminProfileFreshness(client: SupabaseClient, id: string): Promise<ContentFreshness | null> {
   const { data, error } = await client.from("profile_content_freshness")
-    .select("content_revision,content_updated_at,content_update_source,reviewed_revision,reviewed_at")
+    .select("content_revision,content_updated_at,content_update_source,reviewed_revision,reviewed_at,review_invalidated_at")
     .eq("profile_id", id).maybeSingle();
   return error ? null : data;
 }

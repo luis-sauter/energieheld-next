@@ -1,12 +1,5 @@
-import type { freshnessStatus } from "@/lib/content-freshness";
+import { freshnessStates, type FreshnessStatus as Status } from "@/lib/content-freshness";
 
-export const freshnessSymbols = {
-  "Noch nicht geprüft": "○",
-  "Seit Prüfung geändert": "●",
-  "Prüfung überfällig": "⚠",
-  "Aktuell geprüft": "✓",
-} satisfies Record<ReturnType<typeof freshnessStatus>, string>;
-
-export function FreshnessStatus({ status }: { status: keyof typeof freshnessSymbols }) {
-  return <span className="admin-freshness-status"><span aria-hidden="true">{freshnessSymbols[status]}</span> {status}</span>;
+export function FreshnessStatus({ status, compact = true }: { status: Status; compact?: boolean }) {
+  return <span className="admin-freshness-status" title={status}><span aria-hidden="true">{freshnessStates[status].symbol}</span> {compact ? freshnessStates[status].label : status}</span>;
 }
