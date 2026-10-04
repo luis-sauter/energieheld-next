@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MediaState } from "./company-media";
 
 export const VIDEO_BUCKET = "company-profile-videos";
-export const VIDEO_MAX_BYTES = 25 * 1024 * 1024;
+export const VIDEO_MAX_BYTES = 100 * 1024 * 1024;
 export const VIDEO_ACCEPT = "video/mp4,video/webm";
 const failure = "Das Video konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.";
 export function videoExtension(mime: unknown) {
@@ -14,7 +14,7 @@ export function isProfileVideoPath(profileId: string, path: unknown): path is st
 }
 export async function validateVideoFile(value: FormDataEntryValue | null) {
   if (!(value instanceof File) || !value.size) return { error: "Bitte wählen Sie eine Videodatei." };
-  if (value.size > VIDEO_MAX_BYTES) return { error: "Das Video darf maximal 25 MB groß sein." };
+  if (value.size > VIDEO_MAX_BYTES) return { error: "Das Video darf maximal 100 MB groß sein." };
   const extension = videoExtension(value.type);
   if (!extension) return { error: "Bitte verwenden Sie MP4 oder WebM." };
   const bytes = new Uint8Array(await value.slice(0, 4096).arrayBuffer());
@@ -42,7 +42,7 @@ export async function changeAuthorizedProfileVideo(client: SupabaseClient, profi
   if (intent === "prepare-video") {
     const extension = videoExtension(form.get("file_type")), size = Number(form.get("file_size"));
     if (!extension || !Number.isSafeInteger(size) || size <= 0 || size > VIDEO_MAX_BYTES)
-      return { error: "Bitte wählen Sie MP4 oder WebM mit maximal 25 MB." };
+      return { error: "Bitte wählen Sie MP4 oder WebM mit maximal 100 MB." };
     return { uploadPath: `profiles/${profile.id}/video/${crypto.randomUUID()}.${extension}` };
   }
   let next: string | null = null;

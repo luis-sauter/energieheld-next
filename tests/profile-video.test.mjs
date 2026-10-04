@@ -58,3 +58,16 @@ test('public signing validates profile path and failure leaves gallery available
   assert.equal(await signProfileVideo(client({signed:false}),{id,video_path:path}),undefined);
   assert.equal((await signProfileVideo(c,{id,video_path:path})).src,'https://signed.example/video');
 });
+
+test('100 MiB boundary is shared by file validation and owner/admin preparation',async()=>{
+ assert.equal(VIDEO_MAX_BYTES,104857600);
+ for(const size of [26214401,VIDEO_MAX_BYTES]) {
+  const file=new File([bytes,new Uint8Array(size-bytes.length)],'video.mp4',{type:'video/mp4'});
+  assert.equal((await validateVideoFile(file)).extension,'mp4');
+  for(const save of [(c,f)=>changeAdminCompanyMedia(c,id,f),changeOwnCompanyMedia])assert.ok((await save(client(),form({intent:'prepare-video',file_type:'video/mp4',file_size:String(size)}))).uploadPath);
+ }
+ for(const save of [(c,f)=>changeAdminCompanyMedia(c,id,f),changeOwnCompanyMedia]) {
+  const result=await save(client(),form({intent:'prepare-video',file_type:'video/mp4',file_size:String(VIDEO_MAX_BYTES+1)}));
+  assert.match(result.error,/100 MB/);assert.equal(result.uploadPath,undefined);
+ }
+});
