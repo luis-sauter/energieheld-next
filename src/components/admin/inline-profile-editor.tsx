@@ -1,5 +1,7 @@
 "use client";
 
+import { ProfileFreshness } from './profile-freshness';
+import type { ContentFreshness } from '@/lib/content-freshness';
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ListingDetail, type InlineProfileFields } from "@/components/portal/listing-detail";
@@ -16,7 +18,7 @@ import { InlineEditorHistoryContext, useInlineEditorHistoryController } from "./
 
 const formId = "inline-admin-profile-form";
 
-export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, showVerification = true, allowDemoMap = false, originalDemoMedia = false }: {
+export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness }: {
   listing: Listing;
   categories: Category[];
   values: ProfileValues;
@@ -35,11 +37,14 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   showVerification?: boolean;
   allowDemoMap?: boolean;
   originalDemoMedia?: boolean;
+  freshness?: ContentFreshness | null;
+  reviewFreshness?: (revision: number) => Promise<{ error?: string; success?: string }>;
 }) {
   const router = useRouter();
   const busyRef = useRef(false);
   const [editing, setEditing] = useState(initialEditing);
   const [busy, setBusy] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [feedback, setFeedback] = useState<ProfileFormState>({});
   const [mapLocation, setMapLocation] = useState(listing.location);
   const history = useInlineEditorHistoryController(saveContent, saveBlockImage, editing);
@@ -49,6 +54,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   function field(name: keyof ProfileValues, label: string, multiline = false) {
     const common = { id: `inline-${name}`, name, form: formId, defaultValue: values[name], disabled: busy || history.busy, "aria-label": label, onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setFeedback({});
+      setDirty(true);
       const key = ({ street: "street", postal_code: "postalCode", city: "city", region: "region", country: "country" } as const)[name as "street" | "postal_code" | "city" | "region" | "country"];
       if (key) setMapLocation((current) => ({ ...current, [key]: event.target.value }));
     } };
@@ -99,7 +105,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
     try {
       const result = await saveProfile(new FormData(event.currentTarget));
       setFeedback(result);
-      if (result.success) router.refresh();
+      if (result.success) { setDirty(false); router.refresh(); }
     } catch {
       setFeedback({ error: "Das Profil konnte nicht gespeichert werden. Bitte versuchen Sie es erneut." });
     } finally {
@@ -117,7 +123,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
         onClick={() => void history.redo()}>↷ Wiederholen</button>
       <form id={formId} onSubmit={submit}>
         <button className="button button-primary" disabled={busy || mediaEditor.busy || history.busy}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
-        <button type="button" className="button" disabled={busy || mediaEditor.busy || history.busy} onClick={() => { setEditing(false); setFeedback({}); history.clear(); }}>Abbrechen</button>
+        <button type="button" className="button" disabled={busy || mediaEditor.busy || history.busy} onClick={() => { setEditing(false); setDirty(false); setFeedback({}); history.clear(); }}>Abbrechen</button>
       </form>
       {busy && <span role="status">Änderungen werden gespeichert …</span>}
       {history.busy && <span role="status">Änderung wird wiederhergestellt …</span>}
@@ -128,6 +134,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       {mediaEditor.status}
       <small>Inhalts- und Bildänderungen werden sofort gespeichert.</small>
     </div>}
+    {editing && freshness && reviewFreshness && <ProfileFreshness state={freshness} review={reviewFreshness} disabled={busy || mediaEditor.busy || history.busy || dirty} />}
     <ListingDetail
       listing={listing}
       showVerification={showVerification}

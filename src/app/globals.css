@@ -3468,5 +3468,9 @@ h6 {
 
 .profile-video { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: contain; background: #1a2731; border-radius: 14px; }
 .profile-video-editor { min-width: 0; }
+.profile-freshness-editor { margin-block: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: .75rem; background: var(--surface); }
+.profile-freshness-editor p { margin-block: .45rem; }
+.profile-freshness-editor .button { margin-top: .4rem; max-width: 100%; white-space: normal; }
+.profile-freshness-public { margin-block: 1.5rem .5rem; font-size: .875rem; color: var(--muted); }
 .profile-video-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
 .profile-video-actions small { flex-basis: 100%; }

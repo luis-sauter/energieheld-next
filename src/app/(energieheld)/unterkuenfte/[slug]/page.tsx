@@ -1,3 +1,5 @@
+import { loadAdminProfileFreshness } from '@/lib/profile-freshness';
+import type { ContentFreshness } from '@/lib/content-freshness';
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { loadAccommodationPage } from "@/lib/accommodation-page";
@@ -8,7 +10,7 @@ import { checkAdmin, isProfileId, loadReviewProfile } from "@/lib/admin-review";
 import { signCompanyMedia, type MediaRow, type SignedMedia } from "@/lib/company-media";
 import { profileFields, type ProfileValues } from "@/lib/company-profile";
 import { InlineProfileEditor } from "@/components/admin/inline-profile-editor";
-import { saveInlineProfile, saveInlineMedia } from "@/app/(energieheld)/experten/[slug]/inline-actions";
+import { saveInlineProfile, saveInlineMedia, reviewInlineProfile } from "@/app/(energieheld)/experten/[slug]/inline-actions";
 import { saveInlineContent } from "@/app/(energieheld)/experten/[slug]/content-actions";
 import { saveInlineBlockImage } from "@/app/(energieheld)/experten/[slug]/block-image-actions";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -69,21 +71,22 @@ export default async function AccommodationDetail({
     ? await loadPublicProfileContent(createPublicClient(), listing.id)
     : { blocks: [], available: false, imagesAvailable: false };
   const presentedContent = splitProfileContent(content.blocks, listing.name);
-  let editorData: { values: ProfileValues; media: SignedMedia; rows: MediaRow[] } | null = null;
+  let editorData: { values: ProfileValues; media: SignedMedia; rows: MediaRow[]; freshness: ContentFreshness | null } | null = null;
   let editorContent = content;
   if (storedProfile) {
     try {
       const client = await createClient();
       if (await checkAdmin(client) === "admin") {
+        const freshness = await loadAdminProfileFreshness(client, listing.id);
         const review = await loadReviewProfile(client, listing.id);
         const profile = review.profile;
         if (review.access === "admin" && !review.error && profile?.status === "approved") {
           const media = await signCompanyMedia(client, profile, true);
-          if (liveDemo) editorContent = await loadPublicProfileContent(client, listing.id);
+          editorContent = await loadPublicProfileContent(client, listing.id);
           const values = Object.fromEntries(
             profileFields.map((field) => [field, profile[field] ?? ""]),
           ) as ProfileValues;
-          editorData = { values, media, rows: profile.company_profile_images };
+          editorData = { values, media, rows: profile.company_profile_images, freshness };
         }
       }
     } catch {
@@ -95,6 +98,8 @@ export default async function AccommodationDetail({
       <JsonLd data={indexableProfile(listing) ? jsonLdGraph([breadcrumbSchema(breadcrumbs), ...profileSchema(listing, result.terms)]) : null} />
       <Breadcrumbs items={breadcrumbs} />
       {editorData ? <InlineProfileEditor
+        freshness={editorData.freshness}
+        reviewFreshness={reviewInlineProfile.bind(null, listing.id, slug)}
         listing={listing}
         categories={[]}
         showVerification={false}
@@ -105,7 +110,7 @@ export default async function AccommodationDetail({
         saveProfile={saveInlineProfile.bind(null, listing.id, slug)}
         saveMedia={saveInlineMedia.bind(null, listing.id, slug)}
         contentBlocks={editorContent.blocks}
-        publicContentBlocks={liveDemo ? content.blocks : undefined}
+        publicContentBlocks={content.blocks}
         contentAvailable={editorContent.available}
         imagesAvailable={editorContent.imagesAvailable}
         saveContent={saveInlineContent.bind(null, listing.id, slug)}
