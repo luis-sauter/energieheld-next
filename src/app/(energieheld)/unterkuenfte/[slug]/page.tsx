@@ -78,7 +78,7 @@ export default async function AccommodationDetail({
         const review = await loadReviewProfile(client, listing.id);
         const profile = review.profile;
         if (review.access === "admin" && !review.error && profile?.status === "approved") {
-          const media = await signCompanyMedia(client, profile);
+          const media = await signCompanyMedia(client, profile, true);
           if (liveDemo) editorContent = await loadPublicProfileContent(client, listing.id);
           const values = Object.fromEntries(
             profileFields.map((field) => [field, profile[field] ?? ""]),

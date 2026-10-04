@@ -31,7 +31,7 @@ export default async function AdminProfilePreview({ params }: { params: Promise<
     if (publicResult.data?.id === id) redirect(`/unterkuenfte/${slug}`);
   }
   const [media, content] = await Promise.all([
-    signCompanyMedia(client, profile),
+    signCompanyMedia(client, profile, true),
     loadPublicProfileContent(client, profile.id),
   ]);
   const listing = withLegacyImages(companyProfileListing(profile, media));

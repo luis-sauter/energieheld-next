@@ -3459,3 +3459,8 @@ h6 {
 }
 
 .commercial-columns--no-rail { grid-template-columns: minmax(0, 1fr); }
+
+.profile-video { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: contain; background: #1a2731; border-radius: 14px; }
+.profile-video-editor { min-width: 0; }
+.profile-video-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+.profile-video-actions small { flex-basis: 100%; }

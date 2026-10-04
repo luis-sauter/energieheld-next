@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
+import { ProfileVideoEditor } from "@/components/auth/profile-video-editor";
 import { CompanyLogo } from "@/components/portal/company-image";
 import { ImageGallery } from "@/components/portal/image-gallery";
 import { createClient } from "@/lib/supabase/client";
@@ -275,5 +276,5 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
       </form>
     </dialog>
   );
-  return { logoEditor, galleryEditor, status, uploadDialog, busy: Boolean(busy) };
+  return { logoEditor, galleryEditor: <ProfileVideoEditor video={media.video ? { ...media.video, poster: media.images[0]?.src } : undefined} name={profileName} gallery={galleryEditor} save={saveAction} disabled={Boolean(busy)} onBusyChange={active => { if (active) begin("Video wird gespeichert …"); else end(); }} />, status, uploadDialog, busy: Boolean(busy) };
 }

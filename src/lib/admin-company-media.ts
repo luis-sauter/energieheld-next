@@ -1,3 +1,4 @@
+import { changeAuthorizedProfileVideo } from "./profile-video";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { checkAdmin, isProfileId, type AdminAccess } from "./admin-review";
 import {
@@ -24,12 +25,14 @@ export async function changeAdminCompanyMedia(
     return { access, error: "Das Firmenprofil wurde nicht gefunden." };
   const { data: profile, error: profileError } = await client
     .from("company_profiles")
-    .select("id,logo_path,company_profile_images(id,storage_path,alt_text,sort_order)")
+    .select("id,logo_path,video_path,company_profile_images(id,storage_path,alt_text,sort_order)")
     .eq("id", profileId)
     .maybeSingle();
   if (profileError || !profile)
     return { access, error: "Das Firmenprofil konnte nicht geladen werden." };
 
+  if (["prepare-video", "video-upload", "video-remove"].includes(String(form.get("intent"))))
+    return { access, ...await changeAuthorizedProfileVideo(client, profile, form) };
   const rows = [...(profile.company_profile_images as MediaRow[])].sort(
     (a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id),
   );

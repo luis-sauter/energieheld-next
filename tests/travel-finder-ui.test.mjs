@@ -129,8 +129,8 @@ test('empty free text retains structured filter URLs and return links preserve o
 });
 test('results remain a compact continuation and no separate header search entry survives', () => {
   const page = source('src/app/(energieheld)/suche/page.tsx');
-  assert.match(page, /<h1>Suchergebnisse<\/h1>/); assert.match(page, /Zur Suche zurück/);
-  assert.match(page, /name="von"/); assert.match(page, /travelFilterParams/);
+  assert.match(page, /<SearchTravelFinder/); assert.match(page, /Zur Suche zurück/);
+  assert.match(page, /origin=\{origin\}/); assert.match(page, /readTravelFilterValues/);
   assert.doesNotMatch(source('src/components/portal/chrome.tsx'), /Portalsuche öffnen|href="\/suche"/);
   assert.match(source('src/components/portal/travel-finder.tsx'), /popstate/);
 });
@@ -147,4 +147,21 @@ test('structured directory submit scrolls to results and respects reduced motion
       assert.deepEqual(scrolling,{behavior:reduced?'instant':'smooth'});
     }
   } finally {globalThis.window=previousWindow;globalThis.document=previousDocument;}
+});
+
+test('result-route finder retains all context fields and submits with the original source', () => {
+  const values = readTravelFilterValues({ q: 'City Apart', ziel: 'deutschland', thema: 'wellnessangebote', zielgruppe: 'paar', unterkunftstyp: 'hotel', besonderheit: 'sauna', ort: 'Berlin', sort: 'name' });
+  const html = render(values, 'search');
+  assert.equal((html.match(/role="search"/g) ?? []).length, 1);
+  for (const label of ['Wohin?', 'Reiseart', 'Mit wem?', 'Unterkunft', 'Besonderheiten', 'Suchbegriff', 'Ort oder Postleitzahl']) assert.ok(html.includes(label));
+  for (const selected of ['deutschland', 'wellnessangebote', 'paar', 'hotel', 'sauna']) assert.ok(html.includes(`value="${selected}" selected`));
+  assert.match(html,/value="City Apart"/); assert.match(html,/value="Berlin"/);
+  const previous = globalThis.window;
+  try {
+    let url; globalThis.window = { location: { assign(value) { url=value; } } };
+    const submit = current => formIn(TravelFinder({mode:'search',origin:'home',listings,options,values:current,onChange(){}})).props.onSubmit({preventDefault(){}});
+    submit(values); assert.equal(url,travelSearchUrl(values,'home'));
+    submit({...values,query:'',destination:'',theme:'',audience:'',accommodation:'',feature:'',location:''});
+    assert.match(url,/^\/unterkuenfte-a-z\?sort=name$/);
+  } finally { globalThis.window=previous; }
 });

@@ -4,6 +4,7 @@ import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
 import legacyDirectoryMedia from "../data/reiseportal-legacy-directory-media.json" with { type: "json" };
 import verifiedProviderMedia from "../data/reiseportal-legacy-provider-media.json" with { type: "json" };
 import type { Listing } from "@/types/portal";
+import { companyProfileListing } from "./company-presentation";
 import { directoryItemKey } from "./company-directory-order";
 import { loadPublicCompanyBySlug, loadPublicCompanyDirectory, loadPublicCompanyProfileIndex } from "./public-companies";
 import { demoProfileId, demoPublicSlug, demoSourceSlug } from "./reiseportal-demo";
@@ -62,13 +63,14 @@ export function withLegacyImages(listing: Listing): Listing {
   const directoryImage = (legacyDirectoryMedia as Record<string, { src: string; alt: string }>)[listing.slug];
   if (!source && !imported && !verified && !directoryImage) return listing;
   const historicImage = directoryImage ? { src: directoryImage.src, alt: directoryImage.alt } : undefined;
-  return { ...listing,
+  const result = { ...listing,
     directoryImage: listing.logo ?? listing.images[0] ?? listing.directoryImage ??
       historicImage,
     logo: listing.logo ?? verified?.logo ?? imported?.logo ?? source?.logo ?? historicImage,
     images: listing.images.length ? listing.images : verified?.images.length ? verified.images :
       imported?.images.length ? imported.images : source?.images.length ? source.images :
       historicImage ? [historicImage] : [] };
+  return result.video ? { ...result, video: { ...result.video, poster: result.images[0]?.src } } : result;
 }
 
 async function loadDirectoryPackages() {
@@ -153,4 +155,11 @@ export async function loadReiseportalListingBySlug(slug: string) {
   return result.data && !travelVisible(result.data)
     ? { data: null, error: null }
     : { data: result.data ? withLegacyImages(result.data) : null, error: result.error };
+}
+
+// Facet counts on the result route need facts, not images or signed media.
+export async function loadReiseportalFinderListings(): Promise<Listing[]> {
+  const [profiles, assignments] = await Promise.all([loadPublicCompanyProfileIndex(), loadPublicTravelAssignments()]);
+  return profiles.map(profile => ({ ...companyProfileListing(profile, { images: [] }), travelTermKeys: assignments?.get(profile.id) ?? [] }))
+    .filter(travelVisible);
 }

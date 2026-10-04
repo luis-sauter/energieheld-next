@@ -1,11 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
+import "./helpers/load-ts.mjs";
+const {
   changeOwnCompanyMedia,
   validateMediaFile,
   signCompanyMedia,
   MEDIA_MAX_BYTES,
-} from "../src/lib/company-media.ts";
+} = await import("../src/lib/company-media.ts");
 const png = new File(
   [new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 0])],
   "untrusted/evil.svg",

@@ -27,7 +27,7 @@ export default async function CompanyDesignPage() {
   let media;
   if (profile && !dashboard.error) {
     try {
-      media = await signCompanyMedia(client, profile);
+      media = await signCompanyMedia(client, profile, true);
     } catch {
       /* Show a neutral error below. */
     }

@@ -1,4 +1,5 @@
 "use client";
+import { ProfileVideoEditor } from "./profile-video-editor";
 import { createClient } from "@/lib/supabase/client";
 import type { MediaState } from "@/lib/company-media";
 import { useActionState, useRef, useState } from "react";
@@ -19,6 +20,7 @@ export function CompanyProfileDesigner({
   media: SignedMedia;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const [videoBusy, setVideoBusy] = useState(false);
   const [uploadKind, setUploadKind] = useState("gallery-upload");
   function openUpload(kind: string) {
     setUploadKind(kind);
@@ -80,7 +82,7 @@ export function CompanyProfileDesigner({
       <button
         type="button"
         className="detail-logo logo-upload-target"
-        disabled={pending}
+        disabled={pending || videoBusy}
         aria-label={media.logo ? "Logo ändern" : "Firmenlogo hinzufügen"}
         onClick={() => openUpload("logo-upload")}
       >
@@ -109,7 +111,7 @@ export function CompanyProfileDesigner({
           <button
             name="intent"
             value="logo-remove"
-            disabled={pending}
+            disabled={pending || videoBusy}
             aria-label="Logo entfernen"
           >
             Entfernen
@@ -122,7 +124,7 @@ export function CompanyProfileDesigner({
     <button
       type="button"
       className="gallery-add-tile"
-      disabled={pending || media.images.length >= 8}
+      disabled={pending || videoBusy || media.images.length >= 8}
       aria-label={
         media.images.length >= 8
           ? "Alle 8 Bildplätze sind belegt"
@@ -151,7 +153,7 @@ export function CompanyProfileDesigner({
               <button
                 name="intent"
                 value="gallery-remove"
-                disabled={pending}
+                disabled={pending || videoBusy}
                 aria-label="Ausgewähltes Bild löschen"
               >
                 Bild löschen
@@ -164,7 +166,7 @@ export function CompanyProfileDesigner({
               <button
                 name="intent"
                 value="gallery-up"
-                disabled={pending || index === 0}
+                disabled={pending || videoBusy || index === 0}
                 aria-label={`Bild ${index + 1} nach links verschieben`}
                 title="Bild nach links verschieben"
               >
@@ -173,7 +175,7 @@ export function CompanyProfileDesigner({
               <button
                 name="intent"
                 value="gallery-down"
-                disabled={pending || index === media.images.length - 1}
+                disabled={pending || videoBusy || index === media.images.length - 1}
                 aria-label={`Bild ${index + 1} nach rechts verschieben`}
                 title="Bild nach rechts verschieben"
               >
@@ -213,7 +215,7 @@ export function CompanyProfileDesigner({
         categories={energieheld.categories}
         presentation="company"
         logoEditor={logoEditor}
-        galleryEditor={galleryEditor}
+        galleryEditor={<ProfileVideoEditor video={listing.video} name={listing.name} gallery={galleryEditor} disabled={pending || videoBusy} save={form => saveCompanyMedia({}, form)} onBusyChange={setVideoBusy} />}
       />
       <dialog
         ref={dialog}
@@ -248,7 +250,7 @@ export function CompanyProfileDesigner({
               name="file"
               required
               accept="image/jpeg,image/png,image/webp"
-              disabled={pending}
+              disabled={pending || videoBusy}
               aria-describedby="upload-file-help"
             />
           </label>
@@ -259,7 +261,7 @@ export function CompanyProfileDesigner({
                 type="text"
                 name="alt_text"
                 maxLength={500}
-                disabled={pending}
+                disabled={pending || videoBusy}
                 placeholder="Was ist auf dem Bild zu sehen?"
               />
             </label>
@@ -277,7 +279,7 @@ export function CompanyProfileDesigner({
             >
               Abbrechen
             </button>
-            <button className="button button-primary" disabled={pending}>
+            <button className="button button-primary" disabled={pending || videoBusy}>
               {pending ? "Wird hochgeladen …" : "Bild hochladen"}
             </button>
           </div>
