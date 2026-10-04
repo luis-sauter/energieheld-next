@@ -15,16 +15,16 @@ export default async function AccommodationsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  let canReorder = false;
-  if (!["q", "ort", "sort", "ziel", "thema", "zielgruppe", "unterkunftstyp", "besonderheit"].some((key) => params[key] !== undefined)) {
-    try {
-      canReorder = (await checkAdmin(await createClient())) === "admin";
-    } catch {
-      // Public reading remains available without an admin session.
-    }
+  let adminClient;
+  try {
+    const client = await createClient();
+    if (await checkAdmin(client) === "admin") adminClient = client;
+  } catch {
+    // Public reading remains available without an admin session.
   }
+  const canReorder = Boolean(adminClient) && !["q", "ort", "sort", "ziel", "thema", "zielgruppe", "unterkunftstyp", "besonderheit"].some((key) => params[key] !== undefined);
   return <DirectoryPage mode="travel" searchParams={Promise.resolve(params)}
-    canReorder={canReorder}
+    adminClient={adminClient} canReorder={canReorder}
     saveOrder={canReorder ? saveCompanyDirectoryOrder : undefined}
     saveSidebarOrder={canReorder ? saveSidebarOrder : undefined} />;
 }

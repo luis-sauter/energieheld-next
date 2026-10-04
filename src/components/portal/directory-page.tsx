@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { loadAdminFreshnessStatuses } from "@/lib/profile-freshness";
 import Image from "next/image";
 import Link from "next/link";
 import type { Trade } from "@/config/trades";
@@ -23,8 +25,9 @@ import { hubDescriptions, indexableProfile } from "@/lib/seo";
 import { filterTravelListings } from "@/lib/reiseportal-facets";
 
 export async function DirectoryPage({ searchParams, trade, mode = "energy", canReorder = false,
-  saveOrder, saveSidebarOrder }: {
+  saveOrder, saveSidebarOrder, adminClient }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
+  adminClient?: SupabaseClient;
   trade?: Trade;
   mode?: "energy" | "travel";
   canReorder?: boolean;
@@ -37,6 +40,8 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
       loadReiseportalDirectory(), loadPublicTravelTerms(), loadPublicAds(undefined), loadPublicSidebarOrder(),
       loadInlineBannerOptions("/unterkuenfte-a-z"),
     ]);
+    const freshnessStatuses = adminClient ? await loadAdminFreshnessStatuses(adminClient,
+      [...loaded.database, ...loaded.preview].map(listing => listing.id)) : undefined;
     const initialValues = readTravelFilterValues(params);
     const shown = filterTravelListings(loaded.database, { ...initialValues, query: "" }).filter(indexableProfile);
     return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Unterkünfte A–Z", "/unterkuenfte-a-z")),
@@ -44,7 +49,7 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
         items: shown.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <TravelDirectory initialValues={initialValues} database={loaded.database}
       preview={loaded.preview} terms={terms} error={loaded.error} ads={ads} sidebarOrder={sidebarOrder}
-      canReorder={canReorder} hiddenOrderKeys={loaded.hiddenOrderKeys}
+      canReorder={canReorder} freshnessStatuses={freshnessStatuses} hiddenOrderKeys={loaded.hiddenOrderKeys}
       saveOrder={saveOrder} saveSidebarOrder={saveSidebarOrder} bannerOptions={bannerOptions} /></>;
   }
 

@@ -83,7 +83,6 @@ export function profileSchema(listing: Listing, terms: PublicTravelTerm[], confi
       image: listing.images.filter(image => image.src.startsWith("/")).map(image => siteUrl(image.src, config)),
       knowsAbout },
     { "@type": "WebPage", name: plainSeoText(listing.name), url, inLanguage: config.language,
-      dateModified: listing.freshness?.content_updated_at ?? undefined,
       mainEntity: entityId ? { "@id": entityId } : { "@type": type, name: plainSeoText(listing.name) },
       about: knowsAbout, audience: assigned.filter(term => term.dimension === "audience")
         .map(term => ({ "@type": "Audience", audienceType: term.label })) },

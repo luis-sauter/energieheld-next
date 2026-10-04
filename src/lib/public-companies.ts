@@ -60,16 +60,7 @@ async function toListing(
   includeVideo = false,
 ): Promise<Listing> {
   const media = await signCompanyMedia(client, row, includeVideo);
-  const listing = companyProfileListing(row, media);
-  if (includeVideo) {
-    try {
-      const { data, error } = await client.rpc("public_profile_freshness", { p_profile_id: row.id });
-      if (!error && data?.[0]) listing.freshness = data[0];
-    } catch {
-      // A freshness outage must not make the existing public profile unavailable.
-    }
-  }
-  return listing;
+  return companyProfileListing(row, media);
 }
 
 type Result<T> = { data: T; error: null } | { data: null; error: string };

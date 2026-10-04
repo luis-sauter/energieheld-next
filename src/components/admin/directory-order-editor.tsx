@@ -7,6 +7,8 @@ import { directoryItemKey, moveDirectoryId } from "@/lib/company-directory-order
 import type { Category, Listing } from "@/types/portal";
 import { ListingRow } from "@/components/portal/listing-row";
 import { useDirectoryEditMode } from "./directory-edit-mode";
+import { FreshnessStatus } from "./freshness-status";
+import type { AdminFreshnessStatuses } from "@/lib/profile-freshness";
 import styles from "./directory-order-editor.module.css";
 
 export function DirectoryOrderRows({
@@ -16,6 +18,7 @@ export function DirectoryOrderRows({
   showVerification = true,
   premiumFirst = false,
   travelLabels,
+  freshnessStatuses,
   editing,
   busy,
   dragged,
@@ -31,6 +34,7 @@ export function DirectoryOrderRows({
   showVerification?: boolean;
   premiumFirst?: boolean;
   travelLabels?: Record<string, string>;
+  freshnessStatuses?: AdminFreshnessStatuses;
   editing: boolean;
   busy: boolean;
   dragged: string | null;
@@ -57,10 +61,10 @@ export function DirectoryOrderRows({
               <button type="button" aria-label={`Firma ${listing.name} nach unten`} disabled={busy || index === listings.length - 1 || (premiumFirst && (listing.directoryPackage === "premium") !== (listings[index + 1]?.directoryPackage === "premium"))}
                 onClick={() => onMove(index, index + 1)}>↓</button>
             </div>
-            <ListingRow listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} travel={basePath === "/unterkuenfte"} travelLabels={travelLabels} />
+            <ListingRow listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} travel={basePath === "/unterkuenfte"} travelLabels={travelLabels} adminStatus={freshnessStatuses?.[listing.id] ? <FreshnessStatus status={freshnessStatuses[listing.id]} /> : undefined} />
           </div>
         ) : (
-          <ListingRow key={directoryItemKey(listing)} listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} travel={basePath === "/unterkuenfte"} travelLabels={travelLabels} />
+          <ListingRow key={directoryItemKey(listing)} listing={listing} categories={categories} href={`${basePath}/${listing.slug}`} showVerification={showVerification} travel={basePath === "/unterkuenfte"} travelLabels={travelLabels} adminStatus={freshnessStatuses?.[listing.id] ? <FreshnessStatus status={freshnessStatuses[listing.id]} /> : undefined} />
         )
       ))}
     </div>
@@ -76,6 +80,7 @@ export function DirectoryOrderEditor({
   showVerification = true,
   premiumFirst = false,
   travelLabels,
+  freshnessStatuses,
 }: {
   listings: Listing[];
   hiddenDemoKeys?: string[];
@@ -85,6 +90,7 @@ export function DirectoryOrderEditor({
   showVerification?: boolean;
   premiumFirst?: boolean;
   travelLabels?: Record<string, string>;
+  freshnessStatuses?: AdminFreshnessStatuses;
 }) {
   const router = useRouter();
   const { mode, setMode } = useDirectoryEditMode();
@@ -201,7 +207,7 @@ export function DirectoryOrderEditor({
       )}
       {message && !editing && <p className={styles.success} role="status">{message}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <DirectoryOrderRows listings={shown} categories={categories} basePath={basePath} showVerification={showVerification} premiumFirst={premiumFirst} travelLabels={travelLabels}
+      <DirectoryOrderRows listings={shown} categories={categories} basePath={basePath} showVerification={showVerification} premiumFirst={premiumFirst} travelLabels={travelLabels} freshnessStatuses={freshnessStatuses}
         editing={editing} busy={busy} dragged={dragged} target={target}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
         onMove={(from, to) => setDraft((ids) => moveDirectoryId(ids, from, to, groups))} />

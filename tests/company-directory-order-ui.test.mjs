@@ -93,6 +93,7 @@ test("visitors and signed-in non-admins have no reorder action; admin sees it on
     globalThis.__orderClientReads = 0;
     const page = await AccommodationsPage({ searchParams: Promise.resolve({}) });
     assert.equal(page.props.canReorder, false);
+    assert.equal(page.props.adminClient, undefined);
     assert.equal(page.props.saveOrder, undefined);
     assert.equal(page.props.saveSidebarOrder, undefined);
   }
@@ -105,7 +106,8 @@ test("visitors and signed-in non-admins have no reorder action; admin sees it on
     globalThis.__orderClientReads = 0;
     const filtered = await AccommodationsPage({ searchParams: Promise.resolve({ [key]: "value" }) });
     assert.equal(filtered.props.canReorder, false);
-    assert.equal(globalThis.__orderClientReads, 0);
+    assert.equal(globalThis.__orderClientReads, 1);
+    assert.equal(filtered.props.adminClient, globalThis.__orderClient);
   }
 });
 

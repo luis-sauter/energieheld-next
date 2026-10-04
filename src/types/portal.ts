@@ -14,7 +14,6 @@ export type CompanyVerification = {
 };
 
 export type Listing = {
-  freshness?: import('../lib/content-freshness').PublicFreshness;
   id: string;
   slug: string;
   name: string;
