@@ -19,9 +19,10 @@ test('profile video RLS, object reference, size and unchanged image protections'
     await db.exec(await readFile(new URL('../supabase/migrations/20261004100000_company_profile_video.sql',import.meta.url),'utf8'));
     const policiesBefore=(await db.query('select * from pg_policies order by schemaname,tablename,policyname')).rows;
     await db.exec(await readFile(new URL('../supabase/migrations/20261004130000_profile_video_100_mib.sql',import.meta.url),'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/20261004133000_profile_video_50_mb.sql',import.meta.url),'utf8'));
     assert.deepEqual((await db.query('select * from pg_policies order by schemaname,tablename,policyname')).rows,policiesBefore);
     const bucket=(await db.query("select * from storage.buckets where id='company-profile-videos'")).rows[0];
-    assert.equal(Number(bucket.file_size_limit),104857600);assert.equal(bucket.public,false);assert.deepEqual(bucket.allowed_mime_types,['video/mp4','video/webm']);
+    assert.equal(Number(bucket.file_size_limit),52428800);assert.equal(bucket.public,false);assert.deepEqual(bucket.allowed_mime_types,['video/mp4','video/webm']);
     assert.deepEqual((await db.query("select * from storage.buckets where id='company-media'")).rows,before.rows);
     for (const role of ['anon','authenticated']) {
       const rights = (await db.query(`select has_column_privilege('${role}','company_profiles','video_path','SELECT') as read, has_column_privilege('${role}','company_profiles','video_path','UPDATE') as write`)).rows[0];
@@ -44,13 +45,13 @@ test('profile video RLS, object reference, size and unchanged image protections'
     await db.exec('reset role');
     await as(admin,`update company_profiles set video_path=null where id='${profile}'`);
     await as(owner,`delete from storage.objects where name='${path}'`);
-    for(const size of [26214401,104857600]) {
+    for(const size of [26214401,52428800]) {
       await as(owner,`insert into storage.objects(bucket_id,name,metadata) values('company-profile-videos','${path}','{"size":${size},"mimetype":"video/mp4"}')`);
       await as(owner,`update company_profiles set video_path='${path}' where id='${profile}'`);
       await as(owner,`update company_profiles set video_path=null where id='${profile}'`);
       await as(owner,`delete from storage.objects where name='${path}'`);
     }
-    for (const metadata of ['{"size":104857601,"mimetype":"video/mp4"}','{"size":100,"mimetype":"image/png"}']) {
+    for (const metadata of ['{"size":52428801,"mimetype":"video/mp4"}','{"size":100,"mimetype":"image/png"}']) {
       await db.exec(`insert into storage.objects(bucket_id,name,metadata) values('company-profile-videos','${path}','${metadata}')`);
       await assert.rejects(as(admin,`update company_profiles set video_path='${path}' where id='${profile}'`),/invalid profile video/);
       await db.exec(`delete from storage.objects where name='${path}'`);
