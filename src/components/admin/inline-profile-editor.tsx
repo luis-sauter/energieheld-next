@@ -18,7 +18,7 @@ import { InlineEditorHistoryContext, useInlineEditorHistoryController } from "./
 
 const formId = "inline-admin-profile-form";
 
-export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness }: {
+export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness }: {
   listing: Listing;
   categories: Category[];
   values: ProfileValues;
@@ -38,6 +38,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   allowDemoMap?: boolean;
   originalDemoMedia?: boolean;
   freshness?: ContentFreshness | null;
+  withdrawFreshness?: (revision: number, reviewedAt: string) => Promise<{ error?: string; success?: string }>;
   reviewFreshness?: (revision: number) => Promise<{ error?: string; success?: string }>;
 }) {
   const router = useRouter();
@@ -135,7 +136,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       {mediaEditor.status}
       <small>Inhalts- und Bildänderungen werden sofort gespeichert.</small>
     </div>}
-    {editing && freshness && reviewFreshness && <ProfileFreshness state={freshness} review={reviewFreshness} disabled={busy || mediaEditor.busy || history.busy || dirty} />}
+    {editing && freshness && reviewFreshness && <ProfileFreshness state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || mediaEditor.busy || history.busy || dirty} />}
     <ListingDetail
       listing={listing}
       showVerification={showVerification}
@@ -148,7 +149,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       contactAction={editing ? undefined : contactAction}
       adminAction={editing ? undefined : <div className="profile-admin-actions">
         <button type="button" className={`button ${styles.editButton}`} onClick={() => { setFeedback({}); setEditing(true); }}>Profil bearbeiten</button>
-        {freshness && reviewFreshness && <ProfileFreshness state={freshness} review={reviewFreshness} disabled={busy || mediaEditor.busy || history.busy || dirty} compact />}
+        {freshness && reviewFreshness && <ProfileFreshness state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || mediaEditor.busy || history.busy || dirty} compact />}
       </div>}
       inlineFields={editing ? inlineFields : undefined}
       aboutHeading={content.aboutHeading}

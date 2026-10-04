@@ -3482,3 +3482,18 @@ h6 {
 .profile-freshness-compact p { margin: 0; font-size: .8rem; }
 .profile-freshness-compact button { font-size: .8rem; }
 .profile-freshness-compact [role] { flex-basis: 100%; }
+.admin-freshness-status { padding: .2rem .5rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: .85rem; font-weight: 600; color: var(--text); }
+.admin-freshness-summary { display: flex; flex-wrap: wrap; gap: .45rem 1rem; list-style: none; padding: 0; margin: 0 0 .6rem; font-size: .85rem; }
+.profile-freshness-editor { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem .75rem; padding: .65rem .8rem; }
+.profile-freshness-editor .button { margin-top: 0; }
+.profile-freshness-metadata { display: flex; flex-wrap: wrap; gap: .25rem .75rem; font-size: .8rem; color: var(--muted); }
+.profile-freshness-date { font-size: .8rem; color: var(--muted); }
+.profile-freshness-editor small { flex-basis: 100%; color: var(--muted); font-size: .75rem; }
+.profile-freshness-menu { position: relative; }
+.profile-freshness-menu summary { list-style: none; cursor: pointer; min-width: 44px; min-height: 44px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: .4rem; }
+.profile-freshness-menu summary::-webkit-details-marker { display: none; }
+.profile-freshness-menu button { display: block; min-height: 44px; margin-top: .25rem; font: inherit; padding: .4rem .6rem; background: var(--surface); border: 1px solid var(--line); border-radius: .4rem; cursor: pointer; }
+.profile-freshness-menu summary:focus-visible { outline: 2px solid var(--portal-primary); outline-offset: 2px; }
+.profile-freshness-confirm { flex-basis: 100%; font-size: .85rem; }
+.profile-freshness-confirm p { max-width: 65ch; }
+.profile-freshness-confirm .button { white-space: normal; max-width: 100%; margin: .25rem .4rem .25rem 0; }

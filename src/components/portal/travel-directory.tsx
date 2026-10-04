@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { FreshnessStatus, freshnessSymbols } from "@/components/admin/freshness-status";
+import { FreshnessStatus } from "@/components/admin/freshness-status";
+import { freshnessStates, freshnessMatches, freshnessCounts } from "@/lib/content-freshness";
 import type { AdminFreshnessStatuses } from "@/lib/profile-freshness";
 import styles from "./travel-directory.module.css";
 import type { ActiveAd } from "@/lib/ad-values";
@@ -38,8 +39,9 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   const listings = useMemo(() => [...preview, ...database], [preview, database]);
   const options = useMemo(() => availableTravelFilters(database, terms), [database, terms]);
   const filterValues = { ...values, query: "" };
-  const results = filterTravelListings(listings, filterValues).filter(listing =>
-    !freshnessStatuses || !reviewFilter || freshnessStatuses[listing.id] === reviewFilter);
+  const travelResults = filterTravelListings(listings, filterValues);
+  const summary = freshnessStatuses ? freshnessCounts(travelResults.map(listing => freshnessStatuses[listing.id])) : null;
+  const results = travelResults.filter(listing => !freshnessStatuses || freshnessMatches(freshnessStatuses[listing.id], reviewFilter));
   const databaseResults = filterTravelListings(database, filterValues);
   const travelLabels = Object.fromEntries(terms.map((term) => [term.term_key, term.label]));
   const premiumResults = results.filter((listing) => listing.directoryPackage === "premium");
@@ -87,12 +89,18 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
             </div>
           </div>
           {freshnessStatuses !== undefined && <div className="admin-freshness-filter">
-            {freshnessStatuses ? <label>Prüfstatus
+            {freshnessStatuses ? <>
+            <ul className="admin-freshness-summary" aria-label="Prüfübersicht">
+              <li><strong>Prüfbedarf {summary!.needsReview}</strong></li>
+              {Object.entries(freshnessStates).map(([status, presentation]) => <li key={status}>{presentation.label} {summary!.counts[status as keyof typeof freshnessStates]}</li>)}
+            </ul>
+            <label>Prüfstatus
               <select value={reviewFilter} onChange={event => setReviewFilter(event.target.value)}>
                 <option value="">Alle</option>
-                {Object.keys(freshnessSymbols).map(status => <option key={status} value={status}>{status}</option>)}
+                <option value="needs-review">Prüfbedarf</option>
+                {Object.entries(freshnessStates).map(([status, presentation]) => <option key={status} value={status}>{presentation.label}</option>)}
               </select>
-            </label> : <p role="alert">Die Prüfstände konnten nicht geladen werden. Bitte laden Sie die Seite erneut.</p>}
+            </label></> : <p role="alert">Die Prüfstände konnten nicht geladen werden. Bitte laden Sie die Seite erneut.</p>}
           </div>}
           {error && <div className="empty-state" role="alert"><p>{error}</p></div>}
           {!error && editingAvailable && saveOrder && databaseResults.length > 0 ? <>

@@ -10,7 +10,7 @@ import { checkAdmin, isProfileId, loadReviewProfile } from "@/lib/admin-review";
 import { signCompanyMedia, type MediaRow, type SignedMedia } from "@/lib/company-media";
 import { profileFields, type ProfileValues } from "@/lib/company-profile";
 import { InlineProfileEditor } from "@/components/admin/inline-profile-editor";
-import { saveInlineProfile, saveInlineMedia, reviewInlineProfile } from "@/app/(energieheld)/experten/[slug]/inline-actions";
+import { saveInlineProfile, saveInlineMedia, reviewInlineProfile, withdrawInlineProfileReview } from "@/app/(energieheld)/experten/[slug]/inline-actions";
 import { saveInlineContent } from "@/app/(energieheld)/experten/[slug]/content-actions";
 import { saveInlineBlockImage } from "@/app/(energieheld)/experten/[slug]/block-image-actions";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -100,6 +100,7 @@ export default async function AccommodationDetail({
       {editorData ? <InlineProfileEditor
         freshness={editorData.freshness}
         reviewFreshness={reviewInlineProfile.bind(null, listing.id, slug)}
+        withdrawFreshness={withdrawInlineProfileReview.bind(null, listing.id, slug)}
         listing={listing}
         categories={[]}
         showVerification={false}

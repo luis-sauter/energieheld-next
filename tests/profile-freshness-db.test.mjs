@@ -37,6 +37,9 @@ before(async()=>{
  await db.exec(await readFile(new URL('../supabase/migrations/20261004163000_profile_review_conflict.sql',import.meta.url),'utf8'));
  assert.deepEqual((await db.query("select proacl from pg_proc where oid='public.review_profile_content(uuid,bigint)'::regprocedure")).rows,rpcGrants);
  assert.deepEqual((await db.query('select * from profile_content_freshness order by profile_id')).rows,stateBefore);
+ await db.exec(await readFile(new URL('../supabase/migrations/20261004190000_profile_review_invalidation.sql',import.meta.url),'utf8'));
+ assert.deepEqual((await db.query("select proacl from pg_proc where oid='public.review_profile_content(uuid,bigint)'::regprocedure")).rows,rpcGrants);
+ assert.deepEqual((await db.query("select to_jsonb(f)-'review_invalidated_at'-'review_invalidated_by' as v from profile_content_freshness f order by profile_id")).rows.map(x=>x.v),stateBefore);
  assert.deepEqual((await db.query('select to_jsonb(p) v from company_profiles p order by id')).rows,dataBefore);
  assert.deepEqual((await db.query("select * from pg_policies where tablename<>'profile_content_freshness' order by schemaname,tablename,policyname")).rows,policiesBefore);
 });
@@ -47,6 +50,37 @@ const state=async()=> (await db.query('select * from profile_content_freshness w
 const rev=async()=>Number((await state()).content_revision);
 async function denied(sql,args=[]){await db.exec('savepoint denied');await assert.rejects(db.query(sql,args));await db.exec('rollback to savepoint denied; release savepoint denied');}
 async function as(uid){await db.query("select set_config('request.jwt.claim.sub',$1,true)",[uid]);await db.exec('set local role authenticated');}
+
+test('admin withdrawal preserves last review and content; re-review clears invalidation',async()=>{
+ await as(admin);await db.query('select public.review_profile_content($1,$2)',[profile,await rev()]);
+ const before=await state();
+ await db.query('select public.invalidate_profile_review($1,$2,$3)',[profile,before.content_revision,before.reviewed_at]);
+ const withdrawn=await state();
+ for(const key of ['reviewed_at','reviewed_by','reviewed_revision','content_revision','content_updated_at']) assert.deepEqual(withdrawn[key],before[key]);
+ assert.ok(withdrawn.review_invalidated_at);assert.equal(withdrawn.review_invalidated_by,admin);
+ const publicDates=(await db.query('select * from public.public_profile_freshness($1)',[profile])).rows[0];assert.equal(publicDates.checked_at,null);
+ await db.query('select public.review_profile_content($1,$2)',[profile,before.content_revision]);
+ const reviewed=await state();assert.equal(reviewed.review_invalidated_at,null);assert.equal(reviewed.review_invalidated_by,null);assert.equal(reviewed.reviewed_revision,reviewed.content_revision);
+});
+test('withdrawal blocks anon/owner/foreign user and direct state writes',async()=>{
+ await as(admin);await db.query('select public.review_profile_content($1,$2)',[profile,await rev()]);const before=await state();
+ for(const uid of [owner,stranger]){
+  await as(uid);await denied('select public.invalidate_profile_review($1,$2,$3)',[profile,before.content_revision,before.reviewed_at]);
+  await denied('update public.profile_content_freshness set review_invalidated_at=now(),review_invalidated_by=$1 where profile_id=$2',[uid,profile]);
+ }
+ await db.exec('set local role anon');await denied('select public.invalidate_profile_review($1,$2,$3)',[profile,before.content_revision,before.reviewed_at]);
+ await as(admin);assert.deepEqual(await state(),before);
+});
+test('withdrawal compares content AND exact last review, refuses no-review and repeated withdrawal',async()=>{
+ await as(admin);await denied('select public.invalidate_profile_review($1,$2,$3)',[profile,await rev(),null]);
+ await db.query('select public.review_profile_content($1,$2)',[profile,await rev()]);const first=await state();
+ await db.query('select public.review_profile_content($1,$2)',[profile,await rev()]);
+ await denied('select public.invalidate_profile_review($1,$2,$3)',[profile,first.content_revision,first.reviewed_at]);
+ const current=await state();
+ await denied('select public.invalidate_profile_review($1,$2,$3)',[profile,Number(current.content_revision)+1,current.reviewed_at]);
+ await db.query('select public.invalidate_profile_review($1,$2,$3)',[profile,current.content_revision,current.reviewed_at]);
+ const withdrawn=await state();await denied('select public.invalidate_profile_review($1,$2,$3)',[profile,current.content_revision,current.reviewed_at]);assert.deepEqual(await state(),withdrawn);
+});
 
 test('neutral backfill creates no invented content or review dates',async()=>{
  const s=await state();assert.equal(Number(s.content_revision),1);

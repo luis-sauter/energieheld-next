@@ -18,17 +18,50 @@ registerHooks({
  },
  load(u,c,next){if(/\.tsx?$/.test(u))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(u),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX}}).outputText};return next(u,c);}
 });
-const {freshnessStatus,publicFreshnessLabel,freshnessDate}=await import('../src/lib/content-freshness.ts');
+const {freshnessStatus,publicFreshnessLabel,freshnessDate,freshnessStates,freshnessCounts,freshnessMatches}=await import('../src/lib/content-freshness.ts');
 const {ProfileFreshness}=await import('../src/components/admin/profile-freshness.tsx');
 const {ListingDetail}=await import('../src/components/portal/listing-detail.tsx');
 const {companyProfileListing}=await import('../src/lib/company-presentation.ts');
 const {profileSchema}=await import('../src/lib/seo-schema.ts');
 const {siteSeo}=await import('../src/lib/site-seo.ts');
-const {reviewInlineProfile}=await import('../src/app/(energieheld)/experten/[slug]/inline-actions.ts');
+const {reviewInlineProfile,withdrawInlineProfileReview}=await import('../src/app/(energieheld)/experten/[slug]/inline-actions.ts');
 const {loadPublicCompanies,loadPublicCompanyBySlug}=await import('../src/lib/public-companies.ts');
 const now=new Date('2026-10-04T12:00:00Z');
 const initial={content_revision:1,content_updated_at:null,content_update_source:null,reviewed_revision:null,reviewed_at:null};
 const checked={...initial,reviewed_revision:1,reviewed_at:'2026-10-04T10:00:00Z'};
+test('central withdrawal state, review-need counts and filters share one truth',()=>{
+ const required={...checked,review_invalidated_at:'2026-10-04T11:00:00Z'};
+ assert.equal(freshnessStatus(required,now),'Prüfung erforderlich');
+ const statuses=Object.keys(freshnessStates);
+ const counts=freshnessCounts([...statuses,...statuses,undefined]);assert.equal(counts.needsReview,8);
+ for(const status of statuses){assert.equal(counts.counts[status],2);assert.equal(freshnessMatches(status,'needs-review'),status!=='Aktuell geprüft');assert.equal(freshnessMatches(status,status),true);assert.equal(freshnessMatches(status,''),true);}
+ assert.equal(freshnessMatches(undefined,'needs-review'),false);
+});
+test('each profile state has contextual action, current review has only secondary withdrawal',()=>{
+ const cases=[
+  [initial,'Als geprüft markieren',false],
+  [{...checked,content_revision:2},'Aktuellen Stand als geprüft markieren',true],
+  [{...checked,reviewed_at:'2020-01-01'},'Erneut prüfen',true],
+  [checked,null,true],
+  [{...checked,review_invalidated_at:'2026-10-04T11:00:00Z'},'Aktuellen Stand als geprüft markieren',false],
+ ];
+ for(const [state,action,withdraw] of cases){
+  const html=renderToStaticMarkup(createElement(ProfileFreshness,{state,review:async()=>({}),withdraw:async()=>({}),disabled:false,compact:true}));
+  if(action)assert.ok(html.includes(action));else assert.doesNotMatch(html,/Als geprüft markieren|Aktuellen Stand als geprüft markieren|Erneut prüfen/);
+  assert.equal(html.includes('>Prüfung zurückziehen</button>'),withdraw);
+ }
+ const changed=renderToStaticMarkup(createElement(ProfileFreshness,{state:{...checked,content_revision:2,content_updated_at:'2026-10-04'},review:async()=>({}),disabled:false,compact:true}));
+ assert.match(changed,/Geändert: 4. Oktober 2026/);assert.doesNotMatch(changed,/Zuletzt geprüft:/);
+});
+test('withdrawal server action authorizes target and carries exact expected review snapshot',async()=>{
+ for(const options of [{user:false},{admin:false},{matched:false}]){
+  globalThis.freshnessClient=client(options);assert.ok((await withdrawInlineProfileReview(listing.id,listing.slug,1,checked.reviewed_at)).error);assert.equal(globalThis.freshnessClient.calls.length,0);
+ }
+ globalThis.freshnessClient=client();assert.ok((await withdrawInlineProfileReview(listing.id,listing.slug,1,'invalid')).error);assert.equal(globalThis.freshnessClient.calls.length,0);
+ assert.ok((await withdrawInlineProfileReview(listing.id,listing.slug,1,checked.reviewed_at)).success);
+ assert.deepEqual(globalThis.freshnessClient.calls,[{name:'invalidate_profile_review',args:{p_profile_id:listing.id,p_expected_revision:1,p_expected_reviewed_at:checked.reviewed_at}}]);
+ globalThis.freshnessClient=client({error:{code:'PT409'}});assert.match((await withdrawInlineProfileReview(listing.id,listing.slug,1,checked.reviewed_at)).error,/zwischenzeitlich geändert/);
+});
 test('status priority distinguishes unreviewed, changed, overdue and currently reviewed',()=>{
  assert.equal(freshnessStatus(initial,now),'Noch nicht geprüft');
  assert.equal(freshnessStatus({...checked,content_revision:2,reviewed_at:'2020-01-01'},now),'Seit Prüfung geändert');
@@ -54,7 +87,7 @@ test('public profile HTML ignores even stale freshness projections and exposes n
 });
 test('review UI stays compact, explicitly separate from save, disabled during pending/unsaved work',()=>{
  const html=renderToStaticMarkup(createElement(ProfileFreshness,{state:initial,review:async()=>({}),disabled:true}));
- assert.match(html,/Datenqualität: Noch nicht geprüft/);assert.match(html,/<button[^>]+disabled/);assert.match(html,/Als geprüft markieren/);assert.match(html,/Speichern allein bestätigt keine Prüfung/);
+ assert.match(html,/Noch nicht geprüft/);assert.match(html,/<button[^>]+disabled/);assert.match(html,/Als geprüft markieren/);assert.match(html,/Speichern bestätigt keine Prüfung/);
  assert.doesNotMatch(html,/content_revision|reviewed_revision|user_id/);
 });
 test('public schema has no freshness projection or invented modification time',()=>{
@@ -89,7 +122,7 @@ test('public directory and detail load no freshness data or RPC',async()=>{
 
 test('compact profile header reuses review UI while leaving full details only in edit mode',()=>{
  const html=renderToStaticMarkup(createElement(ProfileFreshness,{state:checked,review:async()=>({}),disabled:false,compact:true}));
- assert.match(html,/Aktuell geprüft/); assert.match(html,/Zuletzt geprüft: 4. Oktober 2026/); assert.match(html,/Als geprüft markieren/);
+ assert.match(html,/Aktuell geprüft/); assert.match(html,/Zuletzt geprüft: 4. Oktober 2026/); assert.doesNotMatch(html,/Als geprüft markieren/);
  assert.doesNotMatch(html,/Nächste Prüfung|Speichern allein|Quelle/);
  const editor=readFileSync(new URL('../src/components/admin/inline-profile-editor.tsx',import.meta.url),'utf8');
  assert.match(editor,/adminAction=\{editing \? undefined/); assert.match(editor,/editing && freshness && reviewFreshness/); assert.match(editor,/review=\{reviewFreshness\}[^>]+compact/);

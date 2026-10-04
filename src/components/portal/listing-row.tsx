@@ -56,6 +56,7 @@ export function ListingRow({
       <div className="row-content">
         <div className="row-heading">
           <h3><Link href={href}>{listing.name}</Link></h3>
+          {adminStatus}
           {showVerification && !listing.isDemo && listing.verification?.status === "verified" && (
             <QualitySeal note={listing.verification.public_note} />
           )}
@@ -83,7 +84,6 @@ export function ListingRow({
           <p><Icon name="globe" size={15} /><a href={website} target="_blank" rel="noopener noreferrer">{listing.contact.website}</a></p>
         )}
         <Link className="row-profile-link" href={href}>{travel ? (premium ? "Zum Unternehmensprofil" : "Zum Profil") : "Unternehmensprofil"}{travel && <Icon name="arrow" size={18} />}</Link>
-        {adminStatus}
       </div>
     </article>
   );
