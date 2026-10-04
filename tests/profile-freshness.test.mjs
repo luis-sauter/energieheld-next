@@ -80,7 +80,7 @@ test('review server action rejects anon/owner/mismatched profile or invalid revi
 test('review server action passes expected revision and reports stale content understandably',async()=>{
  globalThis.freshnessClient=client();assert.ok((await reviewInlineProfile(listing.id,listing.slug,4)).success);
  assert.deepEqual(globalThis.freshnessClient.calls,[{name:'review_profile_content',args:{p_profile_id:listing.id,p_expected_revision:4}}]);
- globalThis.freshnessClient=client({error:{code:'40001'}});assert.match((await reviewInlineProfile(listing.id,listing.slug,4)).error,/zwischenzeitlich geändert/);
+ globalThis.freshnessClient=client({error:{code:'PT409'}});assert.match((await reviewInlineProfile(listing.id,listing.slug,4)).error,/zwischenzeitlich geändert/);
 });
 test('directory loads no per-card freshness, detail loads dates once and survives freshness outages',async()=>{
  const row={id:listing.id,slug:listing.slug,status:'approved',display_name:'Real Hotel',company_profile_categories:[],company_profile_images:[]};

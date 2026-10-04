@@ -58,7 +58,8 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       const key = ({ street: "street", postal_code: "postalCode", city: "city", region: "region", country: "country" } as const)[name as "street" | "postal_code" | "city" | "region" | "country"];
       if (key) setMapLocation((current) => ({ ...current, [key]: event.target.value }));
     } };
-    return <label className={styles.field} htmlFor={common.id}>
+    // Replace uncontrolled inputs when the server snapshot changes (including a stale review).
+    return <label key={`${name}-${values[name]}`} className={styles.field} htmlFor={common.id}>
       <span>{label}</span>
       {multiline ? (name === "description" || name === "business_areas" ? <EditorialTextarea {...common} /> : <textarea {...common} rows={3} />) : <input {...common} type={name === "public_email" ? "email" : name === "website" ? "url" : name === "phone" ? "tel" : "text"} required={name === "display_name"} />}
     </label>;
