@@ -32,6 +32,11 @@ before(async()=>{
  const dataBefore=(await db.query('select to_jsonb(p) v from company_profiles p order by id')).rows;
  const policiesBefore=(await db.query('select * from pg_policies order by schemaname,tablename,policyname')).rows;
  await db.exec(await readFile(new URL('../supabase/migrations/20261004160000_profile_content_freshness.sql',import.meta.url),'utf8'));
+ const rpcGrants=(await db.query("select proacl from pg_proc where oid='public.review_profile_content(uuid,bigint)'::regprocedure")).rows;
+ const stateBefore=(await db.query('select * from profile_content_freshness order by profile_id')).rows;
+ await db.exec(await readFile(new URL('../supabase/migrations/20261004163000_profile_review_conflict.sql',import.meta.url),'utf8'));
+ assert.deepEqual((await db.query("select proacl from pg_proc where oid='public.review_profile_content(uuid,bigint)'::regprocedure")).rows,rpcGrants);
+ assert.deepEqual((await db.query('select * from profile_content_freshness order by profile_id')).rows,stateBefore);
  assert.deepEqual((await db.query('select to_jsonb(p) v from company_profiles p order by id')).rows,dataBefore);
  assert.deepEqual((await db.query("select * from pg_policies where tablename<>'profile_content_freshness' order by schemaname,tablename,policyname")).rows,policiesBefore);
 });
@@ -57,7 +62,9 @@ test('admin changes advance revision but do not review; owner changes invalidate
 });
 test('atomic expected-revision comparison rejects a stale review without silently accepting newer content',async()=>{
  await as(admin);const seen=await rev();await db.query("update company_profiles set tagline='Concurrent write' where id=$1",[profile]);
- await denied('select review_profile_content($1,$2)',[profile,seen]);assert.equal((await state()).reviewed_at,null);
+ await db.exec('savepoint stale');
+ await assert.rejects(db.query('select review_profile_content($1,$2)',[profile,seen]),error=>error.code==='PT409');
+ await db.exec('rollback to savepoint stale; release savepoint stale');assert.equal((await state()).reviewed_at,null);
  await db.query('select review_profile_content($1,$2)',[profile,await rev()]);const s=await state();assert.equal(s.reviewed_revision,s.content_revision);assert.equal(s.reviewed_by,admin);
  const before=await rev();await db.query('select review_profile_content($1,$2)',[profile,before]);assert.equal(await rev(),before);
 });

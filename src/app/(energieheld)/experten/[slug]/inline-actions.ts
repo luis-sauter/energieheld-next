@@ -65,7 +65,7 @@ export async function reviewInlineProfile(profileId: string, slug: string, revis
     if (target.error) return { error: target.error };
     if (!Number.isSafeInteger(revision) || revision < 1) return { error: "Der Prüfstand ist ungültig. Bitte laden Sie das Profil neu." };
     const { error } = await client.rpc("review_profile_content", { p_profile_id: profileId, p_expected_revision: revision });
-    if (error) return { error: error.code === "40001"
+    if (error) return { error: error.code === "PT409"
       ? "Das Profil wurde zwischenzeitlich geändert. Bitte prüfen Sie den aktuellen Stand erneut."
       : "Die Prüfung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut." };
     revalidatePath(`/experten/${slug}`);
