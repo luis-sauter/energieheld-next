@@ -3172,6 +3172,12 @@ h6 {
   object-position: center 55%;
   pointer-events: none;
 }
+.travel-hero > .directory-hero-image {
+  z-index: -2;
+  object-fit: cover;
+  object-position: center 48%;
+  pointer-events: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .travel-hero > video { display: none; }
 }
