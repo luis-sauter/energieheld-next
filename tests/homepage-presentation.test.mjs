@@ -11,7 +11,7 @@ const profiles = slugs.map(slug=>({id:slug,slug,name:slug,initials:'AB',tagline:
 globalThis.homeFixture = {profiles, ads:[{id:'existing',placement:'top_banner'}], calls:[]};
 const stubs = {
  '@/lib/reiseportal-directory': 'export async function loadReiseportalDirectory(){globalThis.homeFixture.calls.push("directory");return {database:globalThis.homeFixture.profiles,preview:[],error:null};}',
- '@/lib/public-travel-taxonomy':'export async function loadPublicTravelTerms(){return [];}',
+ '@/lib/public-travel-taxonomy':'export async function loadPublicTravelTerms(){return globalThis.homeFixture.terms ?? [];}',
  '@/lib/public-ads':'export async function loadPublicAds(_,area){globalThis.homeFixture.calls.push(area);return globalThis.homeFixture.ads;}',
  '@/lib/public-sidebar-order':'export async function loadPublicSidebarOrder(){return ["sidebar_top"];}',
  '@/lib/inline-advertising-loader':'export async function loadInlineBannerOptions(path){globalThis.homeFixture.calls.push(path);return undefined;}',
@@ -25,7 +25,7 @@ registerHooks({
   if(specifier === 'server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
   if(specifier === "react" && context.parentURL?.startsWith("data:"))return next(specifier,{...context,parentURL:import.meta.url});
   if(stubs[specifier])return {url:'data:text/javascript,'+encodeURIComponent(stubs[specifier]),shortCircuit:true};
-  if(specifier.endsWith('.css'))return {url:'data:text/javascript,export default '+encodeURIComponent(JSON.stringify(Object.fromEntries(['page','quicklinks','mosaic','destinations','premium','stays','provider','inspiration','showcase','featuredStay','recommendations','partners'].map(k=>[k,k])))),shortCircuit:true};
+  if(specifier.endsWith('.css'))return {url:'data:text/javascript,export default '+encodeURIComponent(JSON.stringify(Object.fromEntries(['page','quicklinks','mosaic','destinations','premium','stays','provider','inspiration','showcase','featuredStay','recommendations','partners','header','controls','rail','scroller'].map(k=>[k,k])))),shortCircuit:true};
   if(specifier==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
   if(specifier==='next/image')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export default function Image({fill,unoptimized,priority,...p}){return createElement("img",p);}'),shortCircuit:true};
   if(specifier.startsWith('@/')||specifier.startsWith('.')){
@@ -40,12 +40,12 @@ const {default:Home}=await import('../src/app/(energieheld)/page.tsx');
 const {DiscoveryCard}=await import('../src/components/portal/reise-overview.tsx');
 const {AccommodationCard}=await import('../src/components/portal/discovery-detail.tsx');
 const {travelThemes,destinations}=await import('../src/data/reiseportal-discovery.ts');
-test('homepage composes existing search, four themes, four destinations and real featured profiles as server HTML',async()=>{
+test('homepage composes existing search, all central themes, four destinations and real featured profiles as server HTML',async()=>{
  globalThis.homeFixture.calls=[];
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({q:'Nordic Walking',ziel:'schweiz'})}));
  assert.equal((html.match(/<h1\b/g)||[]).length,1);
  assert.match(html,/value="Nordic Walking"/);assert.match(html,/Im Reiseportal suchen/);
- for(const slug of ['natur-pur','familienurlaub','wanderurlaub','wellnessangebote'])assert.match(html,new RegExp('href="/mottoreisen/'+slug+'"'));
+ for(const {slug} of travelThemes){assert.match(html,new RegExp('href="/mottoreisen/'+slug+'"'));assert.match(html,new RegExp('href="/unterkuenfte-a-z\\?thema='+slug+'"'));}
  for(const d of destinations)assert.match(html,new RegExp('href="/reiseziele/'+d.slug+'"'));
  for(const slug of slugs)assert.match(html,new RegExp('href="/unterkuenfte/'+slug+'"'));
  assert.match(html,/href="\/registrieren"/);
@@ -58,7 +58,7 @@ test('homepage never fills missing selected profiles with fabricated cards',asyn
  try{globalThis.homeFixture.profiles=[profiles[0]];const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));assert.equal((html.match(/<article class="accommodation-card"/g)||[]).length,1);assert.doesNotMatch(html,/\/unterkuenfte\/pension-sonnenhof/);}finally{globalThis.homeFixture.profiles=original;}
 });
 test('all homepage editorial imagery reuses existing redesigned assets',()=>{
- for(const slug of ['natur-pur','familienurlaub','wanderurlaub','wellnessangebote'])assert.ok(existsSync(new URL('../public/reiseportal/redesign/mottoreisen/'+slug+'.webp',import.meta.url)));
+ for(const {slug} of travelThemes)assert.ok(existsSync(new URL('../public/reiseportal/redesign/mottoreisen/'+slug+'.webp',import.meta.url)));
  for(const d of destinations)assert.ok(existsSync(new URL('../public/reiseportal/redesign/reiseziele/'+d.slug+'.webp',import.meta.url)));
 });
 test('shared cards accept measured sizes and keep lazy loading and real profile links',()=>{
@@ -121,4 +121,31 @@ test('all existing Premium and A–J ads reach the unchanged shared advertising 
   assert.equal((html.match(/data-placement="top_banner"/g)||[]).length,1);
   assert.equal(JSON.stringify(globalThis.homeFixture.ads),before);
  } finally {globalThis.homeFixture.ads=original;}
+});
+
+test('homepage controls share the inspiration heading and compact shortcuts have no playback controls',async()=>{
+ const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
+ const compact=html.split('<nav')[1].split('</nav>')[0];
+ assert.equal((compact.match(/data-theme-image="true"/g)||[]).length,travelThemes.length);
+ assert.doesNotMatch(compact,/<button/);
+ const inspiration=html.split('aria-labelledby="inspiration-title"')[1].split('</section>')[0];
+ const header=inspiration.split('<div class="header">')[1].split('<div class="rail"')[0];
+ assert.match(header,/id="inspiration-title"/);assert.match(header,/Alle Mottoreisen/);
+ assert.match(header,/Inspiration &amp; Themenwelten: zurück/);assert.match(header,/Inspiration &amp; Themenwelten: weiter/);
+ assert.equal((inspiration.match(/class="discovery-card"/g)||[]).length,travelThemes.length);
+ assert.doesNotMatch(inspiration,/Automatischen Wechsel|aria-pressed/);
+});
+
+test('extra discovery shortcuts require existing public terms assigned to actual profiles and never invent imagery',async()=>{
+ const original=globalThis.homeFixture.profiles;
+ try {
+  globalThis.homeFixture.terms=[{term_key:'audience:paar',dimension:'audience',slug:'paar',label:'Paar'},{term_key:'audience:mit-hund',dimension:'audience',slug:'mit-hund',label:'Mit Hund'}];
+  globalThis.homeFixture.profiles=[{...profiles[0],travelTermKeys:['audience:paar']}];
+  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
+  const compact=html.split('<nav')[1].split('</nav>')[0];
+  assert.match(compact,/href="\/unterkuenfte-a-z\?zielgruppe=paar"/);
+  assert.doesNotMatch(compact,/zielgruppe=mit-hund/);
+  const audience=compact.split('href="/unterkuenfte-a-z?zielgruppe=paar"')[1].split('</a>')[0];
+  assert.doesNotMatch(audience,/<img|data-theme-image/);
+ } finally {globalThis.homeFixture.profiles=original;delete globalThis.homeFixture.terms;}
 });

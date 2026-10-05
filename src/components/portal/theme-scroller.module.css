@@ -1,16 +1,28 @@
 .scroller { min-width: 0; max-width: 100%; }
-.controls { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
+.header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; margin-bottom: 18px; }
+.header h2 { margin-bottom: 0; }
+.controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.controls > a { margin-right: 8px; }
 .controls button { min-height: 40px; border: 1px solid var(--line); background: white; color: var(--brand-primary); border-radius: 10px; padding: 6px 12px; cursor: pointer; }
 .controls button:disabled { cursor: default; opacity: .6; }
-.rail { position: relative; display: flex; gap: 18px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: 4px; padding: 4px 4px 16px; }
+.rail { position: relative; display: flex; gap: 18px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: 4px; padding: 4px; scrollbar-width: none; }
+.rail::-webkit-scrollbar { display: none; }
 .rail > * { flex: 0 0 calc((100% - 36px) / 3); min-width: 0; scroll-snap-align: start; }
 .rail :global(.discovery-card) { border-radius: 16px; }
 .rail :global(.discovery-card-image) { aspect-ratio: 1.6; }
 .scroller[data-compact] .rail { gap: 10px; }
 .scroller[data-compact] .rail > * { flex-basis: calc((100% - 50px) / 6); }
-.scroller[data-compact] .rail > a { display: grid; justify-items: center; align-content: center; gap: 6px; min-height: 76px; padding: 10px; border-radius: 12px; background: var(--brand-surface); text-align: center; font-weight: 600; font-size: .85rem; }
+.scroller[data-compact] .rail > a { position: relative; isolation: isolate; overflow: hidden; display: grid; justify-items: center; align-content: center; gap: 6px; min-height: 76px; padding: 10px; border-radius: 12px; background: var(--brand-surface); text-align: center; font-weight: 600; font-size: .85rem; }
 .rail:focus-visible, .rail a:focus-visible, .controls button:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 2px; }
 @media (max-width: 1100px) { .rail > * { flex-basis: calc((100% - 18px) / 2); } .scroller[data-compact] .rail > * { flex-basis: calc((100% - 30px) / 4); } }
 @media (max-width: 640px) { .rail > * { flex-basis: 100%; } .scroller[data-compact] .rail > * { flex-basis: calc((100% - 10px) / 2); } }
 @media (prefers-reduced-motion: reduce) { .rail { scroll-behavior: auto; } }
 
+
+.scroller[data-compact] .rail > a[data-theme-image] img { object-fit: cover; opacity: 0; z-index: -2; transition: opacity .2s ease, transform .3s ease; }
+.scroller[data-compact] .rail > a[data-theme-image]::after { content: ""; position: absolute; inset: 0; z-index: -1; background: rgb(14 68 96 / 72%); opacity: 0; transition: opacity .2s ease; }
+.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible) { color: white; }
+.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible) img { opacity: 1; transform: scale(1.04); }
+.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible)::after { opacity: 1; }
+.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible) :global(.travel-quicklink-icon) { color: inherit; }
+@media (prefers-reduced-motion: reduce) { .scroller[data-compact] .rail > a[data-theme-image] img, .scroller[data-compact] .rail > a[data-theme-image]::after { transition: none; } .scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible) img { transform: none; } }

@@ -58,7 +58,8 @@ const render = (values, mode = "directory") => renderToStaticMarkup(createElemen
 test("both routes use the same finder and show actual initial totals", () => {
   const home = source("src/app/(energieheld)/page.tsx");
   assert.match(home, /<HomeTravelFinder listings=/);
-  assert.match(home, /searchableThemes\.has\(entry\.slug\)/);
+  assert.equal((home.match(/travelThemes\.map/g) ?? []).length, 2);
+  assert.match(home, /availableTravelFilters\(directory.database, terms\).audiences/);
   assert.match(home, /href=\{`\/unterkuenfte-a-z\?thema=\$\{entry\.slug\}`\}/);
   assert.match(home, /<a key=\{entry\.slug\} href=\{`\/unterkuenfte-a-z\?thema=/);
   assert.match(source("src/components/portal/travel-finder.tsx"), /window\.location\.assign\(travelFilterUrl\(values\)\)/);

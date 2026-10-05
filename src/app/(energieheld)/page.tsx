@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
 import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
 import { CampaignSlot } from "@/components/advertising/campaign-view";
@@ -29,8 +30,6 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
     noindex: Object.values(await searchParams).some(Boolean) });
 }
 
-const featuredThemes = ["natur-pur", "familienurlaub", "wanderurlaub", "wellnessangebote"];
-const quickThemes = ["wellnessangebote", "familienurlaub", "wanderurlaub", "romantik-zu-zweit", "campingurlaub", "radwandern", "urlaub-am-wasser", "golfurlaub"];
 // Editorial selection, not package ranking. These provider-matched originals
 // were visually checked for this showcase; profile galleries remain unchanged.
 const featuredStays = [
@@ -56,35 +55,33 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     const listing = bySlug.get(slug);
     return listing && image && !listing.isDemo && !listing.isPreview ? [{ ...listing, images: [image] }] : [];
   });
-  const searchableThemes = new Set(availableTravelFilters(directory.database, terms).themes.map((entry) => entry.slug));
+  const discoveryAudiences = availableTravelFilters(directory.database, terms).audiences;
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
     <HomeTravelFinder listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={terms} error={directory.error} />
 
     <nav className={`container ${styles.quicklinks}`} aria-label="Schnell zu Mottoreisen" data-travel-quicklinks>
-      <ThemeScroller count={quickThemes.filter(slug => searchableThemes.has(slug)).length} label="Mottoreisen" compact>
-      {quickThemes.map((slug) => {
-        const entry = travelThemes.find((theme) => theme.slug === slug);
-        return entry && searchableThemes.has(entry.slug) && <a key={entry.slug} href={`/unterkuenfte-a-z?thema=${entry.slug}`}>
+      <ThemeScroller count={travelThemes.length + discoveryAudiences.length} label="Mottoreisen" compact>
+        {travelThemes.map((entry) => <a key={entry.slug} href={`/unterkuenfte-a-z?thema=${entry.slug}`} data-theme-image>
+          <Image src={`/reiseportal/redesign/mottoreisen/${entry.slug}.webp`} alt="" fill sizes="(max-width: 640px) 45vw, (max-width: 1100px) 23vw, 200px" loading="lazy" />
           <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.slug} /></span>
           <span>{entry.title}</span>
-        </a>;
-      })}
+        </a>)}
+        {discoveryAudiences.map((entry) => <a key={`audience:${entry.slug}`} href={`/unterkuenfte-a-z?zielgruppe=${encodeURIComponent(entry.slug)}`}>
+          <span aria-hidden="true"><TravelThemeIcon slug="familienurlaub" /></span><span>{entry.label}</span>
+        </a>)}
       </ThemeScroller>
     </nav>
 
     <section className="section container" aria-labelledby="inspiration-title">
-      <div className="section-heading"><div><p className="eyebrow">Entdecken</p><h2 id="inspiration-title">Inspiration & Themenwelten</h2></div>
-        <Link className="text-link" href="/mottoreisen">Alle Mottoreisen →</Link></div>
-      <ThemeScroller count={featuredThemes.length} label="Inspiration & Themenwelten">
-        {featuredThemes.flatMap((slug) => {
-          const entry = travelThemes.find((theme) => theme.slug === slug);
-          return entry ? <DiscoveryCard key={entry.slug}
-            entry={{ ...entry, image: `/reiseportal/redesign/mottoreisen/${entry.slug}.webp`, alt: mottoPresentation[entry.slug].alt }}
-            sizes="(max-width: 640px) calc(100vw - 48px), (max-width: 1100px) 45vw, 400px"
-            basePath="/mottoreisen" /> : [];
-        })}
+      <ThemeScroller count={travelThemes.length} label="Inspiration & Themenwelten"
+        heading={<div><p className="eyebrow">Entdecken</p><h2 id="inspiration-title">Inspiration & Themenwelten</h2></div>}
+        moreLink={<Link className="text-link" href="/mottoreisen">Alle Mottoreisen →</Link>}>
+        {travelThemes.map((entry) => <DiscoveryCard key={entry.slug}
+          entry={{ ...entry, image: `/reiseportal/redesign/mottoreisen/${entry.slug}.webp`, alt: mottoPresentation[entry.slug].alt }}
+          sizes="(max-width: 640px) calc(100vw - 48px), (max-width: 1100px) 45vw, 400px"
+          basePath="/mottoreisen" />)}
       </ThemeScroller>
     </section>
 
