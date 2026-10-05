@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createMediaTestDatabase } from './helpers/media-database.mjs';
 const admin='33333333-3333-4333-8333-333333333333', owner='11111111-1111-4111-8111-111111111111', stranger='22222222-2222-4222-8222-222222222222';
+const editor='44444444-4444-4444-8444-444444444444';
 const profile='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', draft='dddddddd-dddd-4ddd-8ddd-dddddddddddd', block='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', image='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 let db;
 before(async()=>{
@@ -42,12 +43,84 @@ before(async()=>{
  assert.deepEqual((await db.query("select to_jsonb(f)-'review_invalidated_at'-'review_invalidated_by' as v from profile_content_freshness f order by profile_id")).rows.map(x=>x.v),stateBefore);
  assert.deepEqual((await db.query('select to_jsonb(p) v from company_profiles p order by id')).rows,dataBefore);
  assert.deepEqual((await db.query("select * from pg_policies where tablename<>'profile_content_freshness' order by schemaname,tablename,policyname")).rows,policiesBefore);
+ const allPolicies=(await db.query('select * from pg_policies order by schemaname,tablename,policyname')).rows;
+ const beforeCapability=(await db.query('select * from profile_content_freshness order by profile_id')).rows;
+ const withdrawAcl=(await db.query("select proacl from pg_proc where oid='public.invalidate_profile_review(uuid,bigint,timestamptz)'::regprocedure")).rows;
+ await db.exec(await readFile(new URL('../supabase/migrations/20261005090000_profile_review_capability.sql',import.meta.url),'utf8'));
+ assert.deepEqual((await db.query('select * from profile_content_freshness order by profile_id')).rows,beforeCapability);
+ assert.deepEqual((await db.query('select * from pg_policies order by schemaname,tablename,policyname')).rows,allPolicies);
+ assert.deepEqual((await db.query('select to_jsonb(p) v from company_profiles p order by id')).rows,dataBefore);
+ assert.deepEqual((await db.query("select proacl from pg_proc where oid='public.review_profile_content(uuid,bigint)'::regprocedure")).rows,rpcGrants);
+ assert.deepEqual((await db.query("select proacl from pg_proc where oid='public.invalidate_profile_review(uuid,bigint,timestamptz)'::regprocedure")).rows,withdrawAcl);
+ assert.equal((await db.query('select can_review_profiles from portal_admins where user_id=$1',[admin])).rows[0].can_review_profiles,false);
+ // Explicit local fixture configuration only; no production identity seed.
+ await db.query('update portal_admins set can_review_profiles=true where user_id=$1',[admin]);
+ await db.query('insert into portal_admins(user_id) values($1)',[editor]);
 });
 after(async()=>db?.close());
 beforeEach(async()=>db.exec('begin'));
 afterEach(async()=>db.exec('rollback'));
 const state=async()=> (await db.query('select * from profile_content_freshness where profile_id=$1',[profile])).rows[0];
 const rev=async()=>Number((await state()).content_revision);
+
+test('ordinary admins read/edit but cannot review, withdraw or grant themselves capability',async()=>{
+ await as(admin);await db.query('select review_profile_content($1,1)',[profile]);const checked=await state();
+ await as(editor);
+ assert.deepEqual(await state(),checked);
+ assert.equal((await db.query('select user_id,can_review_profiles from portal_admins')).rows.length,1);
+ await denied('select review_profile_content($1,1)',[profile]);
+ await denied('select invalidate_profile_review($1,1,$2)',[profile,checked.reviewed_at]);
+ await denied('update portal_admins set can_review_profiles=true where user_id=$1',[editor]);
+ await denied('update profile_content_freshness set reviewed_at=now() where profile_id=$1',[profile]);
+ await denied('select private.preserve_profile_review_on_edit()');
+ await db.query("update company_profiles set description='Ordinary editor' where id=$1",[profile]);
+ const changed=await state();assert.equal(Number(changed.content_revision),2);assert.equal(Number(changed.reviewed_revision),1);assert.deepEqual(changed.reviewed_at,checked.reviewed_at);
+});
+
+test('review-capable admin preserves an aligned review across edits without restarting annual cycle',async()=>{
+ await as(admin);await db.query('select review_profile_content($1,1)',[profile]);const checked=await state();
+ await db.query("update company_profiles set description='Editorial edit' where id=$1",[profile]);
+ const changed=await state();assert.equal(Number(changed.content_revision),2);assert.equal(changed.reviewed_revision,changed.content_revision);
+ assert.deepEqual(changed.reviewed_at,checked.reviewed_at);assert.equal(changed.reviewed_by,checked.reviewed_by);
+ assert.equal(changed.content_update_source,'admin');assert.equal(changed.content_updated_by,admin);
+ await db.query('select review_profile_content($1,$2)',[profile,await rev()]);
+ const renewed=await state();assert.ok(renewed.reviewed_at>checked.reviewed_at);assert.equal(renewed.reviewed_revision,renewed.content_revision);assert.equal(renewed.content_revision,changed.content_revision);
+});
+
+test('review-capable edits never create, resurrect or silently repair an already stale review',async()=>{
+ await as(admin);await db.query("update company_profiles set description='Unreviewed edit' where id=$1",[profile]);
+ assert.equal((await state()).reviewed_at,null);assert.equal((await state()).reviewed_revision,null);
+ await db.query('select review_profile_content($1,$2)',[profile,await rev()]);
+ await as(editor);await db.query("update company_profiles set description='Makes stale' where id=$1",[profile]);const stale=await state();
+ await as(admin);await db.query("update company_profiles set description='Still stale' where id=$1",[profile]);
+ assert.equal((await state()).reviewed_revision,stale.reviewed_revision);assert.deepEqual((await state()).reviewed_at,stale.reviewed_at);
+ await db.query('select review_profile_content($1,$2)',[profile,await rev()]);const checked=await state();
+ await db.query('select invalidate_profile_review($1,$2,$3)',[profile,checked.content_revision,checked.reviewed_at]);const withdrawn=await state();
+ await db.query("update company_profiles set tagline='Withdrawn edit' where id=$1",[profile]);
+ const edited=await state();assert.deepEqual(edited.review_invalidated_at,withdrawn.review_invalidated_at);assert.equal(edited.review_invalidated_by,admin);
+ assert.equal(edited.reviewed_revision,withdrawn.reviewed_revision);assert.deepEqual(edited.reviewed_at,withdrawn.reviewed_at);
+});
+
+test('overdue review remains overdue after review-capable edit, explicit renewal alone resets date',async()=>{
+ await db.query("update profile_content_freshness set reviewed_revision=content_revision,reviewed_at='2020-01-01',reviewed_by=$1 where profile_id=$2",[admin,profile]);const old=await state();
+ await as(admin);await db.query("update company_profiles set description='Overdue edit' where id=$1",[profile]);
+ const edited=await state();assert.equal(edited.reviewed_revision,edited.content_revision);assert.deepEqual(edited.reviewed_at,old.reviewed_at);
+ assert.ok(edited.reviewed_at<new Date('2021-01-01'));
+ await db.query('select review_profile_content($1,$2)',[profile,await rev()]);assert.ok((await state()).reviewed_at>new Date('2021-01-01'));
+});
+
+test('canonical carry-forward covers taxonomy, text and media while presentation/no-op remains neutral',async()=>{
+ await as(admin);await db.query('select review_profile_content($1,1)',[profile]);const checked=await state();
+ const mutations=[
+  ["insert into company_profile_travel_terms values($1,'theme:wellnessangebote')",[profile]],
+  ["select insert_profile_content_block($1,'text','New text',null)",[profile]],
+  ["update profile_content_block_images set caption='New caption' where id=$1",[image]],
+  ['insert into company_profile_images(profile_id,storage_path) values($1,$2)',[profile,`profiles/${profile}/gallery/77777777-7777-4777-8777-777777777777.jpg`]],
+ ];
+ for(const [sql,args] of mutations){const before=await rev();await db.query(sql,args);const edited=await state();assert.equal(Number(edited.content_revision),before+1);assert.equal(edited.reviewed_revision,edited.content_revision);assert.deepEqual(edited.reviewed_at,checked.reviewed_at);}
+ const current=await state();await db.query('update company_profiles set description=description where id=$1',[profile]);
+ await db.query('update profile_content_block_images set zoom=1.5,focus_x=60 where id=$1',[image]);assert.deepEqual(await state(),current);
+});
 async function denied(sql,args=[]){await db.exec('savepoint denied');await assert.rejects(db.query(sql,args));await db.exec('rollback to savepoint denied; release savepoint denied');}
 async function as(uid){await db.query("select set_config('request.jwt.claim.sub',$1,true)",[uid]);await db.exec('set local role authenticated');}
 
@@ -89,6 +162,7 @@ test('neutral backfill creates no invented content or review dates',async()=>{
 });
 test('admin changes advance revision but do not review; owner changes invalidate prior review',async()=>{
  await as(admin);await db.query('select review_profile_content($1,1)',[profile]);
+ await as(editor);
  await db.query("update company_profiles set description='Admin edit' where id=$1",[profile]);
  assert.equal(await rev(),2);assert.equal((await state()).content_update_source,'admin');assert.equal(Number((await state()).reviewed_revision),1);
  await as(owner);await db.query("update company_profiles set description='Provider edit' where id=$1",[profile]);
@@ -178,6 +252,7 @@ test('owner/stranger cannot mark reviewed, forge freshness or observe internal s
 });
 test('public changed date replaces review date; review never changes dateModified source',async()=>{
  await as(admin);await db.query('select review_profile_content($1,1)',[profile]);
+ await as(editor);
  await db.query("update company_profiles set description='Changed' where id=$1",[profile]);const updated=(await state()).content_updated_at;
  await db.exec('set local role anon');const publicState=(await db.query('select * from public_profile_freshness($1)',[profile])).rows[0];assert.equal(publicState.checked_at,null);assert.deepEqual(publicState.content_updated_at,updated);
  await as(admin);await db.query('select review_profile_content($1,2)',[profile]);assert.deepEqual((await state()).content_updated_at,updated);

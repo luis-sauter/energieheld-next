@@ -48,6 +48,18 @@ export async function checkAdmin(
   }
 }
 
+// Fail closed while the local capability migration has not been deployed.
+// Ordinary admin access/editing continues to use checkAdmin above.
+export async function canReviewProfiles(supabase: SupabaseClient): Promise<boolean> {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return false;
+    const { data: admin, error: adminError } = await supabase.from("portal_admins")
+      .select("user_id,can_review_profiles").eq("user_id", user.id).maybeSingle();
+    return !adminError && admin?.user_id === user.id && admin.can_review_profiles === true;
+  } catch { return false; }
+}
+
 export function isProfileId(value: unknown): value is string {
   return (
     typeof value === "string" &&
