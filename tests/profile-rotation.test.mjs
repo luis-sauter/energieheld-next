@@ -13,6 +13,7 @@ registerHooks({
   resolve(specifier, context, next) {
     if (specifier.endsWith(".module.css")) return { url: 'data:text/javascript,export default {rotation:"rotation",page:"page",pages:"pages"}', shortCircuit: true };
     if (specifier === "@/lib/profile-rotation") return next(new URL("../src/lib/profile-rotation.ts", import.meta.url).href, context);
+    if (specifier === "./use-rotation-motion") return next(new URL("../src/components/portal/use-rotation-motion.ts", import.meta.url).href, context);
     return next(specifier, context);
   },
   load(url, context, next) {
@@ -65,18 +66,18 @@ test("priority is preserved even when Premium alone fills the 30-profile cap", (
   assert.ok(selectRotatingProfiles([...profiles(5), ...profiles(40, "premium")], "wellness", 5).every((item) => item.directoryPackage === "premium"));
 });
 
-test("autoplay waits 15 seconds, cancellation and restarting reset the full delay", (context) => {
+test("autoplay waits six seconds, cancellation and restarting reset the full delay", (context) => {
   context.mock.timers.enable({ apis: ["setTimeout"] });
   let advances = 0;
   let cancel = scheduleProfileAdvance(() => advances++);
-  context.mock.timers.tick(14999);
+  context.mock.timers.tick(5999);
   assert.equal(advances, 0);
   context.mock.timers.tick(1);
   assert.equal(advances, 1);
   cancel = scheduleProfileAdvance(() => advances++);
-  context.mock.timers.tick(7500); cancel();
+  context.mock.timers.tick(3000); cancel();
   cancel = scheduleProfileAdvance(() => advances++);
-  context.mock.timers.tick(14999);
+  context.mock.timers.tick(5999);
   assert.equal(advances, 1);
   context.mock.timers.tick(1);
   assert.equal(advances, 2); cancel();
@@ -114,7 +115,7 @@ test("cards stay server components and existing lazy images; interaction makes n
   assert.doesNotMatch(client, /fetch\(|supabase|AccommodationCard|Math\.random/);
   assert.match(client, /ArrowRight/);
   assert.match(client, /ArrowLeft/);
-  assert.match(client, /prefers-reduced-motion/);
+  assert.match(source("src/components/portal/use-rotation-motion.ts"), /prefers-reduced-motion/);
   assert.match(css, /\.page\[hidden\] \{ display: none/);
   assert.match(css, /min-height: calc/);
   assert.match(css, /max-width: 700px/);

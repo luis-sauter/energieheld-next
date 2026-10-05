@@ -5,7 +5,7 @@ import Image from "next/image";
 import type { PortalImage } from "@/types/portal";
 
 export function scheduleGalleryAdvance(advance: () => void) {
-  const timer = window.setTimeout(advance, 4000);
+  const timer = window.setTimeout(advance, 2000);
   return () => window.clearTimeout(timer);
 }
 
@@ -36,7 +36,10 @@ export function ImageGallery({
 }) {
   const [selected, setSelected] = useState(0);
   const [failed, setFailed] = useState<Record<string, boolean>>({});
-  const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [touching, setTouching] = useState(false);
+  const paused = hovered || focused || touching;
   const [reducedMotion, setReducedMotion] = useState(true);
   const [interaction, setInteraction] = useState(0);
   useEffect(() => {
@@ -60,9 +63,11 @@ export function ImageGallery({
   const current = images[selectedIndex] ?? images[0];
   if (!current) return null;
   return (
-    <div className="gallery" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)} onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
+    <div className="gallery" onPointerDown={() => { setTouching(true); setInteraction(value => value + 1); }}
+      onPointerUp={() => setTouching(false)} onPointerCancel={() => setTouching(false)} onPointerLeave={() => setTouching(false)}
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
       }}>
       <div className="gallery-main" data-has-thumbs={images.length > 1 || undefined}>
         {failed[current.src] ? (

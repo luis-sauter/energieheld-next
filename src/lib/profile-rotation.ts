@@ -1,6 +1,6 @@
 export const profileGroupSize = 6;
 export const profileRotationLimit = 30;
-export const profileRotationDelay = 15_000;
+export const profileRotationDelay = 6_000;
 
 // A UTC day is shared by server-rendered markup and hydration. Keep the
 // editorial order as the ring, and rotate separately within package tiers.
@@ -33,7 +33,7 @@ export function rotationCanPlay(groupCount: number, ...paused: boolean[]) {
   return groupCount > 1 && !paused.some(Boolean);
 }
 
-export function scheduleProfileAdvance(advance: () => void) {
-  const timer = setTimeout(advance, profileRotationDelay);
+export function scheduleProfileAdvance(advance: () => void, delay = profileRotationDelay) {
+  const timer = setTimeout(advance, delay);
   return () => clearTimeout(timer);
 }

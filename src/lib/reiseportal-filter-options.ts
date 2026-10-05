@@ -56,7 +56,7 @@ export function activeTravelFilterLabels(
   const active: string[] = [];
   if (values.destination) active.push(`Reiseziel: ${selected(values.destination,
     options.destinations, "Nicht verfügbar")}`);
-  if (values.theme) active.push(`Reiseart: ${selected(values.theme, options.themes, "Nicht verfügbar")}`);
+  if (values.theme) active.push(`Motto: ${selected(values.theme, options.themes, "Nicht verfügbar")}`);
   if (values.audience) active.push(`Mit wem: ${selected(values.audience, options.audiences, "Nicht verfügbar")}`);
   if (values.accommodation) active.push(`Unterkunft: ${selected(values.accommodation, options.accommodations, "Nicht verfügbar")}`);
   if (values.feature) active.push(`Besonderheit: ${selected(values.feature, options.features, "Nicht verfügbar")}`);

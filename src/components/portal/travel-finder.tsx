@@ -29,7 +29,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
   const update = (key: keyof TravelFilterValues, value: string) => onChange({ ...values, [key]: value });
   const facets: { key: TravelFacet; label: string; all: string; entries: FacetOptions }[] = [
     { key: "destination", label: "Wohin?", all: "Alle Reiseziele", entries: options.destinations },
-    { key: "theme", label: "Reiseart", all: "Alle Reisearten", entries: options.themes },
+    { key: "theme", label: "Motto", all: "Alle Mottoreisen", entries: options.themes },
     { key: "audience", label: "Mit wem?", all: "Alle Zielgruppen", entries: options.audiences },
     { key: "accommodation", label: "Unterkunft", all: "Alle Unterkunftstypen", entries: options.accommodations },
     { key: "feature", label: "Besonderheiten", all: "Alle Besonderheiten", entries: options.features },

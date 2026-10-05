@@ -318,7 +318,7 @@ test("public gallery thumbnails are clickable overlays inside the full-height he
   assert.match(css, /\.contact-card \{[^}]*height: 100%/);
   assert.match(css, /\.gallery-thumbs \{[^}]*position: absolute;[^}]*bottom: 10px;[^}]*background: rgb\(0 0 0 \/ 0\.24\);[^}]*opacity: \.72/);
   assert.match(css, /@media \(max-width: 820px\)[\s\S]*\.profile-head-grid \{ grid-template-columns: minmax\(0, 1fr\)/);
-  assert.match(gallery, /window\.setTimeout\(advance, 4000\)/);
+  assert.match(gallery, /window\.setTimeout\(advance, 2000\)/);
 });
 test("a real video source takes the profile-head slot; otherwise sorted gallery remains there", () => {
   const media = { images: [

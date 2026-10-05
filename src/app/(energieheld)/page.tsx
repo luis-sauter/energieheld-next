@@ -10,6 +10,7 @@ import { DiscoveryCard } from "@/components/portal/reise-overview";
 import { destinations, travelThemes } from "@/data/reiseportal-discovery";
 import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
+import { ThemeScroller } from "@/components/portal/theme-scroller";
 import { HomeTravelFinder } from "@/components/portal/travel-finder";
 import { availableTravelFilters, readTravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { loadPublicAds } from "@/lib/public-ads";
@@ -61,7 +62,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <JsonLd data={jsonLdGraph(websiteSchema())} />
     <HomeTravelFinder listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={terms} error={directory.error} />
 
-    <nav className={`container travel-quicklinks ${styles.quicklinks}`} aria-label="Schnell zu Reisethemen">
+    <nav className={`container ${styles.quicklinks}`} aria-label="Schnell zu Mottoreisen" data-travel-quicklinks>
+      <ThemeScroller count={quickThemes.filter(slug => searchableThemes.has(slug)).length} label="Mottoreisen" compact>
       {quickThemes.map((slug) => {
         const entry = travelThemes.find((theme) => theme.slug === slug);
         return entry && searchableThemes.has(entry.slug) && <a key={entry.slug} href={`/unterkuenfte-a-z?thema=${entry.slug}`}>
@@ -69,21 +71,21 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
           <span>{entry.title}</span>
         </a>;
       })}
+      </ThemeScroller>
     </nav>
 
     <section className="section container" aria-labelledby="inspiration-title">
       <div className="section-heading"><div><p className="eyebrow">Entdecken</p><h2 id="inspiration-title">Inspiration & Themenwelten</h2></div>
         <Link className="text-link" href="/mottoreisen">Alle Mottoreisen →</Link></div>
-      <div className={styles.mosaic}>
-        {featuredThemes.flatMap((slug, index) => {
+      <ThemeScroller count={featuredThemes.length} label="Inspiration & Themenwelten">
+        {featuredThemes.flatMap((slug) => {
           const entry = travelThemes.find((theme) => theme.slug === slug);
           return entry ? <DiscoveryCard key={entry.slug}
             entry={{ ...entry, image: `/reiseportal/redesign/mottoreisen/${entry.slug}.webp`, alt: mottoPresentation[entry.slug].alt }}
-            sizes={index === 0 ? "(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 60vw, 740px"
-              : "(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 35vw, 380px"}
+            sizes="(max-width: 640px) calc(100vw - 48px), (max-width: 1100px) 45vw, 400px"
             basePath="/mottoreisen" /> : [];
         })}
-      </div>
+      </ThemeScroller>
     </section>
 
     <section className={styles.destinations} aria-labelledby="destinations-title"><div className="section container">
