@@ -99,3 +99,22 @@ test('captionless image frame fills its grid column and paired typography cannot
  assert.match(imageCss,/max-width: 65ch/);
  assert.doesNotMatch(imageCss,/editorialPair[^}]*min-height/);
 });
+
+test('stored field-bound pairs render identically in editor and public view for both sides and 25/50/75 shares',()=>{
+ for(const kind of ['about','business'])for(const side of ['left','right'])for(const share of [25,50,75]){
+  const img=block('image','image_grid',share,side==='left'?0:100-share);
+  const item={key:'section:'+kind,kind,heading:'Abschnitt',headingAlign:'center',bodyAlign:'left',layout:{width_percent:100-share,offset_percent:side==='left'?share:0,text_align:'left'},imageBlock:img,pairLayout:{width_percent:100,offset_percent:0,text_align:'left'}};
+  const listing={id:'profile',description:'Beschreibung',businessAreas:'Bereiche'};
+  const before=JSON.stringify(item);
+  const publicHtml=renderToStaticMarkup(createElement(ProfileEditorialContent,{items:[item],listing}));
+  hookState=[];hookCursor=0;
+  const editorHtml=renderToStaticMarkup(InlineContentEditor({blocks:[img],items:[item],listing,renderSpecial:()=>createElement('p',null,'Beschreibung'),editing:true,available:true,imagesAvailable:true,saveAction:async()=>({}),saveImage:async()=>({})}));
+  for(const html of [publicHtml,editorHtml]){
+   assert.match(html,new RegExp(`data-image-side="${side}"`));
+   assert.ok(html.includes(`minmax(0, ${side==='left'?share:100-share}fr) minmax(0, ${side==='left'?100-share:share}fr)`));
+   assert.equal((html.match(/data-text-image="true"/g)||[]).length,1);
+   assert.match(html,/src="\/real-image.webp"/);
+  }
+  assert.equal(JSON.stringify(item),before,'stored block metadata must remain unchanged');
+ }
+});
