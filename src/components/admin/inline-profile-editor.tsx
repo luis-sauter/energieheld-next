@@ -101,13 +101,18 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busyRef.current || mediaEditor.busy || history.busy) return;
+    const closeAfterSuccess = (event.nativeEvent.submitter as HTMLButtonElement | null)?.value === "close";
     busyRef.current = true;
     setBusy(true);
     setFeedback({});
     try {
       const result = await saveProfile(new FormData(event.currentTarget));
       setFeedback(result);
-      if (result.success) { setDirty(false); router.refresh(); }
+      if (result.success && !result.error) {
+        setDirty(false);
+        if (closeAfterSuccess) { setEditing(false); history.clear(); }
+        router.refresh();
+      }
     } catch {
       setFeedback({ error: "Das Profil konnte nicht gespeichert werden. Bitte versuchen Sie es erneut." });
     } finally {
@@ -124,7 +129,8 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       <button type="button" className="button" disabled={busy || mediaEditor.busy || history.busy || !history.state.future.length}
         onClick={() => void history.redo()}>↷ Wiederholen</button>
       <form id={formId} onSubmit={submit}>
-        <button className="button button-primary" disabled={busy || mediaEditor.busy || history.busy}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
+        <button type="submit" value="stay" className="button button-primary" disabled={busy || mediaEditor.busy || history.busy}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
+        <button type="submit" value="close" className="button" disabled={busy || mediaEditor.busy || history.busy}>Speichern und schließen</button>
         <button type="button" className="button" disabled={busy || mediaEditor.busy || history.busy} onClick={() => { setEditing(false); setDirty(false); setFeedback({}); history.clear(); }}>Abbrechen</button>
       </form>
       {busy && <span role="status">Änderungen werden gespeichert …</span>}
@@ -136,6 +142,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       {mediaEditor.status}
       <small>Inhalts- und Bildänderungen werden sofort gespeichert.</small>
     </div>}
+    {!editing && feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
     {editing && freshness && <ProfileFreshness state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || mediaEditor.busy || history.busy || dirty} />}
     <ListingDetail
       listing={listing}
