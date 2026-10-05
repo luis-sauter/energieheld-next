@@ -56,6 +56,20 @@ before(async()=>{
  // Explicit local fixture configuration only; no production identity seed.
  await db.query('update portal_admins set can_review_profiles=true where user_id=$1',[admin]);
  await db.query('insert into portal_admins(user_id) values($1)',[editor]);
+ const oldBuckets=(await db.query('select * from storage.buckets order by id')).rows;
+ const oldFreshness=(await db.query('select * from profile_content_freshness order by profile_id')).rows;
+ const trackerAcl=(await db.query("select proacl from pg_proc where oid='private.track_profile_content()'::regprocedure")).rows;
+ const oldProfiles=(await db.query('select to_jsonb(p) v from company_profiles p order by id')).rows;
+ const oldStorage=(await db.query('select to_jsonb(o) v from storage.objects o order by id')).rows;
+ const oldPolicies=(await db.query('select * from pg_policies order by schemaname,tablename,policyname')).rows;
+ await db.exec(await readFile(new URL('../supabase/migrations/20261005120000_profile_contact_person.sql',import.meta.url),'utf8'));
+ assert.deepEqual((await db.query("select to_jsonb(p)-'contact_first_name'-'contact_last_name'-'contact_image_path' as v from company_profiles p order by id")).rows,oldProfiles);
+ assert.deepEqual((await db.query('select to_jsonb(o) v from storage.objects o order by id')).rows,oldStorage);
+ assert.deepEqual((await db.query('select * from storage.buckets order by id')).rows,oldBuckets);
+ assert.deepEqual((await db.query('select * from profile_content_freshness order by profile_id')).rows,oldFreshness);
+ assert.deepEqual((await db.query("select proacl from pg_proc where oid='private.track_profile_content()'::regprocedure")).rows,trackerAcl);
+ assert.deepEqual((await db.query("select * from pg_policies where policyname not like 'company_contact_image_%' order by schemaname,tablename,policyname")).rows,oldPolicies);
+ assert.deepEqual((await db.query("select proacl from pg_proc where oid='public.review_profile_content(uuid,bigint)'::regprocedure")).rows,rpcGrants);
 });
 after(async()=>db?.close());
 beforeEach(async()=>db.exec('begin'));
@@ -267,4 +281,100 @@ test('new profile has a genuine creation date, cascading deletion leaves no orph
  await db.query("insert into company_profiles(id,company_id,display_name,status) values($1,$2,'New profile','draft')",[id,owner]);
  const s=(await db.query('select * from profile_content_freshness where profile_id=$1',[id])).rows[0];assert.equal(Number(s.content_revision),1);assert.ok(s.content_updated_at);assert.equal(s.reviewed_at,null);
  await db.query('delete from company_profiles where id=$1',[id]);assert.equal((await db.query('select * from profile_content_freshness where profile_id=$1',[id])).rows.length,0);
+});
+
+
+test('contact names use canonical revision/no-op and preserve review capability semantics',async()=>{
+ await as(admin); await db.query('select review_profile_content($1,1)',[profile]); const original=await state();
+ await db.query("update company_profiles set contact_first_name='Anna',contact_last_name='Muster' where id=$1",[profile]);
+ let changed=await state();assert.equal(Number(changed.content_revision),2);assert.equal(changed.reviewed_revision,changed.content_revision);assert.deepEqual(changed.reviewed_at,original.reviewed_at);
+ await db.query("update company_profiles set contact_first_name='Anna',contact_last_name='Muster' where id=$1",[profile]);assert.deepEqual(await state(),changed);
+ await as(owner);await db.query("update company_profiles set contact_last_name='' where id=$1",[profile]);await as(admin);changed=await state();assert.equal(Number(changed.content_revision),3);assert.equal(Number(changed.reviewed_revision),2);assert.deepEqual(changed.reviewed_at,original.reviewed_at);
+});
+
+test('contact grants retain public approved-only reads and owner/admin writes',async()=>{
+ for(const role of ['anon','authenticated']) for(const col of ['contact_first_name','contact_last_name','contact_image_path']){
+  assert.equal((await db.query('select has_column_privilege($1,$2,$3,$4) yes',[role,'company_profiles',col,'SELECT'])).rows[0].yes,true);
+  assert.equal((await db.query('select has_column_privilege($1,$2,$3,$4) yes',[role,'company_profiles',col,'UPDATE'])).rows[0].yes,role==='authenticated');
+ }
+ await as(stranger);assert.equal((await db.query("update company_profiles set contact_first_name='Foreign' where id=$1 returning id",[profile])).rows.length,0);
+ await db.exec('set local role anon');assert.equal((await db.query('select id,contact_first_name from company_profiles')).rows.length,1);
+ await denied("update company_profiles set contact_first_name='Anon' where id=$1",[profile]);
+});
+
+test('contact image upload/link/replace/remove protects references and foreign media',async()=>{
+ const path='profiles/'+profile+'/contact/77777777-7777-4777-8777-777777777777.png';
+ const next='profiles/'+profile+'/contact/88888888-8888-4888-8888-888888888888.png';
+ await as(owner);
+ await db.query("insert into storage.objects(bucket_id,name,metadata) values('company-media',$1,$2::jsonb)",[path,JSON.stringify({mimetype:'image/png',size:12})]);
+ await db.query('update company_profiles set contact_image_path=$1 where id=$2',[path,profile]);await as(admin);assert.equal(await rev(),2);await as(owner);
+ assert.equal((await db.query('delete from storage.objects where name=$1 returning name',[path])).rows.length,0);
+ await db.query("insert into storage.objects(bucket_id,name,metadata) values('company-media',$1,$2::jsonb)",[next,JSON.stringify({mimetype:'image/png',size:12})]);
+ await db.query('update company_profiles set contact_image_path=$1 where id=$2',[next,profile]);await as(admin);assert.equal(await rev(),3);await as(owner);
+ await db.query('delete from storage.objects where name=$1',[path]);
+ await as(stranger);assert.equal((await db.query('delete from storage.objects where name=$1 returning id',[next])).rows.length,0);
+ await denied("insert into storage.objects(bucket_id,name,metadata) values('company-media',$1,'{}')",[path]);
+ await db.query("select set_config('request.jwt.claim.sub','',true)");await db.exec('set local role anon');assert.equal((await db.query('select name from storage.objects where name=$1',[next])).rows.length,1);
+ await as(admin);await db.query('update company_profiles set contact_image_path=null where id=$1',[profile]);assert.equal(await rev(),4);
+ await db.query('delete from storage.objects where name=$1',[next]);assert.equal((await db.query('select name from storage.objects where name=$1',[next])).rows.length,0);
+});
+
+test('contact rejects missing, foreign, oversized and invalid-type objects without revisions',async()=>{
+ const base=await rev();await as(owner);
+ const path='profiles/'+profile+'/contact/77777777-7777-4777-8777-777777777777.png';
+ await denied('update company_profiles set contact_image_path=$1 where id=$2',[path,profile]);
+ for(const metadata of [{mimetype:'image/png',size:5242881},{mimetype:'image/svg+xml',size:12}]){
+  await db.query("insert into storage.objects(bucket_id,name,metadata) values('company-media',$1,$2::jsonb)",[path,JSON.stringify(metadata)]);
+  await denied('update company_profiles set contact_image_path=$1 where id=$2',[path,profile]);await db.query('delete from storage.objects where name=$1',[path]);
+ }
+ await as(admin);const foreign='profiles/'+draft+'/contact/77777777-7777-4777-8777-777777777777.png';
+ await db.query("insert into storage.objects(bucket_id,name,metadata) values('company-media',$1,jsonb_build_object('mimetype','image/png','size',12))",[foreign]);
+ await denied('update company_profiles set contact_image_path=$1 where id=$2',[foreign,profile]);assert.equal(await rev(),base);
+ await db.query('update company_profiles set contact_image_path=$1 where id=$2',[foreign,draft]);
+ await db.query("select set_config('request.jwt.claim.sub','',true)");await db.exec('set local role anon');assert.equal((await db.query('select name from storage.objects where name=$1',[foreign])).rows.length,0);
+});
+
+
+test('contact helper is invoker, no custom Storage trigger and delete protection is restrictive',async()=>{
+ const helper=(await db.query("select prosecdef from pg_proc where oid='public.can_access_profile_contact_image(text,boolean,boolean)'::regprocedure")).rows[0];assert.equal(helper.prosecdef,false);
+ assert.equal((await db.query("select 1 from pg_trigger where tgrelid='storage.objects'::regclass and not tgisinternal")).rows.length,0);
+ assert.equal((await db.query("select 1 from pg_proc where proname='guard_linked_contact_image_delete'")).rows.length,0);
+ const policy=(await db.query("select permissive,cmd,roles from pg_policies where schemaname='storage' and policyname='company_contact_image_delete_unreferenced'")).rows[0];
+ assert.equal(policy.permissive,'RESTRICTIVE');assert.equal(policy.cmd,'DELETE');assert.deepEqual(policy.roles,['authenticated']);
+});
+
+test('invoker contact policies allow owner/admin uploads and approved referenced-only anonymous reads',async()=>{
+ const path='profiles/'+profile+'/contact/77777777-7777-4777-8777-777777777777.png';
+ const draftPath='profiles/'+draft+'/contact/88888888-8888-4888-8888-888888888888.png';
+ await as(admin);
+ for(const value of [path,draftPath]) await db.query("insert into storage.objects(bucket_id,name,metadata) values('company-media',$1,jsonb_build_object('mimetype','image/png','size',12))",[value]);
+ await db.query('update company_profiles set contact_image_path=$1 where id=$2',[draftPath,draft]);
+ await db.query("select set_config('request.jwt.claim.sub','',true)");await db.exec('set local role anon');
+ assert.equal((await db.query('select name from storage.objects where name=any($1::text[])',[[path,draftPath]])).rows.length,0);
+ assert.equal((await db.query('select can_access_profile_contact_image($1,false) yes',[path])).rows[0].yes,false);
+ await as(owner);await db.query('update company_profiles set contact_image_path=$1 where id=$2',[path,profile]);
+ await as(admin);assert.equal((await db.query('delete from storage.objects where name=$1 returning name',[path])).rows.length,0);
+ await db.query("select set_config('request.jwt.claim.sub','',true)");await db.exec('set local role anon');
+ assert.deepEqual((await db.query('select name from storage.objects where name=any($1::text[])',[[path,draftPath]])).rows,[{name:path}]);
+ assert.equal((await db.query('select can_access_profile_contact_image($1,false) yes',[path])).rows[0].yes,true);
+ await denied("insert into storage.objects(bucket_id,name) values('company-media',$1)",[path]);
+ await as(owner);await db.query('update company_profiles set contact_image_path=null where id=$1',[profile]);
+ assert.equal((await db.query('delete from storage.objects where name=$1 returning name',[path])).rows.length,1);
+});
+
+test('restrictive contact policy does not change logo/gallery or other bucket delete behavior',async()=>{
+ const logo='profiles/'+profile+'/logo/77777777-7777-4777-8777-777777777777.png';
+ const gallery='profiles/'+profile+'/gallery/88888888-8888-4888-8888-888888888888.png';
+ await db.query("insert into storage.buckets(id,name,public) values('local-qa-other','local-qa-other',false)");
+ await db.exec("create policy local_qa_other_read on storage.objects for select to authenticated using(bucket_id='local-qa-other');create policy local_qa_other_delete on storage.objects for delete to authenticated using(bucket_id='local-qa-other');");
+ await db.query("insert into storage.objects(bucket_id,name) values('local-qa-other',$1)",['profiles/'+profile+'/contact/77777777-7777-4777-8777-777777777777.png']);
+ await as(owner);
+ for(const path of [logo,gallery]) await db.query("insert into storage.objects(bucket_id,name) values('company-media',$1)",[path]);
+ await db.query('update company_profiles set logo_path=$1 where id=$2',[logo,profile]);
+ await db.query('insert into company_profile_images(profile_id,storage_path,sort_order) values($1,$2,1)',[profile,gallery]);
+ for(const path of [logo,gallery]) assert.equal((await db.query('delete from storage.objects where name=$1 returning name',[path])).rows.length,0);
+ await db.query('update company_profiles set logo_path=null where id=$1',[profile]);
+ await db.query('delete from company_profile_images where storage_path=$1',[gallery]);
+ for(const path of [logo,gallery]) assert.equal((await db.query('delete from storage.objects where name=$1 returning name',[path])).rows.filter(row=>row.name===path).length,1);
+ assert.equal((await db.query("delete from storage.objects where bucket_id='local-qa-other' returning name")).rows.length,1);
 });

@@ -109,7 +109,7 @@ export async function loadReviewProfile(
   const { data, error } = await supabase
     .from("company_profiles")
     .select(
-      "id, slug, logo_path, video_path, company_profile_images(id,storage_path,alt_text,sort_order), display_name, business_areas, status, submitted_at, tagline, description, phone, public_email, website, street, postal_code, city, region, country, companies!inner(legal_name), company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note),company_quality_requests(status,requested_at,decided_at)",
+      "id, slug, logo_path, contact_image_path, contact_first_name, contact_last_name, video_path, company_profile_images(id,storage_path,alt_text,sort_order), display_name, business_areas, status, submitted_at, tagline, description, phone, public_email, website, street, postal_code, city, region, country, companies!inner(legal_name), company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note),company_quality_requests(status,requested_at,decided_at)",
     )
     .eq("id", profileId)
     .maybeSingle();

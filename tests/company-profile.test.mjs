@@ -176,7 +176,7 @@ test("invalid input never starts a database write", async () => {
 test("own profile fields are saved and empty optional fields cleared", async () => {
   const db = client();
   assert.ok(
-    (await updateOwnCompanyProfile(db, form({ city: " München ", country: "Deutschland" }))).success,
+    (await updateOwnCompanyProfile(db, form({ city: " München ", country: "Deutschland", contact_first_name: "", contact_last_name: "" }))).success,
   );
   assert.deepEqual(db.queries[0].filters, [
     ["owner_user_id", "verified-owner"],
@@ -287,4 +287,17 @@ test("unknown action or unexpected stored status fails closed", async () => {
     (await updateOwnCompanyProfile(client(), form({ intent: "approve" })))
       .error,
   );
+});
+
+
+test('owner contact names are optional, trimmed, bounded and omitted old forms do not erase them',async()=>{
+ assert.equal(validateProfile(form({contact_first_name:' Anna ',contact_last_name:' '})).values.contact_first_name,'Anna');
+ assert.ok(validateProfile(form({contact_last_name:'a'.repeat(121)})).error);
+ for(const fields of [{}, {contact_first_name:' Anna ',contact_last_name:''}]){
+  const db=client();const result=await updateOwnCompanyProfile(db,form(fields));assert.ok(result.success);
+  const payload=db.queries.find(q=>q.payload).payload;
+  if ('contact_first_name' in fields){assert.equal(payload.contact_first_name,'Anna');assert.equal(payload.contact_last_name,null);}
+  else {assert.equal('contact_first_name' in payload,false);assert.equal('contact_last_name' in payload,false);}
+  assert.equal('contact_image_path' in payload,false);
+ }
 });

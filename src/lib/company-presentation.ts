@@ -6,6 +6,8 @@ export type CompanyPresentation = {
   id: string;
   slug: string;
   display_name: string;
+  contact_first_name?: string | null;
+  contact_last_name?: string | null;
   tagline?: string | null;
   description?: string | null;
   business_areas?: string | null;
@@ -49,6 +51,8 @@ export function companyProfileListing(
       country: profile.country ?? "",
     },
     contact: {
+      person: [profile.contact_first_name?.trim(), profile.contact_last_name?.trim()].filter(Boolean).join(" ") || undefined,
+      personImage: media.contactImage,
       email: profile.public_email ?? "",
       phone: profile.phone ?? "",
       website: profile.website ?? "",
