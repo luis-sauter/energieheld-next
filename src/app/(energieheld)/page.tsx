@@ -13,7 +13,8 @@ import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
 import { ThemeScroller } from "@/components/portal/theme-scroller";
 import { HomeTravelFinder } from "@/components/portal/travel-finder";
-import { availableTravelFilters, readTravelFilterValues } from "@/lib/reiseportal-filter-options";
+import { readTravelFilterValues } from "@/lib/reiseportal-filter-options";
+import { discoveryAudienceShortcuts } from "@/lib/discovery-shortcuts";
 import { loadPublicAds } from "@/lib/public-ads";
 import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 import styles from "./home.module.css";
@@ -55,7 +56,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     const listing = bySlug.get(slug);
     return listing && image && !listing.isDemo && !listing.isPreview ? [{ ...listing, images: [image] }] : [];
   });
-  const discoveryAudiences = availableTravelFilters(directory.database, terms).audiences;
+  const discoveryAudiences = discoveryAudienceShortcuts(terms);
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
@@ -68,8 +69,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
           <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.slug} /></span>
           <span>{entry.title}</span>
         </a>)}
-        {discoveryAudiences.map((entry) => <a key={`audience:${entry.slug}`} href={`/unterkuenfte-a-z?zielgruppe=${encodeURIComponent(entry.slug)}`}>
-          <span aria-hidden="true"><TravelThemeIcon slug="familienurlaub" /></span><span>{entry.label}</span>
+        {discoveryAudiences.map((entry) => <a key={`audience:${entry.slug}`} href={`/unterkuenfte-a-z?zielgruppe=${encodeURIComponent(entry.slug)}`} data-theme-image={entry.image ? true : undefined}>
+          {entry.image && <Image src={entry.image} alt="" fill sizes="(max-width: 640px) 45vw, (max-width: 1100px) 23vw, 200px" loading="lazy" />}
+          <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.icon} /></span><span>{entry.label}</span>
         </a>)}
       </ThemeScroller>
     </nav>

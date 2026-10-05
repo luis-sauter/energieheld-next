@@ -261,8 +261,10 @@ test("editor gallery shares the public position and preserves contain logo and a
   assert.match(html, /class="gallery-thumbs"[\s\S]*class="gallery-add-tile"/);
   assert.doesNotMatch(
     html.split("<dialog")[0],
-    /type="text"|(?<!2)5 MB|Zum Ändern auf/,
+    /type="text"|Zum Ändern auf/,
   );
+  assert.doesNotMatch(html.split('class="gallery-editor"')[1].split('class="contact-card"')[0], /(?<!2)5 MB/);
+  assert.match(html, /JPG, PNG oder WebP · maximal 5 MB nach Bildoptimierung/);
   assert.match(html, /Video hinzufügen/);
   assert.match(html, /type="file"[^>]*hidden|hidden[^>]*type="file"/);
   assert.match(html, /<dialog[^>]*aria-labelledby="profile-upload-title"/);

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { rotationCanPlay, scheduleProfileAdvance, profileRotationDelay } from "@/lib/profile-rotation";
 
 // Shared idle/pause lifecycle for profile paging and both homepage scrollers.
-export function useRotationMotion(count: number, advance: () => void, resetKey: number | string, delay = profileRotationDelay) {
+export function useRotationMotion(count: number, advance: () => void, resetKey: number | string, delay = profileRotationDelay, timed = true) {
   const root = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -31,10 +31,10 @@ export function useRotationMotion(count: number, advance: () => void, resetKey: 
   }, []);
   const canPlay = rotationCanPlay(count, hovered, focused, touching, paused, reducedMotion, !visible, tabHidden);
   useEffect(() => {
-    if (!canPlay) return;
+    if (!canPlay || !timed) return;
     return scheduleProfileAdvance(advance, delay);
-  }, [canPlay, resetKey, interaction, advance, delay]);
-  return { root, focused, paused, reducedMotion, toggle: () => setPaused(value => !value),
+  }, [canPlay, resetKey, interaction, advance, delay, timed]);
+  return { root, canPlay, focused, paused, reducedMotion, toggle: () => setPaused(value => !value),
     interact: () => setInteraction(value => value + 1),
     handlers: {
       onMouseEnter: () => setHovered(true), onMouseLeave: () => setHovered(false),

@@ -136,16 +136,21 @@ test('homepage controls share the inspiration heading and compact shortcuts have
  assert.doesNotMatch(inspiration,/Automatischen Wechsel|aria-pressed/);
 });
 
-test('extra discovery shortcuts require existing public terms assigned to actual profiles and never invent imagery',async()=>{
- const original=globalThis.homeFixture.profiles;
- try {
-  globalThis.homeFixture.terms=[{term_key:'audience:paar',dimension:'audience',slug:'paar',label:'Paar'},{term_key:'audience:mit-hund',dimension:'audience',slug:'mit-hund',label:'Mit Hund'}];
-  globalThis.homeFixture.profiles=[{...profiles[0],travelTermKeys:['audience:paar']}];
-  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
-  const compact=html.split('<nav')[1].split('</nav>')[0];
-  assert.match(compact,/href="\/unterkuenfte-a-z\?zielgruppe=paar"/);
-  assert.doesNotMatch(compact,/zielgruppe=mit-hund/);
-  const audience=compact.split('href="/unterkuenfte-a-z?zielgruppe=paar"')[1].split('</a>')[0];
-  assert.doesNotMatch(audience,/<img|data-theme-image/);
- } finally {globalThis.homeFixture.profiles=original;delete globalThis.homeFixture.terms;}
+
+test('audience shortcuts use existing public terms, matching local images and never fabricate dog imagery or assignments',async()=>{
+ try{
+  globalThis.homeFixture.terms=[{term_key:'audience:paar',dimension:'audience',slug:'paar',label:'Paar'},{term_key:'audience:familie',dimension:'audience',slug:'familie',label:'Familie'},{term_key:'audience:mit-hund',dimension:'audience',slug:'mit-hund',label:'Mit Hund'}];
+  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));const compact=html.split('<nav')[1].split('</nav>')[0];
+  for(const slug of ['paar','familie','mit-hund'])assert.ok(compact.includes('href="/unterkuenfte-a-z?zielgruppe='+slug+'"'));
+  for(const [slug,image] of [['paar','romantik-zu-zweit'],['familie','familienurlaub']]){const card=compact.split('href="/unterkuenfte-a-z?zielgruppe='+slug+'"')[1].split('</a>')[0];assert.match(card,/<img/);assert.ok(card.includes(image+'.webp'));}
+  assert.doesNotMatch(compact.split('href="/unterkuenfte-a-z?zielgruppe=mit-hund"')[1].split('</a>')[0],/<img/);
+  assert.equal((compact.match(/data-theme-image="true"/g)||[]).length,travelThemes.length+2);
+  globalThis.homeFixture.terms=[];assert.doesNotMatch(renderToStaticMarkup(await Home({searchParams:Promise.resolve({})})),/zielgruppe=mit-hund/);
+ }finally{delete globalThis.homeFixture.terms;}
+});
+test('full inspiration rail renders every central theme with an existing image and valid destination',async()=>{
+ const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));const inspiration=html.split('aria-labelledby="inspiration-title"')[1].split('</section>')[0];
+ assert.equal((inspiration.match(/class="discovery-card"/g)||[]).length,travelThemes.length);
+ assert.equal((inspiration.match(/<img /g)||[]).length,travelThemes.length);
+ for(const {slug} of travelThemes){assert.ok(inspiration.includes('/mottoreisen/'+slug+'"'));assert.ok(inspiration.includes('/mottoreisen/'+slug+'.webp'));}
 });

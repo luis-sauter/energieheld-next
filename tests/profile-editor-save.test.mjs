@@ -12,6 +12,7 @@ globalThis.__profileSaveHooks={
 registerHooks({resolve(s,c,next){
  const stub=code=>({url:'data:text/javascript,'+encodeURIComponent(code),shortCircuit:true});
  if(s==='react'&&c.parentURL?.endsWith('/inline-profile-editor.tsx'))return stub('export const useState=v=>globalThis.__profileSaveHooks.state(v),useRef=v=>globalThis.__profileSaveHooks.ref(v);');
+ if(s.endsWith('/contact-image-editor'))return stub('export function ContactImageEditor(){return null}');
  if(s==='next/navigation')return stub('export const useRouter=()=>({refresh:()=>globalThis.__profileSaveHooks.refresh()});');
  if(s.endsWith('/inline-editor-history'))return stub('export const InlineEditorHistoryContext={Provider:()=>null};export const useInlineEditorHistoryController=()=>({busy:false,state:{past:[],future:[]},feedback:{},clear:()=>globalThis.__profileSaveHooks.clear()});');
  if(s.endsWith('/use-inline-admin-media'))return stub('export const useInlineAdminMedia=()=>({busy:false});');
@@ -44,3 +45,12 @@ test('validation/server errors and rejected saves keep editor, inputs, dirty and
  for(const save of [async()=>({error:'Validierung fehlgeschlagen'}),async()=>{throw new Error('network')},async()=>({success:'ambiguous',error:'Nicht gespeichert'})]){const f=fixture(save);f.dirty();const input=f.listing().props.inlineFields.display_name;await f.submit('close');assert.equal(f.editing(),true);assert.equal(refreshes,0);assert.equal(clears,0);assert.equal(f.listing().props.inlineFields.display_name.key,input.key);assert.ok(nodes(f.render()).some(n=>n.props?.role==='alert'));assert.equal(nodes(f.render()).find(n=>n.props?.state).props.disabled,true);assert.equal(f.button('Speichern und schließen').props.disabled,false);}
 });
 test('Cancel closes without invoking Save and retains its history-clearing semantics',()=>{let calls=0;const f=fixture(async()=>{calls++;return{}});f.dirty();f.button('Abbrechen').props.onClick();assert.equal(f.editing(),false);assert.equal(calls,0);assert.equal(refreshes,0);assert.equal(clears,1)});
+
+test('contact uploads block both save intentions until completion and allow Save and close afterwards',async()=>{
+ let saves=0;const f=fixture(async()=>{saves++;return{success:'Gespeichert'}});
+ const contact=nodes(f.listing().props.contactPersonEditor).find(n=>n.type?.name==='ContactImageEditor');
+ contact.props.onBusyChange(true);
+ assert.equal(f.button('Speichern').props.disabled,true);assert.equal(f.button('Speichern und schließen').props.disabled,true);
+ await f.submit('close');assert.equal(saves,0);assert.equal(f.editing(),true);
+ contact.props.onBusyChange(false);await f.submit('close');assert.equal(saves,1);assert.equal(f.editing(),false);
+});
