@@ -107,6 +107,8 @@ export function CampaignForm({
   const pristine = !admin && campaign.status === "draft" && !campaign.internal_name && !campaign.headline && !campaign.target_url;
   const [metadata, setMetadata] = useState(bannerMetadata ?? { name: campaign.headline, postal_code: '', city: '', term_keys: [] });
   const [values, setValues] = useState(() => {
+    if (campaign.status === 'draft' && !campaign.targets.length)
+      return { ...campaign, requested_start_date: '', requested_end_date: '' };
     if (admin && ["approved", "paused"].includes(campaign.status))
       return { ...campaign, requested_start_date: campaign.approved_start_date ?? campaign.requested_start_date,
         requested_end_date: campaign.approved_end_date ?? campaign.requested_end_date };

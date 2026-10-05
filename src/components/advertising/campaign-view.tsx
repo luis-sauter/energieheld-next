@@ -182,7 +182,7 @@ export function CampaignList({
             href={`${admin ? "/admin" : "/firma"}/werbung/${c.id}`}
           >
             {admin
-              ? "Kampagne prüfen"
+              ? c.archived_at ? "Archiv ansehen" : "Kampagne prüfen"
               : ["draft", "rejected"].includes(c.status)
                 ? "Kampagne bearbeiten"
                 : "Kampagne ansehen"}

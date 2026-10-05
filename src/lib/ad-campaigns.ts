@@ -97,6 +97,7 @@ export async function loadAdCampaigns(
   admin = false,
   page = 1,
   id?: string,
+  archivedOnly = false,
 ) {
   let profileId: string | undefined;
   let categoryIds: string[] = [];
@@ -116,6 +117,7 @@ export async function loadAdCampaigns(
       { count: "exact" },
     );
   if (profileId) query = query.eq("profile_id", profileId);
+  if (admin && archivedOnly) query = query.not('archived_at', 'is', null);
   if (id) {
     if (!isProfileId(id)) return { campaigns: [] as AdCampaign[], count: 0 };
     query = query.eq("id", id);
@@ -176,11 +178,11 @@ export async function prepareAdUpload(
   if (!isProfileId(id)) return { error: failed };
   let query = client
     .from("company_ad_campaigns")
-    .select("id,status")
+    .select("*")
     .eq("id", id);
   if (own?.profileId) query = query.eq("profile_id", own.profileId);
   const { data: campaign, error } = await query.maybeSingle();
-  if (error || !campaign || (!admin && !["draft", "rejected"].includes(campaign.status)))
+  if (error || !campaign || campaign.archived_at || (!admin && !["draft", "rejected"].includes(campaign.status)))
     return { error: "Diese Kampagne kann derzeit nicht bearbeitet werden." };
   const type = form.get("file_type"),
     size = Number(form.get("file_size"));
@@ -223,11 +225,11 @@ export async function saveOwnAd(
     };
   let query = client
     .from("company_ad_campaigns")
-    .select("id,status,image_path")
+    .select("*")
     .eq("id", id);
   if (own?.profileId) query = query.eq("profile_id", own.profileId);
   const { data: campaign, error } = await query.maybeSingle();
-  if (error || !campaign || (!admin && !["draft", "rejected"].includes(campaign.status)))
+  if (error || !campaign || campaign.archived_at || (!admin && !["draft", "rejected"].includes(campaign.status)))
     return { error: "Diese Kampagne kann derzeit nicht bearbeitet werden." };
   // Existing media comes from the authorized row, never an arbitrary hidden field.
   values.data.image_path = campaign.image_path;
