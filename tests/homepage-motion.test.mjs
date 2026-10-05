@@ -48,7 +48,7 @@ test('both homepage areas use the same SSR child scroller and public labels reta
  assert.match(component,/!compact && <div className=\{styles.header\}/);
  assert.match(component,/\{heading\}[\s\S]*styles.controls[\s\S]*\{moreLink\}[\s\S]*zurück[\s\S]*weiter/);
  assert.match(css,/scrollbar-width: none/);assert.match(css,/::-webkit-scrollbar \{ display: none/);
- assert.match(css,/data-theme-image.*:is\(:hover, :focus-visible\)/);assert.match(css,/rgb\(14 68 96 \/ 72%\)/);assert.match(css,/color: white/);
+ assert.match(css,/data-theme-image.*:is\(:hover, :focus-visible\)/);assert.match(css,/rgb\(14 68 96 \/ 72%\)/);assert.match(css,/color: white/);assert.match(css,/travel-quicklink-icon\) \{ color: inherit; background: rgb\(14 68 96 \/ 60%\)/);
  assert.match(home,/loading="lazy"/);assert.match(home,/alt="" fill/);
  assert.match(css,/transition: none/);assert.match(css,/transform: none/);
 });
