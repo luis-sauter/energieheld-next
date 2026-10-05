@@ -7,7 +7,7 @@ import { FreshnessStatus } from "./freshness-status";
 type Feedback = { error?: string; success?: string };
 export function ProfileFreshness({ state, review, withdraw, disabled, compact = false }: {
   state: ContentFreshness;
-  review: (revision: number) => Promise<Feedback>;
+  review?: (revision: number) => Promise<Feedback>;
   withdraw?: (revision: number, reviewedAt: string) => Promise<Feedback>;
   disabled: boolean;
   compact?: boolean;
@@ -17,9 +17,10 @@ export function ProfileFreshness({ state, review, withdraw, disabled, compact = 
   const [confirming, setConfirming] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>({});
   const status = freshnessStatus(state);
-  const action = freshnessStates[status].action;
+  const action = review ? freshnessStates[status].action : null;
+  const canRenew = Boolean(review && status === "Aktuell geprüft");
   const contextDate = freshnessContextDate(state, status);
-  const canWithdraw = Boolean(withdraw && state.reviewed_at && !state.review_invalidated_at);
+  const canWithdraw = Boolean(review && withdraw && state.reviewed_at && !state.review_invalidated_at);
   useEffect(() => {
     if (!feedback.success) return;
     const timer = setTimeout(() => setFeedback({}), 4000);
@@ -39,12 +40,13 @@ export function ProfileFreshness({ state, review, withdraw, disabled, compact = 
       {!state.review_invalidated_at && state.reviewed_at && state.reviewed_revision === state.content_revision && <span>Nächste Prüfung: {freshnessDate(freshnessDueDate(state.reviewed_at))}</span>}
       {status === "Seit Prüfung geändert" && state.content_updated_at && <span>Geändert: {freshnessDate(state.content_updated_at)} · {({ admin: "Redaktion", provider: "Anbieter", import: "Import", system: "System" })[state.content_update_source ?? "system"]}</span>}
     </div>}
-    {action && <button type="button" className="button" disabled={disabled || busy} onClick={() => perform(() => review(state.content_revision))}>
+    {action && <button type="button" className="button" disabled={disabled || busy} onClick={() => perform(() => review!(state.content_revision))}>
       {busy ? "Prüfaktion wird gespeichert …" : action}
     </button>}
-    {canWithdraw && !confirming && <details className="profile-freshness-menu">
+    {(canRenew || canWithdraw) && !confirming && <details className="profile-freshness-menu">
       <summary aria-label="Weitere Prüfaktionen">⋯</summary>
-      <button type="button" disabled={disabled || busy} onClick={() => { setFeedback({}); setConfirming(true); }}>Prüfung zurückziehen</button>
+      {canRenew && <button type="button" disabled={disabled || busy} onClick={() => perform(() => review!(state.content_revision))}>{busy ? "Prüfaktion wird gespeichert …" : "Prüfung erneuern"}</button>}
+      {canWithdraw && <button type="button" disabled={disabled || busy} onClick={() => { setFeedback({}); setConfirming(true); }}>Prüfung zurückziehen</button>}
     </details>}
     {confirming && <div className="profile-freshness-confirm" role="group" aria-label="Prüfung zurückziehen bestätigen">
       <p>Der aktuelle Prüfstatus wird zurückgezogen. Das Profil erscheint anschließend wieder unter „Prüfbedarf“. Fortfahren?</p>

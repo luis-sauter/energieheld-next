@@ -6,7 +6,7 @@ import { loadAccommodationPage } from "@/lib/accommodation-page";
 import { ListingDetail } from "@/components/portal/listing-detail";
 import { InquiryDialog } from "@/components/leads/inquiry-dialog";
 import { createClient } from "@/lib/supabase/server";
-import { checkAdmin, isProfileId, loadReviewProfile } from "@/lib/admin-review";
+import { checkAdmin, canReviewProfiles, isProfileId, loadReviewProfile } from "@/lib/admin-review";
 import { signCompanyMedia, type MediaRow, type SignedMedia } from "@/lib/company-media";
 import { profileFields, type ProfileValues } from "@/lib/company-profile";
 import { InlineProfileEditor } from "@/components/admin/inline-profile-editor";
@@ -71,7 +71,7 @@ export default async function AccommodationDetail({
     ? await loadPublicProfileContent(createPublicClient(), listing.id)
     : { blocks: [], available: false, imagesAvailable: false };
   const presentedContent = splitProfileContent(content.blocks, listing.name);
-  let editorData: { values: ProfileValues; media: SignedMedia; rows: MediaRow[]; freshness: ContentFreshness | null } | null = null;
+  let editorData: { values: ProfileValues; media: SignedMedia; rows: MediaRow[]; freshness: ContentFreshness | null; canReview: boolean } | null = null;
   let editorContent = content;
   if (storedProfile) {
     try {
@@ -86,7 +86,7 @@ export default async function AccommodationDetail({
           const values = Object.fromEntries(
             profileFields.map((field) => [field, profile[field] ?? ""]),
           ) as ProfileValues;
-          editorData = { values, media, rows: profile.company_profile_images, freshness };
+          editorData = { values, media, rows: profile.company_profile_images, freshness, canReview: await canReviewProfiles(client) };
         }
       }
     } catch {
@@ -99,8 +99,8 @@ export default async function AccommodationDetail({
       <Breadcrumbs items={breadcrumbs} />
       {editorData ? <InlineProfileEditor
         freshness={editorData.freshness}
-        reviewFreshness={reviewInlineProfile.bind(null, listing.id, slug)}
-        withdrawFreshness={withdrawInlineProfileReview.bind(null, listing.id, slug)}
+        reviewFreshness={editorData.canReview ? reviewInlineProfile.bind(null, listing.id, slug) : undefined}
+        withdrawFreshness={editorData.canReview ? withdrawInlineProfileReview.bind(null, listing.id, slug) : undefined}
         listing={listing}
         categories={[]}
         showVerification={false}

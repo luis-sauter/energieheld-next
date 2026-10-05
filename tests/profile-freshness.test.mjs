@@ -29,6 +29,26 @@ const {loadPublicCompanies,loadPublicCompanyBySlug}=await import('../src/lib/pub
 const now=new Date('2026-10-04T12:00:00Z');
 const initial={content_revision:1,content_updated_at:null,content_update_source:null,reviewed_revision:null,reviewed_at:null};
 const checked={...initial,reviewed_revision:1,reviewed_at:'2026-10-04T10:00:00Z'};
+
+test('ordinary admins retain status display without executable review or invalidate controls',()=>{
+ for(const state of [initial,checked,{...checked,content_revision:2},{...checked,review_invalidated_at:'2026-10-04'}]){
+  const html=renderToStaticMarkup(createElement(ProfileFreshness,{state,disabled:false}));
+  assert.match(html,/Datenqualität/);assert.match(html,/profile-freshness-status|freshness-status/);
+  assert.doesNotMatch(html,/<button|Weitere Prüfaktionen|Als geprüft markieren|Prüfung erneuern|Prüfung zurückziehen/);
+ }
+});
+
+test('server capability check fails closed without migration and leaves ordinary admin access unchanged',async()=>{
+ const {checkAdmin,canReviewProfiles}=await import('../src/lib/admin-review.ts');
+ for(const options of [{canReview:false},{capabilityError:true}]){
+  const current=client(options);assert.equal(await checkAdmin(current),'admin');assert.equal(await canReviewProfiles(current),false);
+  globalThis.freshnessClient=current;
+  assert.match((await reviewInlineProfile(listing.id,listing.slug,1)).error,/Berechtigung/);
+  assert.match((await withdrawInlineProfileReview(listing.id,listing.slug,1,checked.reviewed_at)).error,/Berechtigung/);
+  assert.equal(current.calls.length,0);
+ }
+ assert.equal(await canReviewProfiles(client()),true);
+});
 test('central withdrawal state, review-need counts and filters share one truth',()=>{
  const required={...checked,review_invalidated_at:'2026-10-04T11:00:00Z'};
  assert.equal(freshnessStatus(required,now),'Prüfung erforderlich');
@@ -37,7 +57,7 @@ test('central withdrawal state, review-need counts and filters share one truth',
  for(const status of statuses){assert.equal(counts.counts[status],2);assert.equal(freshnessMatches(status,'needs-review'),status!=='Aktuell geprüft');assert.equal(freshnessMatches(status,status),true);assert.equal(freshnessMatches(status,''),true);}
  assert.equal(freshnessMatches(undefined,'needs-review'),false);
 });
-test('each profile state has contextual action, current review has only secondary withdrawal',()=>{
+test('each profile state has contextual action, current review has secondary renewal and withdrawal',()=>{
  const cases=[
   [initial,'Als geprüft markieren',false],
   [{...checked,content_revision:2},'Aktuellen Stand als geprüft markieren',true],
@@ -49,6 +69,7 @@ test('each profile state has contextual action, current review has only secondar
   const html=renderToStaticMarkup(createElement(ProfileFreshness,{state,review:async()=>({}),withdraw:async()=>({}),disabled:false,compact:true}));
   if(action)assert.ok(html.includes(action));else assert.doesNotMatch(html,/Als geprüft markieren|Aktuellen Stand als geprüft markieren|Erneut prüfen/);
   assert.equal(html.includes('>Prüfung zurückziehen</button>'),withdraw);
+  assert.equal(html.includes('>Prüfung erneuern</button>'),state===checked);
  }
  const changed=renderToStaticMarkup(createElement(ProfileFreshness,{state:{...checked,content_revision:2,content_updated_at:'2026-10-04'},review:async()=>({}),disabled:false,compact:true}));
  assert.match(changed,/Geändert: 4. Oktober 2026/);assert.doesNotMatch(changed,/Zuletzt geprüft:/);
@@ -96,9 +117,9 @@ test('public schema has no freshness projection or invented modification time',(
  assert.equal(page({checked_at:'2026-10-04',content_updated_at:null}).dateModified,undefined);
  assert.equal(page({checked_at:'2026-10-04',content_updated_at:'2026-01-01'}).dateModified,undefined);
 });
-function client({admin=true,user=true,matched=true,error=null}={}){
+function client({admin=true,user=true,matched=true,error=null,canReview=true,capabilityError=false}={}){
  const calls=[];return {calls,auth:{getUser:async()=>({data:{user:user?{id:'admin-id'}:null},error:null})},
-  from(table){return {select(){return this;},eq(){return this;},maybeSingle:async()=>({data:table==='portal_admins'?admin?{user_id:'admin-id'}:null:matched?{id:listing.id}:null,error:null})};},
+  from(table){let capability=false;return {select(columns){capability=columns.includes('can_review_profiles');return this;},eq(){return this;},maybeSingle:async()=>({data:table==='portal_admins'?admin?{user_id:'admin-id',can_review_profiles:canReview}:null:matched?{id:listing.id}:null,error:capability&&capabilityError?{code:'42703'}:null})};},
   rpc:async(name,args)=>{calls.push({name,args});return {error};}};
 }
 test('review server action rejects anon/owner/mismatched profile or invalid revision before RPC',async()=>{
@@ -125,5 +146,5 @@ test('compact profile header reuses review UI while leaving full details only in
  assert.match(html,/Aktuell geprüft/); assert.match(html,/Zuletzt geprüft: 4. Oktober 2026/); assert.doesNotMatch(html,/Als geprüft markieren/);
  assert.doesNotMatch(html,/Nächste Prüfung|Speichern allein|Quelle/);
  const editor=readFileSync(new URL('../src/components/admin/inline-profile-editor.tsx',import.meta.url),'utf8');
- assert.match(editor,/adminAction=\{editing \? undefined/); assert.match(editor,/editing && freshness && reviewFreshness/); assert.match(editor,/review=\{reviewFreshness\}[^>]+compact/);
+ assert.match(editor,/adminAction=\{editing \? undefined/); assert.match(editor,/editing && freshness && <ProfileFreshness/); assert.match(editor,/review=\{reviewFreshness\}[^>]+compact/);
 });

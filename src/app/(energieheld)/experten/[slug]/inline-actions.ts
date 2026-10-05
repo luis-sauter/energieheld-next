@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdminAccess } from "@/lib/admin";
+import { canReviewProfiles } from "@/lib/admin-review";
 import { checkInlineProfileTarget } from "@/lib/inline-admin-profile";
 import { updateAdminCompanyProfile } from "@/lib/admin-profile";
 import { changeAdminCompanyMedia } from "@/lib/admin-company-media";
@@ -63,6 +64,7 @@ export async function reviewInlineProfile(profileId: string, slug: string, revis
     const target = await checkInlineProfileTarget(client, profileId, slug);
     requireAdminAccess(target.access);
     if (target.error) return { error: target.error };
+    if (!await canReviewProfiles(client)) return { error: "Sie haben keine Berechtigung für redaktionelle Prüfungen." };
     if (!Number.isSafeInteger(revision) || revision < 1) return { error: "Der Prüfstand ist ungültig. Bitte laden Sie das Profil neu." };
     const { error } = await client.rpc("review_profile_content", { p_profile_id: profileId, p_expected_revision: revision });
     if (error) return { error: error.code === "PT409"
@@ -80,6 +82,7 @@ export async function withdrawInlineProfileReview(profileId: string, slug: strin
     const target = await checkInlineProfileTarget(client, profileId, slug);
     requireAdminAccess(target.access);
     if (target.error) return { error: target.error };
+    if (!await canReviewProfiles(client)) return { error: "Sie haben keine Berechtigung für redaktionelle Prüfungen." };
     if (!Number.isSafeInteger(revision) || revision < 1 || typeof reviewedAt !== "string" || !Number.isFinite(Date.parse(reviewedAt)))
       return { error: "Der Prüfstand ist ungültig. Bitte laden Sie das Profil neu." };
     const { error } = await client.rpc("invalidate_profile_review", {
