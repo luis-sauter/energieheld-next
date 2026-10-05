@@ -9,6 +9,15 @@ import { redirect } from "next/navigation";
 import type { AdFormState } from "@/lib/ad-values";
 import { validateBannerMetadata, saveBannerMetadata, onlyBannerMetadataChanged } from '@/lib/banner-search-metadata';
 import type { AdCampaign } from '@/lib/ad-values';
+import { changeAdLifecycle, type LifecycleState } from '@/lib/ad-lifecycle';
+export async function lifecycleCampaign(_previous: LifecycleState, form: FormData): Promise<LifecycleState> {
+  const result = await changeAdLifecycle(await createClient(), form);
+  if (result.success) {
+    revalidatePath('/', 'layout');
+    if (result.redirectTo) redirect(result.redirectTo);
+  }
+  return result;
+}
 export async function adminCampaignAvailability(start: string, end: string, campaignId: string) {
   return loadAdAvailability(await createClient(), start, end, campaignId, true);
 }
@@ -23,6 +32,7 @@ export async function saveAdminCampaign(_previous: AdFormState, form: FormData):
   if (!validated.data) return { error: validated.error };
   try {
     const current = await client.from('company_ad_campaigns').select('*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement)').eq('id', form.get('campaign_id')).maybeSingle();
+    if (current.data?.archived_at) return { error: 'Archivierte Kampagnen sind nicht bearbeitbar. Bitte verwenden Sie sie als neuen Entwurf wieder.' };
     if (!current.error && current.data && onlyBannerMetadataChanged(form, current.data as AdCampaign)) {
       const metadata = await saveBannerMetadata(client, form, current.data.id);
       if (metadata.success) revalidatePath('/', 'layout');

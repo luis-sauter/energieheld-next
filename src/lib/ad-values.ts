@@ -50,6 +50,8 @@ export type AdCampaign = AdValues & {
   id: string;
   profile_id: string | null;
   is_editorial?: boolean;
+  archived_at?: string | null;
+  deletion_requested_at?: string | null;
   status: "draft" | "pending" | "approved" | "rejected" | "paused";
   approved_start_date: string | null;
   approved_end_date: string | null;
@@ -84,9 +86,10 @@ export function berlinToday(now = new Date()) {
   }).format(now);
 }
 export function adStatus(
-  c: Pick<AdCampaign, "status" | "approved_start_date" | "approved_end_date">,
+  c: Pick<AdCampaign, "status" | "approved_start_date" | "approved_end_date" | "archived_at">,
   today = berlinToday(),
 ) {
+  if (c.archived_at) return "Archiviert";
   if (c.status === "approved")
     return c.approved_start_date && c.approved_start_date > today
       ? "Geplant"

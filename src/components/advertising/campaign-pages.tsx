@@ -9,7 +9,8 @@ import { CampaignFacts, CampaignList, CampaignSlot } from "./campaign-view";
 import { CampaignForm, AdminCampaignForm } from "./campaign-form";
 import styles from "./advertising.module.css";
 import { loadBannerMetadata } from '@/lib/banner-search-metadata';
-type Params = { seite?: string; fehler?: string };
+import { CampaignLifecycle } from './campaign-lifecycle';
+type Params = { seite?: string; fehler?: string; archiv?: string };
 export async function CampaignIndex({
   admin = false,
   params,
@@ -23,7 +24,8 @@ export async function CampaignIndex({
         ? parsed
         : 1;
   const client = await createClient();
-  const result = await loadAdCampaigns(client, admin, page);
+  const archivedOnly = admin && params.archiv === '1';
+  const result = await loadAdCampaigns(client, admin, page, undefined, archivedOnly);
   if ("unauthenticated" in result && result.unauthenticated) redirect("/login");
   if ("access" in result) requireAdminAccess(result.access ?? "forbidden");
   const campaigns = "campaigns" in result ? result.campaigns : undefined,
@@ -35,6 +37,11 @@ export async function CampaignIndex({
         ← Zurück zum {admin ? "Adminbereich" : "Firmenbereich"}
       </Link>
       <h1>{admin ? "Werbekampagnen prüfen" : "Meine Werbekampagnen"}</h1>
+      {admin && campaigns?.some(campaign => Object.hasOwn(campaign, 'archived_at')) && <nav className={styles.actions} aria-label="Kampagnenbestand">
+        <Link href="/admin/werbung" aria-current={!archivedOnly ? 'page' : undefined}>Alle Kampagnen</Link>
+        <Link href="/admin/werbung?archiv=1" aria-current={archivedOnly ? 'page' : undefined}>Archiv</Link>
+      </nav>}
+      {admin && campaigns?.length && !Object.hasOwn(campaigns[0], 'archived_at') ? <p role="status">Die Archivverwaltung wird nach der Datenbankaktualisierung verfügbar.</p> : null}
       <p className={styles.intro}>
         {admin
           ? "Prüfen Sie Anzeigen und bestätigen Sie freie Zeiträume. Werbung bleibt unabhängig von Profilfreischaltung und Qualitätssiegel."
@@ -71,12 +78,12 @@ export async function CampaignIndex({
       )}
       <nav className={styles.actions} aria-label="Kampagnenseiten">
         {page > 1 && (
-          <Link href={`${base}/werbung?seite=${page - 1}`}>
+          <Link href={`${base}/werbung?seite=${page - 1}${archivedOnly ? '&archiv=1' : ''}`}>
             ← Vorherige Seite
           </Link>
         )}
         {count > page * 20 && (
-          <Link href={`${base}/werbung?seite=${page + 1}`}>
+          <Link href={`${base}/werbung?seite=${page + 1}${archivedOnly ? '&archiv=1' : ''}`}>
             Nächste Seite →
           </Link>
         )}
@@ -110,7 +117,11 @@ export async function CampaignDetail({
           <p className="eyebrow">{campaign.companyName}</p>
           <h2>{campaign.internal_name || "Neue Werbekampagne"}</h2>
           <CampaignFacts campaign={campaign} />
-          {admin ? (
+          {admin && Object.hasOwn(campaign, 'archived_at') && <CampaignLifecycle id={campaign.id} archived={Boolean(campaign.archived_at)} />}
+          {campaign.archived_at ? <>
+            <CampaignSlot placement={campaign.placement} ad={campaign} preview />
+            <p>Archiviert am {new Date(campaign.archived_at).toLocaleDateString('de-DE')}. Dieses Original ist nicht bearbeitbar und wird nicht öffentlich ausgeliefert.</p>
+          </> : admin ? (
             <>
               <h3>Banner gestalten und zuordnen</h3>
               <CampaignForm campaign={campaign} categoryIds={[]} admin bannerMetadata={metadata?.values.get(`campaign:${campaign.id}`)} bannerTerms={metadata?.terms} />
