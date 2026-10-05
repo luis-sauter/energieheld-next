@@ -40,10 +40,17 @@ test('executed shared idle lifecycle respects 3 seconds, full restart and indepe
 });
 test('both homepage areas use the same SSR child scroller and public labels retain technical theme keys',()=>{
  const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
- const home=read('src/app/(energieheld)/page.tsx');assert.equal((home.match(/<ThemeScroller/g)||[]).length,2);assert.match(home,/quickThemes\.map/);assert.match(home,/featuredThemes\.flatMap/);assert.match(home,/href=\{`\/unterkuenfte-a-z\?thema=\$\{entry.slug\}`\}/);assert.match(home,/basePath="\/mottoreisen"/);
+ const home=read('src/app/(energieheld)/page.tsx');assert.equal((home.match(/<ThemeScroller/g)||[]).length,2);assert.equal((home.match(/travelThemes\.map/g)||[]).length,2);assert.doesNotMatch(home,/quickThemes|featuredThemes/);assert.match(home,/discoveryAudiences\.map/);assert.match(home,/availableTravelFilters\(directory.database, terms\).audiences/);assert.match(home,/href=\{`\/unterkuenfte-a-z\?thema=\$\{entry.slug\}`\}/);assert.match(home,/basePath="\/mottoreisen"/);
  const finder=read('src/components/portal/travel-finder.tsx');assert.match(finder,/key: "theme", label: "Motto", all: "Alle Mottoreisen"/);
  const css=read('src/components/portal/theme-scroller.module.css');assert.match(css,/overflow-x: auto/);assert.match(css,/max-width: 640px/);assert.match(css,/flex-basis: 100%/);assert.match(css,/focus-visible/);
- assert.doesNotMatch(read('src/components/portal/theme-scroller.tsx'),/fetch\(|supabase|Math.random/);
+ const component=read('src/components/portal/theme-scroller.tsx');
+ assert.doesNotMatch(component,/fetch\(|supabase|Math.random|Automatisch|aria-pressed|onClick=\{toggle\}/);
+ assert.match(component,/!compact && <div className=\{styles.header\}/);
+ assert.match(component,/\{heading\}[\s\S]*styles.controls[\s\S]*\{moreLink\}[\s\S]*zurück[\s\S]*weiter/);
+ assert.match(css,/scrollbar-width: none/);assert.match(css,/::-webkit-scrollbar \{ display: none/);
+ assert.match(css,/data-theme-image.*:is\(:hover, :focus-visible\)/);assert.match(css,/rgb\(14 68 96 \/ 72%\)/);assert.match(css,/color: white/);
+ assert.match(home,/loading="lazy"/);assert.match(home,/alt="" fill/);
+ assert.match(css,/transition: none/);assert.match(css,/transform: none/);
 });
 
 test('executed gallery keeps hover, focus and pointer pauses independent and advances only after two idle seconds',async context=>{

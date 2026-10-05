@@ -66,18 +66,18 @@ test("priority is preserved even when Premium alone fills the 30-profile cap", (
   assert.ok(selectRotatingProfiles([...profiles(5), ...profiles(40, "premium")], "wellness", 5).every((item) => item.directoryPackage === "premium"));
 });
 
-test("autoplay waits six seconds, cancellation and restarting reset the full delay", (context) => {
+test("autoplay waits four seconds, cancellation and restarting reset the full delay", (context) => {
   context.mock.timers.enable({ apis: ["setTimeout"] });
   let advances = 0;
   let cancel = scheduleProfileAdvance(() => advances++);
-  context.mock.timers.tick(5999);
+  context.mock.timers.tick(3999);
   assert.equal(advances, 0);
   context.mock.timers.tick(1);
   assert.equal(advances, 1);
   cancel = scheduleProfileAdvance(() => advances++);
-  context.mock.timers.tick(3000); cancel();
+  context.mock.timers.tick(2000); cancel();
   cancel = scheduleProfileAdvance(() => advances++);
-  context.mock.timers.tick(5999);
+  context.mock.timers.tick(3999);
   assert.equal(advances, 1);
   context.mock.timers.tick(1);
   assert.equal(advances, 2); cancel();

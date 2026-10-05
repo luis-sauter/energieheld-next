@@ -12,8 +12,8 @@ export function nextThemeScroll(left: number, step: number, max: number, directi
 }
 
 // Cards/links are server-rendered children; navigation never fetches more data.
-export function ThemeScroller({ children, count, label, compact = false }: {
-  children: ReactNode; count: number; label: string; compact?: boolean;
+export function ThemeScroller({ children, count, label, compact = false, heading, moreLink }: {
+  children: ReactNode; count: number; label: string; compact?: boolean; heading?: ReactNode; moreLink?: ReactNode;
 }) {
   const rail = useRef<HTMLDivElement>(null);
   const [interaction, setInteraction] = useState(0);
@@ -29,7 +29,7 @@ export function ThemeScroller({ children, count, label, compact = false }: {
     setInteraction(value => value + 1);
   }, []);
   const advance = useCallback(() => move(1, true), [move]);
-  const { root, handlers, paused, reducedMotion, toggle, interact } = useRotationMotion(overflowing ? count : 1, advance, interaction, themeScrollerDelay);
+  const { root, handlers, reducedMotion, interact } = useRotationMotion(overflowing ? count : 1, advance, interaction, themeScrollerDelay);
   // Native scroll + CSS snap support touch, trackpads and focused links.
   const attachRail = useCallback((element: HTMLDivElement | null) => {
     rail.current = element;
@@ -40,12 +40,15 @@ export function ThemeScroller({ children, count, label, compact = false }: {
   }, []);
   return <div ref={root} className={styles.scroller} data-compact={compact || undefined}
     role="region" aria-label={label} {...handlers}>
-    {count > 1 && <div className={styles.controls}>
-      <button type="button" disabled={!overflowing} aria-label={`${label}: zurück`} onClick={() => move(-1, !reducedMotion)}>←</button>
-      <button type="button" disabled={!overflowing} aria-label={`${label}: weiter`} onClick={() => move(1, !reducedMotion)}>→</button>
-      <button type="button" aria-pressed={paused} disabled={reducedMotion || !overflowing} onClick={toggle}>
-        {paused ? "Automatisch wechseln" : "Automatischen Wechsel pausieren"}
-      </button>
+    {!compact && <div className={styles.header}>
+      {heading}
+      <div className={styles.controls}>
+        {moreLink}
+        {count > 1 && <>
+          <button type="button" disabled={!overflowing} aria-label={`${label}: zurück`} onClick={() => move(-1, !reducedMotion)}>←</button>
+          <button type="button" disabled={!overflowing} aria-label={`${label}: weiter`} onClick={() => move(1, !reducedMotion)}>→</button>
+        </>}
+      </div>
     </div>}
     <div ref={attachRail} className={styles.rail} tabIndex={0} aria-label={`${label}: Karten`}
       onScroll={interact} onKeyDown={event => {
