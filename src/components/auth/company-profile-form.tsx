@@ -17,6 +17,8 @@ const fields: {
     label: "Öffentlicher Profilname",
     autoComplete: "organization",
   },
+  { name: "contact_first_name", label: "Ansprechpartner: Vorname (optional)" },
+  { name: "contact_last_name", label: "Ansprechpartner: Nachname (optional)" },
   { name: "tagline", label: "Kurzbeschreibung" },
   { name: "description", label: "Beschreibung", multiline: true },
   {
@@ -89,6 +91,7 @@ export function ProfileForm({
               type={type ?? "text"}
               autoComplete={autoComplete}
               value={values[name]}
+              maxLength={name.startsWith("contact_") ? 120 : undefined}
               required={name === "display_name"}
               disabled={pending}
               inputMode={name === "postal_code" ? "numeric" : undefined}

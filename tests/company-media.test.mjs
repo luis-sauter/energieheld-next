@@ -406,3 +406,17 @@ test("direct uploaded foreign paths and spoofed file bytes cannot be finalized",
   assert.ok(!bad.events.some((e) => e.action === "update"));
   assert.deepEqual(bad.events.at(-1).paths, [path]);
 });
+
+
+test('owner contact prepare ignores submitted profile ids and needs actual ownership',async()=>{
+ for(const options of [{authenticated:false},{missingCompany:true}]) assert.equal((await changeOwnCompanyMedia(client(options),form({intent:'prepare-contact',file_type:'image/png',file_size:'12'}))).uploadPath,undefined);
+ const prepared=await changeOwnCompanyMedia(client(),form({intent:'prepare-contact',file_type:'image/png',file_size:'12',profile_id:'foreign'}));assert.ok(prepared.uploadPath.startsWith('profiles/own-profile/contact/'));
+ assert.ok((await changeOwnCompanyMedia(client(),form({intent:'prepare-contact',file_type:'image/svg+xml',file_size:'12'}))).error);
+ assert.ok((await changeOwnCompanyMedia(client(),form({intent:'prepare-contact',file_type:'image/png',file_size:'5242881'}))).error);
+});
+test('contact photo signing joins the existing detail batch, not directory cards',async()=>{
+ const paths=[];const storageClient={storage:{from(){return {createSignedUrls:async values=>{paths.push(...values);return {data:values.map(path=>({path,signedUrl:'https://example.org/'+path})),error:null};}};}}};
+ const profile={id:'own-profile',display_name:'Company',contact_image_path:'profiles/own-profile/contact/photo.png',company_profile_images:[]};
+ assert.equal((await signCompanyMedia(storageClient,profile,false)).contactImage,undefined);assert.equal(paths.length,0);
+ const signed=await signCompanyMedia(storageClient,profile,true);assert.equal(signed.contactImage.src,'https://example.org/'+profile.contact_image_path);assert.deepEqual(paths,[profile.contact_image_path]);
+});

@@ -31,7 +31,7 @@ export async function updateAdminCompanyProfile(
     return { access, error: "Das Firmenprofil wurde nicht gefunden." };
 
   const update = Object.fromEntries(
-    profileFields.filter((field) => field !== "country" || form.has("country"))
+    profileFields.filter((field) => !(field === "country" || field.startsWith("contact_")) || form.has(field))
       .map((field) => [field, values[field] || null]),
   );
   const { data: saved, error: updateError } = await supabase

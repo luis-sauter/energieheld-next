@@ -143,14 +143,14 @@ export async function loadPublicCompanyBySlug(
     const client = createPublicClient();
     let { data, error } = await client
       .from("company_profiles")
-      .select(`${publicFields},video_path`)
+      .select(`${publicFields},video_path,contact_first_name,contact_last_name,contact_image_path`)
       .eq("status", "approved")
       .eq("slug", slug)
       .maybeSingle();
     if (error?.code === "42501") {
       ({ data, error } = await client
         .from("company_profiles")
-        .select(`${publicFieldsWithoutStreet},video_path`)
+        .select(`${publicFieldsWithoutStreet},video_path,contact_first_name,contact_last_name,contact_image_path`)
         .eq("status", "approved")
         .eq("slug", slug)
         .maybeSingle());

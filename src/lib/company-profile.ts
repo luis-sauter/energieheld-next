@@ -13,6 +13,8 @@ export const profileFields = [
   "city",
   "region",
   "country",
+  "contact_first_name",
+  "contact_last_name",
 ] as const;
 export type ProfileValues = Record<(typeof profileFields)[number], string>;
 export type ProfileFormState = {
@@ -29,7 +31,9 @@ export function validateProfile(form: FormData) {
     }),
   ) as ProfileValues;
   let error: string | undefined;
-  if (!values.display_name)
+  if (values.contact_first_name.length > 120 || values.contact_last_name.length > 120)
+    error = "Vorname und Nachname dürfen jeweils maximal 120 Zeichen lang sein.";
+  else if (!values.display_name)
     error = "Bitte geben Sie einen öffentlichen Profilnamen ein.";
   else if (
     values.public_email &&
@@ -112,7 +116,7 @@ export async function updateOwnCompanyProfile(
       : profile.status;
   const update = {
     ...Object.fromEntries(
-      profileFields.filter((key) => key !== "country" || form.has("country"))
+      profileFields.filter((key) => !(key === "country" || key.startsWith("contact_")) || form.has(key))
         .map((key) => [key, values[key] || null]),
     ),
     status,

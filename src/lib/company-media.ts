@@ -1,3 +1,4 @@
+import { changeAuthorizedContactImage } from "./profile-contact-media";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { signProfileVideo, changeAuthorizedProfileVideo } from "./profile-video";
 import type { PortalImage } from "@/types/portal";
@@ -15,12 +16,14 @@ export type MediaProfile = {
   id: string;
   display_name: string;
   logo_path?: string | null;
+  contact_image_path?: string | null;
   video_path?: string | null;
   company_profile_images?: MediaRow[];
 };
 export type SignedMedia = {
   video?: { src: string; poster?: string };
   logo?: PortalImage;
+  contactImage?: PortalImage;
   images: (PortalImage & { id: string })[];
 };
 export type MediaState = {
@@ -42,6 +45,7 @@ export async function signCompanyMedia(
   );
   const paths = [
     profile.logo_path,
+    ...(includeVideo ? [profile.contact_image_path] : []),
     ...rows.map((row) => row.storage_path),
   ].filter((path): path is string => Boolean(path));
   const video = includeVideo ? await signProfileVideo(client, profile) : undefined;
@@ -64,6 +68,8 @@ export async function signCompanyMedia(
     logo: profile.logo_path
       ? { src: src(profile.logo_path), alt: `Logo von ${profile.display_name}` }
       : undefined,
+    contactImage: includeVideo && profile.contact_image_path
+      ? { src: src(profile.contact_image_path), alt: `Ansprechpartner von ${profile.display_name}` } : undefined,
     images: rows.map((row) => ({
       id: row.id,
       src: src(row.storage_path),
@@ -124,13 +130,15 @@ export async function changeOwnCompanyMedia(
   const { data: profile, error: profileError } = await client
     .from("company_profiles")
     .select(
-      "id,logo_path,video_path,company_profile_images(id,storage_path,alt_text,sort_order)",
+      "id,logo_path,contact_image_path,video_path,company_profile_images(id,storage_path,alt_text,sort_order)",
     )
     .eq("company_id", company.id)
     .maybeSingle();
   if (profileError || !profile) return { error: errorMessage };
   if (["prepare-video", "video-upload", "video-remove"].includes(String(form.get("intent"))))
     return changeAuthorizedProfileVideo(client, profile, form);
+  if (["prepare-contact", "contact-upload", "contact-remove"].includes(String(form.get("intent"))))
+    return changeAuthorizedContactImage(client, profile, form);
   const rows = (profile.company_profile_images as MediaRow[]).sort(
     (a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id),
   );

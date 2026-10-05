@@ -1,4 +1,5 @@
 "use client";
+import { ContactImageEditor } from "./contact-image-editor";
 import { ProfileVideoEditor } from "./profile-video-editor";
 import { createClient } from "@/lib/supabase/client";
 import type { MediaState } from "@/lib/company-media";
@@ -215,6 +216,7 @@ export function CompanyProfileDesigner({
         categories={energieheld.categories}
         presentation="company"
         logoEditor={logoEditor}
+        contactPersonEditor={<ContactImageEditor contact={listing.contact} save={form => saveCompanyMedia({}, form)} disabled={pending || videoBusy} onBusyChange={setVideoBusy} />}
         galleryEditor={<ProfileVideoEditor video={listing.video} name={listing.name} gallery={galleryEditor} disabled={pending || videoBusy} save={form => saveCompanyMedia({}, form)} onBusyChange={setVideoBusy} />}
       />
       <dialog

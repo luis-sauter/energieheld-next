@@ -758,3 +758,29 @@ test("old image rows keep public rendering and disable crop until migration is a
   assert.match(editHtml, /Ausschnitt nach Datenbankaktualisierung verfügbar/);
   assert.match(editHtml, /Ausschnitt bearbeiten/);
 });
+
+
+const {ContactPerson}=await import('../src/components/portal/contact-person.tsx');
+test('public contact module is absent for empty data and supports first/last-only, image-only and combined data',()=>{
+ const base={phone:'123',email:'public@example.org',website:'https://example.org'};
+ assert.equal(renderToStaticMarkup(createElement(ContactPerson,{contact:base})), '');
+ assert.equal(renderToStaticMarkup(createElement(ContactPerson,{contact:{...base,person:'  '}})), '');
+ for(const person of ['Anna','Muster','Anna Muster']){
+  const html=renderToStaticMarkup(createElement(ContactPerson,{contact:{...base,person}}));assert.match(html,/Ansprechpartner/);assert.ok(html.includes(person));assert.doesNotMatch(html,/<img/);
+ }
+ const image={src:'https://example.org/contact.png',alt:'Ansprechpartner'};
+ const html=renderToStaticMarkup(createElement(ContactPerson,{contact:{...base,personImage:image}}));assert.match(html,/<img/);assert.match(html,/Ansprechpartner/);assert.doesNotMatch(html,/undefined/);
+ const combined=renderToStaticMarkup(createElement(ContactPerson,{contact:{...base,person:'Anna Muster',personImage:image}}));assert.match(combined,/Anna Muster/);
+});
+
+
+test('contact editor appears only in edit mode, shares the existing two save intentions and actual profile payload',async()=>{
+ await renderPage({authenticated:true,admin:true});
+ const element=await ExpertDetail({params:Promise.resolve({slug:publicProfile.slug})});
+ const editor=element.props.children.find(child=>child?.type===InlineProfileEditor);
+ const plain=renderToStaticMarkup(createElement(InlineProfileEditor,editor.props));assert.doesNotMatch(plain,/Ansprechpartnerbild hinzufügen|name="contact_first_name"/);
+ const editing=renderToStaticMarkup(createElement(InlineProfileEditor,{...editor.props,initialEditing:true}));
+ assert.match(editing,/name="contact_first_name"/);assert.match(editing,/name="contact_last_name"/);assert.match(editing,/Ansprechpartnerbild hinzufügen/);assert.match(editing,/Speichern und schließen/);assert.match(editing,/form="inline-admin-profile-form"/);
+ const db=client();globalThis.__inlineAdminClient=db;const form=new FormData();form.set('display_name','Redaktionelle Firma');form.set('contact_first_name','Anna');form.set('contact_last_name','Muster');
+ const result=await saveInlineProfile(profileId,publicProfile.slug,form);assert.ok(result.success);const payload=db.calls.find(c=>c.payload).payload;assert.equal(payload.contact_first_name,'Anna');assert.equal(payload.contact_last_name,'Muster');
+});

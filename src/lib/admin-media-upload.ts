@@ -7,16 +7,16 @@ import { optimizeProfileImage } from "./client-image-optimization";
 // Shared by the legacy admin media page and the inline profile editor.
 export async function uploadAdminMedia(
   saveAction: (form: FormData) => Promise<MediaState>,
-  kind: "logo" | "gallery",
+  kind: "logo" | "gallery" | "contact",
   file: FormDataEntryValue | null,
   alt: string,
   onProgress: (label: string) => void,
   replacementId?: string,
 ): Promise<MediaState> {
   const prepare = new FormData();
-  prepare.set("intent", kind === "logo" ? "prepare-logo" : "prepare-gallery");
+  prepare.set("intent", `prepare-${kind}`);
   const finish = new FormData();
-  finish.set("intent", kind === "logo" ? "logo-upload" : "gallery-upload");
+  finish.set("intent", `${kind}-upload`);
   finish.set("alt_text", alt);
   if (replacementId && kind === "gallery") {
     prepare.set("image_id", replacementId);

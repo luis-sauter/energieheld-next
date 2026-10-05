@@ -5,6 +5,7 @@ import { CompanyLogo } from "./company-image";
 import { Icon } from "./icon";
 import { ProfileHeaderMedia } from "./profile-header-media";
 import { ImageGallery } from "./image-gallery";
+import { ContactPerson } from "./contact-person";
 import { QualitySeal } from "@/components/quality/quality-seal";
 
 export type InlineProfileFields = Partial<Record<
@@ -26,11 +27,13 @@ export function ContactSection({
   listing,
   contactAction,
   logoEditor,
+  contactPersonEditor,
   inlineFields,
 }: {
   listing: Listing;
   contactAction?: React.ReactNode;
   logoEditor?: React.ReactNode;
+  contactPersonEditor?: React.ReactNode;
   inlineFields?: InlineProfileFields;
 }) {
   const website = safeWebsite(listing.contact.website);
@@ -55,9 +58,7 @@ export function ContactSection({
           />
         </div>
       )}
-      {listing.contact.person && (
-        <p>Ansprechpartner: {listing.contact.person}</p>
-      )}
+      {contactPersonEditor ?? <ContactPerson contact={listing.contact} />}
       {inlineFields?.street ?? (listing.location.street && <p>{listing.location.street}</p>)}
       {inlineFields ? (
         <div className="inline-location-fields">
@@ -161,6 +162,7 @@ export function ListingDetail({
   headingLevel = 1,
   presentation,
   logoEditor,
+  contactPersonEditor,
   galleryEditor,
   adminAction,
   inlineFields,
@@ -188,6 +190,7 @@ export function ListingDetail({
   headingLevel?: 1 | 2;
   presentation?: "company";
   logoEditor?: React.ReactNode;
+  contactPersonEditor?: React.ReactNode;
   galleryEditor?: React.ReactNode;
   adminAction?: React.ReactNode;
   inlineFields?: InlineProfileFields;
@@ -244,6 +247,7 @@ export function ListingDetail({
           listing={listing}
           contactAction={contactAction}
           logoEditor={logoEditor}
+          contactPersonEditor={contactPersonEditor}
           inlineFields={inlineFields}
         />
       </div>

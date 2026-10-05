@@ -1,5 +1,6 @@
 "use client";
 
+import { ContactImageEditor } from "@/components/auth/contact-image-editor";
 import { ProfileFreshness } from './profile-freshness';
 import type { ContentFreshness } from '@/lib/content-freshness';
 import { useRef, useState } from "react";
@@ -45,6 +46,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   const busyRef = useRef(false);
   const [editing, setEditing] = useState(initialEditing);
   const [busy, setBusy] = useState(false);
+  const [contactBusy, setContactBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [feedback, setFeedback] = useState<ProfileFormState>({});
   const [mapLocation, setMapLocation] = useState(listing.location);
@@ -53,7 +55,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   const content = splitProfileContent(editing ? contentBlocks : publicContentBlocks ?? contentBlocks, listing.name);
 
   function field(name: keyof ProfileValues, label: string, multiline = false) {
-    const common = { id: `inline-${name}`, name, form: formId, defaultValue: values[name], disabled: busy || history.busy, "aria-label": label, onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const common = { id: `inline-${name}`, name, form: formId, defaultValue: values[name], maxLength: name.startsWith("contact_") ? 120 : undefined, disabled: busy || contactBusy || history.busy, "aria-label": label, onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setFeedback({});
       setDirty(true);
       const key = ({ street: "street", postal_code: "postalCode", city: "city", region: "region", country: "country" } as const)[name as "street" | "postal_code" | "city" | "region" | "country"];
@@ -100,7 +102,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
 
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busyRef.current || mediaEditor.busy || history.busy) return;
+    if (busyRef.current || contactBusy || mediaEditor.busy || history.busy) return;
     const closeAfterSuccess = (event.nativeEvent.submitter as HTMLButtonElement | null)?.value === "close";
     busyRef.current = true;
     setBusy(true);
@@ -124,14 +126,14 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   return <InlineEditorHistoryContext.Provider value={history}>
     {editing && <div className={styles.toolbar}>
       <strong>Bearbeitungsmodus aktiv</strong>
-      <button type="button" className="button" disabled={busy || mediaEditor.busy || history.busy || !history.state.past.length}
+      <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || !history.state.past.length}
         onClick={() => void history.undo()}>↶ Rückgängig</button>
-      <button type="button" className="button" disabled={busy || mediaEditor.busy || history.busy || !history.state.future.length}
+      <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || !history.state.future.length}
         onClick={() => void history.redo()}>↷ Wiederholen</button>
       <form id={formId} onSubmit={submit}>
-        <button type="submit" value="stay" className="button button-primary" disabled={busy || mediaEditor.busy || history.busy}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
-        <button type="submit" value="close" className="button" disabled={busy || mediaEditor.busy || history.busy}>Speichern und schließen</button>
-        <button type="button" className="button" disabled={busy || mediaEditor.busy || history.busy} onClick={() => { setEditing(false); setDirty(false); setFeedback({}); history.clear(); }}>Abbrechen</button>
+        <button type="submit" value="stay" className="button button-primary" disabled={busy || contactBusy || mediaEditor.busy || history.busy}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
+        <button type="submit" value="close" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy}>Speichern und schließen</button>
+        <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy} onClick={() => { setEditing(false); setDirty(false); setFeedback({}); history.clear(); }}>Abbrechen</button>
       </form>
       {busy && <span role="status">Änderungen werden gespeichert …</span>}
       {history.busy && <span role="status">Änderung wird wiederhergestellt …</span>}
@@ -143,7 +145,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       <small>Inhalts- und Bildänderungen werden sofort gespeichert.</small>
     </div>}
     {!editing && feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
-    {editing && freshness && <ProfileFreshness state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || mediaEditor.busy || history.busy || dirty} />}
+    {editing && freshness && <ProfileFreshness state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || contactBusy || mediaEditor.busy || history.busy || dirty} />}
     <ListingDetail
       listing={listing}
       showVerification={showVerification}
@@ -156,7 +158,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
       contactAction={editing ? undefined : contactAction}
       adminAction={editing ? undefined : <div className="profile-admin-actions">
         <button type="button" className={`button ${styles.editButton}`} onClick={() => { setFeedback({}); setEditing(true); }}>Profil bearbeiten</button>
-        {freshness && <ProfileFreshness state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || mediaEditor.busy || history.busy || dirty} compact />}
+        {freshness && <ProfileFreshness state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || contactBusy || mediaEditor.busy || history.busy || dirty} compact />}
       </div>}
       inlineFields={editing ? inlineFields : undefined}
       aboutHeading={content.aboutHeading}
@@ -166,6 +168,11 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
         blocks={content.blocks} items={content.items} listing={listing} renderSpecial={renderSpecial}
         editing={editing} available={contentAvailable} imagesAvailable={imagesAvailable}
         saveAction={saveContent} saveImage={saveBlockImage} /> : undefined}
+      contactPersonEditor={editing ? <section aria-label="Ansprechpartner bearbeiten">
+        <h3>Ansprechpartner (optional)</h3>
+        {field("contact_first_name", "Vorname")}{field("contact_last_name", "Nachname")}
+        <ContactImageEditor contact={listing.contact} save={saveMedia} disabled={busy || mediaEditor.busy || history.busy} onBusyChange={setContactBusy} />
+      </section> : undefined}
       logoEditor={editing ? mediaEditor.logoEditor : undefined}
       galleryEditor={editing ? mediaEditor.galleryEditor : undefined}
     />

@@ -23,7 +23,7 @@ function form(values) {
   }
   return result;
 }
-function client({ authenticated = true, admin = true, profileRows = rows, missing = false, writeError = false, download = png } = {}) {
+function client({ authenticated = true, admin = true, profileRows = rows, contact = null, missing = false, writeError = false, download = png } = {}) {
   const calls = [];
   return {
     calls,
@@ -41,7 +41,7 @@ function client({ authenticated = true, admin = true, profileRows = rows, missin
         async maybeSingle() {
           if (table === "portal_admins") return { data: admin ? { user_id: "verified-admin" } : null, error: null };
           if (call.action) return { data: writeError ? null : { id: call.action === "insert" ? imageId : call.filters.find(([key]) => key === "id")?.[1] }, error: writeError ? { message: "private database error" } : null };
-          return { data: missing ? null : { id: profileId, logo_path: `profiles/${profileId}/logo/${imageId}.png`, company_profile_images: profileRows }, error: null };
+          return { data: missing ? null : { id: profileId, contact_image_path: contact, logo_path: `profiles/${profileId}/logo/${imageId}.png`, company_profile_images: profileRows }, error: null };
         },
       };
     },
@@ -193,4 +193,33 @@ test("drag order sends a complete, exact profile permutation to existing RPC", a
     action: "rpc", name: "reorder_company_images",
     payload: { p_profile_id: profileId, p_image_ids: [secondId, imageId] },
   });
+});
+
+
+test('contact prepare/upload reuses admin authorization and only changes its own contact reference',async()=>{
+ for(const options of [{authenticated:false},{admin:false},{missing:true}]){
+  const db=client(options);const result=await changeAdminCompanyMedia(db,profileId,form({intent:'prepare-contact',file_type:'image/png',file_size:'12'}));
+  assert.equal(result.uploadPath,undefined);assert.equal(db.calls.some(c=>c.action==='update'),false);
+ }
+ const db=client();const prepared=await changeAdminCompanyMedia(db,profileId,form({intent:'prepare-contact',file_type:'image/png',file_size:'12'}));assert.match(prepared.uploadPath,new RegExp('^profiles/'+profileId+'/contact/'));
+ const uploaded=await changeAdminCompanyMedia(db,profileId,form({intent:'contact-upload',uploaded_path:prepared.uploadPath}));assert.ok(uploaded.success);
+ const call=db.calls.find(c=>c.payload);assert.deepEqual(call.payload,{contact_image_path:prepared.uploadPath});assert.ok(call.filters.some(([key,value])=>key==='id'&&value===profileId));assert.ok(call.filters.some(([key,value])=>key==='contact_image_path'&&value===null));
+ for(const path of ['profiles/'+otherProfileId+'/contact/'+imageId+'.png','profiles/'+profileId+'/gallery/'+imageId+'.png']){
+  const invalid=client();assert.ok((await changeAdminCompanyMedia(invalid,profileId,form({intent:'contact-upload',uploaded_path:path}))).error);assert.equal(invalid.calls.some(c=>c.action==='download'||c.action==='update'||c.action==='remove'),false);
+ }
+ const failed=client({writeError:true});assert.ok((await changeAdminCompanyMedia(failed,profileId,form({intent:'contact-upload',uploaded_path:prepared.uploadPath}))).error);assert.ok(failed.calls.some(c=>c.action==='remove'&&c.paths.includes(prepared.uploadPath)));
+ const invalidBytes=client({download:new Blob(['fake'],{type:'image/png'})});assert.ok((await changeAdminCompanyMedia(invalidBytes,profileId,form({intent:'contact-upload',uploaded_path:prepared.uploadPath}))).error);assert.equal(invalidBytes.calls.some(c=>c.payload),false);
+});
+
+
+test('contact replacement/removal CAS preserves names and unrelated media and cleans old file only after success',async()=>{
+ const previous='profiles/'+profileId+'/contact/'+imageId+'.png', next='profiles/'+profileId+'/contact/'+secondId+'.png';
+ for(const intent of ['contact-upload','contact-remove']){
+  const db=client({contact:previous});const result=await changeAdminCompanyMedia(db,profileId,form({intent,uploaded_path:next}));assert.ok(result.success);
+  const update=db.calls.find(c=>c.payload);assert.deepEqual(update.payload,{contact_image_path:intent==='contact-upload'?next:null});assert.ok(update.filters.some(([key,value])=>key==='contact_image_path'&&value===previous));
+  const cleanup=db.calls.find(c=>c.action==='remove');assert.deepEqual(cleanup.paths,[previous]);assert.ok(db.calls.indexOf(cleanup)>db.calls.indexOf(update));
+ }
+ const failed=client({contact:previous,writeError:true});assert.ok((await changeAdminCompanyMedia(failed,profileId,form({intent:'contact-upload',uploaded_path:next}))).error);assert.deepEqual(failed.calls.filter(c=>c.action==='remove').flatMap(c=>c.paths),[next]);
+ const thrown=client({contact:previous});thrown.storage.from=()=>({download:async()=>{throw Error('private detail')},remove:async paths=>{thrown.calls.push({action:'remove',paths});return {error:null};}});
+ const result=await changeAdminCompanyMedia(thrown,profileId,form({intent:'contact-upload',uploaded_path:next}));assert.ok(result.error);assert.equal(result.error.includes('private detail'),false);assert.equal(thrown.calls.some(c=>c.payload),false);assert.deepEqual(thrown.calls.find(c=>c.action==='remove').paths,[next]);
 });

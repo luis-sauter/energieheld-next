@@ -110,6 +110,7 @@ test("admin updates only validated normal fields on the verified profile row", a
     submitted_at: "2000-01-01",
     approved_at: "2000-01-01",
     country: "Deutschland",
+    contact_first_name: "", contact_last_name: "",
   }));
   assert.ok(result.success);
   assert.deepEqual(db.calls[1].filters, [["id", profileId]]);
@@ -144,4 +145,16 @@ test("missing profile, read error, failed update and stale update never report s
     if (options.missingProfile || options.readError)
       assert.ok(!db.calls.some((call) => call.payload));
   }
+});
+
+
+test('admin contact names share validation, optional clearing and whitelist while old forms preserve names',async()=>{
+ const invalid=client();assert.ok((await updateAdminCompanyProfile(invalid,profileId,form({contact_first_name:'a'.repeat(121)}))).error);assert.equal(invalid.calls.some(c=>c.payload),false);
+ for(const fields of [{}, {contact_first_name:' Anna ',contact_last_name:''}]){
+  const db=client();assert.ok((await updateAdminCompanyProfile(db,profileId,form({...fields,contact_image_path:'forged'}))).success);
+  const payload=db.calls.find(c=>c.payload).payload;
+  assert.equal('contact_image_path' in payload,false);
+  if ('contact_first_name' in fields){assert.equal(payload.contact_first_name,'Anna');assert.equal(payload.contact_last_name,null);}
+  else assert.equal('contact_first_name' in payload,false);
+ }
 });
