@@ -529,7 +529,7 @@ test("travel directory keeps old destination and theme URLs without inventing un
   }) }));
   assert.match(html, /name="ziel"/);
   assert.doesNotMatch(html, /<select name="thema"/);
-  assert.match(html, /Reiseart: Nicht verfügbar/);
+  assert.match(html, /Motto: Nicht verfügbar/);
   assert.match(html, /2 Unterkünfte/);
   assert.match(html, /Höflehner|Schafhuber/);
   assert.doesNotMatch(html, /Demo GmbH|Pension Sonnenhof|Villner Hof|Energieheld Demo GmbH/);

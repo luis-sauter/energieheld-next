@@ -1,0 +1,16 @@
+.scroller { min-width: 0; max-width: 100%; }
+.controls { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
+.controls button { min-height: 40px; border: 1px solid var(--line); background: white; color: var(--brand-primary); border-radius: 10px; padding: 6px 12px; cursor: pointer; }
+.controls button:disabled { cursor: default; opacity: .6; }
+.rail { position: relative; display: flex; gap: 18px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: 4px; padding: 4px 4px 16px; }
+.rail > * { flex: 0 0 calc((100% - 36px) / 3); min-width: 0; scroll-snap-align: start; }
+.rail :global(.discovery-card) { border-radius: 16px; }
+.rail :global(.discovery-card-image) { aspect-ratio: 1.6; }
+.scroller[data-compact] .rail { gap: 10px; }
+.scroller[data-compact] .rail > * { flex-basis: calc((100% - 50px) / 6); }
+.scroller[data-compact] .rail > a { display: grid; justify-items: center; align-content: center; gap: 6px; min-height: 76px; padding: 10px; border-radius: 12px; background: var(--brand-surface); text-align: center; font-weight: 600; font-size: .85rem; }
+.rail:focus-visible, .rail a:focus-visible, .controls button:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 2px; }
+@media (max-width: 1100px) { .rail > * { flex-basis: calc((100% - 18px) / 2); } .scroller[data-compact] .rail > * { flex-basis: calc((100% - 30px) / 4); } }
+@media (max-width: 640px) { .rail > * { flex-basis: 100%; } .scroller[data-compact] .rail > * { flex-basis: calc((100% - 10px) / 2); } }
+@media (prefers-reduced-motion: reduce) { .rail { scroll-behavior: auto; } }
+

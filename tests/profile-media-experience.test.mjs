@@ -92,10 +92,10 @@ test("editor, directory and gallery keep local preview, square framing and reduc
   assert.match(source("src/components/portal/company-image.tsx"), /fit = "cover"/);
   assert.match(source("src/components/portal/company-image.tsx"), /objectFit: fit/);
   assert.match(gallery, /prefers-reduced-motion: reduce/);
-  assert.match(gallery, /window\.setTimeout\(advance, 4000\)/);
+  assert.match(gallery, /window\.setTimeout\(advance, 2000\)/);
 });
 
-test("public gallery advances after four seconds, resets on interaction and respects reduced motion", async () => {
+test("public gallery advances after two seconds, resets on interaction and respects reduced motion", async () => {
   const { scheduleGalleryAdvance, galleryAutoplayEnabled } = await import("../src/components/portal/image-gallery.tsx");
   const oldWindow = globalThis.window;
   let nextId = 0;
@@ -105,12 +105,12 @@ test("public gallery advances after four seconds, resets on interaction and resp
   try {
     let advances = 0;
     const cancel = scheduleGalleryAdvance(() => advances++);
-    assert.equal(pending.get(1).delay, 4000);
+    assert.equal(pending.get(1).delay, 2000);
     // A manual selection cancels the old countdown and starts a fresh one.
     cancel();
     assert.equal(pending.has(1), false);
     const again = scheduleGalleryAdvance(() => advances++);
-    assert.equal(pending.get(2).delay, 4000);
+    assert.equal(pending.get(2).delay, 2000);
     pending.get(2).callback();
     assert.equal(advances, 1);
     again();

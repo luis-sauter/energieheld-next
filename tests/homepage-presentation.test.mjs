@@ -69,8 +69,8 @@ test('shared cards accept measured sizes and keep lazy loading and real profile 
 });
 test('homepage presentation is scoped, responsive, reserves image geometry and respects reduced motion',()=>{
  const css=read('src/app/(energieheld)/home.module.css');
- assert.match(css,/grid-template-rows: repeat\(3, 145px\)/);assert.match(css,/grid-row: span 3/);
- assert.match(css,/@media \(max-width: 1100px\)/);assert.match(css,/repeat\(4, minmax\(0, 1fr\)\)/);
+ const scroller=read("src/components/portal/theme-scroller.module.css"); assert.match(scroller,/display: flex/); assert.match(scroller,/scroll-snap-type: x mandatory/); assert.match(css,/rgb\(255 255 255 \/ 86%\)/);
+ assert.match(css,/@media \(max-width: 1100px\)/);assert.match(scroller,/100% - 30px/);
  assert.match(css,/@media \(max-width: 700px\)/);assert.match(css,/repeat\(2, minmax\(0, 1fr\)\)/);
  assert.match(css,/@media \(prefers-reduced-motion: reduce\)/);assert.match(css,/aspect-ratio: 1.7/);
  assert.doesNotMatch(read('src/app/(energieheld)/page.tsx'),/use client|maps.googleapis|iframe/);

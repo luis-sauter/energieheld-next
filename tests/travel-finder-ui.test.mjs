@@ -79,7 +79,7 @@ test("selected facets retain their label, zero options stay visible and disabled
   assert.match(html, /Wellnessangebote \(1\)/);
   assert.match(html, /Campingurlaub \(0\)/);
   assert.match(html, /value="campingurlaub" disabled/);
-  assert.match(html, /Reiseart: Wellnessangebote entfernen/);
+  assert.match(html, /Motto: Wellnessangebote entfernen/);
   assert.match(html, /Alle Filter zurücksetzen/);
   assert.match(render(readTravelFilterValues({ q: "unpassend" })), /Im Reiseportal suchen/);
 });
@@ -153,7 +153,7 @@ test('result-route finder retains all context fields and submits with the origin
   const values = readTravelFilterValues({ q: 'City Apart', ziel: 'deutschland', thema: 'wellnessangebote', zielgruppe: 'paar', unterkunftstyp: 'hotel', besonderheit: 'sauna', ort: 'Berlin', sort: 'name' });
   const html = render(values, 'search');
   assert.equal((html.match(/role="search"/g) ?? []).length, 1);
-  for (const label of ['Wohin?', 'Reiseart', 'Mit wem?', 'Unterkunft', 'Besonderheiten', 'Suchbegriff', 'Ort oder Postleitzahl']) assert.ok(html.includes(label));
+  for (const label of ['Wohin?', 'Motto', 'Mit wem?', 'Unterkunft', 'Besonderheiten', 'Suchbegriff', 'Ort oder Postleitzahl']) assert.ok(html.includes(label));
   for (const selected of ['deutschland', 'wellnessangebote', 'paar', 'hotel', 'sauna']) assert.ok(html.includes(`value="${selected}" selected`));
   assert.match(html,/value="City Apart"/); assert.match(html,/value="Berlin"/);
   const previous = globalThis.window;
