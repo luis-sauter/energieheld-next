@@ -10,7 +10,7 @@
 .rail > * { flex: 0 0 calc((100% - 36px) / 3); min-width: 0; scroll-snap-align: start; }
 .rail :global(.discovery-card) { border-radius: 16px; }
 .rail :global(.discovery-card-image) { aspect-ratio: 1.6; }
-.scroller[data-compact] .rail { gap: 10px; }
+.scroller[data-compact] .rail { gap: 10px; scroll-snap-type: none; }
 .scroller[data-compact] .rail > * { flex-basis: calc((100% - 50px) / 6); }
 .scroller[data-compact] .rail > a { position: relative; isolation: isolate; overflow: hidden; display: grid; justify-items: center; align-content: center; gap: 6px; min-height: 76px; padding: 10px; border-radius: 12px; background: var(--brand-surface); text-align: center; font-weight: 600; font-size: .85rem; }
 .rail:focus-visible, .rail a:focus-visible, .controls button:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 2px; }
