@@ -7,6 +7,7 @@ import { adPlacements, adTargetUrl, type AdPlacementId, type ActiveAd } from "@/
 import type { InlineBannerOptions, InlineBanner } from "@/lib/inline-ad-context";
 import { InlineBannerContext } from "./inline-banner-context";
 import { CampaignSlot } from "./campaign-view";
+import { CampaignLifecycle } from './campaign-lifecycle';
 import styles from "./inline-banner-editor.module.css";
 import { bannerCropRatio, bannerSizes, type BannerSize } from "@/lib/banner-presentation";
 import { BannerSearchFields } from './banner-search-fields';
@@ -269,16 +270,20 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
         <button type="submit" className="button button-primary" disabled={busy || blocked || Boolean(options.error)}>{busy ? "Speichert …" : "Banner speichern"}</button>
         <button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button>
       </div>
-      {selected.banner && !selected.banner.shared && canRemove &&
+    </form>
+      {selected.banner &&
         <div className={styles.deleteSection}>
-          {confirmDelete ? <>
+          {source === 'campaign' && campaignId ? <CampaignLifecycle id={campaignId} archived={false}
+            disabled={busy || Boolean(options.error)} onBusyChange={setBusy} onArchived={onRemoved}>
+            {!selected.banner.shared && canRemove && !confirmDelete && <button type="button" className="button" disabled={busy || Boolean(options.error)} onClick={() => setConfirmDelete(true)}>Banner löschen</button>}
+          </CampaignLifecycle> : null}
+          {!selected.banner.shared && canRemove && (confirmDelete ? <>
             <p>Dieses Banner von dieser Seite und diesem Platz entfernen?</p>
             <div className={styles.actions}>
               <button type="button" className="button" disabled={busy} onClick={() => remove("banner")}>Ja, Banner löschen</button>
               <button type="button" className="button" disabled={busy} onClick={() => setConfirmDelete(false)}>Behalten</button>
             </div>
-          </> : <button type="button" className="button" disabled={busy || Boolean(options.error)} onClick={() => setConfirmDelete(true)}>Banner löschen</button>}
+          </> : source !== 'campaign' ? <button type="button" className="button" disabled={busy || Boolean(options.error)} onClick={() => setConfirmDelete(true)}>Banner löschen</button> : null)}
         </div>}
-    </form>
   </dialog>;
 }

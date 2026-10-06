@@ -117,14 +117,15 @@ export async function CampaignDetail({
           <p className="eyebrow">{campaign.companyName}</p>
           <h2>{campaign.internal_name || "Neue Werbekampagne"}</h2>
           <CampaignFacts campaign={campaign} />
-          {admin && Object.hasOwn(campaign, 'archived_at') && <CampaignLifecycle id={campaign.id} archived={Boolean(campaign.archived_at)} />}
           {campaign.archived_at ? <>
+            {admin && <CampaignLifecycle id={campaign.id} archived />}
             <CampaignSlot placement={campaign.placement} ad={campaign} preview />
             <p>Archiviert am {new Date(campaign.archived_at).toLocaleDateString('de-DE')}. Dieses Original ist nicht bearbeitbar und wird nicht öffentlich ausgeliefert.</p>
           </> : admin ? (
             <>
               <h3>Banner gestalten und zuordnen</h3>
               <CampaignForm campaign={campaign} categoryIds={[]} admin bannerMetadata={metadata?.values.get(`campaign:${campaign.id}`)} bannerTerms={metadata?.terms} />
+              {Object.hasOwn(campaign, 'archived_at') && <CampaignLifecycle id={campaign.id} archived={false} />}
               <h3>Freigabe</h3>
               <CampaignSlot
                 placement={campaign.placement}
