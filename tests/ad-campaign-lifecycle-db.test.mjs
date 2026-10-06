@@ -80,6 +80,15 @@ test('only admins archive, reuse or delete; live campaigns cannot be deleted',as
  }
  await actor('authenticated',admin);for(const action of ['reuse','prepare_delete','delete']){await db.exec('savepoint denied');await assert.rejects(rpc(id,action));await db.exec('rollback to denied');}
 });
+test('pending booking blocks availability only until archived',async()=>{
+ const id=await campaign(false);
+ await db.query("update company_ad_campaigns set status='pending',requested_start_date=$1,requested_end_date=$1 where id=$2",[today,id]);
+ await actor('authenticated',admin);
+ const availability=async()=> (await db.query('select * from get_ad_slot_availability($1,$1,null)',[today])).rows;
+ assert.deepEqual(await availability(),[{target_type:'homepage',category_id:null,target_key:null,placement:'sidebar_top',status:'pending'}]);
+ await rpc(id,'archive');
+ assert.deepEqual(await availability(),[]);
+});
 test('reuse creates independent draft, metadata and own creative, never copies bookings or historic dates',async()=>{
  const id=await campaign();await db.query("update company_ad_campaigns set requested_start_date='2000-01-01',requested_end_date='2000-01-02' where id=$1",[id]);await actor('authenticated',admin);await save(id,null,'LifecycleNeedle');await rpc(id,'archive');
  const copy=(await rpc(id,'reuse')).rows[0].id;assert.notEqual(copy,id);await actor('postgres');const original=await row(id), draft=await row(copy);

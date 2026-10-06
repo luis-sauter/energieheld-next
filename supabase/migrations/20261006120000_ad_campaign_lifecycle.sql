@@ -228,7 +228,8 @@ BEGIN
  FROM public.company_ad_campaigns a
  JOIN public.company_ad_campaign_targets t ON t.campaign_id=a.id
  WHERE a.id IS DISTINCT FROM p_exclude_campaign_id
- AND ((a.archived_at IS NULL AND a.status='approved' AND a.approved_start_date<=p_end AND a.approved_end_date>=p_start)
+ AND a.archived_at IS NULL
+ AND ((a.status='approved' AND a.approved_start_date<=p_end AND a.approved_end_date>=p_start)
    OR (a.status='pending' AND a.requested_start_date<=p_end AND a.requested_end_date>=p_start));
 END; $$;
 
