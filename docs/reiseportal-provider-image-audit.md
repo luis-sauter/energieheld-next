@@ -64,3 +64,7 @@ Kein Import erforderlich: geeignete Dateien lagen bereits zentral im bestehenden
 Die visuelle Live-Prüfung bestätigt bei Sonnenhof eine Angebotsgrafik als erstes Galeriebild sowie ein fremdes Handwerker-Testmotiv. Diese zwei exakt belegten Medienpfade werden ausschließlich bei der Reisekarten-Auswahl übersprungen; das nächste echte gespeicherte Foto wird wiederverwendet. Neue redaktionelle Fotos behalten Vorrang. Die Profilgalerie und Premium-Verzeichnisdarstellung bleiben vollständig unverändert.
 
 Audit erneut erzeugen: `node scripts/audit-reiseportal-provider-images.mjs <read-only-cloud-snapshot.json>`. Das Skript liest die bestehende Cloud-Aufnahme sowie lokale Belege und schreibt nur die Audit-Dokumentation; es führt keine SQL-, Storage- oder Profilmutation aus. Die Rohaufnahme bleibt außerhalb Git.
+
+## Nachtrag: vollständiger Live-/Galerie-Abgleich
+
+Die vorstehenden 29 offenen Quellen wurden inzwischen zusätzlich live geprüft: Jägeralpe bestätigt, 26 ohne Foto bestätigt, SUB Aqua/WIRODIVE bleiben ungeeignet. Vollständige Galerien aller58 Anbieter, 238 geeignete alte Fotos und16 ergänzte Zuordnungen: [aktueller Live-Audit](reiseportal-live-gallery-audit.md). Historische Erstprüfung oben bleibt nachvollziehbar; aktuelle Ergebnisse stehen im JSON/Live-Audit.

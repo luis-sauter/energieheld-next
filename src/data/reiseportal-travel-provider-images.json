@@ -118,5 +118,9 @@
   "wirthshof": {
     "src": "/reiseportal/unterkuenfte/wirthshof/01.jpg",
     "alt": "Originalbild 1 von Wirthshof"
+  },
+  "jaegeralpe": {
+    "src": "/reiseportal/legacy-provider-media/jaegeralpe/06.jpg",
+    "alt": "Wanderer im ursprünglichen Anbieterbild der Jägeralpe"
   }
 }

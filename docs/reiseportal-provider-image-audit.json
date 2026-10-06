@@ -6,12 +6,12 @@
     "destinations": 58,
     "themes": 58,
     "existing_ok": 29,
-    "import_confirmed": 0,
+    "import_confirmed": 1,
     "no_image_found": 26,
-    "ambiguous_skip": 3,
-    "new_storage_objects": 0,
-    "new_media_rows": 0,
-    "reused_provider_photos": 29
+    "ambiguous_skip": 2,
+    "new_storage_objects": 2,
+    "new_media_rows": 2,
+    "reused_provider_photos": 30
   },
   "providers": [
     {
@@ -47,7 +47,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=30"
+      ]
     },
     {
       "profile_id": "6b2bb0b9-66b4-464f-af0f-23f9194a71d4",
@@ -83,7 +90,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=30"
+      ]
     },
     {
       "profile_id": "67257d6d-c460-4c5c-bfab-e25a98e8cbdb",
@@ -105,7 +119,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 11,
+      "legacy_gallery_count": 12,
       "source_media_reference_count": 14,
       "selected_image": "/reiseportal/unterkuenfte/anni-romantikhaeuschen/01.jpg",
       "legacy_photo": {
@@ -116,7 +130,14 @@
         "sha256": "6d01ea0a6617ab59cbc67dba3da2ac79625324d0dbee02e8d8b14ce1f1cc7a75"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/anni´s-romantikhäuschen-in-der-sächsische-schweiz"
+      ]
     },
     {
       "profile_id": "dd241cfa-8609-4452-b334-e936d653b39c",
@@ -136,7 +157,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 9,
+      "legacy_gallery_count": 10,
       "source_media_reference_count": 12,
       "selected_image": "/reiseportal/unterkuenfte/apartbauernhof-valrunzhof/01.jpg",
       "legacy_photo": {
@@ -147,7 +168,14 @@
         "sha256": "c49cfc9f64d909ce55805ac900e9caa6f13e4b52344ea8fcb0b7a684741b7574"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/apartbauernhof-valrunzhof"
+      ]
     },
     {
       "profile_id": "57fb1e86-1acf-490c-8b9e-64f3339dbe96",
@@ -183,7 +211,15 @@
         "sha256": "b2a5de521b9d7291ad483dd65afe8f7536730031faff6084947f9ccbcc365edf"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/appartementhaus-salzburg-up",
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=30"
+      ]
     },
     {
       "profile_id": "85898599-1871-47bf-a0fe-2f426352b461",
@@ -206,7 +242,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 6,
+      "legacy_gallery_count": 7,
       "source_media_reference_count": 9,
       "selected_image": "/reiseportal/unterkuenfte/bayerischer-wald/01.jpg",
       "legacy_photo": {
@@ -217,7 +253,14 @@
         "sha256": "198311a9c7ca5a02b29ca29413f99a78caa4ef6233e632d5178241c5940cd22a"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/bayerischer-wald"
+      ]
     },
     {
       "profile_id": "72312763-41f2-4adb-aaf2-de47b705a714",
@@ -247,7 +290,14 @@
         "sha256": "3133325b240e6cd2c982f551d5a76efde9608d8f47a4a869c4e6cc1e4a704839"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/blausee"
+      ]
     },
     {
       "profile_id": "8d709f0a-46fd-41e8-b9cf-1d9a37768a46",
@@ -282,7 +332,14 @@
         "sha256": "7f94baed942667e986c23c62f5bceb4831ff3e5daca520ba49910b0a904038ea"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/camping-resort-allweglehen"
+      ]
     },
     {
       "profile_id": "810408f9-8eb5-4d17-816f-8b79f301b500",
@@ -315,7 +372,14 @@
         "sha256": "4b6438a3604f0cfa487e41920fe7a9ddc8c01a8cc6948e0552c2ba5516858082"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/city-apart-dresden"
+      ]
     },
     {
       "profile_id": "14db48c3-57b8-4146-9e3b-f0c567b422f3",
@@ -351,7 +415,14 @@
         "sha256": "e0706ab397fb95465618431dd2dbd039263a222d4d5e75952d1ab94767ca97a5"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/das-5-sterne-wellness-hotel-stock-resort"
+      ]
     },
     {
       "profile_id": "cf78066b-22cf-4e85-b479-bc6b436555d5",
@@ -382,7 +453,14 @@
         "sha256": "83c78b2adcd1055308c9aafb30fad7642a8d3ee0f833442cab9353a8b839dacb"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/der-königsleitner"
+      ]
     },
     {
       "profile_id": "302b8961-3175-4f05-9b0f-d40d47b1cd98",
@@ -416,7 +494,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=40"
+      ]
     },
     {
       "profile_id": "0a02df8b-42f9-457f-9c09-fe5b209b8438",
@@ -449,7 +534,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=40"
+      ]
     },
     {
       "profile_id": "f70f270c-3d10-4d21-ba6e-9e381f877c72",
@@ -473,7 +565,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 7,
+      "legacy_gallery_count": 8,
       "source_media_reference_count": 10,
       "selected_image": "/reiseportal/unterkuenfte/feldhof-dolcevita-resort/01.jpg",
       "legacy_photo": {
@@ -484,7 +576,14 @@
         "sha256": "103c73260f4db84b763a13406d5cfae8ff727b4d5cd25e6b4d3dd7d778a61be7"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/feldhof"
+      ]
     },
     {
       "profile_id": "213a5db2-b2bc-4077-ba9f-f05280f81eae",
@@ -517,7 +616,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=40"
+      ]
     },
     {
       "profile_id": "3fc69450-9485-4e93-82d9-aae5b69fedb4",
@@ -550,7 +656,14 @@
         "sha256": "f8df9c64014c911e318ecdb1b6b32f63b703c3cd2e76456447fd87b1f1e419c3"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/ferienwohnung-sieber"
+      ]
     },
     {
       "profile_id": "38ba9686-14de-4499-982b-76b222b4c11b",
@@ -586,7 +699,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=40"
+      ]
     },
     {
       "profile_id": "ac51f96a-1770-44b7-b397-0347e21fb890",
@@ -608,7 +728,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 16,
+      "legacy_gallery_count": 17,
       "source_media_reference_count": 19,
       "selected_image": "/reiseportal/unterkuenfte/golfhotel-andreus/01.jpg",
       "legacy_photo": {
@@ -619,7 +739,14 @@
         "sha256": "0fc5a166165009c3908f0c006e83aac02265ad18387b60df4bf402f283a0dbc0"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/5-golfurlaub-südtirol-das-golfhotel-andreus"
+      ]
     },
     {
       "profile_id": "6e552b9b-d716-421b-aa26-c31a857585a8",
@@ -648,7 +775,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=40"
+      ]
     },
     {
       "profile_id": "080f5336-ecbf-402c-a28f-1fbc16a30313",
@@ -685,7 +819,15 @@
         "sha256": "a19c1e2cde31e51ea692d238dd04a0599606c169b396b60763b948a652bb10fa"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/höflehner",
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=50"
+      ]
     },
     {
       "profile_id": "a164a68e-2c12-4888-9898-8fa9e137fb4c",
@@ -719,7 +861,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=40"
+      ]
     },
     {
       "profile_id": "6e4d77c0-662f-43c6-9871-5bf8fd1d97e5",
@@ -748,7 +897,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=40"
+      ]
     },
     {
       "profile_id": "9423ff5a-4c63-47e6-86d2-64c1ecec4898",
@@ -779,7 +935,14 @@
         "sha256": "c28590b974282aa7c2613ca3e37df5062bb321a55156ecc73ec967adab4111af"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/hotel-ravelli-luxury-spaita"
+      ]
     },
     {
       "profile_id": "0eeeab74-fa63-4576-ae58-814faa3d9c40",
@@ -811,7 +974,15 @@
         "sha256": "6222e080984cacb3e47418e11f9ed45af6e13d43e8da77e09d1ff73c51169d8f"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/hotel-salzburger-hof",
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/hotel-salzburger-hof-wanderurlaub"
+      ]
     },
     {
       "profile_id": "62cc488e-5bf4-4f94-aec7-ea1f5f9b00f0",
@@ -831,7 +1002,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 5,
+      "legacy_gallery_count": 6,
       "source_media_reference_count": 8,
       "selected_image": "/reiseportal/unterkuenfte/hotel-zur-post/01.png",
       "legacy_photo": {
@@ -842,7 +1013,14 @@
         "sha256": "09684db04a9ba7f3140fcfd747a330b4efb5b014cb2c58ce38aa4214f502ccfb"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/hotel-zur-post"
+      ]
     },
     {
       "profile_id": "05485363-8860-4143-aff4-ec4806da83df",
@@ -859,14 +1037,21 @@
       "theme_pages": [
         "/mottoreisen/wanderurlaub"
       ],
-      "cloud_gallery_count": 0,
+      "cloud_gallery_count": 1,
       "cloud_logo_present": false,
       "legacy_gallery_count": 5,
       "source_media_reference_count": 8,
-      "selected_image": null,
+      "selected_image": "profiles/05485363-8860-4143-aff4-ec4806da83df/gallery/2823d7a0-c70f-48db-8388-620360851a12.jpg",
       "legacy_photo": null,
-      "decision": "AMBIGUOUS_SKIP",
-      "note": "Nur Logos bzw. Angebots-/Webseitengrafiken belegt; kein geeignetes Fotokartenbild. Bewusst übersprungen."
+      "decision": "IMPORT_CONFIRMED",
+      "note": "Live sichtbares sauberes Wandererfoto im Anbieter-Kontaktfeld, mit Joomla/Original-SHA abgeglichen und zentral gespeichert.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "IMPORT_CONFIRMED",
+      "live_reason": "Live sichtbares sauberes Wandererfoto im Anbieter-Kontaktfeld, mit Joomla/Original-SHA abgeglichen und zentral gespeichert.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/jägeralpe"
+      ]
     },
     {
       "profile_id": "9687e801-9bef-4823-a5b3-8ae1bd946890",
@@ -894,7 +1079,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=30"
+      ]
     },
     {
       "profile_id": "c5d09fb2-888c-4ada-a6fb-1bf03655ed64",
@@ -914,7 +1106,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 5,
+      "legacy_gallery_count": 6,
       "source_media_reference_count": 8,
       "selected_image": "/reiseportal/legacy-provider-media/kemmeriboden-bad/02.jpg",
       "legacy_photo": {
@@ -925,7 +1117,14 @@
         "sha256": "8e2839ee0f622c67164779b230870b6084e8749529cc68fa2f9d353bc914b2ff"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/kemmeriboden-bad"
+      ]
     },
     {
       "profile_id": "e3d98281-9ea8-469e-b0db-08bfcdb1b74f",
@@ -956,7 +1155,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=40"
+      ]
     },
     {
       "profile_id": "a8371b4b-e8fc-40cd-a9d1-55a150d903e2",
@@ -989,7 +1195,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=40"
+      ]
     },
     {
       "profile_id": "dc526953-a4b4-4366-9359-5a2735869f64",
@@ -1022,7 +1235,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=50"
+      ]
     },
     {
       "profile_id": "be2d43a1-472c-47c2-a57f-e7e6ae91809e",
@@ -1043,7 +1263,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 2,
+      "legacy_gallery_count": 3,
       "source_media_reference_count": 5,
       "selected_image": "/reiseportal/unterkuenfte/landgasthof-neue-schaenke/02.jpg",
       "legacy_photo": {
@@ -1054,7 +1274,14 @@
         "sha256": "2100fa2aa7a52d45be46a3aef002a574edda86d55d9abf84e75012f70faf609f"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/landgasthof-neue-schänke"
+      ]
     },
     {
       "profile_id": "6f0e4153-594c-4ddc-862c-4110068ba79e",
@@ -1078,7 +1305,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=40"
+      ]
     },
     {
       "profile_id": "6c6fbce7-d8fb-4624-b238-e92e38f20409",
@@ -1109,7 +1343,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=50"
+      ]
     },
     {
       "profile_id": "51ae3f10-2050-49bc-bedb-ae80e64658c8",
@@ -1134,7 +1375,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=50"
+      ]
     },
     {
       "profile_id": "7b56c6f7-9da4-400a-b504-f94b4f5651b0",
@@ -1164,7 +1412,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=50"
+      ]
     },
     {
       "profile_id": "3515e4e7-d089-48c9-bef6-7150fbbb1fe5",
@@ -1197,7 +1452,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=50"
+      ]
     },
     {
       "profile_id": "abc9ab2f-6479-4e2e-9d9a-1195a6beee5d",
@@ -1219,7 +1481,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 19,
+      "legacy_gallery_count": 20,
       "source_media_reference_count": 22,
       "selected_image": "/reiseportal/legacy-provider-media/ostsee-barfusspark/03.jpg",
       "legacy_photo": {
@@ -1230,7 +1492,14 @@
         "sha256": "33b469bbe4f7fbc99accdf3e2868c1015de681d97509b626c22452ed2c26aa01"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/ostsee-barfusspark"
+      ]
     },
     {
       "profile_id": "8d71ab72-bdd1-4d91-921b-baea375708c7",
@@ -1253,7 +1522,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 17,
+      "legacy_gallery_count": 18,
       "source_media_reference_count": 20,
       "selected_image": "/reiseportal/unterkuenfte/oversum-vital-resort-im-hochsauerland/02.jpg",
       "legacy_photo": {
@@ -1264,7 +1533,14 @@
         "sha256": "42ddce1252fbff47a8955f02510eae6fad55525d38d762118478271121868b5e"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/oversum-vital-resort-im-hochsauerland"
+      ]
     },
     {
       "profile_id": "49b2316e-dd69-4d68-9f10-b7fc86100cf8",
@@ -1284,7 +1560,7 @@
         "/mottoreisen/nordic-walking",
         "/mottoreisen/radwandern"
       ],
-      "cloud_gallery_count": 5,
+      "cloud_gallery_count": 6,
       "cloud_logo_present": true,
       "legacy_gallery_count": 5,
       "source_media_reference_count": 8,
@@ -1301,7 +1577,14 @@
         "sha256": "124a2281c499d70a3cb42dd3f501e61641bc413e59efa70b19612d67bfd668c7"
       },
       "decision": "EXISTING_OK",
-      "note": "Geeignetes gespeichertes Galeriefoto hat Vorrang; visuell belegte Angebotsgrafik und fremdes Testmotiv nur für Reisekarten ausschließen. Galerie unverändert."
+      "note": "Geeignetes gespeichertes Galeriefoto hat Vorrang; visuell belegte Angebotsgrafik und fremdes Testmotiv nur für Reisekarten ausschließen. Galerie unverändert.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/pension-sonnenhof"
+      ]
     },
     {
       "profile_id": "c47999f5-c1a5-4382-a130-5cc56f717528",
@@ -1330,7 +1613,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=30"
+      ]
     },
     {
       "profile_id": "e018e81d-e3c3-4a88-8713-fd3d2a4ad2dd",
@@ -1350,7 +1640,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 8,
+      "legacy_gallery_count": 9,
       "source_media_reference_count": 11,
       "selected_image": "/reiseportal/unterkuenfte/platzl-hotel/01.png",
       "legacy_photo": {
@@ -1361,7 +1651,14 @@
         "sha256": "9859a124cf9758f62b12ea83cfc5f9df781752d8a20951e96c7df39d68ba90ee"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/platzl-hotel"
+      ]
     },
     {
       "profile_id": "f2629689-ea6c-40d9-af0d-c31d924fc97e",
@@ -1398,7 +1695,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=50"
+      ]
     },
     {
       "profile_id": "a52a21b4-b483-4412-b74e-1d201c030de2",
@@ -1430,7 +1734,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=50"
+      ]
     },
     {
       "profile_id": "7c8db9bc-1633-4caa-a1a5-a3a1bd8ba977",
@@ -1449,7 +1760,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 4,
+      "legacy_gallery_count": 5,
       "source_media_reference_count": 7,
       "selected_image": "/reiseportal/unterkuenfte/rue-blanch/01.jpg",
       "legacy_photo": {
@@ -1460,7 +1771,14 @@
         "sha256": "c6eccfb1684e5c62aea090a484c7a14d4b11814d29ad53ae33e8b338ef8c6894"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/rü-blanch"
+      ]
     },
     {
       "profile_id": "97942ec4-5ee9-48ba-8357-35d91f261186",
@@ -1481,7 +1799,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 8,
+      "legacy_gallery_count": 9,
       "source_media_reference_count": 11,
       "selected_image": "/reiseportal/unterkuenfte/schafhuber/01.jpg",
       "legacy_photo": {
@@ -1492,7 +1810,14 @@
         "sha256": "77953878a997df44c84aa29788b841d235d44384e736509f3101a313fb473ac0"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/schafhuber"
+      ]
     },
     {
       "profile_id": "5435e6da-fb46-40b3-a873-876f6435e26d",
@@ -1531,7 +1856,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=50"
+      ]
     },
     {
       "profile_id": "2d2bcce8-f87c-43e6-b460-433f2c414ac1",
@@ -1564,7 +1896,14 @@
         "sha256": "bf8616eb0e1079b442527e7ae08bedeeb074ffe2e12d53f372aad03fb2c1c788"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/schwarzwälderhof"
+      ]
     },
     {
       "profile_id": "07f01b83-5eb1-4e01-b8b8-708fa6768052",
@@ -1597,7 +1936,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=50"
+      ]
     },
     {
       "profile_id": "7a011200-9bfd-4348-830a-90a26e2a5a6d",
@@ -1630,7 +1976,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=60"
+      ]
     },
     {
       "profile_id": "d1c60be3-124b-45b4-8851-b84fdfdabe53",
@@ -1654,7 +2007,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "AMBIGUOUS_SKIP",
-      "note": "Nur Logos bzw. Angebots-/Webseitengrafiken belegt; kein geeignetes Fotokartenbild. Bewusst übersprungen."
+      "note": "Nur Logos bzw. Angebots-/Webseitengrafiken belegt; kein geeignetes Fotokartenbild. Bewusst übersprungen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "AMBIGUOUS_SKIP",
+      "live_reason": "Live nur Logos/Kontaktportrait und Angebotsgrafiken; kein geeignetes Anbieter-/Unterkunftsfoto.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/sub-aqua-tauchreisen"
+      ]
     },
     {
       "profile_id": "92256160-1734-4079-8ddf-07cacdc5da50",
@@ -1686,7 +2046,14 @@
         "sha256": "40e12e9cf1b1dfb23236f9663f3ef5cd4b25b9137c1c7ce51bd27db56361e8a2"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/the-chedi"
+      ]
     },
     {
       "profile_id": "7e1819ad-6097-4dd6-b251-ea023f0177cb",
@@ -1708,7 +2075,7 @@
       ],
       "cloud_gallery_count": 0,
       "cloud_logo_present": false,
-      "legacy_gallery_count": 20,
+      "legacy_gallery_count": 21,
       "source_media_reference_count": 23,
       "selected_image": "/reiseportal/legacy-provider-media/urlaub-auf-borkum/06.jpg",
       "legacy_photo": {
@@ -1719,7 +2086,14 @@
         "sha256": "b6caab191c4f43a5baa3cba97c6f0683e945a6f7364a3367acf846ba73f6e262"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/urlaub-auf-borkum"
+      ]
     },
     {
       "profile_id": "b9dd967c-f333-4d8f-ab4e-c9834539ea0e",
@@ -1749,7 +2123,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=30"
+      ]
     },
     {
       "profile_id": "92c222e5-9c41-40d3-b9cd-15499bb7b800",
@@ -1782,7 +2163,14 @@
         "sha256": "10ac5b79730d59e276432f33551bfcf850cfc3d84c2972a3acffdde728c4c6cf"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z/liste/wellnesshotel-almhof-call"
+      ]
     },
     {
       "profile_id": "08b5e639-f115-496a-aa3a-41ba262296a9",
@@ -1819,7 +2207,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "NO_IMAGE_FOUND",
-      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen."
+      "note": "Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "NO_IMAGE_FOUND_CONFIRMED",
+      "live_reason": "Anbieter auf gerenderter alter A–Z-Seite ohne Foto und ohne eigenen Profil-Link; auch alte Motto-Listen liefern kein zusätzliches Anbieterprofil. Joomla ohne geeignete Medienreferenz.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterk%C3%BCnfte-a-z?start=60"
+      ]
     },
     {
       "profile_id": "9e982a3f-f5c8-4bcd-8366-85c6f4d22a7f",
@@ -1843,7 +2238,14 @@
       "selected_image": null,
       "legacy_photo": null,
       "decision": "AMBIGUOUS_SKIP",
-      "note": "Nur Logos bzw. Angebots-/Webseitengrafiken belegt; kein geeignetes Fotokartenbild. Bewusst übersprungen."
+      "note": "Nur Logos bzw. Angebots-/Webseitengrafiken belegt; kein geeignetes Fotokartenbild. Bewusst übersprungen.",
+      "live_page_checked": "yes",
+      "live_image_found": "no",
+      "live_result": "AMBIGUOUS_SKIP",
+      "live_reason": "Live nur Logos/Kontaktportrait und Angebotsgrafiken; kein geeignetes Anbieter-/Unterkunftsfoto.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/wirodive-tauch-und-erlebnisreisen-gmbh"
+      ]
     },
     {
       "profile_id": "b9594b15-178c-4ba1-b28d-ea129907ec63",
@@ -1875,7 +2277,36 @@
         "sha256": "9eda8c598f0b61e15ad6d716078d9149b3f43473053edf99da9c210efdc63e0d"
       },
       "decision": "EXISTING_OK",
-      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie."
+      "note": "Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.",
+      "live_page_checked": "yes",
+      "live_image_found": "yes",
+      "live_result": "EXISTING_CONFIRMED",
+      "live_reason": "Vollständige alte Bildsequenz mit Joomla-Quellen und neuem Profilbestand per SHA abgeglichen.",
+      "live_pages": [
+        "https://das-reiseportal.com/unterkünfte-a-z/liste/wirthshof"
+      ]
     }
-  ]
+  ],
+  "live_gallery_summary": {
+    "providers_audited": 58,
+    "previously_open": 29,
+    "previously_open_photo_confirmed": 1,
+    "previously_open_no_photo_confirmed": 26,
+    "previously_open_ambiguous": 2,
+    "rendered_old_index_pages": 7,
+    "rendered_old_theme_pages": 16,
+    "rendered_old_detail_pages": 33,
+    "providers_with_old_detail_image_sequence": 32,
+    "providers_with_suitable_old_photos": 30,
+    "old_distinct_suitable_photos": 238,
+    "already_present_suitable_photos": 222,
+    "missing_identified": 16,
+    "local_existing_references_added": 14,
+    "cloud_gallery_images_added": 2,
+    "new_physical_storage_objects": 2,
+    "missing_after": 0,
+    "cloud_gallery_total_before": 8,
+    "cloud_gallery_total_after": 10,
+    "original_29_card_selections_unchanged": true
+  }
 }

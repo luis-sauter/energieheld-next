@@ -38,14 +38,14 @@ test('curated Legacy photo replaces unsuitable first graphic for travel only; sa
  assert.equal(providerTravelImage({...row,images:[photo]}),photo);
 });
 test('missing and logo-only media keep honest travel fallback; promotional assets are excluded',()=>{
- for(const slug of ['alpenhotel-montafon','jaegeralpe','sub-aqua-tauchreisen','wirodive-tauchreisen']){
+ for(const slug of ['alpenhotel-montafon','sub-aqua-tauchreisen','wirodive-tauchreisen']){
   const row={...listing,slug,images:[],logo};assert.equal(providerTravelImage(row),null);
   assert.equal(providerCardImage({...row,images:[logo],travelImage:null},'travel'),undefined);
  }
  assert.equal(providerTravelImage({...listing,slug:'no-photo',images:[logo]}),null);
 });
 test('all selected originals have exact provider/article/hash evidence; no duplicate copies per page',()=>{
- assert.equal(Object.keys(photos).length,29);assert.equal(new Set(Object.values(photos).map(p=>p.src)).size,29);
+ assert.equal(Object.keys(photos).length,30);assert.equal(new Set(Object.values(photos).map(p=>p.src)).size,30);
  for(const [slug,image]of Object.entries(photos)){
   const bytes=readFileSync(new URL('../public'+image.src,import.meta.url));
   const hash=createHash('sha256').update(bytes).digest('hex');
@@ -53,7 +53,7 @@ test('all selected originals have exact provider/article/hash evidence; no dupli
   assert.ok(evidence,slug);assert.ok(['article-html','contact-person-image-bd','content-image-1-bd','content-image-2-bd','image_intro'].includes(evidence.field));
  }
  assert.equal(audit.providers.length,58);assert.equal(new Set(audit.providers.map(p=>p.profile_id)).size,58);
- assert.deepEqual(audit.summary,{audited:58,destinations:58,themes:58,existing_ok:29,import_confirmed:0,no_image_found:26,ambiguous_skip:3,new_storage_objects:0,new_media_rows:0,reused_provider_photos:29});
+ assert.deepEqual(audit.summary,{audited:58,destinations:58,themes:58,existing_ok:29,import_confirmed:1,no_image_found:26,ambiguous_skip:2,new_storage_objects:2,new_media_rows:2,reused_provider_photos:30});
 });
 test('Sonnenhof saved gallery is reused; no profile text, gallery, package or review change',()=>{
  const row={...listing,slug:'pension-sonnenhof',images:[photo],review:'unverified'};const before=structuredClone(row);
