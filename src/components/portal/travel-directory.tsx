@@ -70,7 +70,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
       </section>}
     </>;
   }
-  const filtered = Boolean(values.destination || values.theme || values.audience || values.accommodation || values.feature || values.location);
+  const filtered = Boolean(values.destination || values.theme || values.audience || values.accommodation || values.location);
   const advertisements = <SearchAdResults banners={matched.advertisers} filtered={filtered} canEdit={Boolean(bannerOptions)} />;
 
   useEffect(() => {

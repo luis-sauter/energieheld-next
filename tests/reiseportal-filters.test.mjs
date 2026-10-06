@@ -108,7 +108,7 @@ test("existing single-value URL parameters round-trip and reset together", () =>
   const values = readTravelFilterValues({ ziel: "deutschland", thema: "wellnessangebote", zielgruppe: "paar",
     unterkunftstyp: "hotel", besonderheit: "sauna", q: "Alpen Spa", ort: "Berlin", sort: "city" });
   const url = travelFilterUrl(values);
-  assert.equal(url, "/unterkuenfte-a-z?ziel=deutschland&thema=wellnessangebote&zielgruppe=paar&unterkunftstyp=hotel&besonderheit=sauna&q=Alpen+Spa&ort=Berlin&sort=city");
+  assert.equal(url, "/unterkuenfte-a-z?ziel=deutschland&thema=wellnessangebote&zielgruppe=paar&unterkunftstyp=hotel&q=Alpen+Spa&ort=Berlin&sort=city");
   assert.deepEqual(readTravelFilterValues(Object.fromEntries(new URL(url, "https://example.test").searchParams)), values);
   assert.equal(travelFilterUrl(readTravelFilterValues({})), "/unterkuenfte-a-z");
 });
@@ -138,11 +138,11 @@ test("a copied URL restores values and human labels; reset removes all filters",
   const values = readTravelFilterValues(params);
   assert.deepEqual(values, {
     destination: "deutschland", theme: "wellnessangebote", audience: "paar",
-    accommodation: "hotel", feature: "sauna", query: "Spa", location: "Berlin", sort: "",
+    accommodation: "hotel", feature: "", query: "Spa", location: "Berlin", sort: "",
   });
   const labels = activeTravelFilterLabels(values, availableTravelFilters(approved, terms));
   assert.deepEqual(labels, ["Reiseziel: Deutschland", "Motto: Wellnessangebote",
-    "Mit wem: Zu zweit", "Unterkunft: Hotel", "Besonderheit: Sauna", "Suche: Spa", "Ort/PLZ: Berlin"]);
+    "Mit wem: Zu zweit", "Unterkunft: Hotel", "Suche: Spa", "Ort/PLZ: Berlin"]);
   assert.ok(labels.every((label) => !/theme:|audience:|feature:|accommodation:/.test(label)));
   assert.deepEqual(readTravelFilterValues({}), {
     destination: "", theme: "", audience: "", accommodation: "", feature: "",
@@ -150,4 +150,16 @@ test("a copied URL restores values and human labels; reset removes all filters",
   });
   assert.deepEqual(activeTravelFilterLabels(readTravelFilterValues({}), availableTravelFilters(approved, terms)), []);
   assert.deepEqual(readTravelFilterValues({ thema: ["natur-pur", "wellnessangebote"] }).theme, "");
+});
+
+
+test("retired public feature URLs cannot hide results and generated URLs discard stale feature state", () => {
+  for (const besonderheit of ["sauna", "pool", "unknown", ["sauna", "pool"]]) {
+    const values = readTravelFilterValues({ besonderheit, zielgruppe: "paar" });
+    assert.equal(values.feature, "");
+    assert.deepEqual(filterTravelListings(approved, values).map(item => item.slug), ["alpen-spa", "city-pension"]);
+    assert.equal(travelFilterUrl({ ...values, feature: "pool" }), "/unterkuenfte-a-z?zielgruppe=paar");
+    assert.deepEqual(activeTravelFilterLabels({ ...values, feature: "pool" }, availableTravelFilters(approved, terms)), ["Mit wem: Zu zweit"]);
+  }
+  assert.equal(filterTravelListings(approved, readTravelFilterValues({ besonderheit: "sauna" })).length, 4);
 });

@@ -154,8 +154,8 @@ test('result-route finder retains all context fields and submits with the origin
   const values = readTravelFilterValues({ q: 'City Apart', ziel: 'deutschland', thema: 'wellnessangebote', zielgruppe: 'paar', unterkunftstyp: 'hotel', besonderheit: 'sauna', ort: 'Berlin', sort: 'name' });
   const html = render(values, 'search');
   assert.equal((html.match(/role="search"/g) ?? []).length, 1);
-  for (const label of ['Wohin?', 'Motto', 'Mit wem?', 'Unterkunft', 'Besonderheiten', 'Suchbegriff', 'Ort oder Postleitzahl']) assert.ok(html.includes(label));
-  for (const selected of ['deutschland', 'wellnessangebote', 'paar', 'hotel', 'sauna']) assert.ok(html.includes(`value="${selected}" selected`));
+  for (const label of ['Wohin?', 'Motto', 'Mit wem?', 'Unterkunft', 'Suchbegriff', 'Ort oder Postleitzahl']) assert.ok(html.includes(label));
+  for (const selected of ['deutschland', 'wellnessangebote', 'paar', 'hotel']) assert.ok(html.includes(`value="${selected}" selected`));
   assert.match(html,/value="City Apart"/); assert.match(html,/value="Berlin"/);
   const previous = globalThis.window;
   try {
@@ -165,4 +165,18 @@ test('result-route finder retains all context fields and submits with the origin
     submit({...values,query:'',destination:'',theme:'',audience:'',accommodation:'',feature:'',location:''});
     assert.match(url,/^\/unterkuenfte-a-z\?sort=name$/);
   } finally { globalThis.window=previous; }
+});
+
+
+for (const mode of ["home", "directory", "search"]) test(mode + " finder omits features even with assigned terms and ignores old feature URLs", () => {
+  const values = readTravelFilterValues({ besonderheit: "unknown" });
+  const html = render(values, mode);
+  assert.doesNotMatch(html, /Besonderheit|name="besonderheit"/);
+  assert.equal((html.match(/<select /g) ?? []).length, 4);
+  assert.match(html, /2 Unterkünfte anzeigen/);
+  assert.doesNotMatch(html, /type="submit" disabled/);
+  assert.match(html, /Familie|Mit Kindern/);
+  const url = travelSearchUrl({ ...values, query: "Nordic Walking", feature: "sauna" }, "home");
+  assert.equal(url, "/suche?q=Nordic+Walking&von=home");
+  assert.equal(travelSearchReturnUrl({ ...values, feature: "sauna" }, "home"), "/");
 });

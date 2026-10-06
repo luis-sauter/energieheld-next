@@ -43,7 +43,8 @@ export function readTravelFilterValues(params: Record<string, string | string[] 
   const read = (key: string) => typeof params[key] === "string" ? params[key] as string : "";
   return {
     destination: read("ziel"), theme: read("thema"), audience: read("zielgruppe"),
-    accommodation: read("unterkunftstyp"), feature: read("besonderheit"),
+    // Retired public filter: legacy URLs must not restrict results invisibly.
+    accommodation: read("unterkunftstyp"), feature: "",
     query: read("q"), location: read("ort"), sort: read("sort"),
   };
 }
@@ -60,7 +61,6 @@ export function activeTravelFilterLabels(
   if (values.theme) active.push(`Motto: ${selected(values.theme, options.themes, "Nicht verfügbar")}`);
   if (values.audience) active.push(`Mit wem: ${selected(values.audience, options.audiences, "Nicht verfügbar")}`);
   if (values.accommodation) active.push(`Unterkunft: ${selected(values.accommodation, options.accommodations, "Nicht verfügbar")}`);
-  if (values.feature) active.push(`Besonderheit: ${selected(values.feature, options.features, "Nicht verfügbar")}`);
   if (values.query) active.push(`Suche: ${values.query}`);
   if (values.location) active.push(`Ort/PLZ: ${values.location}`);
   if (values.sort) active.push(`Sortierung: ${values.sort === "name" ? "Name A–Z"

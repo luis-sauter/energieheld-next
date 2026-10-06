@@ -25,6 +25,7 @@ export function travelFacetCount(items: Listing[], values: TravelFilterValues, f
 export function travelFilterUrl(values: TravelFilterValues): string {
   const params = new URLSearchParams();
   for (const [key, param] of Object.entries(travelFilterParams) as [keyof TravelFilterValues, string][]) {
+    if (key === "feature") continue; // Keep the technical taxonomy out of public finder URLs.
     const value = values[key].trim();
     if (value) params.set(param, value);
   }
