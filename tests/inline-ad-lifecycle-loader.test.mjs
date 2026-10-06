@@ -7,7 +7,7 @@ const mocks = {
   './supabase/server': 'export async function createClient(){return globalThis.inlineLifecycleClient}',
   './admin-review': 'export async function checkAdmin(){return globalThis.inlineLifecycleAdmin?"admin":"forbidden"}',
   './ad-campaigns': 'export async function signAdImages(client,rows){globalThis.inlineLifecycleSigned=rows.map(r=>r.id);return rows}',
-  '../app/(energieheld)/inline-banner-actions': 'export const prepareInlineBanner=()=>{},saveInlineBanner=()=>{},removeInlineBanner=()=>{},reorderInlineBanners=()=>{},saveInlineBannerMetadata=()=>{},saveInlineBannerCrop=()=>{};',
+  '../app/(energieheld)/inline-banner-actions': 'export const prepareInlineBanner=()=>{},saveInlineBanner=()=>{},removeInlineBanner=()=>{},reorderInlineBanners=()=>{},saveInlineBannerMetadata=()=>{},saveInlineBannerCrop=()=>{},archiveInlineBanner=()=>{},reuseInlineBanner=()=>{};',
   './banner-presentation-loader': 'export async function loadBannerPresentations(){return {rows:[],error:null}}',
   './banner-search-metadata': 'export async function loadBannerMetadata(){return {values:new Map(),terms:[]}};export const legacyBannerKey=v=>v;',
 };
@@ -19,6 +19,7 @@ function setup(rows){globalThis.inlineLifecycleAdmin=true;globalThis.inlineLifec
 test('archived approved and pending banners do not occupy inline slots after reload or receive media URLs',async()=>{
  setup([row('archived-approved','approved','2026-10-06'),row('archived-pending','pending','2026-10-06')]);
  const options=await loadInlineBannerOptions('/reiseziele/schweiz');assert.ok(options);assert.equal(options.error,undefined);assert.deepEqual(options.banners.filter(b=>b.source==='campaign'),[]);assert.equal(options.availability.sidebar_12,undefined);assert.deepEqual(globalThis.inlineLifecycleSigned,[]);assert.ok(options.banners.some(b=>b.source==='legacy'),'historic fallback remains available');
+ assert.deepEqual(options.archived.map(b=>b.id),['archived-approved','archived-pending']);assert.equal(typeof options.archive,'function');assert.equal(typeof options.reuse,'function');
 });
 test('current approved and editable draft banners retain the existing inline behavior; non-admin gets no controls',async()=>{
  setup([row('active','approved'),row('draft','draft'),row('archived','approved','2026-10-06')]);

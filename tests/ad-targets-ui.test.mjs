@@ -77,6 +77,15 @@ const { InlineBannerDialog } = await import('../src/components/advertising/inlin
 const { BannerSearchFields } = await import('../src/components/advertising/banner-search-fields.tsx');
 const { CampaignLifecycle } = await import('../src/components/advertising/campaign-lifecycle.tsx');
 
+test('legacy and campaign banners both render archive beside delete; adding offers the archive choice',()=>{
+ for(const source of ['legacy','campaign']){
+  const html=renderToStaticMarkup(createElement(InlineBannerDialog,{options:{label:'Startseite',availability:{},banners:[],archived:[]},selected:{placement:'sidebar_top',banner:{id:'existing',source,editorial:true,placement:'sidebar_top',target_url:'https://example.org/',imageUrl:'/image.png'}},onClose(){},onSaved(){},onChanged(){},onRemoved(){},onMetadataSaved(){}}));
+  assert.match(html,/>Banner archivieren<\/button><button[^>]*>Banner löschen<\/button>/);
+ }
+ const html=renderToStaticMarkup(createElement(InlineBannerDialog,{options:{label:'Startseite',availability:{},banners:[]},selected:{placement:'sidebar_12'},onClose(){},onSaved(){},onChanged(){},onRemoved(){},onMetadataSaved(){}}));
+ assert.match(html,/Neues Banner/);assert.match(html,/Banner aus Archiv/);
+});
+
 test('inline banner archive is beside existing delete, without a lifecycle card or nested form',()=>{
  const html=renderToStaticMarkup(createElement(InlineBannerDialog,{options:{label:'Startseite',availability:{},banners:[],terms:[]},selected:{placement:'sidebar_top',banner:{id:'existing',source:'campaign',editorial:true,placement:'sidebar_top',target_url:'https://example.org/',imageUrl:'/image.png'}},onClose(){},onSaved(){},onChanged(){},onRemoved(){},onMetadataSaved(){}}));
  assert.match(html,/<div class="actions"><button[^>]*>Banner archivieren<\/button><button[^>]*>Banner löschen<\/button><\/div>/);

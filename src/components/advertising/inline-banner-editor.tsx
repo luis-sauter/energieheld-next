@@ -102,6 +102,8 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
   const [error, setError] = useState(options.error ?? "");
   const [notice, setNotice] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [archiveMode, setArchiveMode] = useState(false);
+  const [archivedId, setArchivedId] = useState('');
   const [metadata, setMetadata] = useState<BannerSearchMetadata>(selected.banner?.metadata ?? { name: '', postal_code: '', city: '', term_keys: [] });
   const metadataOnly = Boolean(selected.banner?.source === 'campaign' && selected.banner.shared);
   const originalMetadata = selected.banner?.metadata;
@@ -123,6 +125,17 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busyRef.current || blocked || options.error) return;
+    if (archiveMode) {
+      busyRef.current = true; setBusy(true); setError('');
+      try {
+        const form = new FormData(); form.set('archived_id', archivedId); form.set('placement', placement); form.set('size', size); form.set('confirmed', 'yes');
+        const result = await options.reuse?.(form);
+        if (!result?.success || !result.ad) { setError(result?.error || 'Der Banner konnte nicht eingesetzt werden.'); return; }
+        onSaved(result.ad, result.metadata ?? { name: result.ad.headline, postal_code: '', city: '', term_keys: [] });
+      } catch { setError('Der Banner konnte gerade nicht eingesetzt werden.'); }
+      finally { busyRef.current = false; setBusy(false); }
+      return;
+    }
     if (!adTargetUrl(url.trim())) { setError("Bitte geben Sie eine gültige Ziel-URL mit https:// oder http:// ein."); return; }
     if (!file && !preview && !selected.banner) { setError("Bitte wählen Sie ein Bannerbild."); return; }
     busyRef.current = true;
@@ -206,6 +219,36 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
     finally { busyRef.current = false; setBusy(false); }
   }
 
+  async function archive(form: FormData) {
+    if (form.get('confirmed') !== 'yes' || !options.archive) return { error: 'Bitte bestätigen Sie die Archivierung.' };
+    const input = mutationForm(); input.set('confirmed', 'yes');
+    if (source === 'legacy') {
+      // Import only this verified visible creative through the existing private upload flow.
+      // The immutable/shared legacy asset itself is never deleted or changed.
+      try {
+        const response = await fetch(selected.banner!.imageUrl!);
+        if (!response.ok) return { error: 'Das Bestandsbild konnte nicht geladen werden.' };
+        const blob = await response.blob();
+        input.set('file_type', blob.type); input.set('file_size', String(blob.size));
+        const prepared = await options.prepare(input);
+        if (!prepared.campaignId || !prepared.uploadPath) return { error: prepared.error || 'Das Archivbild konnte nicht vorbereitet werden.' };
+        input.set('campaign_id', prepared.campaignId); setCampaignId(prepared.campaignId);
+        const uploaded = await createClient().storage.from('ad-media').upload(prepared.uploadPath, blob, { contentType: blob.type, upsert: false });
+        if (uploaded.error) return { error: 'Das Archivbild konnte nicht gespeichert werden.' };
+        input.set('uploaded_path', prepared.uploadPath);
+        const saved = await options.save(input);
+        if (!saved.success || !saved.ad) return { error: saved.error || 'Das Bestandsbanner konnte nicht übernommen werden.' };
+        setSource('campaign'); onChanged(saved.ad); input.delete('legacy_id');
+        if (selected.banner?.crop && options.saveCrop) {
+          for (const [key,value] of Object.entries(selected.banner.crop)) input.set(key,String(value));
+          const cropped = await options.saveCrop(input);
+          if (!cropped.success) return { error: cropped.error || 'Der Bildausschnitt konnte nicht übernommen werden.' };
+        }
+      } catch { return { error: 'Das Bestandsbanner konnte gerade nicht archiviert werden.' }; }
+    }
+    return options.archive(input);
+  }
+
   function chooseFile(next: File | null) {
     if (!next) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(next.type) || next.size <= 0 || next.size > 5242880) {
@@ -222,6 +265,24 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
     <form onSubmit={save} className={styles.form}>
       <h2 id="inline-banner-title">{selected.banner ? "Banner bearbeiten" : "Banner hinzufügen"}</h2>
       <p>{options.label}</p>
+      {!selected.banner && <fieldset disabled={busy} className={styles.fields}><legend>Banner auswählen</legend>
+        <label><input type="radio" name="banner_origin" checked={!archiveMode} onChange={() => setArchiveMode(false)} /> Neues Banner</label>
+        <label><input type="radio" name="banner_origin" checked={archiveMode} onChange={() => setArchiveMode(true)} /> Banner aus Archiv</label>
+      </fieldset>}
+      {archiveMode ? <>
+        <p>Das archivierte Original bleibt erhalten. Eine unabhängige Kopie wird auf dieser Seite eingesetzt.</p>
+        <fieldset disabled={busy} className={styles.fields}>
+          <label>Archivierter Banner<select value={archivedId} required onChange={event => setArchivedId(event.target.value)}>
+            <option value="">Bitte wählen</option>{(options.archived ?? []).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+          </select></label>
+          {!(options.archived?.length) && <p>Es sind noch keine archivierten Banner vorhanden.</p>}
+          <label>Bannergröße<select value={size} onChange={event => setSize(event.target.value as BannerSize)}>{Object.entries(bannerSizes).map(([key,label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+          <p>{adPlacements[placement]}</p>
+          <label><input type="checkbox" required /> Archivierten Banner als unabhängige Kopie einsetzen</label>
+        </fieldset>
+        {error && <p role="alert">{error}</p>}
+        <div className={styles.actions}><button type="submit" className="button button-primary" disabled={busy || blocked || !archivedId || Boolean(options.error)}>{busy ? 'Setzt ein …' : 'Banner einsetzen'}</button><button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button></div>
+      </> : <>
       {!selected.banner && <p className={styles.hint}>Das Banner erscheint ab sofort, bis Sie es entfernen.</p>}
       <p className={styles.hint}>Name, PLZ, Ort und Kategorien gelten für dieses Banner in allen Bereichen und machen es in der Suche auffindbar.</p>
       <fieldset disabled={busy} className={styles.fields}>
@@ -270,11 +331,12 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
         <button type="submit" className="button button-primary" disabled={busy || blocked || Boolean(options.error)}>{busy ? "Speichert …" : "Banner speichern"}</button>
         <button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button>
       </div>
+      </>}
     </form>
       {selected.banner &&
         <div className={styles.deleteSection}>
-          {source === 'campaign' && campaignId ? <CampaignLifecycle id={campaignId} archived={false}
-            disabled={busy || Boolean(options.error)} onBusyChange={setBusy} onArchived={onRemoved}>
+          {(source === 'legacy' || campaignId) ? <CampaignLifecycle id={campaignId || selected.banner.id} archived={false}
+            disabled={busy || Boolean(options.error)} onBusyChange={value => { busyRef.current = value; setBusy(value); }} onArchived={onRemoved} onArchive={archive}>
             {!selected.banner.shared && canRemove && !confirmDelete && <button type="button" className="button" disabled={busy || Boolean(options.error)} onClick={() => setConfirmDelete(true)}>Banner löschen</button>}
           </CampaignLifecycle> : null}
           {!selected.banner.shared && canRemove && (confirmDelete ? <>
@@ -283,7 +345,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
               <button type="button" className="button" disabled={busy} onClick={() => remove("banner")}>Ja, Banner löschen</button>
               <button type="button" className="button" disabled={busy} onClick={() => setConfirmDelete(false)}>Behalten</button>
             </div>
-          </> : source !== 'campaign' ? <button type="button" className="button" disabled={busy || Boolean(options.error)} onClick={() => setConfirmDelete(true)}>Banner löschen</button> : null)}
+          </> : null)}
         </div>}
   </dialog>;
 }

@@ -2,10 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { prepareInlineAdUpload, saveInlineAd, removeInlineAd, saveInlineAdMetadata, saveInlineAdCrop } from "@/lib/inline-advertising";
+import { prepareInlineAdUpload, saveInlineAd, removeInlineAd, saveInlineAdMetadata, saveInlineAdCrop, archiveInlineAd, reuseInlineAd } from "@/lib/inline-advertising";
 import { inlineAdContext } from "@/lib/inline-ad-context";
 import { reorderInlineBannerContents } from "@/lib/inline-banner-order";
 import type { SidebarSlot } from "@/lib/sidebar-order";
+
+export async function archiveInlineBanner(path: string, form: FormData) {
+  const result = await archiveInlineAd(await createClient(), path, form);
+  if (result.success) revalidatePath('/', 'layout');
+  return result;
+}
+export async function reuseInlineBanner(path: string, form: FormData) {
+  const result = await reuseInlineAd(await createClient(), path, form);
+  if (result.success) revalidatePath('/', 'layout');
+  return result;
+}
 
 export async function saveInlineBannerMetadata(path: string, form: FormData) {
   try {
