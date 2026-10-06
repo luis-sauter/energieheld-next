@@ -155,7 +155,7 @@ export async function CampaignDetail({
           ) : (
             <>
               {campaign.status === "pending" && (
-                <p role="status">Ihre Angebotsanfrage wurde zur Prüfung eingereicht.</p>
+                <p role="status">Ihre Angebotsanfrage wurde erfolgreich gesendet.</p>
               )}
               <CampaignSlot
                 placement={campaign.placement}

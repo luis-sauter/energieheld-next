@@ -6,6 +6,7 @@ import {
   validAdDate,
   adPlacements,
   adTargetAvailabilityKey,
+  customerAdListFilter,
   type AdCampaign,
   type ActiveAd,
   type AdFormState,
@@ -117,6 +118,7 @@ export async function loadAdCampaigns(
       { count: "exact" },
     );
   if (profileId) query = query.eq("profile_id", profileId);
+  if (!admin && !id) query = query.or(customerAdListFilter);
   if (admin && archivedOnly) query = query.not('archived_at', 'is', null);
   if (id) {
     if (!isProfileId(id)) return { campaigns: [] as AdCampaign[], count: 0 };
@@ -300,7 +302,7 @@ export async function saveOwnAd(
     await client.storage.from(AD_BUCKET).remove([campaign.image_path]);
   return {
     success: submit
-      ? admin ? "Das Banner wurde zur Prüfung eingereicht." : "Ihre Angebotsanfrage wurde zur Prüfung eingereicht."
+      ? admin ? "Das Banner wurde zur Prüfung eingereicht." : "Ihre Angebotsanfrage wurde erfolgreich gesendet."
       : "Der Entwurf wurde gespeichert.",
   };
 }

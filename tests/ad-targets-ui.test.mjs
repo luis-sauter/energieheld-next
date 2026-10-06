@@ -168,7 +168,7 @@ const campaign = {
 const render = (Component, props) =>
   renderToStaticMarkup(createElement(Component, props));
 test("request starts compact, adds each area once, and removes only its placements", () => {
-  const blank = render(CampaignForm, { campaign: { ...campaign, status: "draft", internal_name: "", headline: "", target_url: "" }, categoryIds: [] });
+  const blank = render(CampaignForm, { campaign: { ...campaign, status: "draft", internal_name: "", headline: "", target_url: "", body_text: null, image_path: null }, categoryIds: [] });
   assert.match(blank, /Werbebereich hinzufügen/);
   assert.doesNotMatch(blank, /class="scopeGroup"|type="checkbox"/);
   const one = addRequestScope([], "homepage");
@@ -557,7 +557,7 @@ test('P14 customer list and detail use request language in all editable and read
   globalThis.p14CampaignResult={campaigns:[row],count:21,categoryIds:[]};
   const index=renderToStaticMarkup(await CampaignIndex({params:{}}));assert.match(index,/Meine Angebotsanfragen/);assert.match(index,/Neue Angebotsanfrage/);assert.match(index,/Seiten der Angebotsanfragen/);assert.doesNotMatch(index,/Kampagne/);
   const detail=renderToStaticMarkup(await CampaignDetail({id:row.id}));assert.match(detail,/<h1>Angebotsanfrage<\/h1>/);assert.match(detail,/Zur Übersicht der Angebotsanfragen/);assert.doesNotMatch(detail,/Kampagne/);
-  assert.equal(detail.includes('<p role="status">Ihre Angebotsanfrage wurde zur Prüfung eingereicht.</p>'),status==='pending');
+  assert.equal(detail.includes('<p role="status">Ihre Angebotsanfrage wurde erfolgreich gesendet.</p>'),status==='pending');
  }
  globalThis.p14CampaignResult={campaigns:[],count:0};const empty=renderToStaticMarkup(await CampaignIndex({params:{fehler:'erstellen'}}));assert.match(empty,/Noch keine Angebotsanfragen/);assert.match(empty,/Die Angebotsanfrage.*konnte nicht erstellt/s);
  globalThis.p14CampaignResult={campaigns:[],count:0};const admin=renderToStaticMarkup(await CampaignIndex({admin:true,params:{}}));assert.match(admin,/Werbekampagnen prüfen/);assert.doesNotMatch(admin,/Angebotsanfrage/);
@@ -568,4 +568,15 @@ test('P14 form separates customer wording from admin and preserves routes, field
  for(const [file,text] of [['page.tsx','Meine Angebotsanfragen'],['[id]/page.tsx','Angebotsanfrage']])assert.match(readFileSync(new URL('../src/app/(energieheld)/firma/werbung/'+file,import.meta.url),'utf8'),new RegExp('title: "'+text+'"'));
  const dashboard=readFileSync(new URL('../src/app/(energieheld)/firma/page.tsx',import.meta.url),'utf8');assert.match(dashboard,/Angebotsanfragen/);assert.match(dashboard,/href="\/firma\/werbung"/);
  const navigation=readFileSync(new URL('../src/components/portal/account-menu.tsx',import.meta.url),'utf8');assert.match(navigation,/Werbung/);
+});
+
+
+test('P14 final customer CTA is the sole completion action in draft and rejected; admin actions stay intact',()=>{
+ for(const status of ['draft','rejected']) {
+  const customer=render(CampaignForm,{campaign:{...campaign,status},categoryIds:[]});
+  assert.doesNotMatch(customer,/Entwurf speichern|Zur Prüfung einreichen|name="intent" value="save"/);
+  assert.match(customer,/<button(?=[^>]*name="intent")(?=[^>]*value="submit")[^>]*>Angebot anfragen<\/button>/);
+  const admin=render(CampaignForm,{campaign:{...campaign,status},categoryIds:[],admin:true});
+  assert.match(admin,/Banner speichern/);assert.match(admin,/Zur Freigabe vormerken/);assert.doesNotMatch(admin,/Angebot anfragen/);
+ }
 });

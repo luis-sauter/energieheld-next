@@ -4,6 +4,7 @@ import {
   adPlacements,
   adTargetAvailabilityKey,
   adTargetFormValue,
+  isPristineCustomerAd,
   type AdCampaign,
   type AdPlacementId,
   type AdTarget,
@@ -104,7 +105,7 @@ export function CampaignForm({
     },
     {},
   );
-  const pristine = !admin && campaign.status === "draft" && !campaign.internal_name && !campaign.headline && !campaign.target_url;
+  const pristine = !admin && isPristineCustomerAd(campaign);
   const [metadata, setMetadata] = useState(bannerMetadata ?? { name: campaign.headline, postal_code: '', city: '', term_keys: [] });
   const [values, setValues] = useState(() => {
     if (campaign.status === 'draft' && !campaign.targets.length)
@@ -345,16 +346,16 @@ export function CampaignForm({
         {admin ? "Redaktionelle Änderungen an einer freigegebenen Kampagne werden sofort wirksam. Entwürfe werden erst nach Freigabe ausgespielt." : "Mit dem Einreichen wird Ihre Angebotsanfrage zur Prüfung gesendet. Die Anzeige wird erst nach Freigabe im bestätigten Zeitraum ausgespielt."}
       </p>
       <div className={styles.actions}>
-        <button className="button" name="intent" value="save" disabled={busy || (admin && campaign.status === "approved" && (availabilityLoading || !!availabilityError || hasBookedSelection))}>
-          {admin ? "Banner speichern" : "Entwurf speichern"}
-        </button>
+        {admin && <button className="button" name="intent" value="save" disabled={busy || (campaign.status === "approved" && (availabilityLoading || !!availabilityError || hasBookedSelection))}>
+          Banner speichern
+        </button>}
         {(!admin || ["draft", "rejected"].includes(campaign.status)) && <button
           className="button button-primary"
           name="intent"
           value="submit"
           disabled={busy || availabilityLoading || !!availabilityError || hasBookedSelection}
         >
-          {admin ? "Zur Freigabe vormerken" : "Zur Prüfung einreichen"}
+          {admin ? "Zur Freigabe vormerken" : "Angebot anfragen"}
         </button>}
       </div>
       {busy && <p role="status">Wird gespeichert …</p>}
