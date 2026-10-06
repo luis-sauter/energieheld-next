@@ -60,7 +60,7 @@ test('real card imagery, taxonomy and existing contact visibility are reused; mi
   const premium=render(listing('premium',true));const basic=render(listing('basic'));
   assert.match(premium,/Originales Anbieterbild/);assert.match(premium,/Natur/);assert.doesNotMatch(premium,/unknown/);
   assert.match(premium,/mailto:public@example.com/);assert.doesNotMatch(basic,/mailto:/);
-  assert.match(basic,/Originales Anbieterbild/);assert.match(basic,/Zum Profil/);
+  assert.doesNotMatch(basic,/Originales Anbieterbild|<img/);assert.match(basic,/travel-image-fallback/);assert.match(basic,/Zum Profil/);
   const missing=render(listing('missing',true,false));assert.match(missing,/listing-row--premium/);assert.match(missing,/Kein Bild für missing/);assert.doesNotMatch(missing,/<img/);
 });
 function imageProps(props) { let captured; function Capture() { const image=CompanyImage(props); captured=image.props; return image; } renderToStaticMarkup(createElement(Capture)); return captured; }

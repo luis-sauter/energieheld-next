@@ -3,6 +3,7 @@ import { reiseportalPreview } from "@/data/reiseportal-preview";
 import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
 import legacyDirectoryMedia from "../data/reiseportal-legacy-directory-media.json" with { type: "json" };
 import verifiedProviderMedia from "../data/reiseportal-legacy-provider-media.json" with { type: "json" };
+import travelPhotos from '../data/reiseportal-travel-provider-images.json' with { type: 'json' };
 import type { Listing } from "@/types/portal";
 import { companyProfileListing } from "./company-presentation";
 import { directoryItemKey } from "./company-directory-order";
@@ -11,6 +12,7 @@ import { demoProfileId, demoPublicSlug, demoSourceSlug } from "./reiseportal-dem
 import { loadPublicTravelAssignments } from "./public-travel-taxonomy";
 import { filterTravelDiscovery } from "./reiseportal-search";
 import { createPublicClient } from "./supabase/public";
+import { providerTravelImage } from './provider-card-media';
 
 const oldEnergyContent = /energieheld|energieberatung|photovoltaik|heizung|dämmung|dachsanierung|smart home|fachbetrieb|sanierung/i;
 
@@ -61,9 +63,11 @@ export function withLegacyImages(listing: Listing): Listing {
   const imported = importedJoomlaMedia[listing.slug];
   const verified = (verifiedProviderMedia as Record<string, { logo?: Listing["logo"]; images: Listing["images"] }>)[listing.slug];
   const directoryImage = (legacyDirectoryMedia as Record<string, { src: string; alt: string }>)[listing.slug];
-  if (!source && !imported && !verified && !directoryImage) return listing;
+  const travelImage = providerTravelImage(listing, (travelPhotos as Record<string, NonNullable<Listing['travelImage']>>)[listing.slug]);
+  if (!source && !imported && !verified && !directoryImage) return { ...listing, travelImage };
   const historicImage = directoryImage ? { src: directoryImage.src, alt: directoryImage.alt } : undefined;
   const result = { ...listing,
+    travelImage,
     directoryImage: listing.logo ?? listing.images[0] ?? listing.directoryImage ??
       historicImage,
     logo: listing.logo ?? verified?.logo ?? imported?.logo ?? source?.logo ?? historicImage,

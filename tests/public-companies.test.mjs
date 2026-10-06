@@ -962,7 +962,22 @@ test("database errors never expose demos in directory, detail or metadata", asyn
   }
 });
 
-test("travel Basic directory reuses real signed thumbnail while detail displays sorted gallery", async () => {
+test("Basic provider photo is centrally reused by destination/motto cards, never directory rows", () => {
+  const original = { ...reiseportalPreview[4], name: 'Wellnesshotel Almhof Call', slug: 'wellnesshotel-almhof-call', directoryPackage: 'basic', logo: undefined, images: [] };
+  const before = structuredClone(original);
+  const hydrated = withLegacyImages(original);
+  const destination = renderToStaticMarkup(createElement(AccommodationCard, { listing: hydrated, rotating: true }));
+  const theme = renderToStaticMarkup(createElement(AccommodationCard, { listing: hydrated, rotating: true }));
+  assert.match(destination, /\/reiseportal\/unterkuenfte\/wellnesshotel-almhof-call\/01.jpg/);
+  assert.equal(destination, theme);
+  const row = renderToStaticMarkup(createElement(ListingRow, { listing: hydrated, categories: [], href: '/unterkuenfte/' + hydrated.slug, travel: true }));
+  assert.doesNotMatch(row, /<img/); assert.match(row, /travel-image-fallback/);
+  assert.deepEqual(original, before);
+  const uncertain = withLegacyImages({ ...original, slug: 'wirodive-tauchreisen' });
+  assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard, { listing: uncertain })), /<img/);
+});
+
+test("travel Basic directory keeps the intended icon while detail displays sorted real gallery", async () => {
   api([
     {
       ...travelRow,
@@ -995,8 +1010,8 @@ test("travel Basic directory reuses real signed thumbnail while detail displays 
   );
   assert.match(directory, /listing-row--basic/);
   assert.match(directory, /row-logo/);
-  assert.match(directory, /alt="Logo von Test Firma"/);
-  assert.match(directory, /token=temporary/);
+  assert.doesNotMatch(directory, /alt="Logo von Test Firma"|token=temporary/);
+  assert.match(directory, /travel-image-fallback/);
   assert.doesNotMatch(directory, /travel-premium-badge/);
   const detail = renderToStaticMarkup(
     await Detail({ params: Promise.resolve({ slug: row.slug }) }),
