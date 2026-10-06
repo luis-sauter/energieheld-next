@@ -196,3 +196,30 @@ test('audience shortcut deep links reuse existing facet filtering, survive URL r
  for(const shortcut of shortcuts)assert.ok(seed.includes("('audience:"+shortcut.slug+"', 'audience', '"+shortcut.slug+"'"));
  assert.deepEqual(terms.map(t=>t.term_key),['audience:paar','audience:familie','audience:mit-hund']);
 });
+
+
+test('central audience labels and assigned icons render in cards and profile header without text inference',async()=>{
+ const {publicTravelLabel,profileTravelSignals}=await import('../src/lib/travel-presentation.ts');
+ const {TravelSignals}=await import('../src/components/portal/travel-signals.tsx');
+ const {ListingRow}=await import('../src/components/portal/listing-row.tsx');
+ const {ListingDetail}=await import('../src/components/portal/listing-detail.tsx');
+ for(const [key,label] of [['familie','Mit Kindern'],['paar','Zu zweit'],['mit-hund','Mit Hund']])assert.equal(publicTravelLabel('audience:'+key,key),label);
+ assert.equal(publicTravelLabel('audience:gruppe','Gruppe'),'Gruppe');
+ const keys=['accommodation:pension','theme:radwandern','theme:nordic-walking'];
+ const listing={...profiles[0],name:'Pension Sonnenhof',travelTermKeys:keys,directoryPackage:'basic'};
+ for(const Component of [AccommodationCard,ListingRow,ListingDetail]){
+  const html=renderToStaticMarkup(createElement(Component,{listing,categories:[],href:'/unterkuenfte/pension-sonnenhof',travel:true,showVerification:false}));
+  assert.match(html,/data-travel-term="theme:radwandern"/);assert.match(html,/data-travel-term="theme:nordic-walking"/);assert.match(html,/<svg/);assert.doesNotMatch(html,/data-travel-term="audience:mit-hund"/);
+ }
+ const all=[...keys,'audience:familie','audience:paar','audience:mit-hund','theme:wellnessangebote'];
+ const selected=profileTravelSignals(all);assert.equal(selected.length,4);assert.equal(selected[0].key,'audience:mit-hund');assert.equal(new Set(selected.map(s=>s.key)).size,4);
+ assert.equal(renderToStaticMarkup(createElement(TravelSignals,{termKeys:[]})),'');
+ assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing:{...listing,travelTermKeys:[],description:'Hunde Familie Radwandern'}})),/data-travel-term=/);
+ const row=renderToStaticMarkup(createElement(ListingRow,{listing,categories:[],href:'/unterkuenfte/pension-sonnenhof',travel:true}));assert.match(row,/travel-image-fallback/);assert.doesNotMatch(row,/<img/);
+ for(const file of ['src/app/(energieheld)/suche/page.tsx','src/components/portal/listings.tsx'])assert.match(read(file),/TravelSignals/);
+ const {availableTravelFilters,activeTravelFilterLabels,readTravelFilterValues}=await import('../src/lib/reiseportal-filter-options.ts');
+ const terms=['familie','paar','mit-hund'].map(slug=>({term_key:'audience:'+slug,slug,dimension:'audience',label:slug==='familie'?'Familie':slug==='paar'?'Paar':'Mit Hund'}));
+ const options=availableTravelFilters([{...listing,travelTermKeys:terms.map(t=>t.term_key)}],terms);
+ assert.deepEqual(options.audiences.map(e=>e.label),['Mit Kindern','Zu zweit','Mit Hund']);
+ assert.deepEqual(activeTravelFilterLabels(readTravelFilterValues({zielgruppe:'familie'}),options),['Mit wem: Mit Kindern']);
+});

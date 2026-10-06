@@ -31,8 +31,8 @@ const {CompanyImage} = await import('../src/components/portal/company-image.tsx'
 const {SearchAdResults} = await import('../src/components/advertising/search-ad-results.tsx');
 const {readTravelFilterValues} = await import('../src/lib/reiseportal-filter-options.ts');
 const source=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
-const listing=(id,premium=false,image=true)=>({id,slug:id,name:id,initials:'AB',tagline:'Originaler Teaser',description:'Originaltext',directoryPackage:premium?'premium':'basic',directoryImage:image?{src:'/reiseportal/original.jpg',alt:'Originales Anbieterbild'}:undefined,images:[],services:[],categoryIds:[],travelTermKeys:['theme:natur','feature:unknown'],location:{city:'Berlin',country:'Deutschland',postalCode:'10115',region:''},contact:{phone:'+49 123',email:'public@example.com',website:'https://example.com'},isDemo:false});
-const terms=[{term_key:'theme:natur',dimension:'theme',slug:'natur',label:'Natur'}];
+const listing=(id,premium=false,image=true)=>({id,slug:id,name:id,initials:'AB',tagline:'Originaler Teaser',description:'Originaltext',directoryPackage:premium?'premium':'basic',directoryImage:image?{src:'/reiseportal/original.jpg',alt:'Originales Anbieterbild'}:undefined,images:[],services:[],categoryIds:[],travelTermKeys:['theme:natur-pur','feature:unknown'],location:{city:'Berlin',country:'Deutschland',postalCode:'10115',region:''},contact:{phone:'+49 123',email:'public@example.com',website:'https://example.com'},isDemo:false});
+const terms=[{term_key:'theme:natur-pur',dimension:'theme',slug:'natur-pur',label:'Natur'}];
 const directory=(items,values={})=>renderToStaticMarkup(createElement(TravelDirectory,{initialValues:readTravelFilterValues(values),database:items,preview:[],terms,error:null,ads:[],sidebarOrder:[],canReorder:false,hiddenOrderKeys:[]}));
 
 test('search formats render wide before other and every admin card offers existing editor',()=>{
@@ -56,7 +56,7 @@ test('SSR includes every premium/basic profile, true package labels and public l
   assert.equal((html.match(/<h1 /g)||[]).length,1);
 });
 test('real card imagery, taxonomy and existing contact visibility are reused; missing premium image does not change package',()=>{
-  const render=(item)=>renderToStaticMarkup(createElement(ListingRow,{listing:item,categories:[],href:'/unterkuenfte/'+item.slug,travel:true,showVerification:false,travelLabels:{'theme:natur':'Natur'}}));
+  const render=(item)=>renderToStaticMarkup(createElement(ListingRow,{listing:item,categories:[],href:'/unterkuenfte/'+item.slug,travel:true,showVerification:false,travelLabels:{'theme:natur-pur':'Natur'}}));
   const premium=render(listing('premium',true));const basic=render(listing('basic'));
   assert.match(premium,/Originales Anbieterbild/);assert.match(premium,/Natur/);assert.doesNotMatch(premium,/unknown/);
   assert.match(premium,/mailto:public@example.com/);assert.doesNotMatch(basic,/mailto:/);

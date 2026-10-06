@@ -1,4 +1,8 @@
 .scroller { min-width: 0; max-width: 100%; }
+.scroller[data-compact] { position: relative; padding-inline: 24px; }
+.edgeControls { position: absolute; inset: 0; pointer-events: none; display: flex; align-items: center; justify-content: space-between; z-index: 2; }
+.edgeControls button { pointer-events: auto; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: white; color: var(--brand-primary); box-shadow: 0 2px 8px rgb(14 68 96 / 12%); cursor: pointer; font-size: 1.2rem; }
+.edgeControls button:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 2px; }
 .header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; margin-bottom: 18px; }
 .header h2 { margin-bottom: 0; }
 .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }

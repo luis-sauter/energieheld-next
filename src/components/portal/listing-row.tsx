@@ -1,3 +1,4 @@
+import { TravelSignals } from "./travel-signals";
 import Link from "next/link";
 import type { Listing, Category } from "@/types/portal";
 import { CompanyImage } from "./company-image";
@@ -37,7 +38,7 @@ export function ListingRow({
   const isLogo = Boolean(cardImage && listing.logo?.src === cardImage.src);
   const premium = listing.directoryPackage === "premium" && (travel || Boolean(cardImage));
   const teaser = listing.tagline || (travel ? listing.description.replace(/\s+/g, " ").trim().slice(0, 240) : "");
-  const tags = travel ? [...new Set((listing.travelTermKeys ?? []).flatMap((key) => travelLabels[key] ? [travelLabels[key]] : []))] : [];
+  const tags = travel ? [...new Set((listing.travelTermKeys ?? []).flatMap((key) => !key.startsWith("theme:") && !key.startsWith("audience:") && travelLabels[key] ? [travelLabels[key]] : []))] : [];
   const address = [
     listing.location.street,
     [listing.location.postalCode, listing.location.city].filter(Boolean).join(" "),
@@ -69,6 +70,7 @@ export function ListingRow({
             .map((category) => <span className="row-category" key={category.id}>{category.name}</span>)}
         </div>
         {teaser && <p className="row-tagline">{teaser}{travel && !listing.tagline && listing.description.length > 240 ? " …" : ""}</p>}
+        {travel && <TravelSignals termKeys={listing.travelTermKeys} />}
         {tags.length > 0 && <ul className="travel-card-tags" aria-label="Reisemerkmale">{tags.map((tag) => <li key={tag}>{tag}</li>)}</ul>}
         {premium && listing.businessAreas && <p className="row-business-areas">{listing.businessAreas}</p>}
         {listing.isDemo && <span className="badge row-demo">{listing.demoLabel ?? "Beispielprofil"}</span>}

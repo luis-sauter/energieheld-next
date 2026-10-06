@@ -31,11 +31,14 @@ export function ThemeScroller({ children, count, label, compact = false, heading
     if (!element) return;
     const first = element.children[0] as HTMLElement | undefined;
     const second = element.children[1] as HTMLElement | undefined;
-    const step = first && second ? second.offsetLeft - first.offsetLeft : element.clientWidth;
+    const step = compact ? element.clientWidth * 0.8
+      : first && second ? second.offsetLeft - first.offsetLeft : element.clientWidth;
+    manualUntil.current = performance.now() + 1500;
+    autoLeft.current = null;
     element.scrollTo({ left: nextThemeScroll(element.scrollLeft, step,
       element.scrollWidth - element.clientWidth, direction), behavior: smooth ? "smooth" : "instant" });
     setInteraction(value => value + 1);
-  }, []);
+  }, [compact]);
   const advance = useCallback(() => move(1, true), [move]);
   const { root, handlers, reducedMotion, interact, canPlay } = useRotationMotion(overflowing ? count : 1, advance, interaction, themeScrollerDelay, !compact);
   useEffect(() => {
@@ -76,6 +79,10 @@ export function ThemeScroller({ children, count, label, compact = false, heading
           <button type="button" disabled={!overflowing} aria-label={`${label}: weiter`} onClick={() => move(1, !reducedMotion)}>→</button>
         </>}
       </div>
+    </div>}
+    {compact && overflowing && <div className={styles.edgeControls}>
+      <button type="button" aria-label="Quicklinks zurück" onClick={() => move(-1, !reducedMotion)}>←</button>
+      <button type="button" aria-label="Quicklinks weiter" onClick={() => move(1, !reducedMotion)}>→</button>
     </div>}
     <div ref={attachRail} className={styles.rail} tabIndex={0} aria-label={`${label}: Karten`}
       onWheel={() => { manualUntil.current = performance.now() + 1000; }}

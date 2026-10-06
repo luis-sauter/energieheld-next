@@ -1,3 +1,4 @@
+import { TravelSignals } from "./travel-signals";
 import type { Category, Listing, Location } from "@/types/portal";
 import { formatLocation, googleMapsLocation } from "@/lib/listings";
 import { Badge } from "./listings";
@@ -219,6 +220,7 @@ export function ListingDetail({
                 <span key={c.id}>{c.name}</span>
               ))}
           </div>
+          <TravelSignals termKeys={listing.travelTermKeys} />
           {inlineFields?.tagline ? <div className="detail-tagline">{inlineFields.tagline}</div> : <p className="detail-tagline">{listing.tagline}</p>}
           <a className="text-link profile-contact-link" href="#contact-title">
             Kontakt & Standort ansehen ↓
