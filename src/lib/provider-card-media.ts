@@ -2,8 +2,9 @@ import type { Listing, PortalImage } from '@/types/portal';
 
 // Select from existing provider media, never from advertising or inferred names.
 // Called before legacy galleries are merged so genuine saved photos retain priority.
-export function providerTravelImage(listing: Listing, legacyPhoto?: PortalImage): PortalImage | null {
-  return listing.images.find(image => image.src !== listing.logo?.src) ??
+export function providerTravelImage(listing: Listing, legacyPhoto?: PortalImage & { excludedSavedPaths?: string[] }): PortalImage | null {
+  return listing.images.find(image => image.src !== listing.logo?.src &&
+    !legacyPhoto?.excludedSavedPaths?.some(path => image.src.split('?')[0].endsWith('/' + path))) ??
     legacyPhoto ?? null;
 }
 

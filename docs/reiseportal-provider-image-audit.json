@@ -1288,16 +1288,20 @@
       "cloud_logo_present": true,
       "legacy_gallery_count": 5,
       "source_media_reference_count": 8,
-      "selected_image": "profiles/49b2316e-dd69-4d68-9f10-b7fc86100cf8/gallery/b2d865b8-3ae3-457e-a85e-71d65c74cd38.jpg",
+      "selected_image": "profiles/49b2316e-dd69-4d68-9f10-b7fc86100cf8/gallery/b8d84eb5-efa4-4e7a-b1b8-1bbb8e3845ac.jpg",
       "legacy_photo": {
         "src": "/reiseportal/unterkuenfte/pension-sonnenhof/01.jpg",
         "alt": "Originalbild 2 von Pension Sonnenhof",
+        "excludedSavedPaths": [
+          "profiles/49b2316e-dd69-4d68-9f10-b7fc86100cf8/gallery/b2d865b8-3ae3-457e-a85e-71d65c74cd38.jpg",
+          "profiles/49b2316e-dd69-4d68-9f10-b7fc86100cf8/gallery/d2acf825-863c-44ac-a8ba-ed301fe66965.jpg"
+        ],
         "source_url": "https://das-reiseportal.com/images/unterkuenfte/Pension%20Sonnenhof/Screenshot%202024-06-14%20120443.jpg",
         "source_field": "article-html",
         "sha256": "124a2281c499d70a3cb42dd3f501e61641bc413e59efa70b19612d67bfd668c7"
       },
       "decision": "EXISTING_OK",
-      "note": "Bestehende gespeicherte Galerie hat Vorrang; nicht neu importieren oder bereinigen."
+      "note": "Geeignetes gespeichertes Galeriefoto hat Vorrang; visuell belegte Angebotsgrafik und fremdes Testmotiv nur für Reisekarten ausschließen. Galerie unverändert."
     },
     {
       "profile_id": "c47999f5-c1a5-4382-a130-5cc56f717528",

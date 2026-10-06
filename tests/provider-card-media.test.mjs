@@ -58,6 +58,9 @@ test('all selected originals have exact provider/article/hash evidence; no dupli
 test('Sonnenhof saved gallery is reused; no profile text, gallery, package or review change',()=>{
  const row={...listing,slug:'pension-sonnenhof',images:[photo],review:'unverified'};const before=structuredClone(row);
  assert.equal(providerTravelImage(row),photo);assert.deepEqual(row,before);
+ const excluded=photos['pension-sonnenhof'].excludedSavedPaths.map(path=>({src:'https://example.test/storage/v1/object/sign/company-media/'+path+'?token=test',alt:'Unsuitable saved graphic'}));
+ assert.equal(providerTravelImage({...row,images:[excluded[0],photo,excluded[1]]}),photo);
+ assert.equal(providerTravelImage({...row,images:excluded}).src,photos['pension-sonnenhof'].src);
  const fallback=providerTravelImage({...row,images:[]});assert.match(fallback.src,/pension-sonnenhof\/01.jpg$/);
  assert.notEqual(fallback.src,photos['pension-sonnenhof'].logo);
 });

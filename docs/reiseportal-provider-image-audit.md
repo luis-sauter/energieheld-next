@@ -61,4 +61,6 @@ Die 26 bildlosen Anbieter haben im exportierten Joomla-Artikel, Intro-/Fulltext-
 
 Kein Import erforderlich: geeignete Dateien lagen bereits zentral im bestehenden Medienbestand. Keine Migration, neue Medienarchitektur, Kontakt-/Text-/Taxonomieänderung oder künstliche Review/Freshness-Bestätigung. Sonnenhof: vorhandene Galerie/Logo nicht erneut importiert, überschrieben oder bereinigt; bestehende Redaktionsmedien behalten Vorrang.
 
+Die visuelle Live-Prüfung bestätigt bei Sonnenhof eine Angebotsgrafik als erstes Galeriebild sowie ein fremdes Handwerker-Testmotiv. Diese zwei exakt belegten Medienpfade werden ausschließlich bei der Reisekarten-Auswahl übersprungen; das nächste echte gespeicherte Foto wird wiederverwendet. Neue redaktionelle Fotos behalten Vorrang. Die Profilgalerie und Premium-Verzeichnisdarstellung bleiben vollständig unverändert.
+
 Audit erneut erzeugen: `node scripts/audit-reiseportal-provider-images.mjs <read-only-cloud-snapshot.json>`. Das Skript liest die bestehende Cloud-Aufnahme sowie lokale Belege und schreibt nur die Audit-Dokumentation; es führt keine SQL-, Storage- oder Profilmutation aus. Die Rohaufnahme bleibt außerhalb Git.

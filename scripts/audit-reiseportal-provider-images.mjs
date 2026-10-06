@@ -24,7 +24,7 @@ const rows = profiles.map(p => {
     evidence = assets.find(a => a.profile_slug === p.slug && a.decision === 'ASSIGN' && a.sha256 === hash);
     if (!evidence) throw new Error(`No exact provider/hash provenance: ${p.slug}`);
   }
-  const selected = p.images[0]?.path ?? card?.src ?? null;
+  const selected = p.images.find(image => !card?.excludedSavedPaths?.includes(image.path))?.path ?? card?.src ?? null;
   const sourceMedia = company.media ?? [];
   const decision = selected ? 'EXISTING_OK' : sourceMedia.length ? 'AMBIGUOUS_SKIP' : 'NO_IMAGE_FOUND';
   return {
@@ -37,7 +37,7 @@ const rows = profiles.map(p => {
     source_media_reference_count: sourceMedia.length, selected_image: selected,
     legacy_photo: card ? { ...card, source_url: evidence.source_url, source_field: evidence.field, sha256: evidence.sha256 } : null,
     decision,
-    note: p.images.length ? 'Bestehende gespeicherte Galerie hat Vorrang; nicht neu importieren oder bereinigen.' : card ?
+    note: p.images.length ? 'Geeignetes gespeichertes Galeriefoto hat Vorrang; visuell belegte Angebotsgrafik und fremdes Testmotiv nur für Reisekarten ausschließen. Galerie unverändert.' : card ?
       'Visuell geprüftes Anbieter-/Umgebungsfoto aus bestehendem zentralem Medienbestand; keine Dateikopie.' : sourceMedia.length ?
       'Nur Logos bzw. Angebots-/Webseitengrafiken belegt; kein geeignetes Fotokartenbild. Bewusst übersprungen.' :
       'Artikelbilder, Artikel-HTML und exportierte Medien-Custom-Fields ohne Bildreferenz. Banner nicht als Profilfotos übernommen.',
