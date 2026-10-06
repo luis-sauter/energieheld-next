@@ -75,6 +75,20 @@ const { SidebarOrderSlots } = await import("../src/components/admin/sidebar-orde
 const { InlineBannerContext } = await import("../src/components/advertising/inline-banner-context.tsx");
 const { InlineBannerDialog } = await import('../src/components/advertising/inline-banner-editor.tsx');
 const { BannerSearchFields } = await import('../src/components/advertising/banner-search-fields.tsx');
+const { CampaignLifecycle } = await import('../src/components/advertising/campaign-lifecycle.tsx');
+
+test('inline banner archive is beside existing delete, without a lifecycle card or nested form',()=>{
+ const html=renderToStaticMarkup(createElement(InlineBannerDialog,{options:{label:'Startseite',availability:{},banners:[],terms:[]},selected:{placement:'sidebar_top',banner:{id:'existing',source:'campaign',editorial:true,placement:'sidebar_top',target_url:'https://example.org/',imageUrl:'/image.png'}},onClose(){},onSaved(){},onChanged(){},onRemoved(){},onMetadataSaved(){}}));
+ assert.match(html,/<div class="actions"><button[^>]*>Banner archivieren<\/button><button[^>]*>Banner löschen<\/button><\/div>/);
+ assert.doesNotMatch(html,/Kampagnenverwaltung|Kampagne archivieren|Archivierte Kampagne/);
+ const tags=html.match(/<\/?form\b[^>]*>/g);let depth=0;for(const tag of tags){depth+=tag.startsWith('</')?-1:1;assert.ok(depth>=0&&depth<=1,'forms never nest');}assert.equal(depth,0);
+});
+test('archive controls use banner wording, no separate card, and reuse the existing lifecycle action',()=>{
+ const html=renderToStaticMarkup(createElement(CampaignLifecycle,{id:'existing',archived:true}));
+ assert.match(html,/Banner wiederverwenden/);assert.match(html,/Dauerhaft löschen/);assert.doesNotMatch(html,/<section|<h3|Kampagne|Banner archivieren/);
+ const source=readFileSync(new URL('../src/components/advertising/campaign-lifecycle.tsx',import.meta.url),'utf8');
+ assert.match(source,/name="confirmed" value="yes" required/);assert.match(source,/lifecycleCampaign\(\{\}, form\)/);
+});
 
 test('existing inline add/edit dialogs include the same public metadata on every supported banner page, including shared creatives',()=>{
  const metadata={name:'City Apart Dresden',postal_code:'',city:'',term_keys:['theme:wellnessangebote']};
