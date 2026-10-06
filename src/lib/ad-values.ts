@@ -78,6 +78,20 @@ export type ActiveAd = Pick<
     image_width?: number; image_height?: number; legacy_source?: AdPlacementId;
     mobile_image?: { imageUrl: string; width: number; height: number } };
 export type AdFormState = { error?: string; success?: string };
+const customerDraftContentFields = [
+  "internal_name", "headline", "target_url", "body_text", "image_path",
+  "contact_name", "contact_phone", "contact_email", "admin_note",
+] as const;
+export function isPristineCustomerAd(campaign: AdCampaign) {
+  return campaign.status === "draft" && !campaign.is_editorial &&
+    !campaign.archived_at && !campaign.submitted_at &&
+    customerDraftContentFields.every((field) => !campaign[field]);
+}
+// Filter before count/range; generated from the same content fields as the form.
+export const customerAdListFilter = [
+  "status.neq.draft", "is_editorial.eq.true", "archived_at.not.is.null", "submitted_at.not.is.null",
+  ...customerDraftContentFields.map((field) => `${field}.neq.""`),
+].join(",");
 export function berlinToday(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Berlin",

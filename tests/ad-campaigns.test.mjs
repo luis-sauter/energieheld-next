@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import "./helpers/load-ts.mjs";
-const { validateAdValues, adTargetUrl, adStatus, berlinToday, adTargetAvailabilityKey, adScopeLabel } = await import(
+const { validateAdValues, adTargetUrl, adStatus, berlinToday, adTargetAvailabilityKey, adScopeLabel, isPristineCustomerAd, customerAdListFilter } = await import(
   "../src/lib/ad-values.ts"
 );
 const { saveOwnAd, decideAd, signAdImages, loadAdCampaigns, prepareAdUpload } =
@@ -109,6 +109,10 @@ function client({
           return this;
         },
         order() {
+          return this;
+        },
+        or(filter) {
+          call.visibilityFilter = filter;
           return this;
         },
         async range() {
@@ -442,9 +446,30 @@ test("server action rejects a canonical but unassigned trade before media or RPC
 });
 
 test('P14 customer submission and failure messages use Angebotsanfrage while admin stays banner-oriented',async()=>{
- const own=client();assert.equal((await saveOwnAd(own,form({intent:'submit',image:png}))).success,'Ihre Angebotsanfrage wurde zur Prüfung eingereicht.');
+ const own=client();assert.equal((await saveOwnAd(own,form({intent:'submit',image:png}))).success,'Ihre Angebotsanfrage wurde erfolgreich gesendet.');
  for(const status of ['pending','approved','paused']){const db=client({status});assert.equal((await saveOwnAd(db,form())).error,'Diese Angebotsanfrage kann derzeit nicht bearbeitet werden.');}
  assert.match((await saveOwnAd(client(),form({campaign_id:'invalid'}))).error,/Angebotsanfrage/);
  assert.match((await saveOwnAd(client({admin:true}),form({campaign_id:'invalid'}),true)).error,/Banner/);
  assert.doesNotMatch(validateAdValues(form({internal_name:''})).error,/Kampagne/);
+});
+
+
+test('P14 pristine rule preserves saved data, rejected requests and editorial/history records',()=>{
+ const pristine={status:'draft',internal_name:'',headline:'',target_url:'',body_text:null,image_path:null,contact_name:null,contact_email:null,contact_phone:null,admin_note:null};
+ assert.equal(isPristineCustomerAd(pristine),true);
+ for(const field of ['internal_name','headline','target_url','body_text','image_path','contact_name','contact_phone','contact_email','admin_note']) {
+  assert.equal(isPristineCustomerAd({...pristine,[field]:'saved'}),false,field);
+  assert.ok(customerAdListFilter.includes(`${field}.neq.""`));
+ }
+ for(const status of ['rejected','pending','approved','paused']) assert.equal(isPristineCustomerAd({...pristine,status}),false);
+ for(const field of ['is_editorial','archived_at','submitted_at']) assert.equal(isPristineCustomerAd({...pristine,[field]:true}),false);
+});
+test('P14 owner visibility filter is applied before pagination, never to admin or detail',async()=>{
+ for(const [admin,detail] of [[false,undefined],[true,undefined],[false,id]]) {
+  const db=client({admin});await loadAdCampaigns(db,admin,2,detail);
+  const call=db.calls.find(c=>c.table==='company_ad_campaigns');
+  assert.equal(call.visibilityFilter,!admin&&!detail?customerAdListFilter:undefined);
+ }
+ const db=client();await saveOwnAd(db,form({intent:'submit',image:png}));
+ assert.equal(db.calls.find(c=>c.rpc==='save_ad_campaign').args.p_submit,true);
 });
