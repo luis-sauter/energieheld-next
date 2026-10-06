@@ -148,3 +148,29 @@ test('unapproved search profile identity is not exposed; creative replacement pr
  await db.query("update company_profiles set status='draft' where id=$1",[ids[0]]);await actor();
  const row=(await projection()).metadata.find(b=>b.banner_key===`campaign:${id}`);assert.equal(row.profile_id,null);assert.equal(row.advertiser_key,null);
 });
+
+
+test('banner audience save/reopen/public projection preserves customer and unique terms',async()=>{
+ const id=await campaign();await actor('authenticated',admin);
+ await assignment(id,{terms:['audience:mit-hund','audience:familie','audience:paar','audience:mit-hund'],key:'domain:hoeflehner.com'});
+ await actor();let row=(await projection()).metadata.find(b=>b.banner_key==='campaign:'+id);
+ assert.deepEqual(row.term_keys,['audience:familie','audience:mit-hund','audience:paar']);
+ assert.equal(row.advertiser_key,'domain:hoeflehner.com');
+ await actor('authenticated',admin);await assignment(id,{terms:['audience:mit-hund'],key:'domain:hoeflehner.com'});
+ await actor();row=(await projection()).metadata.find(b=>b.banner_key==='campaign:'+id);
+ assert.deepEqual(row.term_keys,['audience:mit-hund']);assert.equal(row.advertiser_key,'domain:hoeflehner.com');
+});
+
+test('controlled banner audience seed adds only supported general creatives and is idempotent',async()=>{
+ await actor('postgres');
+ const seed=await readFile(new URL('../docs/reiseportal-banner-audience-assignments.sql',import.meta.url),'utf8');
+ const sql=seed.replace(/^BEGIN;$/m,'').replace(/^COMMIT;$/m,'');
+ for(const [slug,terms] of [['anni-romantikhaeuschen',['paar']],['hoeflehner',['familie','mit-hund']],['feldhof-dolcevita-resort',['familie','mit-hund','paar']]]) {
+  const profile=crypto.randomUUID();await db.query("insert into company_profiles(id,company_id,slug,display_name,status) values($1,$2,$3,$3,'approved')",[profile,owner,slug]);
+  for(const term of terms)await db.query('insert into company_profile_travel_terms values($1,$2)',[profile,'audience:'+term]);
+ }
+ const before=(await db.query('select count(*)::int n from ad_banner_search_terms')).rows[0].n;
+ await db.exec(sql);await db.exec(sql);
+ assert.equal((await db.query('select count(*)::int n from ad_banner_search_terms')).rows[0].n,before+6);
+ assert.equal((await db.query("select count(*)::int n from ad_banner_search_terms where banner_key like 'legacy:https://hoeflehner.com/%' and banner_key<>'legacy:https://hoeflehner.com/'")).rows[0].n,0);
+});

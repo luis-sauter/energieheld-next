@@ -6,7 +6,7 @@ import type { Listing } from "@/types/portal";
 import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, type TravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { travelFacetCount, travelFilterParams, travelFilterUrl, type TravelFacet } from "@/lib/reiseportal-facets";
 import { travelSearchUrl, travelSearchReturnUrl } from "@/lib/travel-search-intent";
-import { travelSearchResults, travelSearchAdvertisers, type TravelSearchBanner } from "@/lib/travel-search-banners";
+import { travelResultNoun, travelSearchResults, travelSearchAdvertisers, type TravelSearchBanner } from "@/lib/travel-search-banners";
 import { SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
 import { Breadcrumbs } from "./breadcrumbs";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
@@ -27,7 +27,9 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
 }) {
   const portalQuery = values.query.trim();
   const filterValues = { ...values, query: "" };
-  const count = travelSearchResults(listings, banners, filterValues).count;
+  const matched = travelSearchResults(listings, banners, filterValues);
+  const count = matched.count;
+  const resultNoun = travelResultNoun(count, matched.advertisers.length);
   const update = (key: keyof TravelFilterValues, value: string) => onChange({ ...values, [key]: value });
   const facets: { key: TravelFacet; label: string; all: string; entries: FacetOptions }[] = [
     { key: "destination", label: "Wohin?", all: "Alle Reiseziele", entries: options.destinations },
@@ -60,8 +62,8 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
                 {values[key] && !entries.some((entry) => entry.slug === values[key]) &&
                   <option value={values[key]}>Nicht verfügbar (0)</option>}
                 {entries.map(({ slug, label: optionLabel }) => {
-                  const optionCount = travelFacetCount(listings, filterValues, key, slug);
-                  return <option key={slug} value={slug} disabled={optionCount === 0 && !travelSearchAdvertisers(banners, { ...filterValues, [key]: slug }).length && values[key] !== slug}>
+                  const optionCount = travelFacetCount(listings, filterValues, key, slug) + travelSearchAdvertisers(banners, { ...filterValues, [key]: slug }).length;
+                  return <option key={slug} value={slug} disabled={optionCount === 0 && values[key] !== slug}>
                     {optionLabel} ({optionCount})
                   </option>;
                 })}
@@ -76,11 +78,11 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
               placeholder="Ort, Region oder PLZ" />
           </label>
           <button className="button button-primary reise-finder-submit" type="submit" disabled={!portalQuery && (count === 0 || Boolean(error))}>
-            {portalQuery ? "Im Reiseportal suchen" : count === 0 ? "Keine passenden Unterkünfte" : `${count} ${count === 1 ? "Unterkunft" : "Unterkünfte"} anzeigen`}
+            {portalQuery ? "Im Reiseportal suchen" : count === 0 ? "Keine passenden Ergebnisse" : `${count} ${resultNoun} anzeigen`}
           </button>
         </div>
         <div className="reise-finder-summary" aria-live="polite" aria-atomic="true">
-          {portalQuery ? "Suche in allen öffentlichen Inhalten" : error ?? `${count} ${count === 1 ? "passende Unterkunft" : "passende Unterkünfte"}`}
+          {portalQuery ? "Suche in allen öffentlichen Inhalten" : error ?? `${count} ${count === 1 && matched.advertisers.length > 0 ? "passendes" : "passende"} ${resultNoun}`}
         </div>
         <p id="reise-finder-hint">{portalQuery ? "Freitext durchsucht das gesamte Portal. Reisefilter gelten nur bei leerem Suchbegriff und bleiben für Ihre Rückkehr erhalten." : "Mit einem Suchbegriff finden Sie auch Reiseziele, Mottoreisen und weitere Inhalte im gesamten Portal."}</p>
         {active.length > 0 && <div className="reise-finder-active" aria-label="Aktive Filter">

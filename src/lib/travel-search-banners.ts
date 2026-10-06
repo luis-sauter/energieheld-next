@@ -56,3 +56,8 @@ export function travelSearchResults(listings: Listing[], banners: TravelSearchBa
   const advertisers = travelSearchAdvertisers(banners, values);
   return { listings: normal, advertisers, banners: advertisers, count: normal.length + advertisers.length };
 }
+
+// Counts include deduplicated advertisers, not only accommodation profiles.
+export function travelResultNoun(count: number, advertiserCount: number) {
+  return advertiserCount > 0 ? (count === 1 ? 'Ergebnis' : 'Ergebnisse') : (count === 1 ? 'Unterkunft' : 'Unterkünfte');
+}

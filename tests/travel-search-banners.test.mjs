@@ -48,7 +48,7 @@ test('count uses advertisers, Home and Directory agree, distinct creatives of on
  const banners=Array.from({length:4},(_,i)=>banner(`legacy:hoeflehner${i}`,{advertiser_key:'hoeflehner'}));
  banners.push(...Array.from({length:3},(_,i)=>banner(`legacy:rhoen${i}`,{advertiser_key:'rhoen'})));
  const result=travelSearchResults(listings,[...banners,...banners],empty);assert.equal(result.count,61);assert.equal(result.advertisers.length,2);
- for(const mode of ['home','directory'])assert.match(renderToStaticMarkup(createElement(TravelFinder,{mode,listings,banners,options:availableTravelFilters(listings,[]),values:empty,onChange(){}})),/61 Unterkünfte anzeigen/);
+ for(const mode of ['home','directory'])assert.match(renderToStaticMarkup(createElement(TravelFinder,{mode,listings,banners,options:availableTravelFilters(listings,[]),values:empty,onChange(){}})),/61 Ergebnisse anzeigen/);
 });
 test('profile identity is stable; uncertain legacy creatives remain distinct; internal promos excluded',()=>{
  const rows=[banner('a',{profile_id:'p'}),banner('b',{profile_id:'p'}),banner('unknown1'),banner('unknown2'),banner('portal',{commercial:false}),banner('internal',{ad:{...banner().ad,target_url:'https://das-reiseportal.com/reiseziele'}})];
@@ -96,4 +96,15 @@ test('same existing inline fields expose customer, explicit geography and taxono
  const html=renderToStaticMarkup(createElement(BannerSearchFields,{value:{name:'Example',postal_code:'',city:'',term_keys:[],destination_slugs:['oesterreich']},terms:[],advertisers:[{key:'domain:example.org',name:'Example company'}],onChange(){}}));
  for(const text of ['Suchzuordnung','Werbekunde','Land / Reiseziel','Region','PLZ','Ort','Allgemeiner Hauptbanner'])assert.ok(html.includes(text));
  assert.match(html,/name="banner_destinations"/);assert.match(html,/Österreich/);
+});
+
+
+test('audience results count advertisers once and use honest public result labels',()=>{
+ const rows=[banner('a',{advertiser_key:'dog-customer',term_keys:['audience:mit-hund']}),banner('b',{advertiser_key:'dog-customer',term_keys:['audience:mit-hund']})];
+ const values={...empty,audience:'mit-hund'};
+ const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'home',listings:[],banners:rows,options:availableTravelFilters([],[]),values,onChange(){}}));
+ assert.match(html,/1 Ergebnis anzeigen/);assert.match(html,/1 passendes Ergebnis/);assert.doesNotMatch(html,/1 passende Unterkunft/);
+ const normal=renderToStaticMarkup(createElement(TravelFinder,{mode:'directory',listings:[listing('real')],options:availableTravelFilters([],[]),values:empty,onChange(){}}));
+ assert.match(normal,/1 Unterkunft anzeigen/);assert.match(normal,/1 passende Unterkunft/);
+ assert.equal(travelSearchResults([],rows,values).count,1);
 });

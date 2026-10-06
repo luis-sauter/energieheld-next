@@ -154,11 +154,12 @@ test('audience shortcuts appear first with public labels, unchanged audience lin
   }
   for(const [slug,image] of [['paar','romantik-zu-zweit'],['familie','familienurlaub']]){const card=compact.split('href="/unterkuenfte-a-z?zielgruppe='+slug+'"')[1].split('</a>')[0];assert.match(card,/<img/);assert.ok(card.includes(image+'.webp'));}
   const dog=compact.split('href="/unterkuenfte-a-z?zielgruppe=mit-hund"')[1].split('</a>')[0];
-  assert.match(dog,/src="\/reiseportal\/quicklinks\/mit-hund.svg"/);
+  assert.match(dog,/src="\/reiseportal\/quicklinks\/mit-hund.webp"/);
   assert.match(dog,/travel-quicklink-icon/);
-  const graphic=read('public/reiseportal/quicklinks/mit-hund.svg');
-  assert.match(graphic,/viewBox="0 0 480 240"/);
-  assert.doesNotMatch(graphic,/<script|<image|<text|href=|url\(https?:/);
+  const graphic=readFileSync(new URL('../public/reiseportal/quicklinks/mit-hund.webp',import.meta.url));
+  assert.equal(graphic.toString('ascii',0,4),'RIFF');
+  assert.equal(graphic.toString('ascii',8,12),'WEBP');
+  assert.ok(graphic.length < 100_000);
   assert.equal((compact.match(/data-theme-image="true"/g)||[]).length,travelThemes.length+3);
   assert.equal((html.match(/data-travel-quicklinks/g)||[]).length,1);
   assert.deepEqual(globalThis.homeFixture.terms.map(t=>[t.term_key,t.slug,t.label]),[
