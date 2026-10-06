@@ -5,7 +5,7 @@ export function TravelThemeIcon({ slug }: { slug: string }) {
     : slug === "wanderurlaub" ? <><path d="m2 20 7-12 4 6 2-3 7 9H2Z" /><path d="m7 13 2-2 2 2" /></>
     : slug === "romantik-zu-zweit" ? <path d="M12 21 3.5 12.5a5 5 0 0 1 7-7L12 7l1.5-1.5a5 5 0 0 1 7 7L12 21Z" />
     : slug === "campingurlaub" ? <><path d="M2 20 12 4l10 16H2ZM12 4v16M8 20l4-7 4 7" /></>
-    : slug === "mit-hund" ? <g strokeWidth="2"><path d="M3 10 5 8V4l4 2 2 4h7c3 0 4-2 4-4M3 10v4h4v6m0-4h11v4m0-4c2-1 2-4 0-6M11 10v6" /><circle cx="7.5" cy="9" r=".6" fill="currentColor" stroke="none" /><path d="M2 10h2" /></g>
+    : slug === "mit-hund" ? <g strokeWidth="2"><path d="M6 6 3 3 1 9l3 4 2-2M18 6l3-3 2 6-3 4-2-2M6 6c4-2 8-2 12 0v10c0 4-3 6-6 6s-6-2-6-6V6Z" /><circle cx="9" cy="11" r="1" fill="currentColor" stroke="none" /><circle cx="15" cy="11" r="1" fill="currentColor" stroke="none" /><path d="m10 15 2 2 2-2Z" fill="currentColor" /><path d="M12 17v3m-3-1c2 2 4 2 6 0" /></g>
     : slug === "radwandern" ? <g strokeWidth="2"><circle cx="5" cy="17" r="4" /><circle cx="19" cy="17" r="4" /><path d="m5 17 4-8 5 8H5l5-6h6m-2-5h3l2 11M7 8h4" /></g>
     : slug === "urlaub-am-wasser" ? <><path d="M2 15c2 0 2 2 5 2s3-2 5-2 2 2 5 2 3-2 5-2M2 20c2 0 2 2 5 2s3-2 5-2 2 2 5 2 3-2 5-2" /><circle cx="17" cy="6" r="3" /><path d="M2 11h8" /></>
     : slug === "natur-pur" ? <><path d="M4 20c-2-10 4-16 16-16 0 12-6 18-16 16ZM4 20 16 8" /></>
