@@ -94,3 +94,28 @@ test('executed compact animation accumulates subpixels without React frame updat
  reduced=true;change();render();assert.equal(frame,null);assert.ok(cancelled>=4);
  }finally{effects.forEach(e=>e.cleanup?.());Object.assign(globalThis,old)}
 });
+
+
+test('compact edge arrows jump 80% of rail, pause then resume and remain manual under reduced motion', context => {
+ states=[];refs=[];effects=[];pending=[];
+ const old={window:globalThis.window,document:globalThis.document,IntersectionObserver:globalThis.IntersectionObserver,requestAnimationFrame:globalThis.requestAnimationFrame,cancelAnimationFrame:globalThis.cancelAnimationFrame};
+ let observe,change,reduced=false,frame,now=0;
+ context.mock.method(performance,'now',()=>now);
+ globalThis.window={matchMedia:()=>({get matches(){return reduced},addEventListener(_,f){change=f},removeEventListener(){}})};
+ globalThis.document={hidden:false,addEventListener(){},removeEventListener(){}};
+ globalThis.IntersectionObserver=class{constructor(f){observe=f}observe(){}disconnect(){}};
+ globalThis.requestAnimationFrame=f=>{frame=f;return 1};globalThis.cancelAnimationFrame=()=>{frame=null};
+ const rail={children:[],scrollLeft:0,scrollWidth:1500,clientWidth:500,scrollTo({left,behavior}){this.scrollLeft=left;this.behavior=behavior}};
+ const render=()=>{cursor=refCursor=effectCursor=0;const t=ThemeScroller({count:15,label:'Quicklinks',compact:true});refs[0].current=rail;for(const f of pending.splice(0))f();return t};
+ const buttons=t=>t.props.children.flatMap(e=>e?.props?.children??[]).filter(e=>e?.type==='button');
+ try {
+  let t=render();assert.equal(buttons(t).length,0,'no controls without overflow');states[1]=true;observe([{isIntersecting:true}]);t=render();
+  let [back,next]=buttons(t);assert.equal(next.props['aria-label'],'Quicklinks weiter');assert.equal(back.props['aria-label'],'Quicklinks zurück');
+  frame(0);now=100;next.props.onClick();t=render();assert.equal(rail.scrollLeft,400);frame(100);frame(1000);assert.equal(rail.scrollLeft,400);
+  now=1601;frame(1601);assert.ok(rail.scrollLeft>400,'auto resumes after 1500 ms idle');
+  back.props.onClick();assert.ok(rail.scrollLeft<10,'left moves an entire visible group back');
+  rail.scrollLeft=1000;next.props.onClick();assert.equal(rail.scrollLeft,0,'right endpoint wraps');
+  reduced=true;change();t=render();assert.equal(frame,null);[back,next]=buttons(t);next.props.onClick();assert.equal(rail.scrollLeft,400);assert.equal(rail.behavior,'instant');back.props.onClick();assert.equal(rail.scrollLeft,0);
+  const css=readFileSync(new URL('../src/components/portal/theme-scroller.module.css',import.meta.url),'utf8');assert.match(css,/edgeControls button:focus-visible/);assert.match(css,/width: 44px; height: 44px/);
+ } finally {effects.forEach(e=>e.cleanup?.());Object.assign(globalThis,old)}
+});

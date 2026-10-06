@@ -1,3 +1,4 @@
+import { TravelSignals } from "./travel-signals";
 import Image from "next/image";
 import Link from "next/link";
 import type { Category, Listing, QualityBadge } from "@/types/portal";
@@ -45,6 +46,7 @@ export function ListingCard({
         <h3>
           <Link href={href}>{listing.name}</Link>
         </h3>
+        <TravelSignals termKeys={listing.travelTermKeys} />
         <p className="card-tagline">{listing.tagline}</p>
         <p className="location">
           <Icon name="pin" size={16} />

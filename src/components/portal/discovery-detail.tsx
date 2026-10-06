@@ -1,3 +1,4 @@
+import { TravelSignals } from "./travel-signals";
 import Image from "next/image";
 import Link from "next/link";
 import type { DiscoveryEntry } from "@/data/reiseportal-discovery";
@@ -29,6 +30,7 @@ export function AccommodationCard({ listing, rotating = false, sizes }: { listin
     <div className="accommodation-card-copy">
       <p className="eyebrow">{[listing.location.city, listing.location.country].filter(Boolean).join(", ")}</p>
       <h3><Link href={`/unterkuenfte/${listing.slug}`}>{listing.name}</Link></h3>
+      <TravelSignals termKeys={listing.travelTermKeys} />
       {listing.tagline && <p>{listing.tagline}</p>}
       <Link className="text-link" href={`/unterkuenfte/${listing.slug}`}>Details ansehen →</Link>
     </div>

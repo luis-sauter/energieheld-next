@@ -1,3 +1,4 @@
+import { TravelSignals } from "@/components/portal/travel-signals";
 import Link from 'next/link';
 import { pageMetadata } from '@/lib/seo';
 import { searchPortal } from '@/lib/portal-search';
@@ -38,7 +39,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <ol className={styles.results}>{result.hits.map(hit => <li key={`${hit.type}:${hit.id}`}>
           <article><p className="eyebrow">{searchTypes[hit.type]}</p><h3>
             {hit.external ? <a href={hit.url} target="_blank" rel="sponsored noopener noreferrer">{hit.title} ↗</a> : <Link href={hit.url}>{hit.title} →</Link>}
-          </h3><p>{hit.excerpt}</p></article>
+          </h3>{hit.type === "accommodation" && <TravelSignals termKeys={finder.listings.find(listing => listing.id === hit.id)?.travelTermKeys} />}<p>{hit.excerpt}</p></article>
         </li>)}</ol>
         {result.total > SEARCH_PAGE_SIZE && <nav aria-label="Ergebnisseiten" className={styles.pagination}>
           {result.page > 1 && <Link className="button" href={href(result.page - 1)}>← Vorherige</Link>}

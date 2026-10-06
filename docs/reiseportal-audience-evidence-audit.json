@@ -1,0 +1,583 @@
+{
+  "verified_at": "2026-10-06",
+  "scope": "18 reale vorhandene Anbieter; alle sieben Pflichtkandidaten plus elf weitere. Keine Demo. Hunde nur aus aktuell geöffneten offiziellen Quellen, keine Fließtextheuristik im Produkt.",
+  "before": {
+    "profiles": 60,
+    "real_approved_profiles": 58,
+    "assignments": 229,
+    "audiences": {
+      "familie": 20,
+      "paar": 6,
+      "mit-hund": 0,
+      "gruppe": 0
+    },
+    "profile_hash": "07017643e3c4fe763295bcab860e750d",
+    "assignment_hash": "cb31c224613ea4ed1da6e832d11eddee"
+  },
+  "summary": {
+    "checked": 18,
+    "DOG_CONFIRMED": 13,
+    "DOG_NOT_ALLOWED": 1,
+    "DOG_UNKNOWN": 4,
+    "new_family": 2,
+    "new_pair": 1
+  },
+  "retained_audience_assignments": [
+    {
+      "profile_id": "21ae7b8e-c192-40d9-af80-c96c59539e5a",
+      "slug": "alfseeferien-und-erlebnispark",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "6b2bb0b9-66b4-464f-af0f-23f9194a71d4",
+      "slug": "alpenhotel-montafon",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "67257d6d-c460-4c5c-bfab-e25a98e8cbdb",
+      "slug": "anni-romantikhaeuschen",
+      "term_key": "audience:paar",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "dd241cfa-8609-4452-b334-e936d653b39c",
+      "slug": "apartbauernhof-valrunzhof",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "810408f9-8eb5-4d17-816f-8b79f301b500",
+      "slug": "city-apart-dresden",
+      "term_key": "audience:paar",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "14db48c3-57b8-4146-9e3b-f0c567b422f3",
+      "slug": "das-5-sterne-wellness-hotel-stock-resort",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "cf78066b-22cf-4e85-b479-bc6b436555d5",
+      "slug": "der-koenigsleitner-romantik-zu-zweit",
+      "term_key": "audience:paar",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "302b8961-3175-4f05-9b0f-d40d47b1cd98",
+      "slug": "familienhotel-und-kinderhotel-sonnwies",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "0a02df8b-42f9-457f-9c09-fe5b209b8438",
+      "slug": "feelfree-nature-resort",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "f70f270c-3d10-4d21-ba6e-9e381f877c72",
+      "slug": "feldhof-dolcevita-resort",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "213a5db2-b2bc-4077-ba9f-f05280f81eae",
+      "slug": "ferienbauernhof-buechele",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "38ba9686-14de-4499-982b-76b222b4c11b",
+      "slug": "golf-und-sporthotel-hof-maran",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "080f5336-ecbf-402c-a28f-1fbc16a30313",
+      "slug": "hoeflehner",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "a164a68e-2c12-4888-9898-8fa9e137fb4c",
+      "slug": "hotel-godewind",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "c5d09fb2-888c-4ada-a6fb-1bf03655ed64",
+      "slug": "kemmeriboden-bad",
+      "term_key": "audience:paar",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "e3d98281-9ea8-469e-b0db-08bfcdb1b74f",
+      "slug": "kesselgrub",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "a8371b4b-e8fc-40cd-a9d1-55a150d903e2",
+      "slug": "kronplatz",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "dc526953-a4b4-4366-9359-5a2735869f64",
+      "slug": "laerchenhof",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "7b56c6f7-9da4-400a-b504-f94b4f5651b0",
+      "slug": "mintrops-land-hotel",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "abc9ab2f-6479-4e2e-9d9a-1195a6beee5d",
+      "slug": "ostsee-barfusspark",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "f2629689-ea6c-40d9-af0d-c31d924fc97e",
+      "slug": "pletzer-resorts-bayrischzell",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "5435e6da-fb46-40b3-a873-876f6435e26d",
+      "slug": "schlosshotel-ralswiek",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "5435e6da-fb46-40b3-a873-876f6435e26d",
+      "slug": "schlosshotel-ralswiek",
+      "term_key": "audience:paar",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "2d2bcce8-f87c-43e6-b460-433f2c414ac1",
+      "slug": "schwarzwaelderhof",
+      "term_key": "audience:paar",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "7a011200-9bfd-4348-830a-90a26e2a5a6d",
+      "slug": "stroblhof",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    },
+    {
+      "profile_id": "7e1819ad-6097-4dd6-b251-ea023f0177cb",
+      "slug": "urlaub-auf-borkum",
+      "term_key": "audience:familie",
+      "decision": "RETAIN_EXISTING_LEGACY",
+      "source": "Bestehende Cloud-Zuordnung, Joomla-Importmigrationen und docs/reiseportal-provider-image-audit.json; keine erneute vollständige offizielle Revalidierung aller Bestandszuordnungen behauptet."
+    }
+  ],
+  "profiles": [
+    {
+      "profile_id": "49b2316e-dd69-4d68-9f10-b7fc86100cf8",
+      "slug": "pension-sonnenhof",
+      "display_name": "Pension Sonnenhof",
+      "official_website": "https://www.pension-sonnenhof.info/",
+      "current_audience_terms": [],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.pension-sonnenhof.info/wohnen.html",
+      "dog_evidence_summary": "Hunde dürfen nach vorheriger Anmeldung und Absprache mitreisen.",
+      "dog_restriction_note": "Vorab anmelden; Speisesaal nur nach Anmeldung/mit Maulkorb.",
+      "family_decision": "REVIEW_NEEDED",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "14db48c3-57b8-4146-9e3b-f0c567b422f3",
+      "slug": "das-5-sterne-wellness-hotel-stock-resort",
+      "display_name": "Das 5-Sterne-Wellness-Hotel STOCK resort",
+      "official_website": "http://www.stock.at/",
+      "current_audience_terms": [
+        "audience:familie"
+      ],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.stock.at/de/stock-resort/faqs/",
+      "dog_evidence_summary": "Hunde werden ausdrücklich willkommen geheißen.",
+      "dog_restriction_note": "Große Hunde nur auf Anfrage; kein Restaurant-/SPA-/Liegewiesenzutritt.",
+      "family_decision": "RETAIN_EXISTING",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "9423ff5a-4c63-47e6-86d2-64c1ecec4898",
+      "slug": "hotel-ravelli-luxury-spa",
+      "display_name": "Hotel Ravelli Luxury Spa",
+      "official_website": "https://www.ravellihotels.com",
+      "current_audience_terms": [],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.ravellihotels.com/de/faq/",
+      "dog_evidence_summary": "Kleine Haustiere sind in den Unterkünften willkommen.",
+      "dog_restriction_note": "Bei Buchung melden; kleine Tiere; Restaurant/Wellness ausgenommen.",
+      "family_decision": "REVIEW_NEEDED",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "72312763-41f2-4adb-aaf2-de47b705a714",
+      "slug": "blausee",
+      "display_name": "Blausee",
+      "official_website": "https://www.blausee.ch/",
+      "current_audience_terms": [],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.blausee.ch/de/hotel/",
+      "dog_evidence_summary": "Hunde sind im Zimmer ihrer Halter willkommen.",
+      "dog_restriction_note": "Aufpreis ohne Futter; Wellnessbereich ausgenommen.",
+      "family_decision": "REVIEW_NEEDED",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "e018e81d-e3c3-4a88-8713-fd3d2a4ad2dd",
+      "slug": "platzl-hotel",
+      "display_name": "Platzl Hotel",
+      "official_website": "https://www.platzl.de/",
+      "current_audience_terms": [],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.platzl.de/kontakt-buchung/hotelinformationen",
+      "dog_evidence_summary": "Hunde und Katzen dürfen mitgebracht werden.",
+      "dog_restriction_note": "Reinigungspauschale; Frühstücksbereich ausgenommen.",
+      "family_decision": "REVIEW_NEEDED",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "b9594b15-178c-4ba1-b28d-ea129907ec63",
+      "slug": "wirthshof",
+      "display_name": "Wirthshof",
+      "official_website": "https://www.wirthshof.de/",
+      "current_audience_terms": [],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.wirthshof.de/de/wirthshof-service/wissenswertes/",
+      "dog_evidence_summary": "Hotel, Chalets und Camping enthalten ausdrücklich hundegeeignete Bereiche.",
+      "dog_restriction_note": "Hotel ausgewählte Zimmer auf Anfrage; Komfort-Chalets 14–17; Camping Straßen 1–7; Leinenpflicht.",
+      "family_decision": "ADD_CONFIRMED",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund",
+        "audience:familie"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": "https://www.wirthshof.de/de/familienurlaub/",
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "080f5336-ecbf-402c-a28f-1fbc16a30313",
+      "slug": "hoeflehner",
+      "display_name": "Höflehner",
+      "official_website": "https://www.hoeflehner.com/",
+      "current_audience_terms": [
+        "audience:familie"
+      ],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.hoeflehner.com/Hotel/Gaesteinformation/Immer-gut-informiert/FAQ",
+      "dog_evidence_summary": "FAQ bestätigt Aufenthalt mit Hund und Zimmerausstattung für Hunde.",
+      "dog_restriction_note": "Aufpreis; Restaurant, Bar und Wellness ausgeschlossen.",
+      "family_decision": "RETAIN_EXISTING",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "f70f270c-3d10-4d21-ba6e-9e381f877c72",
+      "slug": "feldhof-dolcevita-resort",
+      "display_name": "FELDHOF DOLCEVITA RESORT",
+      "official_website": "https://www.feldhof.com/",
+      "current_audience_terms": [
+        "audience:familie"
+      ],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.feldhof.com/zimmer/agb-buchungsinfos/",
+      "dog_evidence_summary": "Buchungsinformationen heißen Hunde ausdrücklich willkommen.",
+      "dog_restriction_note": "Aufpreis ohne Verpflegung; Speisesaal und Wellness ausgeschlossen.",
+      "family_decision": "RETAIN_EXISTING",
+      "pair_decision": "ADD_CONFIRMED",
+      "intended_term_additions": [
+        "audience:mit-hund",
+        "audience:paar"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": "https://www.feldhof.com/das-hotel/adults-only-zeit-zu-zweit/"
+    },
+    {
+      "profile_id": "ac51f96a-1770-44b7-b397-0347e21fb890",
+      "slug": "golfhotel-andreus",
+      "display_name": "5* Golfurlaub Südtirol- Das Golfhotel Andreus",
+      "official_website": "http://www.andreus.it/",
+      "current_audience_terms": [],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.andreus-resorts.it/de/gastgeber-team/wissenswertes/",
+      "dog_evidence_summary": "Hotelinformationen beschreiben Hundeservice, Hundedecke und Näpfe im Zimmer.",
+      "dog_restriction_note": "Leinenpflicht; allgemeiner Speisesaal und Wellness ausgeschlossen; separate Stube nach Voranmeldung/Verfügbarkeit.",
+      "family_decision": "ADD_CONFIRMED",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund",
+        "audience:familie"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": "https://www.andreus-resorts.it/de/andreus-golf-spa-resort/familie/",
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "c5d09fb2-888c-4ada-a6fb-1bf03655ed64",
+      "slug": "kemmeriboden-bad",
+      "display_name": "Kemmeriboden-Bad",
+      "official_website": "https://www.kemmeriboden.ch/",
+      "current_audience_terms": [
+        "audience:paar"
+      ],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.kemmeriboden.ch/hotel/zimmer",
+      "dog_evidence_summary": "Gut erzogene Hunde sind im Hotel ausdrücklich willkommen.",
+      "dog_restriction_note": "Nächtlicher Aufpreis ohne Futter; Zimmerdetails vor Buchung klären.",
+      "family_decision": "REVIEW_NEEDED",
+      "pair_decision": "RETAIN_EXISTING",
+      "intended_term_additions": [
+        "audience:mit-hund"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "8d709f0a-46fd-41e8-b9cf-1d9a37768a46",
+      "slug": "camping-resort-allweglehen",
+      "display_name": "Camping Resort Allweglehen",
+      "official_website": "https://www.allweglehen.de/de/",
+      "current_audience_terms": [],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.allweglehen.de/infos-news/faq/kategorie-unterkuenfte",
+      "dog_evidence_summary": "FAQ erlaubt Hunde ausdrücklich in den Unterkünften.",
+      "dog_restriction_note": "Maximal ein Hund pro Häuschen; Leinenführung beachten.",
+      "family_decision": "REVIEW_NEEDED",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "62cc488e-5bf4-4f94-aec7-ea1f5f9b00f0",
+      "slug": "hotel-zur-post",
+      "display_name": "Hotel zur Post",
+      "official_website": "https://hotelzurpost-altoetting.de/",
+      "current_audience_terms": [],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://hotelzurpost-altoetting.de/wissenswertes/faq/",
+      "dog_evidence_summary": "FAQ bestätigt, dass Gäste ihren Hund mitbringen dürfen.",
+      "dog_restriction_note": "Vorher Bescheid geben; täglicher Aufpreis.",
+      "family_decision": "REVIEW_NEEDED",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "92256160-1734-4079-8ddf-07cacdc5da50",
+      "slug": "the-chedi",
+      "display_name": "The Chedi",
+      "official_website": "https://www.thechediandermatt.com/de",
+      "current_audience_terms": [],
+      "dog_status": "DOG_CONFIRMED",
+      "dog_source_url": "https://www.thechediandermatt.com/faq",
+      "dog_evidence_summary": "Offizielle FAQ heißt Hunde und Katzen willkommen.",
+      "dog_restriction_note": "Hunde bis 25 kg, Leinenpflicht; Restaurant, Pool und Spa ausgeschlossen; Aufpreis.",
+      "family_decision": "REVIEW_NEEDED",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [
+        "audience:mit-hund"
+      ],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "dd241cfa-8609-4452-b334-e936d653b39c",
+      "slug": "apartbauernhof-valrunzhof",
+      "display_name": "Apartbauernhof Valrunzhof",
+      "official_website": "https://www.valrunzhof.com/",
+      "current_audience_terms": [
+        "audience:familie"
+      ],
+      "dog_status": "DOG_UNKNOWN",
+      "dog_source_url": "https://www.valrunzhof.com/",
+      "dog_evidence_summary": "Offizielle URL und englische Seite nicht zugänglich; keine belastbare aktuelle Hundeaussage gefunden.",
+      "dog_restriction_note": "Keine Zuordnung aus fehlender Evidenz.",
+      "family_decision": "RETAIN_EXISTING",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "302b8961-3175-4f05-9b0f-d40d47b1cd98",
+      "slug": "familienhotel-und-kinderhotel-sonnwies",
+      "display_name": "Familienhotel & Kinderhotel Sonnwies",
+      "official_website": "https://www.sonnwies.com/",
+      "current_audience_terms": [
+        "audience:familie"
+      ],
+      "dog_status": "DOG_UNKNOWN",
+      "dog_source_url": "https://www.sonnwies.com/",
+      "dog_evidence_summary": "Offizielle Domain leitet auf SAN SONNEA Family Dolomites weiter; alte PDF-Hundepreise reichen für aktuelle Zuordnung nicht.",
+      "dog_restriction_note": "Historische PDFs nicht als aktuelle Erlaubnis übernehmen.",
+      "family_decision": "RETAIN_EXISTING",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "07f01b83-5eb1-4e01-b8b8-708fa6768052",
+      "slug": "small-und-beautiful-hotel-gnaid",
+      "display_name": "Small & Beautiful Hotel Gnaid",
+      "official_website": "https://www.gnaid.com/",
+      "current_audience_terms": [],
+      "dog_status": "DOG_UNKNOWN",
+      "dog_source_url": "https://www.gnaid.com/",
+      "dog_evidence_summary": "Domainprüfung nicht zugänglich und keine belastbare aktuelle offizielle Aussage gefunden.",
+      "dog_restriction_note": "Offizielle Domainidentität nicht abschließend bestätigt; keine Ergänzung.",
+      "family_decision": "REVIEW_NEEDED",
+      "pair_decision": "REVIEW_NEEDED",
+      "intended_term_additions": [],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "67257d6d-c460-4c5c-bfab-e25a98e8cbdb",
+      "slug": "anni-romantikhaeuschen",
+      "display_name": "Anni´s Romantikhäuschen in der Sächsische Schweiz",
+      "official_website": "http://www.annis-romantikhaeuschen.de/",
+      "current_audience_terms": [
+        "audience:paar"
+      ],
+      "dog_status": "DOG_UNKNOWN",
+      "dog_source_url": "https://www.annis-romantikhaeuschen.de/",
+      "dog_evidence_summary": "Offizielle Startseite geöffnet; keine eindeutige aktuelle Aussage zur Hundeerlaubnis gefunden.",
+      "dog_restriction_note": "Keine Hundezuordnung; fehlende Aussage ist kein Verbot.",
+      "family_decision": "REVIEW_NEEDED",
+      "pair_decision": "RETAIN_EXISTING",
+      "intended_term_additions": [],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    },
+    {
+      "profile_id": "cf78066b-22cf-4e85-b479-bc6b436555d5",
+      "slug": "der-koenigsleitner-romantik-zu-zweit",
+      "display_name": "Der Königsleitner - Romantik zu Zweit",
+      "official_website": "https://www.koenigsleiten.at",
+      "current_audience_terms": [
+        "audience:paar"
+      ],
+      "dog_status": "DOG_NOT_ALLOWED",
+      "dog_source_url": "https://www.koenigsleiten.at/",
+      "dog_evidence_summary": "Offizielle FAQ verbietet Haustiere ausdrücklich; Zimmerseiten bestätigen das Verbot.",
+      "dog_restriction_note": "Auch nicht gegen Gebühr; Adults-only ab 16 Jahren.",
+      "family_decision": "NO_ADDITION",
+      "pair_decision": "RETAIN_EXISTING",
+      "intended_term_additions": [],
+      "verified_at": "2026-10-06",
+      "family_source_url": null,
+      "pair_source_url": null
+    }
+  ],
+  "cloud_application": {
+    "project_id": "mbcvlqnxluyxznlnitbq",
+    "applied": true,
+    "verified_at": "2026-10-06",
+    "new_assignments": 16,
+    "assignments_after": 245,
+    "audiences_after": {
+      "familie": 22,
+      "paar": 7,
+      "mit-hund": 13,
+      "gruppe": 0
+    },
+    "profiles_after": 60,
+    "profile_hash_after": "07017643e3c4fe763295bcab860e750d",
+    "retained_assignment_hash": "cb31c224613ea4ed1da6e832d11eddee",
+    "duplicate_relations": 0,
+    "demo_assignments": 0,
+    "schema_migration": false,
+    "freshness_source": "import",
+    "note": "Nur die 16 belegten additiven Relations. Bestehender Freshness-Trigger erfasst den Import; kein company_profiles-, Medien-, RLS- oder Storage-Update."
+  }
+}

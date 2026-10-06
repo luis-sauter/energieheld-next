@@ -1,3 +1,4 @@
+import { publicTravelLabel } from "./travel-presentation";
 import { destinations, travelThemes } from "@/data/reiseportal-discovery";
 import type { Listing } from "@/types/portal";
 import { filterTravelDiscovery } from "./reiseportal-search";
@@ -15,7 +16,7 @@ export function availableTravelFilters(listings: Listing[], terms: PublicTravelT
   const assigned = new Set([...listings.flatMap((listing) => listing.travelTermKeys ?? []), ...bannerTermKeys]);
   const options = (dimension: PublicTravelTerm["dimension"]): Option[] => terms
     .filter((term) => term.dimension === dimension && assigned.has(term.term_key))
-    .map(({ slug, label }) => ({ slug, label }));
+    .map(({ term_key, slug, label }) => ({ slug, label: publicTravelLabel(term_key, label) }));
   return {
     destinations: destinations.filter((entry) => filterTravelDiscovery(listings, entry.slug, "").length > 0 || bannerDestinations.includes(entry.slug))
       .map(({ slug, title }) => ({ slug, label: title })),
