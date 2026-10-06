@@ -93,7 +93,7 @@ export function CampaignSlot({
             data-size={placement === "top_banner" ? undefined : displayAd.banner_size}>{content}</div>
         ) : (
           <a
-            className={`${styles.creative} ${displayAd.imageUrl ? styles.imageCreative : ""}`}
+            className={`${styles.creative} ${displayAd.imageUrl ? styles.imageCreative : ""} ${!reordering && destination ? styles.interactiveCreative : ""}`}
             data-size={placement === "top_banner" ? undefined : displayAd.banner_size}
             href={href}
             rel="sponsored noopener noreferrer"

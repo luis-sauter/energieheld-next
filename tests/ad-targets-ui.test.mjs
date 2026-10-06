@@ -580,3 +580,23 @@ test('P14 final customer CTA is the sole completion action in draft and rejected
   assert.match(admin,/Banner speichern/);assert.match(admin,/Zur Freigabe vormerken/);assert.doesNotMatch(admin,/Angebot anfragen/);
  }
 });
+
+test('P11 interactive creative wrapper is public-link-only and preserves crop/picture/promo semantics',()=>{
+ const crop={focus_x:30,focus_y:65,zoom:1.4};
+ for(const placement of ['top_banner','sidebar_top','sidebar_middle','sidebar_bottom']) for(const size of ['small','medium','large']) {
+  const ad={...campaign,placement,banner_size:size,crop,mobile_image:{imageUrl:'/mobile.png',width:350,height:120}};
+  const html=render(CampaignSlot,{placement,ad});
+  assert.match(html,/<a[^>]*class="[^"]*interactiveCreative/);assert.match(html,/target="_blank"/);assert.match(html,/rel="sponsored noopener noreferrer"/);assert.match(html,/<picture>/);assert.match(html,/cropImage/);assert.match(html,/style="[^"]*transform:/);
+  for(const props of [{preview:true},{reordering:true}]) assert.doesNotMatch(render(CampaignSlot,{placement,ad,...props}),/interactiveCreative/);
+ }
+ const promo=render(CampaignSlot,{placement:'top_banner',ad:{...campaign,target_url:'https://das-reiseportal.com/reiseziele/suedtirol-italien'},editorialPromo:true});assert.match(promo,/interactiveCreative/);assert.match(promo,/promoCopy/);
+ assert.doesNotMatch(render(CampaignSlot,{placement:'sidebar_top'}),/interactiveCreative/);
+ const text=render(CampaignSlot,{placement:'sidebar_top',ad:{...campaign,imageUrl:null},preview:true});assert.match(text,/Mehr erfahren/);assert.doesNotMatch(text,/interactiveCreative/);
+});
+test('P11 motion is CSS-only, fine-pointer hover and no-preference gated, keyboard outline retained',()=>{
+ const css=readFileSync(new URL('../src/components/advertising/advertising.module.css',import.meta.url),'utf8');
+ assert.match(css,/\.creative:focus-visible\s*\{[^}]*outline:\s*3px/);
+ const interaction=css.slice(css.indexOf('/* Only actual public links'),css.indexOf('@media (max-width: 700px)'));
+ assert.match(interaction,/\(hover: hover\) and \(pointer: fine\)/);assert.match(interaction,/prefers-reduced-motion: no-preference/);assert.match(interaction,/transition: transform 200ms ease/);assert.match(interaction,/translateY\(-1px\) scale\(1\.01\)/);assert.doesNotMatch(interaction,/\bimg\b|\.cropImage|:active|will-change/);
+ const rail=readFileSync(new URL('../src/components/advertising/advertising-rail.tsx',import.meta.url),'utf8');assert.match(rail,/<CampaignSlot/);
+});
