@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 registerHooks({
   resolve(s,c,next){
+   if(s.endsWith('inline-banner-actions'))return {shortCircuit:true,url:'data:text/javascript,export async function loadSearchBannerEditor(){throw Error("Unexpected banner editor request during directory render")}'};
    if(s.endsWith('/admin/werbung/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function lifecycleCampaign(){throw Error("Unexpected banner lifecycle write during directory render")}'};
   if(s==='server-only')return {url:'data:text/javascript,export default {}',shortCircuit:true};
   if(s==='react' && c.parentURL?.endsWith('/travel-directory.tsx'))return {url:'data:text/javascript,export function useState(v){return [v === "" ? globalThis.reviewFilter ?? "" : v,()=>{}]};export function useMemo(f){return f()};export function useEffect(){}',shortCircuit:true};

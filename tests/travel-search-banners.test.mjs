@@ -86,10 +86,10 @@ test('inline creative retains public label, sponsored URL, P11, crop and never u
 test('search cards have placement-independent geometry and existing public interaction/link semantics',async()=>{
  const {SearchAdCard}=await import('../src/components/advertising/search-ad-card.tsx');
  for(const placement of ['top_banner','sidebar_top','sidebar_04']){
- const html=renderToStaticMarkup(createElement(SearchAdCard,{banner:banner(placement,{advertiser_key:'customer',ad:{...banner().ad,placement,crop:{focus_x:20,focus_y:60,zoom:2}}})}));
+ const html=renderToStaticMarkup(createElement(SearchAdCard,{banner:banner(placement,{advertiser_key:'customer',ad:{...banner().ad,placement,image_width:350,image_height:120,crop:{focus_x:20,focus_y:60,zoom:2}}})}));
  assert.match(html,/data-advertiser="customer"/);assert.match(html,/interactiveCreative/);assert.match(html,/sponsored noopener noreferrer/);assert.match(html,/loading="lazy"/);assert.doesNotMatch(html,/cropImage|data-placement|data-size|Banner bearbeiten/);
  }
- const css=readFileSync(new URL('../src/components/advertising/search-ad-card.module.css',import.meta.url),'utf8');assert.match(css,/object-fit: contain/);assert.match(css,/aspect-ratio: 4 \/ 3/);
+ const css=readFileSync(new URL('../src/components/advertising/search-ad-card.module.css',import.meta.url),'utf8');assert.match(css,/object-fit: contain/);assert.match(css,/aspect-ratio: 1 \/ 1/);assert.match(css,/height: auto/);
 });
 test('same existing inline fields expose customer, explicit geography and taxonomy without booking keys',async()=>{
  const {BannerSearchFields}=await import('../src/components/advertising/banner-search-fields.tsx');

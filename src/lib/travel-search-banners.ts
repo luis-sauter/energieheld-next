@@ -16,6 +16,7 @@ export type TravelSearchBanner = {
   primary_creative?: boolean;
   destination_slugs?: string[];
   region?: string;
+  source_path?: string;
   ad: ActiveAd;
 };
 

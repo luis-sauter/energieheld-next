@@ -108,7 +108,3 @@
 .page :global(.travel-image-fallback) { display: grid; place-items: center; width: 100%; height: 100%; background: #edf7fc; color: #217ca3; }
 .page :global(.row-contact) { overflow-wrap: anywhere; }
 .page :global(.row-content .row-tagline) { overflow: visible; }
-
-/* Search presentation reuses real banner geometry, not a new booked slot. */
-.searchAdGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-@media (max-width: 600px) { .searchAdGrid { grid-template-columns: minmax(0, 1fr); } }

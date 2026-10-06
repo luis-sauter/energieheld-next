@@ -9,7 +9,9 @@ registerHooks({
   resolve(specifier, context, next) {
     if (specifier === 'next/link' || specifier === 'next/image') return {url:`data:text/javascript,export default ${JSON.stringify(specifier === 'next/link' ? 'a' : 'img')}`,shortCircuit:true};
     if (specifier.endsWith('.module.css')) return {url:'data:text/javascript,export default {}',shortCircuit:true};
-    if (specifier.endsWith('inline-banner-editor')) return {url:'data:text/javascript,export function InlineBannerProvider({children}){return children}',shortCircuit:true};
+    if (specifier.endsWith('inline-banner-editor')) return {url:'data:text/javascript,export function InlineBannerProvider({children}){return children};export function InlineBannerDialog(){return null}',shortCircuit:true};
+    if (specifier === 'next/navigation') return {url:'data:text/javascript,export const useRouter=()=>({refresh(){}})',shortCircuit:true};
+    if (specifier.endsWith('inline-banner-actions')) return {url:'data:text/javascript,export async function loadSearchBannerEditor(){return {error:"fixture"}}',shortCircuit:true};
     if (specifier.endsWith('/trades') && context.parentURL.includes('/components/')) return {url:'data:text/javascript,export function AdvertisingLayout({children}){return children}',shortCircuit:true};
     if (specifier.includes('/admin/') && !specifier.endsWith('/freshness-status')) return {url:'data:text/javascript,export function DirectoryOrderEditor(){return null};export function SidebarOrderEditor(){return null}',shortCircuit:true};
     if (specifier.startsWith('@/') || specifier.startsWith('.')) {
@@ -26,11 +28,22 @@ registerHooks({
 const {TravelDirectory} = await import('../src/components/portal/travel-directory.tsx');
 const {ListingRow} = await import('../src/components/portal/listing-row.tsx');
 const {CompanyImage} = await import('../src/components/portal/company-image.tsx');
+const {SearchAdResults} = await import('../src/components/advertising/search-ad-results.tsx');
 const {readTravelFilterValues} = await import('../src/lib/reiseportal-filter-options.ts');
 const source=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const listing=(id,premium=false,image=true)=>({id,slug:id,name:id,initials:'AB',tagline:'Originaler Teaser',description:'Originaltext',directoryPackage:premium?'premium':'basic',directoryImage:image?{src:'/reiseportal/original.jpg',alt:'Originales Anbieterbild'}:undefined,images:[],services:[],categoryIds:[],travelTermKeys:['theme:natur','feature:unknown'],location:{city:'Berlin',country:'Deutschland',postalCode:'10115',region:''},contact:{phone:'+49 123',email:'public@example.com',website:'https://example.com'},isDemo:false});
 const terms=[{term_key:'theme:natur',dimension:'theme',slug:'natur',label:'Natur'}];
 const directory=(items,values={})=>renderToStaticMarkup(createElement(TravelDirectory,{initialValues:readTravelFilterValues(values),database:items,preview:[],terms,error:null,ads:[],sidebarOrder:[],canReorder:false,hiddenOrderKeys:[]}));
+
+test('search formats render wide before other and every admin card offers existing editor',()=>{
+ const banners=[['square',350,350],['wide',350,120],['portrait',200,600]].map(([id,width,height])=>({banner_key:id,advertiser_key:id,ad:{id,headline:id,imageUrl:'/image.png',image_width:width,image_height:height,target_url:'https://example.org/',placement:'sidebar_top'}}));
+ const render=canEdit=>renderToStaticMarkup(createElement(SearchAdResults,{banners,filtered:false,canEdit}));
+ const publicHtml=render(false),adminHtml=render(true);
+ assert.ok(publicHtml.indexOf('data-ad-format-group="wide"')<publicHtml.indexOf('data-ad-format-group="other"'));
+ assert.ok(publicHtml.indexOf('data-search-banner="wide"')<publicHtml.indexOf('data-search-banner="square"'));
+ assert.doesNotMatch(publicHtml,/Banner bearbeiten|<button/);assert.equal((adminHtml.match(/>Banner bearbeiten<\/button>/g)||[]).length,3);
+ assert.equal((publicHtml.match(/data-advertiser=/g)||[]).length,3);assert.equal((publicHtml.match(/id="search-ads-title"/g)||[]).length,1);
+});
 test('SSR includes every premium/basic profile, true package labels and public links with premium first',()=>{
   const items=[listing('basic'),...Array.from({length:4},(_,i)=>listing('premium-'+i,true))];
   const html=directory(items);
@@ -97,7 +110,7 @@ test('advertiser results render once after all listings, retain packages and sup
  const html=render([listing('premium',true),listing('basic')]);
  assert.match(html,/3 Unterkünfte anzeigen/);assert.equal((html.match(/data-search-banner=/g)||[]).length,1);
  assert.ok(html.indexOf('href="/unterkuenfte/premium"')<html.indexOf('data-search-banner='));
- assert.ok(html.indexOf('data-search-banner=')>html.indexOf('href="/unterkuenfte/basic"')); assert.match(source('src/components/portal/travel-directory.module.css'),/searchAdGrid/); assert.equal((html.match(/id="search-ads-title"/g)||[]).length,1);
+ assert.ok(html.indexOf('data-search-banner=')>html.indexOf('href="/unterkuenfte/basic"')); assert.match(source('src/components/advertising/search-ad-results.module.css'),/repeat\(2, minmax\(0, 1fr\)\)/); assert.equal((html.match(/id="search-ads-title"/g)||[]).length,1);
  assert.match(html,/Anzeige/);assert.match(html,/sponsored noopener noreferrer/);
  const only=render([listing('premium',true)],readTravelFilterValues({ort:'99999'}));
  assert.match(only,/1 Unterkunft anzeigen/);assert.match(only,/data-search-banner=/);assert.doesNotMatch(only,/aktuell keine passende Unterkunft/);
