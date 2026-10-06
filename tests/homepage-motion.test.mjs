@@ -40,7 +40,7 @@ test('executed shared idle lifecycle respects 3 seconds, full restart and indepe
 });
 test('both homepage areas use the same SSR child scroller and public labels retain technical theme keys',()=>{
  const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
- const home=read('src/app/(energieheld)/page.tsx');assert.equal((home.match(/<ThemeScroller/g)||[]).length,2);assert.equal((home.match(/travelThemes\.map/g)||[]).length,2);assert.doesNotMatch(home,/quickThemes|featuredThemes/);assert.match(home,/discoveryAudiences\.map/);assert.match(home,/discoveryAudienceShortcuts\(terms\)/);assert.match(home,/href=\{`\/unterkuenfte-a-z\?thema=\$\{entry.slug\}`\}/);assert.match(home,/basePath="\/mottoreisen"/);
+ const home=read('src/app/(energieheld)/page.tsx');assert.equal((home.match(/<ThemeScroller/g)||[]).length,2);assert.equal((home.match(/travelThemes\.map/g)||[]).length,2);assert.doesNotMatch(home,/quickThemes|featuredThemes/);assert.match(home,/discoveryAudiences\.map/);assert.match(home,/discoveryAudienceShortcuts\(\)/);assert.match(home,/href=\{`\/unterkuenfte-a-z\?thema=\$\{entry.slug\}`\}/);assert.match(home,/basePath="\/mottoreisen"/);
  const finder=read('src/components/portal/travel-finder.tsx');assert.match(finder,/key: "theme", label: "Motto", all: "Alle Mottoreisen"/);
  const css=read('src/components/portal/theme-scroller.module.css');assert.match(css,/overflow-x: auto/);assert.match(css,/max-width: 640px/);assert.match(css,/flex-basis: 100%/);assert.match(css,/focus-visible/);
  const component=read('src/components/portal/theme-scroller.tsx');
@@ -67,9 +67,14 @@ test('executed gallery keeps hover, focus and pointer pauses independent and adv
 });
 
 
-test('compact motion is time-based, fractional, slow and reverses without endpoint jumps',()=>{
- assert.equal(compactScrollSpeed,18);
- assert.deepEqual(continuousThemeScroll(0,1,100,1),{left:18,direction:1});
+test('compact motion uses 30 px/s, is frame-independent and reverses without endpoint jumps',()=>{
+ assert.equal(compactScrollSpeed,30);
+ assert.deepEqual(continuousThemeScroll(0,1,100,1),{left:30,direction:1});
+ for(const rate of [30,60,120]){
+  let left=0;
+  for(let frame=0;frame<rate;frame++)left=continuousThemeScroll(left,1/rate,100,1).left;
+  assert.ok(Math.abs(left-30)<1e-9,`${rate} Hz must advance 30 pixels per second`);
+ }
  assert.ok(continuousThemeScroll(0,1/60,100,1).left<1);
  assert.deepEqual(continuousThemeScroll(99,1,100,1),{left:100,direction:-1});
  assert.deepEqual(continuousThemeScroll(1,1,100,-1),{left:0,direction:1});
@@ -84,7 +89,7 @@ test('executed compact animation accumulates subpixels without React frame updat
  globalThis.requestAnimationFrame=f=>{frame=f;return ++frames};globalThis.cancelAnimationFrame=()=>{frame=null;cancelled++};
  const rail={scrollLeft:0,scrollWidth:900,clientWidth:300};
  const render=()=>{cursor=refCursor=effectCursor=0;const tree=ThemeScroller({count:12,label:'Mottoreisen',compact:true});refs[0].current=rail;states[1]=true;for(const f of pending.splice(0))f();return tree};
- try{let t=render();observe([{isIntersecting:true}]);t=render();assert.ok(frame);frame(0);for(let time=16;time<=1600;time+=16)frame(time);assert.ok(rail.scrollLeft>28&&rail.scrollLeft<30);const before=rail.scrollLeft;
+ try{let t=render();observe([{isIntersecting:true}]);t=render();assert.ok(frame);frame(0);for(let time=16;time<=1600;time+=16)frame(time);assert.ok(rail.scrollLeft>47&&rail.scrollLeft<49);const before=rail.scrollLeft;
  for(const pause of ['onMouseEnter','onFocusCapture','onPointerDown']){t.props[pause]();t=render();assert.equal(frame,null);assert.equal(rail.scrollLeft,before);if(pause==='onMouseEnter')t.props.onMouseLeave();if(pause==='onFocusCapture')t.props.onBlurCapture({currentTarget:{contains:()=>false},relatedTarget:null});if(pause==='onPointerDown')t.props.onPointerUp();t=render();assert.ok(frame);}
  reduced=true;change();render();assert.equal(frame,null);assert.ok(cancelled>=4);
  }finally{effects.forEach(e=>e.cleanup?.());Object.assign(globalThis,old)}
