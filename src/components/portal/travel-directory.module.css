@@ -20,7 +20,7 @@
 .page :global(.reise-finder-grid) { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .page :global(.reise-finder label) { color: #174761; font-size: .86rem; }
 .page :global(.reise-finder :is(input, select)) { border-color: #d5e4ed; border-radius: 8px; min-height: 44px; color: #274b64; background: #fbfdff; }
-.page :global(.reise-finder-grid:not(:has(select[name="besonderheit"])) .reise-finder-submit) { grid-column: span 2; }
+.page :global(.reise-finder-grid .reise-finder-submit) { grid-column: span 2; }
 .page :global(.reise-finder-submit) { background: #ff8a4c; color: #153d53; min-height: 44px; border: 1px solid #ff8a4c; border-radius: 8px; }
 .page :global(.reise-finder-submit:hover) { background: #ff9d69; }
 .page :global(.reise-finder-summary) { font-size: .85rem; margin-top: 12px; color: #345870; }
@@ -91,7 +91,7 @@
   .page :global(.directory-hero-image), .page :global(.travel-hero::after) { height: 1120px !important; }
   .page :global(.reise-finder) { padding: 20px 16px; }
   .page :global(.reise-finder-grid) { grid-template-columns: minmax(0, 1fr); gap: 14px; }
-  .page :global(.reise-finder-grid:not(:has(select[name="besonderheit"])) .reise-finder-submit) { grid-column: auto; }
+  .page :global(.reise-finder-grid .reise-finder-submit) { grid-column: auto; }
   .page :global(.travel-results-heading) { align-items: start; flex-direction: column; gap: 12px; }
   .page :global(.listing-row--premium) { grid-template-columns: minmax(0, 1fr); }
   .page :global(.row-logo) { margin-inline: auto; }

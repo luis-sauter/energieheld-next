@@ -22,7 +22,7 @@ export default async function AccommodationsPage({
   } catch {
     // Public reading remains available without an admin session.
   }
-  const canReorder = Boolean(adminClient) && !["q", "ort", "sort", "ziel", "thema", "zielgruppe", "unterkunftstyp", "besonderheit"].some((key) => params[key] !== undefined);
+  const canReorder = Boolean(adminClient) && !["q", "ort", "sort", "ziel", "thema", "zielgruppe", "unterkunftstyp"].some((key) => params[key] !== undefined);
   return <DirectoryPage mode="travel" searchParams={Promise.resolve(params)}
     adminClient={adminClient} canReorder={canReorder}
     saveOrder={canReorder ? saveCompanyDirectoryOrder : undefined}

@@ -108,3 +108,16 @@ test('audience results count advertisers once and use honest public result label
  assert.match(normal,/1 Unterkunft anzeigen/);assert.match(normal,/1 passende Unterkunft/);
  assert.equal(travelSearchResults([],rows,values).count,1);
 });
+
+
+test('retired public feature URL does not exclude banners or change advertiser counts and audience matching',()=>{
+ const banners=[banner(),banner('campaign:no-feature',{term_keys:['audience:paar']}),banner('campaign:family',{term_keys:['audience:familie']})];
+ const profiles=[{...listing('couple'),travelTermKeys:['audience:paar']},listing('other')];
+ for(const besonderheit of ['sauna','unknown']) {
+  assert.deepEqual(travelSearchResults(profiles,banners,readTravelFilterValues({besonderheit})),travelSearchResults(profiles,banners,empty));
+  const selected=readTravelFilterValues({besonderheit,zielgruppe:'paar'});
+  const result=travelSearchResults(profiles,banners,selected);
+  assert.equal(result.count,3);assert.equal(result.advertisers.length,2);
+  assert.deepEqual(result,travelSearchResults(profiles,banners,{...empty,audience:'paar'}));
+ }
+});

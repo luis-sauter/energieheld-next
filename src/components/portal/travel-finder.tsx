@@ -36,7 +36,6 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
     { key: "theme", label: "Motto", all: "Alle Mottoreisen", entries: options.themes },
     { key: "audience", label: "Mit wem?", all: "Alle Zielgruppen", entries: options.audiences },
     { key: "accommodation", label: "Unterkunft", all: "Alle Unterkunftstypen", entries: options.accommodations },
-    { key: "feature", label: "Besonderheiten", all: "Alle Besonderheiten", entries: options.features },
   ];
   const labels = new Map(facets.flatMap(({ key, label, entries }) => entries.map((entry) =>
     [`${key}:${entry.slug}`, `${label}: ${entry.label}`] as const)));
@@ -55,7 +54,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
         else document.getElementById("unterkunft-ergebnisse")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
       }}>
         <div className="reise-finder-grid">
-          {facets.filter(({ entries, key }) => key === "feature" || entries.length > 0).map(({ key, label, all, entries }) =>
+          {facets.filter(({ entries }) => entries.length > 0).map(({ key, label, all, entries }) =>
             <label key={key}>{label}
               <select name={travelFilterParams[key]} value={values[key]} onChange={(event) => update(key, event.target.value)}>
                 <option value="">{all}</option>
