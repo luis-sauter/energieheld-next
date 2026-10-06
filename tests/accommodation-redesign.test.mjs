@@ -90,14 +90,14 @@ test('structured zero state is honest while free text still submits globally wit
  assert.match(css,/height: 640px/);
  });
 
-test('inline banner results render once, follow the real profile, retain packages and support banner-only filters',()=>{
+test('advertiser results render once after all listings, retain packages and support banner-only filters',()=>{
  const ad={id:'campaign',placement:'sidebar_top',headline:'Öffentliche Anzeige',imageUrl:'/real-creative.png',image_path:null,target_url:'https://example.org/'};
  const banner={banner_key:'campaign:campaign',profile_id:'premium',term_keys:['theme:wellnessangebote'],city:'Bannerstadt',postal_code:'99999',ad};
  const render=(database,values=readTravelFilterValues({}))=>renderToStaticMarkup(createElement(TravelDirectory,{database,preview:[],terms:[],error:null,ads:[],sidebarOrder:[],canReorder:false,hiddenOrderKeys:[],initialValues:values,banners:[banner]}));
  const html=render([listing('premium',true),listing('basic')]);
  assert.match(html,/3 Unterkünfte anzeigen/);assert.equal((html.match(/data-search-banner=/g)||[]).length,1);
  assert.ok(html.indexOf('href="/unterkuenfte/premium"')<html.indexOf('data-search-banner='));
- assert.ok(html.indexOf('data-search-banner=')<html.indexOf('href="/unterkuenfte/basic"'));
+ assert.ok(html.indexOf('data-search-banner=')>html.indexOf('href="/unterkuenfte/basic"')); assert.match(source('src/components/portal/travel-directory.module.css'),/searchAdGrid/); assert.equal((html.match(/id="search-ads-title"/g)||[]).length,1);
  assert.match(html,/Anzeige/);assert.match(html,/sponsored noopener noreferrer/);
  const only=render([listing('premium',true)],readTravelFilterValues({ort:'99999'}));
  assert.match(only,/1 Unterkunft anzeigen/);assert.match(only,/data-search-banner=/);assert.doesNotMatch(only,/aktuell keine passende Unterkunft/);

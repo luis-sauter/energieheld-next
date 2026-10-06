@@ -1,3 +1,4 @@
+import { appendBannerSearchAssignment } from './banner-search-form';
 import { parseImageCrop } from "./image-crop";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { checkAdmin, isProfileId } from "./admin-review";
@@ -266,6 +267,7 @@ export const reuseInlineAd = (client: SupabaseClient, path: string, form: FormDa
   save.set('banner_postal_code', copiedMetadata?.postal_code ?? '');
   save.set('banner_city', copiedMetadata?.city ?? '');
   copiedMetadata?.term_keys.forEach(key => save.append('banner_terms', key));
+  if(copiedMetadata) appendBannerSearchAssignment(save,copiedMetadata);
   save.append('targets', adTargetFormValue({ target_type: context.target_type, target_key: context.target_key, category_id: null, placement: placement as AdPlacementId }));
   const bound = await saveOwnAd(client, save, true);
   if (!bound.success) return { error: bound.error, campaignId: copyId };

@@ -124,7 +124,7 @@ export async function CampaignDetail({
           </> : admin ? (
             <>
               <h3>Banner gestalten und zuordnen</h3>
-              <CampaignForm campaign={campaign} categoryIds={[]} admin bannerMetadata={metadata?.values.get(`campaign:${campaign.id}`)} bannerTerms={metadata?.terms} />
+              <CampaignForm campaign={campaign} categoryIds={[]} admin bannerMetadata={metadata?.values.get(`campaign:${campaign.id}`)} bannerTerms={metadata?.terms} bannerAdvertisers={metadata?.advertisers} />
               {Object.hasOwn(campaign, 'archived_at') && <CampaignLifecycle id={campaign.id} archived={false} />}
               <h3>Freigabe</h3>
               <CampaignSlot

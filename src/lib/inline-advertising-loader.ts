@@ -56,7 +56,7 @@ export async function loadInlineBannerOptions(path: string): Promise<InlineBanne
       size: settings.rows.find((setting) => setting.placement === row.placement)?.size,
     })), ...legacy.map((row) => ({ id: row.id, placement: row.placement, target_url: row.target_url,
       crop: row.crop, mobile_image:row.mobile_image, image_width:row.image_width,image_height:row.image_height, imageUrl: row.imageUrl, shared: false, source: "legacy" as const, size: row.banner_size, legacy_source: row.legacy_source,
-      metadata: metadata.values.get(legacyKey(row.id)) ?? { name: row.headline, postal_code: '', city: '', term_keys: [] } }))], availability, terms: metadata.terms,
+      metadata: metadata.values.get(legacyKey(row.id)) ?? { name: row.headline, postal_code: '', city: '', term_keys: [] } }))], availability, advertisers: metadata.advertisers, terms: metadata.terms,
       error: loaded.error || booked.error || settings.error || mediaError ? "Banner und Platzbelegung konnten nicht vollständig geladen werden. Bitte laden Sie die Seite neu." : undefined,
       prepare: prepareInlineBanner.bind(null, path), save: saveInlineBanner.bind(null, path), remove: removeInlineBanner.bind(null, path),
       saveCrop: saveInlineBannerCrop.bind(null, path),

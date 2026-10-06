@@ -110,5 +110,5 @@
 .page :global(.row-content .row-tagline) { overflow: visible; }
 
 /* Search presentation reuses real banner geometry, not a new booked slot. */
-.searchBanner { width: min(100%, 350px); min-width: 0; margin: 8px auto; }
-.searchBanner:has([data-placement="top_banner"]) { width: 100%; }
+.searchAdGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 600px) { .searchAdGrid { grid-template-columns: minmax(0, 1fr); } }

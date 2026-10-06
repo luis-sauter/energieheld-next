@@ -14,6 +14,7 @@ import { BannerSearchFields } from './banner-search-fields';
 import { ImageCropControls } from "../admin/image-crop-controls";
 import { imageCropStyle, normalizeImageCrop, type ImageCrop } from "@/lib/image-crop";
 import type { BannerSearchMetadata } from '@/lib/banner-search-metadata';
+import { appendBannerSearchAssignment } from '@/lib/banner-search-form';
 
 export function InlineBannerProvider({ options, children }: { options?: InlineBannerOptions; children: ReactNode }) {
   const router = useRouter();
@@ -107,7 +108,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
   const [metadata, setMetadata] = useState<BannerSearchMetadata>(selected.banner?.metadata ?? { name: '', postal_code: '', city: '', term_keys: [] });
   const metadataOnly = Boolean(selected.banner?.source === 'campaign' && selected.banner.shared);
   const originalMetadata = selected.banner?.metadata;
-  const metadataUnchanged = originalMetadata && metadata.name === originalMetadata.name &&
+  const metadataUnchanged = originalMetadata && JSON.stringify([metadata.advertiser_key,metadata.advertiser_name,metadata.advertiser_profile_id,metadata.commercial,metadata.primary_creative,metadata.destination_slugs,metadata.region]) === JSON.stringify([originalMetadata.advertiser_key,originalMetadata.advertiser_name,originalMetadata.advertiser_profile_id,originalMetadata.commercial,originalMetadata.primary_creative,originalMetadata.destination_slugs,originalMetadata.region]) && metadata.name === originalMetadata.name &&
     metadata.postal_code === originalMetadata.postal_code && metadata.city === originalMetadata.city &&
     JSON.stringify([...metadata.term_keys].sort()) === JSON.stringify([...originalMetadata.term_keys].sort());
   const blocked = Boolean(options.availability[placement] && placement !== selected.banner?.placement);
@@ -198,7 +199,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
     form.set("campaign_id", campaignId); form.set("placement", placement);
     form.set("target_url", url.trim()); form.set("size", size);
     form.set('headline', metadata.name); form.set('banner_postal_code', metadata.postal_code); form.set('banner_city', metadata.city);
-    metadata.term_keys.forEach(key => form.append('banner_terms', key));
+    metadata.term_keys.forEach(key => form.append('banner_terms', key)); appendBannerSearchAssignment(form,metadata);
     if (source === "legacy") { form.set("legacy_id", selected.banner!.id); form.set("original_placement", selected.placement); }
     return form;
   }
@@ -286,7 +287,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
       {!selected.banner && <p className={styles.hint}>Das Banner erscheint ab sofort, bis Sie es entfernen.</p>}
       <p className={styles.hint}>Name, PLZ, Ort und Kategorien gelten für dieses Banner in allen Bereichen und machen es in der Suche auffindbar.</p>
       <fieldset disabled={busy} className={styles.fields}>
-        <BannerSearchFields value={metadata} terms={options.terms ?? []} onChange={setMetadata} />
+        <BannerSearchFields value={metadata} terms={options.terms ?? []} advertisers={options.advertisers} onChange={setMetadata} />
       </fieldset>
       {metadataOnly && <p className={styles.hint}>Bei gebuchten oder geteilten Bannern ändern Sie hier nur die Suchdaten. Bild, Ziel-URL und Buchung bleiben unverändert.</p>}
       <fieldset disabled={busy || metadataOnly} className={styles.fields}>

@@ -11,13 +11,13 @@ export type PublicTravelTerm = {
 
 type Option = { slug: string; label: string };
 
-export function availableTravelFilters(listings: Listing[], terms: PublicTravelTerm[], bannerTermKeys: string[] = []) {
+export function availableTravelFilters(listings: Listing[], terms: PublicTravelTerm[], bannerTermKeys: string[] = [], bannerDestinations: string[] = []) {
   const assigned = new Set([...listings.flatMap((listing) => listing.travelTermKeys ?? []), ...bannerTermKeys]);
   const options = (dimension: PublicTravelTerm["dimension"]): Option[] => terms
     .filter((term) => term.dimension === dimension && assigned.has(term.term_key))
     .map(({ slug, label }) => ({ slug, label }));
   return {
-    destinations: destinations.filter((entry) => filterTravelDiscovery(listings, entry.slug, "").length > 0)
+    destinations: destinations.filter((entry) => filterTravelDiscovery(listings, entry.slug, "").length > 0 || bannerDestinations.includes(entry.slug))
       .map(({ slug, title }) => ({ slug, label: title })),
     themes: travelThemes.filter((entry) => assigned.has(`theme:${entry.slug}`))
       .map(({ slug, title }) => ({ slug, label: title })),
