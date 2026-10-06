@@ -10,7 +10,7 @@ registerHooks({
     if (specifier === 'next/link' || specifier === 'next/image') return {url:`data:text/javascript,export default ${JSON.stringify(specifier === 'next/link' ? 'a' : 'img')}`,shortCircuit:true};
     if (specifier.endsWith('.module.css')) return {url:'data:text/javascript,export default {}',shortCircuit:true};
     if (specifier.endsWith('inline-banner-editor')) return {url:'data:text/javascript,export function InlineBannerProvider({children}){return children}',shortCircuit:true};
-    if (specifier.endsWith('/trades')) return {url:'data:text/javascript,export function AdvertisingLayout({children}){return children}',shortCircuit:true};
+    if (specifier.endsWith('/trades') && context.parentURL.includes('/components/')) return {url:'data:text/javascript,export function AdvertisingLayout({children}){return children}',shortCircuit:true};
     if (specifier.includes('/admin/') && !specifier.endsWith('/freshness-status')) return {url:'data:text/javascript,export function DirectoryOrderEditor(){return null};export function SidebarOrderEditor(){return null}',shortCircuit:true};
     if (specifier.startsWith('@/') || specifier.startsWith('.')) {
       const base = specifier.startsWith('@/') ? new URL('../src/'+specifier.slice(2), import.meta.url) : new URL(specifier,context.parentURL);
@@ -89,3 +89,17 @@ test('structured zero state is honest while free text still submits globally wit
  assert.match(css,/\.listing-row--premium \.row-contact\).*align-self: stretch/);
  assert.match(css,/height: 640px/);
  });
+
+test('inline banner results render once, follow the real profile, retain packages and support banner-only filters',()=>{
+ const ad={id:'campaign',placement:'sidebar_top',headline:'Öffentliche Anzeige',imageUrl:'/real-creative.png',image_path:null,target_url:'https://example.org/'};
+ const banner={banner_key:'campaign:campaign',profile_id:'premium',term_keys:['theme:wellnessangebote'],city:'Bannerstadt',postal_code:'99999',ad};
+ const render=(database,values=readTravelFilterValues({}))=>renderToStaticMarkup(createElement(TravelDirectory,{database,preview:[],terms:[],error:null,ads:[],sidebarOrder:[],canReorder:false,hiddenOrderKeys:[],initialValues:values,banners:[banner]}));
+ const html=render([listing('premium',true),listing('basic')]);
+ assert.match(html,/3 Unterkünfte anzeigen/);assert.equal((html.match(/data-search-banner=/g)||[]).length,1);
+ assert.ok(html.indexOf('href="/unterkuenfte/premium"')<html.indexOf('data-search-banner='));
+ assert.ok(html.indexOf('data-search-banner=')<html.indexOf('href="/unterkuenfte/basic"'));
+ assert.match(html,/Anzeige/);assert.match(html,/sponsored noopener noreferrer/);
+ const only=render([listing('premium',true)],readTravelFilterValues({ort:'99999'}));
+ assert.match(only,/1 Unterkunft anzeigen/);assert.match(only,/data-search-banner=/);assert.doesNotMatch(only,/aktuell keine passende Unterkunft/);
+ const none=render([],readTravelFilterValues({ort:'unmatched'}));assert.match(none,/aktuell keine passende Unterkunft/);assert.doesNotMatch(none,/data-search-banner=/);
+});

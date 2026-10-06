@@ -7,7 +7,7 @@ export type ListingFilters = {
   service: string;
   sort: string;
 };
-const normalize = (value: string) =>
+export const normalizeListingSearch = (value: string) =>
   value
     .trim()
     .toLocaleLowerCase("de")
@@ -20,9 +20,9 @@ export function filterListings(
   filters: ListingFilters,
   premiumFirst = false,
 ): Listing[] {
-  const words = normalize(filters.query).split(/\s+/).filter(Boolean);
+  const words = normalizeListingSearch(filters.query).split(/\s+/).filter(Boolean);
   const result = items.filter((item) => {
-    const haystack = normalize(
+    const haystack = normalizeListingSearch(
       [
         item.name,
         item.tagline,
@@ -36,9 +36,9 @@ export function filterListings(
       words.every((word) => haystack.includes(word)) &&
       (!filters.category || item.categoryIds.includes(filters.category)) &&
       (!filters.location ||
-        normalize(
+        normalizeListingSearch(
           `${item.location.city} ${item.location.postalCode} ${item.location.region}`,
-        ).includes(normalize(filters.location))) &&
+        ).includes(normalizeListingSearch(filters.location))) &&
       (!filters.service || item.services.includes(filters.service))
     );
   });

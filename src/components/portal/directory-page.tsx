@@ -9,6 +9,7 @@ import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
 import { readTravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { filterListings } from "@/lib/listings";
+import { loadTravelSearchBanners } from "@/lib/public-travel-search-banners";
 import { loadPublicAds } from "@/lib/public-ads";
 import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 import type { SidebarSlot } from "@/lib/sidebar-order";
@@ -36,9 +37,9 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
 }) {
   const params = await searchParams;
   if (mode === "travel") {
-    const [loaded, terms, ads, sidebarOrder, bannerOptions] = await Promise.all([
+    const [loaded, terms, ads, sidebarOrder, bannerOptions, searchBanners] = await Promise.all([
       loadReiseportalDirectory(), loadPublicTravelTerms(), loadPublicAds(undefined), loadPublicSidebarOrder(),
-      loadInlineBannerOptions("/unterkuenfte-a-z"),
+      loadInlineBannerOptions("/unterkuenfte-a-z"), loadTravelSearchBanners(),
     ]);
     const freshnessStatuses = adminClient ? await loadAdminFreshnessStatuses(adminClient,
       [...loaded.database, ...loaded.preview].map(listing => listing.id)) : undefined;
@@ -48,7 +49,7 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
       collectionSchema({ name: "Unterkünfte A–Z", description: hubDescriptions.directory, path: "/unterkuenfte-a-z",
         items: shown.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <TravelDirectory initialValues={initialValues} database={loaded.database}
-      preview={loaded.preview} terms={terms} error={loaded.error} ads={ads} sidebarOrder={sidebarOrder}
+      preview={loaded.preview} terms={terms} banners={searchBanners.banners} bannerError={searchBanners.error} error={loaded.error} ads={ads} sidebarOrder={sidebarOrder}
       canReorder={canReorder} freshnessStatuses={freshnessStatuses} hiddenOrderKeys={loaded.hiddenOrderKeys}
       saveOrder={saveOrder} saveSidebarOrder={saveSidebarOrder} bannerOptions={bannerOptions} /></>;
   }
