@@ -12,9 +12,10 @@ import { JsonLd } from "./json-ld";
 import { jsonLdGraph, breadcrumbSchema, collectionSchema } from "@/lib/seo-schema";
 import { relatedTravelPages } from "@/lib/travel-relations";
 import { TravelRelations } from "./travel-relations";
+import { providerCardImage } from '@/lib/provider-card-media';
 
 export function AccommodationCard({ listing, rotating = false, sizes }: { listing: Listing; rotating?: boolean; sizes?: string }) {
-  const image = listing.images[0];
+  const image = providerCardImage(listing, 'travel');
   return <article className="accommodation-card">
     <Link href={`/unterkuenfte/${listing.slug}`}
       className={`accommodation-card-image${image ? "" : " accommodation-card-image--empty"}`}

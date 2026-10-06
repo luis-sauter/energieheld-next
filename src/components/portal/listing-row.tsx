@@ -3,6 +3,7 @@ import type { Listing, Category } from "@/types/portal";
 import { CompanyImage } from "./company-image";
 import { QualitySeal } from "@/components/quality/quality-seal";
 import { Icon } from "./icon";
+import { providerCardImage } from '@/lib/provider-card-media';
 
 function websiteUrl(value: string) {
   try {
@@ -32,7 +33,7 @@ export function ListingRow({
   travelLabels?: Record<string, string>;
   adminStatus?: React.ReactNode;
 }) {
-  const cardImage = listing.directoryImage ?? listing.logo ?? listing.images[0];
+  const cardImage = travel ? providerCardImage(listing, 'directory') : listing.directoryImage ?? listing.logo ?? listing.images[0];
   const isLogo = Boolean(cardImage && listing.logo?.src === cardImage.src);
   const premium = listing.directoryPackage === "premium" && (travel || Boolean(cardImage));
   const teaser = listing.tagline || (travel ? listing.description.replace(/\s+/g, " ").trim().slice(0, 240) : "");

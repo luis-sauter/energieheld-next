@@ -24,6 +24,8 @@ export type Listing = {
   // Public directory layout; legacy Complete/Basic evidence is stored separately.
   directoryPackage?: "basic" | "premium";
   directoryImage?: PortalImage;
+  /** Curated provider photo for destination/theme cards; null means no suitable photo. */
+  travelImage?: PortalImage | null;
   categoryIds: string[];
   /** Present when the travel taxonomy has been loaded from Supabase. */
   travelTermKeys?: string[];
