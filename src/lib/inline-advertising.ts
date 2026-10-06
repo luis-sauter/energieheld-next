@@ -256,18 +256,22 @@ export const reuseInlineAd = (client: SupabaseClient, path: string, form: FormDa
   if (!isProfileId(copyId)) return { error: 'Der neue Entwurf konnte nicht geladen werden.' };
   const { data: copy, error } = await client.from('company_ad_campaigns').select('*').eq('id', copyId).maybeSingle();
   if (error || !copy) return { error: 'Der neue Entwurf konnte nicht geladen werden.' };
+  const metadata = await loadBannerMetadata(client, [`campaign:${copyId}`]);
+  const copiedMetadata = metadata.values.get(`campaign:${copyId}`);
   const save = new FormData();
   for (const [key, value] of Object.entries({ campaign_id: copyId, internal_name: copy.internal_name || `Banner · ${context.label}`,
     headline: copy.headline || 'Anzeige', body_text: copy.body_text || '', target_url: copy.target_url, placement,
     requested_start_date: berlinToday(), requested_end_date: '9999-12-31',
     contact_name: '', contact_phone: '', contact_email: '' })) save.set(key, String(value));
+  save.set('banner_postal_code', copiedMetadata?.postal_code ?? '');
+  save.set('banner_city', copiedMetadata?.city ?? '');
+  copiedMetadata?.term_keys.forEach(key => save.append('banner_terms', key));
   save.append('targets', adTargetFormValue({ target_type: context.target_type, target_key: context.target_key, category_id: null, placement: placement as AdPlacementId }));
   const bound = await saveOwnAd(client, save, true);
   if (!bound.success) return { error: bound.error, campaignId: copyId };
   save.set('size', size);
   const saved = await saveInlineAdAtSource(client, path, save);
   if (!saved.success || !saved.ad) return { ...saved, campaignId: copyId };
-  const metadata = await loadBannerMetadata(client, [`campaign:${copyId}`]);
   return { ...saved, campaignId: copyId, metadata: { ...(metadata.values.get(`campaign:${copyId}`) ?? { postal_code: '', city: '', term_keys: [] }), name: saved.ad.headline } };
 });
 
