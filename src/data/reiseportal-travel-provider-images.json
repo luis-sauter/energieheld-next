@@ -81,7 +81,11 @@
   },
   "pension-sonnenhof": {
     "src": "/reiseportal/unterkuenfte/pension-sonnenhof/01.jpg",
-    "alt": "Originalbild 2 von Pension Sonnenhof"
+    "alt": "Originalbild 2 von Pension Sonnenhof",
+    "excludedSavedPaths": [
+      "profiles/49b2316e-dd69-4d68-9f10-b7fc86100cf8/gallery/b2d865b8-3ae3-457e-a85e-71d65c74cd38.jpg",
+      "profiles/49b2316e-dd69-4d68-9f10-b7fc86100cf8/gallery/d2acf825-863c-44ac-a8ba-ed301fe66965.jpg"
+    ]
   },
   "platzl-hotel": {
     "src": "/reiseportal/unterkuenfte/platzl-hotel/01.png",
