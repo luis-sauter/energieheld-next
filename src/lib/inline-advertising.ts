@@ -6,7 +6,8 @@ import { adPlacements, adTargetUrl, adTargetFormValue, berlinToday, type AdCampa
 import { inlineAdContext, matchesInlineAdContext, type InlineBannerResult } from "./inline-ad-context";
 import { bannerSizes, bannerCropReference, displaySource, displayPlacement, legacyCreative, type BannerSize } from "./banner-presentation";
 import { loadBannerPresentations } from "./banner-presentation-loader";
-import { legacyBannerKey, saveBannerMetadata, validateBannerMetadata } from './banner-search-metadata';
+import { legacyBannerKey, saveBannerMetadata, validateBannerMetadata, loadBannerMetadata } from './banner-search-metadata';
+import { changeAdLifecycle } from './ad-lifecycle';
 
 const denied = "Dieses Banner kann auf dieser Seite nicht bearbeitet werden. Bitte laden Sie die Seite neu.";
 
@@ -222,6 +223,53 @@ export const prepareInlineAdUpload = (client: SupabaseClient, path: string, form
 export const saveInlineAd = (client: SupabaseClient, path: string, form: FormData): Promise<InlineBannerResult> => sizeValue(form)
   ? atDisplaySource(client, path, form, saveInlineAdAtSource) : Promise.resolve({ error: "Bitte wählen Sie Klein, Mittel oder Groß." });
 export const removeInlineAd = (client: SupabaseClient, path: string, form: FormData) => atDisplaySource(client, path, form, removeInlineAdAtSource);
+
+// Bind archive to the displayed page/source just like the other inline mutations.
+export const archiveInlineAd = (client: SupabaseClient, path: string, form: FormData) => atDisplaySource(client, path, form, async (client, path, input) => {
+  const bound = await authorizedCampaign(client, path, input, false, true);
+  if (!bound.campaign) return { error: bound.error };
+  input.set('action', 'archive');
+  const result = await changeAdLifecycle(client, input);
+  return { ...result, removed: Boolean(result.success) };
+});
+
+export const reuseInlineAd = (client: SupabaseClient, path: string, form: FormData) => atDisplaySource(client, path, form, async (client, path, input) => {
+  const context = inlineAdContext(path, true), placement = input.get('placement');
+  const size = sizeValue(input), id = input.get('archived_id');
+  if (!context || !size || !isProfileId(id) || typeof placement !== 'string' || !Object.hasOwn(adPlacements, placement) || input.get('confirmed') !== 'yes')
+    return { error: 'Bitte wählen und bestätigen Sie einen archivierten Banner und einen freien Platz.' };
+  const [availability, settings, active] = await Promise.all([
+    client.rpc('get_ad_slot_availability', { p_start: berlinToday(), p_end: '9999-12-31', p_exclude_campaign_id: null }),
+    loadBannerPresentations(client, context),
+    client.rpc('get_active_ad_campaigns', { p_scope_type: context.target_type, p_category_id: context.target_key }),
+  ]);
+  const setting = settings.rows.find(row => row.placement === placement);
+  if (availability.error || settings.error || active.error ||
+    (availability.data ?? []).some((target: Parameters<typeof matchesInlineAdContext>[0]) => matchesInlineAdContext(target, context) && target.placement === placement) ||
+    (active.data ?? []).some((row: { placement: string }) => row.placement === placement) ||
+    (!setting?.legacy_hidden && legacyCreative(placement as AdPlacementId, setting?.legacy_placement ?? placement as AdPlacementId, path)))
+    return { error: 'Dieser Bannerplatz ist bereits belegt. Bitte wählen Sie einen freien Platz.' };
+  const reuse = new FormData(); reuse.set('campaign_id', id); reuse.set('action', 'reuse'); reuse.set('confirmed', 'yes');
+  const copied = await changeAdLifecycle(client, reuse);
+  if (!copied.success || !copied.redirectTo) return { error: copied.error ?? 'Der Banner konnte nicht übernommen werden.' };
+  const copyId = copied.redirectTo.split('/').at(-1);
+  if (!isProfileId(copyId)) return { error: 'Der neue Entwurf konnte nicht geladen werden.' };
+  const { data: copy, error } = await client.from('company_ad_campaigns').select('*').eq('id', copyId).maybeSingle();
+  if (error || !copy) return { error: 'Der neue Entwurf konnte nicht geladen werden.' };
+  const save = new FormData();
+  for (const [key, value] of Object.entries({ campaign_id: copyId, internal_name: copy.internal_name || `Banner · ${context.label}`,
+    headline: copy.headline || 'Anzeige', body_text: copy.body_text || '', target_url: copy.target_url, placement,
+    requested_start_date: berlinToday(), requested_end_date: '9999-12-31',
+    contact_name: '', contact_phone: '', contact_email: '' })) save.set(key, String(value));
+  save.append('targets', adTargetFormValue({ target_type: context.target_type, target_key: context.target_key, category_id: null, placement: placement as AdPlacementId }));
+  const bound = await saveOwnAd(client, save, true);
+  if (!bound.success) return { error: bound.error, campaignId: copyId };
+  save.set('size', size);
+  const saved = await saveInlineAdAtSource(client, path, save);
+  if (!saved.success || !saved.ad) return { ...saved, campaignId: copyId };
+  const metadata = await loadBannerMetadata(client, [`campaign:${copyId}`]);
+  return { ...saved, campaignId: copyId, metadata: { ...(metadata.values.get(`campaign:${copyId}`) ?? { postal_code: '', city: '', term_keys: [] }), name: saved.ad.headline } };
+});
 
 // Shared/company creatives can change public search copy without touching contracts,
 // media, targeting or sibling-page presentation. IDs are bound to this page server-side.

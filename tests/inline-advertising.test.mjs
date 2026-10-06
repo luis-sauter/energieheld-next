@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import "./helpers/load-ts.mjs";
 const { inlineAdContext, matchesInlineAdContext } = await import("../src/lib/inline-ad-context.ts");
-const { prepareInlineAdUpload, saveInlineAd, removeInlineAd } = await import("../src/lib/inline-advertising.ts");
+const { prepareInlineAdUpload, saveInlineAd, removeInlineAd, archiveInlineAd, reuseInlineAd } = await import("../src/lib/inline-advertising.ts");
 const { saveInlineAdMetadata } = await import('../src/lib/inline-advertising.ts');
 const { validateBannerMetadata, onlyBannerMetadataChanged } = await import('../src/lib/banner-search-metadata.ts');
 const { adPlacements, berlinToday } = await import("../src/lib/ad-values.ts");
@@ -10,6 +10,28 @@ const { travelThemes, destinations } = await import("../src/data/reiseportal-dis
 
 const id = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const image = `campaigns/${id}/creative/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.png`;
+
+test('inline archive authorizes the actual page/source, preserves shared booking data, and uses existing lifecycle RPC only',async()=>{
+ const settings=['sidebar_top','sidebar_bottom'].map((placement,i)=>({placement,display_source:i?'sidebar_top':'sidebar_bottom',size:'small',legacy_hidden:true}));
+ const db=client({settings,campaign:{targets:[target('mottoreisen/wellnessangebote','sidebar_bottom'),target('reiseziele/deutschland','sidebar_middle')]}}),before=structuredClone(db.row);
+ assert.ok((await archiveInlineAd(db,'/mottoreisen/wellnessangebote',form({placement:'sidebar_top',confirmed:'yes'}))).success);
+ assert.deepEqual(db.calls.filter(c=>c.rpc&&!c.rpc.startsWith('get_')).map(c=>c.rpc),['admin_ad_lifecycle']);assert.deepEqual(db.row,before);
+ for(const config of [{admin:false},{authenticated:false},{}]){const c=client(config);assert.ok((await archiveInlineAd(c,'/reiseziele/schweiz',form({confirmed:'yes'}))).error);assert.ok(!c.calls.some(c=>c.rpc==='admin_ad_lifecycle'));}
+ const unconfirmed=client();assert.ok((await archiveInlineAd(unconfirmed,'/mottoreisen/wellnessangebote',form())).error);assert.ok(!unconfirmed.calls.some(c=>c.rpc==='admin_ad_lifecycle'));
+});
+test('archive insertion rejects non-admin, unconfirmed, booked and historical occupied slots before cloning',async()=>{
+ for(const [config,path,values] of [[{admin:false},'/reiseziele/schweiz',{placement:'sidebar_12'}],[{},'/reiseziele/schweiz',{placement:'sidebar_12',confirmed:''}],[{},'/unterkuenfte-a-z',{placement:'sidebar_top'}],[{active:[{placement:'sidebar_12'}]},'/reiseziele/schweiz',{placement:'sidebar_12'}]]){
+  const db=client(config),input=form({archived_id:id,confirmed:'yes',...values});const result=await reuseInlineAd(db,path,input);assert.ok(result.error);assert.ok(!db.calls.some(c=>c.rpc==='admin_ad_lifecycle'));
+ }
+});
+test('archive insertion copies existing media independently, selects only this new page/slot, and keeps archived original bookings untouched',async()=>{
+ const copyId='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+ const db=client({reuseId:copyId,campaign:{archived_at:'2026-10-06',is_editorial:true,targets:[target(),target('reiseziele/deutschland','sidebar_top')]}}),before=structuredClone(db.row);
+ const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:id,confirmed:'yes',placement:'sidebar_12',size:'small'}));
+ assert.ok(result.success,result.error);assert.equal(result.ad.id,copyId);assert.equal(result.ad.placement,'sidebar_12');assert.deepEqual(db.calls.find(c=>c.original).original,before);
+ const saves=db.calls.filter(c=>c.rpc==='save_ad_campaign');assert.ok(saves.length);for(const save of saves){assert.equal(save.data.p_campaign_id,copyId);assert.deepEqual(save.data.p_data.targets,[target('reiseziele/schweiz','sidebar_12')]);assert.equal(save.data.p_data.requested_start_date,berlinToday());}
+ assert.ok(db.calls.find(c=>c.upload).upload.startsWith(`campaigns/${copyId}/creative/`));assert.equal(db.calls.find(c=>c.upload).upsert,false);assert.ok(!db.calls.some(c=>c.remove));
+});
 
 test('shared/company metadata edits use only the admin metadata RPC after page/source authorization', async()=>{
  const db=client({campaign:{targets:[target(),target('reiseziele/deutschland','sidebar_top')]}});
@@ -58,7 +80,7 @@ const form = (values = {}) => {
   return data;
 };
 
-function client({ authenticated = true, admin = true, campaign = {}, saveError = null, reviewError = null, removeError = null, settings = [], active = [] } = {}) {
+function client({ authenticated = true, admin = true, campaign = {}, saveError = null, reviewError = null, removeError = null, settings = [], active = [], reuseId = null } = {}) {
   const calls = [];
   const row = { id, is_editorial: false, profile_id: "existing-company", status: "approved", image_path: image,
     internal_name: "Existing", headline: "Existing image alt", body_text: "Existing text", target_url: "https://example.org/old",
@@ -70,12 +92,19 @@ function client({ authenticated = true, admin = true, campaign = {}, saveError =
       const call = { table, filters: [] }; calls.push(call);
       return { select(columns) { call.columns = columns; return this; }, eq(key, value) { call.filters.push([key,value]); return this; },
         is(key,value) { call.filters.push([key,value]); return this; },
-        then(resolve) { return Promise.resolve({ data: settings, error: null }).then(resolve); },
+        in(key,value) { call.filters.push([key,value]); return this; },order(){return this;},
+        then(resolve) { return Promise.resolve({ data: table==='ad_slot_presentations'?settings:[], error: null }).then(resolve); },
         async maybeSingle() { return { data: table === "portal_admins" ? admin ? { user_id: "verified-admin" } : null : structuredClone(row), error: null }; } };
     },
     async rpc(name, data) {
       calls.push({ rpc: name, data });
       if (name === "get_active_ad_campaigns") return { data: active, error: null };
+      if (name === 'admin_ad_lifecycle' && data.p_action === 'reuse' && reuseId) {
+        calls.push({original:structuredClone(row)});
+        Object.assign(row,{id:reuseId,status:'draft',archived_at:null,image_path:null,targets:[],requested_start_date:null,requested_end_date:null,approved_start_date:null,approved_end_date:null});
+        return {data:reuseId,error:null};
+      }
+      if (name === 'admin_ad_lifecycle' && data.p_action === 'attach_copy') row.image_path=data.p_image_path;
       if (name === "remove_inline_ad_banner") {
         if (removeError) return { error: removeError };
         const previous = row.image_path; row.status = "draft"; row.image_path = null;
@@ -103,6 +132,7 @@ function client({ authenticated = true, admin = true, campaign = {}, saveError =
       return {
         async download(path) { calls.push({ download: path }); return { data: new Blob([Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jv1EAAAAASUVORK5CYII=", "base64")], { type: "image/png" }), error: null }; },
         async remove(paths) { calls.push({ remove: paths }); return { error: null }; },
+        async upload(path,blob,options) {calls.push({upload:path,upsert:options.upsert});return {error:null};},
         async createSignedUrls(paths) { calls.push({ sign: paths }); return { data: paths.map((path) => ({ path, signedUrl: `https://private.example.org/${path}` })), error: null }; },
       };
     } },

@@ -3,15 +3,16 @@ import { useActionState, useState, type ReactNode } from 'react';
 import { lifecycleCampaign } from '@/app/(energieheld)/admin/werbung/actions';
 import styles from './advertising.module.css';
 
-export function CampaignLifecycle({ id, archived, disabled = false, children, onArchived, onBusyChange }: {
+export function CampaignLifecycle({ id, archived, disabled = false, children, onArchived, onBusyChange, onArchive }: {
   id: string; archived: boolean; disabled?: boolean; children?: ReactNode;
   onArchived?: (message: string) => void; onBusyChange?: (busy: boolean) => void;
+  onArchive?: (form: FormData) => Promise<{ error?: string; success?: string; redirectTo?: string }>;
 }) {
   const [intent, setIntent] = useState<'archive' | 'reuse' | 'delete' | null>(null);
   const [state, action, pending] = useActionState(async (_previous: { error?: string; success?: string; redirectTo?: string }, form: FormData) => {
     onBusyChange?.(true);
     try {
-      const result = await lifecycleCampaign({}, form);
+      const result = onArchive && form.get('action') === 'archive' ? await onArchive(form) : await lifecycleCampaign({}, form);
       if (result.success && form.get('action') === 'archive') onArchived?.(result.success);
       return result;
     } finally { onBusyChange?.(false); }

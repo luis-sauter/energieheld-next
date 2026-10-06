@@ -16,7 +16,7 @@ registerHooks({
   if(specifier.endsWith('/admin/werbung/actions'))return{shortCircuit:true,url:'data:text/javascript,export async function lifecycleCampaign(){throw Error("Unexpected lifecycle mutation during crop test")}'};
   if(specifier==='next/navigation')return{shortCircuit:true,url:'data:text/javascript,export function useRouter(){return {refresh(){}}}'};
   if(specifier==='next/link')return{shortCircuit:true,url:'data:text/javascript,export default "a"'};
-  if(specifier.endsWith('/supabase/client'))return{shortCircuit:true,url:'data:text/javascript,export function createClient(){throw Error("Unexpected upload")}'};
+  if(specifier.endsWith('/supabase/client'))return{shortCircuit:true,url:'data:text/javascript,export function createClient(){if(globalThis.inlineArchiveMedia)return globalThis.inlineArchiveMedia;throw Error("Unexpected upload")}'};
   if(specifier.endsWith('.module.css'))return{shortCircuit:true,url:'data:text/javascript,export default new Proxy({}, {get:(_,key)=>key})'};
   if(specifier.startsWith('@/')||specifier.startsWith('.')){
    const url=specifier.startsWith('@/')?new URL('../src/'+specifier.slice(2),import.meta.url):new URL(specifier,context.parentURL);
@@ -28,9 +28,34 @@ const {BannerSearchFields}=await import('../src/components/advertising/banner-se
 const {ImageCropControls}=await import('../src/components/admin/image-crop-controls.tsx');
 const {InlineBannerDialog}=await import('../src/components/advertising/inline-banner-editor.tsx');
 const {CampaignSlot}=await import('../src/components/advertising/campaign-view.tsx');
+const {CampaignLifecycle}=await import('../src/components/advertising/campaign-lifecycle.tsx');
 function nodes(node){if(!node)return[];if(Array.isArray(node))return node.flatMap(nodes);if(typeof node!=='object')return[];return[node,...nodes(node.props?.children)];}
 const find=(tree,predicate)=>nodes(tree).find(predicate);
 const render=(props)=>{cursor=0;return InlineBannerDialog(props);};
+
+test('archive choice replaces new-upload fields and inserts chosen archived banner through the bound reuse action',async()=>{
+ states=[];let inserted;const calls=[];
+ const props={selected:{placement:'sidebar_12'},options:{label:'Schweiz',availability:{},archived:[{id:'original',name:'Historischer Banner'}],reuse:async form=>{calls.push(Object.fromEntries(form));return {success:'ok',ad:{id:'copy',headline:'Historischer Banner',placement:'sidebar_12'},metadata:{name:'Historischer Banner',city:'Ort',postal_code:'12345',term_keys:['theme:wandern']}};}},onSaved:(ad,metadata)=>inserted={ad,metadata},onClose(){}};
+ let tree=render(props);find(tree,n=>n.type==='input'&&n.props.type==='radio'&&!n.props.checked).props.onChange();
+ tree=render(props);assert.equal(find(tree,n=>n.type==='input'&&n.props.type==='file'),undefined);
+ const select=find(tree,n=>n.type==='select'&&n.props.required);select.props.onChange({target:{value:'original'}});
+ tree=render(props);assert.ok(find(tree,n=>n.type==='input'&&n.props.type==='checkbox'&&n.props.required));
+ await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});
+ assert.deepEqual(calls,[{archived_id:'original',placement:'sidebar_12',size:'large',confirmed:'yes'}]);assert.equal(inserted.ad.id,'copy');assert.equal(inserted.metadata.city,'Ort');
+});
+test('legacy archive copies only verified displayed media via existing upload/save/crop then existing archive action',async()=>{
+ states=[];const calls=[],originalFetch=globalThis.fetch;
+ globalThis.fetch=async url=>{calls.push(['fetch',url]);return new Response(new Blob(['fixture'],{type:'image/png'}));};
+ globalThis.inlineArchiveMedia={storage:{from:bucket=>({upload:async(path,blob,options)=>{calls.push(['upload',bucket,path,options.upsert]);return {error:null};}})}};
+ try{
+ const banner={id:'legacy-source',source:'legacy',placement:'sidebar_top',imageUrl:'/images/legacy.png',target_url:'https://example.org',size:'small',shared:false,crop:{focus_x:20,focus_y:70,zoom:1.3},metadata:{name:'Legacy',postal_code:'',city:'',term_keys:[]}};
+ const props={selected:{placement:banner.placement,banner},options:{label:'Startseite',availability:{},prepare:async form=>{calls.push(['prepare',Object.fromEntries(form)]);return {campaignId:'copy',uploadPath:'campaigns/copy/creative/new.png'};},save:async form=>{calls.push(['save',Object.fromEntries(form)]);return {success:'ok',ad:{id:'copy',source:'campaign'}};},saveCrop:async form=>{calls.push(['crop',Object.fromEntries(form)]);return {success:'ok'};},archive:async form=>{calls.push(['archive',Object.fromEntries(form)]);return {success:'ok'};}},onChanged(){},onRemoved(){},onClose(){}};
+ const action=find(render(props),n=>n.type===CampaignLifecycle).props.onArchive;
+ assert.ok((await action(new FormData())).error);assert.deepEqual(calls,[]);
+ const confirmation=new FormData();confirmation.set('confirmed','yes');assert.ok((await action(confirmation)).success);
+ assert.deepEqual(calls.map(c=>c[0]),['fetch','prepare','upload','save','crop','archive']);assert.equal(calls[1][1].legacy_id,'legacy-source');assert.equal(calls[2][3],false);assert.equal(calls.at(-1)[1].campaign_id,'copy');assert.equal(calls.at(-1)[1].legacy_id,undefined);assert.equal(calls.at(-2)[1].focus_x,'20');
+ }finally{globalThis.fetch=originalFetch;delete globalThis.inlineArchiveMedia;}
+});
 test('categories start collapsed, count selected values, retain multiple choices through closing/re-render/reload',()=>{
  const terms=Array.from({length:50},(_,i)=>({term_key:'theme:t'+i,label:'Thema '+i,dimension:'theme'}));
  let value={name:'Banner',postal_code:'12345',city:'Ort',term_keys:['theme:t1','theme:t2']};

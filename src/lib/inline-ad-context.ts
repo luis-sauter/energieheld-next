@@ -52,6 +52,9 @@ export type InlineBannerOptions = {
   availability: Record<string, string>;
   error?: string;
   terms?: import('./banner-search-metadata').BannerSearchTerm[];
+  archived?: { id: string; name: string }[];
+  archive?: (form: FormData) => Promise<InlineBannerResult>;
+  reuse?: (form: FormData) => Promise<InlineBannerResult>;
   saveCrop?: (form: FormData) => Promise<InlineBannerResult>;
   saveMetadata?: (form: FormData) => Promise<InlineBannerResult>;
   prepare: (form: FormData) => Promise<InlineBannerResult>;
