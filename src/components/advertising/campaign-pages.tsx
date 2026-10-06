@@ -36,7 +36,7 @@ export async function CampaignIndex({
       <Link href={base}>
         ← Zurück zum {admin ? "Adminbereich" : "Firmenbereich"}
       </Link>
-      <h1>{admin ? "Werbekampagnen prüfen" : "Meine Werbekampagnen"}</h1>
+      <h1>{admin ? "Werbekampagnen prüfen" : "Meine Angebotsanfragen"}</h1>
       {admin && campaigns?.some(campaign => Object.hasOwn(campaign, 'archived_at')) && <nav className={styles.actions} aria-label="Kampagnenbestand">
         <Link href="/admin/werbung" aria-current={!archivedOnly ? 'page' : undefined}>Alle Kampagnen</Link>
         <Link href="/admin/werbung?archiv=1" aria-current={archivedOnly ? 'page' : undefined}>Archiv</Link>
@@ -49,7 +49,7 @@ export async function CampaignIndex({
       </p>
       {!admin && (
         <form action={createCampaign}>
-          <button className="button button-primary">Neue Werbekampagne</button>
+          <button className="button button-primary">Neue Angebotsanfrage</button>
         </form>
       )}
       {admin && <form action={createAdminCampaign} className={styles.form}>
@@ -65,18 +65,18 @@ export async function CampaignIndex({
       </form>}
       {params.fehler && (
         <p role="alert">
-          Die Kampagne konnte nicht erstellt werden. Bitte versuchen Sie es
+          {admin ? "Das Banner" : "Die Angebotsanfrage"} konnte nicht erstellt werden. Bitte versuchen Sie es
           erneut.
         </p>
       )}
       {"error" in result && result.error && <p role="alert">{result.error}</p>}
       {campaigns && (
         <>
-          {!campaigns.length && <p>Noch keine Kampagnen in dieser Ansicht.</p>}
+          {!campaigns.length && <p>{admin ? "Noch keine Kampagnen in dieser Ansicht." : "Noch keine Angebotsanfragen in dieser Ansicht."}</p>}
           <CampaignList campaigns={campaigns} admin={admin} />
         </>
       )}
-      <nav className={styles.actions} aria-label="Kampagnenseiten">
+      <nav className={styles.actions} aria-label={admin ? "Kampagnenseiten" : "Seiten der Angebotsanfragen"}>
         {page > 1 && (
           <Link href={`${base}/werbung?seite=${page - 1}${archivedOnly ? '&archiv=1' : ''}`}>
             ← Vorherige Seite
@@ -108,14 +108,14 @@ export async function CampaignDetail({
   return (
     <main id="hauptinhalt" className={`container ${styles.page}`}>
       <Link href={`${admin ? "/admin" : "/firma"}/werbung`}>
-        ← Zur Kampagnenübersicht
+        {admin ? "← Zur Kampagnenübersicht" : "← Zur Übersicht der Angebotsanfragen"}
       </Link>
-      <h1>{admin ? "Werbekampagne prüfen" : "Werbekampagne"}</h1>
+      <h1>{admin ? "Werbekampagne prüfen" : "Angebotsanfrage"}</h1>
       {"error" in result && result.error && <p role="alert">{result.error}</p>}
       {campaign && (
         <div className={styles.card}>
           <p className="eyebrow">{campaign.companyName}</p>
-          <h2>{campaign.internal_name || "Neue Werbekampagne"}</h2>
+          <h2>{campaign.internal_name || (admin ? "Neue Werbekampagne" : "Neue Angebotsanfrage")}</h2>
           <CampaignFacts campaign={campaign} />
           {campaign.archived_at ? <>
             {admin && <CampaignLifecycle id={campaign.id} archived />}
@@ -159,7 +159,7 @@ export async function CampaignDetail({
                 ad={campaign}
                 preview
               />
-              <p>Diese Kampagne ist in diesem Status nicht bearbeitbar.</p>
+              <p>Diese Angebotsanfrage ist in diesem Status nicht bearbeitbar.</p>
             </>
           )}
         </div>

@@ -136,7 +136,7 @@ export default async function CompanyPage({
         )}
         <LogoutButton />
         <Link className="button" href="/firma/werbung">
-          Werbekampagnen
+          Angebotsanfragen
         </Link>
         <Link className="button" href="/firma/anfragen">
           Anfragen

@@ -440,3 +440,11 @@ test("server action rejects a canonical but unassigned trade before media or RPC
   );
   assert.equal(allowed.calls.find((c) => c.rpc).args.p_data.targets.length, 3);
 });
+
+test('P14 customer submission and failure messages use Angebotsanfrage while admin stays banner-oriented',async()=>{
+ const own=client();assert.equal((await saveOwnAd(own,form({intent:'submit',image:png}))).success,'Ihre Angebotsanfrage wurde zur Prüfung eingereicht.');
+ for(const status of ['pending','approved','paused']){const db=client({status});assert.equal((await saveOwnAd(db,form())).error,'Diese Angebotsanfrage kann derzeit nicht bearbeitet werden.');}
+ assert.match((await saveOwnAd(client(),form({campaign_id:'invalid'}))).error,/Angebotsanfrage/);
+ assert.match((await saveOwnAd(client({admin:true}),form({campaign_id:'invalid'}),true)).error,/Banner/);
+ assert.doesNotMatch(validateAdValues(form({internal_name:''})).error,/Kampagne/);
+});

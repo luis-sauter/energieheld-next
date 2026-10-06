@@ -174,7 +174,7 @@ export function CampaignList({
       {campaigns.map((c) => (
         <article className={styles.card} key={c.id}>
           {admin && <p className="eyebrow">{c.companyName}</p>}
-          <h2>{c.internal_name || "Neue Werbekampagne"}</h2>
+          <h2>{c.internal_name || (admin ? "Neue Werbekampagne" : "Neue Angebotsanfrage")}</h2>
           <CampaignFacts campaign={c} />
           <CampaignSlot placement={c.placement} ad={c} preview />
           <Link
@@ -184,8 +184,8 @@ export function CampaignList({
             {admin
               ? c.archived_at ? "Archiv ansehen" : "Kampagne prüfen"
               : ["draft", "rejected"].includes(c.status)
-                ? "Kampagne bearbeiten"
-                : "Kampagne ansehen"}
+                ? "Angebotsanfrage bearbeiten"
+                : "Angebotsanfrage ansehen"}
           </Link>
         </article>
       ))}
