@@ -125,6 +125,20 @@ test('category controls preserve normalized multiple assignments rather than boo
  assert.deepEqual(changed.term_keys,['audience:familie']);assert.deepEqual(value.term_keys,['theme:wellnessangebote','audience:familie']);
 });
 
+test('all three banner audiences are visible outside category disclosure and preserve advertiser metadata',()=>{
+ const value={name:'Banner',city:'',postal_code:'',term_keys:['theme:wellnessangebote','audience:mit-hund'],advertiser_key:'same-customer'};
+ const terms=['mit-hund','familie','paar'].map(slug=>({term_key:`audience:${slug}`,dimension:'audience',label:slug}));
+ let changed;
+ const element=BannerSearchFields({value,terms,onChange(next){changed=next;}});
+ const html=renderToStaticMarkup(element), visible=html.split('<details')[0];
+ for(const label of ['Mit Hund','Mit Kindern','Zu zweit']) assert.ok(visible.includes(label));
+ for(const term of terms) assert.equal(html.split(`value="${term.term_key}"`).length-1,1);
+ function inputs(node){if(!node)return [];if(Array.isArray(node))return node.flatMap(inputs);return node.type==='input'?[node]:inputs(node.props?.children);}
+ inputs(element).find(node=>node.props.value==='audience:familie').props.onChange({target:{checked:true}});
+ assert.deepEqual(changed.term_keys,['theme:wellnessangebote','audience:mit-hund','audience:familie']);
+ assert.equal(changed.advertiser_key,value.advertiser_key);
+});
+
 test("fixed positions A–L survive reversed rail input and C-to-A content previews on desktop/mobile markup", () => {
   const sources=[defaultSidebarOrder[2],defaultSidebarOrder[0],defaultSidebarOrder[1],...defaultSidebarOrder.slice(3)];
   const html=renderToStaticMarkup(createElement(SidebarOrderSlots,{

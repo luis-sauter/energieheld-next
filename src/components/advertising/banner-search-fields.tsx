@@ -1,10 +1,16 @@
 import type { BannerSearchMetadata, BannerSearchTerm, BannerAdvertiserOption } from '@/lib/banner-search-metadata';
 import { destinations } from '@/data/reiseportal-discovery';
+import { publicTravelLabel } from '@/lib/travel-presentation';
 import styles from './banner-search-fields.module.css';
 const dimensions: Record<string, string> = { theme: 'Reiseart', audience: 'Reisende', accommodation: 'Unterkunft', feature: 'Merkmal' };
 export function BannerSearchFields({ value, terms, onChange, advertisers = [], includeName = true }: {
   advertisers?: BannerAdvertiserOption[]; value: BannerSearchMetadata; terms: BannerSearchTerm[]; onChange: (value: BannerSearchMetadata) => void; includeName?: boolean;
 }) {
+  const audienceKeys = ['audience:mit-hund', 'audience:familie', 'audience:paar'];
+  const audiences = audienceKeys.flatMap(key => terms.filter(term => term.term_key === key));
+  const categories = terms.filter(term => !audienceKeys.includes(term.term_key));
+  const toggleTerm = (key: string, checked: boolean) => onChange({ ...value,
+    term_keys: checked ? Array.from(new Set([...value.term_keys, key])) : value.term_keys.filter(entry => entry !== key) });
   return <>
     <h3>Suchzuordnung</h3>
     <p>Diese Angaben steuern, bei welchen Unterkunftssuchen die Anzeige zusätzlich erscheint. Sie ändern nicht die gebuchten Werbeplätze.</p>
@@ -22,12 +28,18 @@ export function BannerSearchFields({ value, terms, onChange, advertisers = [], i
     {includeName && <label>Name / Bezeichnung<input name="headline" required maxLength={100} value={value.name} onChange={e => onChange({ ...value, name: e.target.value })} /></label>}
     <label>PLZ<input name="banner_postal_code" autoComplete="postal-code" maxLength={20} value={value.postal_code} onChange={e => onChange({ ...value, postal_code: e.target.value })} /></label>
     <label>Ort<input name="banner_city" autoComplete="address-level2" maxLength={120} value={value.city} onChange={e => onChange({ ...value, city: e.target.value })} /></label>
-    <details className={styles.disclosure}><summary>Kategorien · {value.term_keys.length} ausgewählt</summary>
+    <fieldset className={styles.categories}><legend>Mit wem? · Zielgruppen</legend>
+      <p>Nur passende Zielgruppen dieses Bannerinhalts auswählen. Anzeigen desselben Werbekunden werden weiterhin zusammengefasst.</p>
+      {audiences.map(term => <label key={term.term_key}><input type="checkbox" name="banner_terms" value={term.term_key}
+        checked={value.term_keys.includes(term.term_key)} onChange={e => toggleTerm(term.term_key, e.target.checked)} />
+        {publicTravelLabel(term.term_key, term.label)}</label>)}
+    </fieldset>
+    <details className={styles.disclosure}><summary>Kategorien · {value.term_keys.filter(key => !audienceKeys.includes(key)).length} ausgewählt</summary>
     <fieldset className={styles.categories}><legend>Kategorien auswählen</legend>
       <p>Beschreiben den Bannerinhalt – unabhängig vom gebuchten Bereich. Fehlende Angaben dürfen leer bleiben.</p>
-      {terms.map(term => <label key={term.term_key}><input type="checkbox" name="banner_terms" value={term.term_key} checked={value.term_keys.includes(term.term_key)}
-        onChange={e => onChange({ ...value, term_keys: e.target.checked ? [...value.term_keys, term.term_key] : value.term_keys.filter(key => key !== term.term_key) })} />
-        {term.label} · {dimensions[term.dimension] ?? 'Kategorie'}</label>)}
+      {categories.map(term => <label key={term.term_key}><input type="checkbox" name="banner_terms" value={term.term_key} checked={value.term_keys.includes(term.term_key)}
+        onChange={e => toggleTerm(term.term_key, e.target.checked)} />
+        {publicTravelLabel(term.term_key, term.label)} · {dimensions[term.dimension] ?? 'Kategorie'}</label>)}
     </fieldset></details>
   </>;
 }

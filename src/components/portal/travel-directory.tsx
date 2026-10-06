@@ -13,7 +13,7 @@ import { filterTravelListings, travelFilterUrl } from "@/lib/reiseportal-facets"
 import { AdvertisingLayout } from "./trades";
 import { ListingRow } from "./listing-row";
 import { SearchAdResults } from "@/components/advertising/search-ad-results";
-import { travelSearchResults, type TravelSearchBanner } from "@/lib/travel-search-banners";
+import { travelResultNoun, travelSearchResults, type TravelSearchBanner } from "@/lib/travel-search-banners";
 import { TravelFinder } from "./travel-finder";
 import { DirectoryOrderEditor } from "@/components/admin/directory-order-editor";
 import { SidebarOrderEditor } from "@/components/admin/sidebar-order-editor";
@@ -95,7 +95,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
           <div className="results-heading travel-results-heading">
             <div>
               <p className="eyebrow">Unterkünfte A–Z</p>
-              <h2 id="travel-results-title" aria-live="polite">{count} {count === 1 ? "Unterkunft" : "Unterkünfte"}</h2>
+              <h2 id="travel-results-title" aria-live="polite">{count} {travelResultNoun(count, matched.advertisers.length)}</h2>
               <p>Entdecken Sie Gastgeber und besondere Orte für Ihre nächste Reise.</p>
             </div>
             <div className="travel-results-tools">
