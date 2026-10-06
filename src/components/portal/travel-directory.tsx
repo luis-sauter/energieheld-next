@@ -12,7 +12,7 @@ import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, 
 import { filterTravelListings, travelFilterUrl } from "@/lib/reiseportal-facets";
 import { AdvertisingLayout } from "./trades";
 import { ListingRow } from "./listing-row";
-import { SearchAdCard } from "@/components/advertising/search-ad-card";
+import { SearchAdResults } from "@/components/advertising/search-ad-results";
 import { travelSearchResults, type TravelSearchBanner } from "@/lib/travel-search-banners";
 import { TravelFinder } from "./travel-finder";
 import { DirectoryOrderEditor } from "@/components/admin/directory-order-editor";
@@ -71,10 +71,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     </>;
   }
   const filtered = Boolean(values.destination || values.theme || values.audience || values.accommodation || values.feature || values.location);
-  const advertisements = matched.advertisers.length > 0 && <section className="travel-package-group" aria-labelledby="search-ads-title">
-    <header className="travel-package-heading"><h2 id="search-ads-title">{filtered ? "Passende Anzeigen" : "Anzeigen"}</h2></header>
-    <div className={styles.searchAdGrid}>{matched.advertisers.map(banner => <SearchAdCard key={banner.advertiser_key} banner={banner} />)}</div>
-  </section>;
+  const advertisements = <SearchAdResults banners={matched.advertisers} filtered={filtered} canEdit={Boolean(bannerOptions)} />;
 
   useEffect(() => {
     const nextUrl = travelFilterUrl(values);

@@ -20,10 +20,10 @@ export const loadTravelSearchBanners = cache(async (): Promise<{banners: TravelS
     const urls = new Map(signed.map(ad => [ad.image_path,ad.imageUrl]));
     const ads = payload.ads.map(ad => ({...ad,imageUrl: urls.get(ad.image_path),image_available: Boolean(urls.get(ad.image_path))}));
     const unique = new Map<string, TravelSearchBanner>();
-    for (const {ad,identity,details} of publicBannerCreatives(ads,payload.presentations,payload.metadata)) {
+    for (const {ad,identity,details,path} of publicBannerCreatives(ads,payload.presentations,payload.metadata)) {
       if (!ad.imageUrl || ad.imageUrl === 'public-creative' || !details || unique.has(identity)) continue;
       const metadata = details as Metadata;
-      unique.set(identity,{...metadata,banner_key:identity,profile_id:metadata.profile_id,postal_code:metadata.postal_code,city:metadata.city,term_keys:metadata.term_keys,ad:{...ad,headline:metadata.name}});
+      unique.set(identity,{...metadata,banner_key:identity,source_path:path,profile_id:metadata.profile_id,postal_code:metadata.postal_code,city:metadata.city,term_keys:metadata.term_keys,ad:{...ad,headline:metadata.name}});
     }
     return {banners:[...unique.values()],terms:payload.terms ?? [],error:null};
   } catch {

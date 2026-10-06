@@ -6,6 +6,14 @@ import { prepareInlineAdUpload, saveInlineAd, removeInlineAd, saveInlineAdMetada
 import { inlineAdContext } from "@/lib/inline-ad-context";
 import { reorderInlineBannerContents } from "@/lib/inline-banner-order";
 import type { SidebarSlot } from "@/lib/sidebar-order";
+import { selectSearchBannerEditor, type SearchBannerRequest } from '@/lib/search-banner-editor';
+
+export async function loadSearchBannerEditor(request: SearchBannerRequest) {
+  try {
+    const { loadInlineBannerOptions } = await import('@/lib/inline-advertising-loader');
+    return await selectSearchBannerEditor(request, loadInlineBannerOptions);
+  } catch { return { error: 'Der Bannereditor konnte gerade nicht geladen werden. Bitte versuchen Sie es erneut.' }; }
+}
 
 export async function archiveInlineBanner(path: string, form: FormData) {
   const result = await archiveInlineAd(await createClient(), path, form);
