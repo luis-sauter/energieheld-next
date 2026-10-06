@@ -545,3 +545,26 @@ test("removed or temporarily imageless banners are invisible publicly while prev
     ad: { ...campaign,imageUrl:undefined,headline:"Textvorschau" } }));
   assert.match(preview,/Textvorschau/);
 });
+
+const {CampaignList}=await import('../src/components/advertising/campaign-view.tsx');
+registerHooks({resolve(s,c,next){if(c.parentURL?.endsWith('/campaign-pages.tsx')&&s==='@/lib/ad-campaigns')return{shortCircuit:true,url:'data:text/javascript,export async function loadAdCampaigns(){return globalThis.p14CampaignResult}'};return next(s,c);}});
+const {CampaignIndex,CampaignDetail}=await import('../src/components/advertising/campaign-pages.tsx');
+test('P14 customer list and detail use request language in all editable and read-only states',async()=>{
+ globalThis.__profileTestClient={from(){return{select(){return this},order:async()=>({data:[]})}}};
+ for(const status of ['draft','rejected','pending','approved','paused']){
+  const row={...campaign,status,internal_name:'',body_text:'',targets:[{target_type:'homepage',category_id:null,placement:'sidebar_top'}]};
+  const list=render(CampaignList,{campaigns:[row]});assert.match(list,/Neue Angebotsanfrage/);assert.match(list,new RegExp(['draft','rejected'].includes(status)?'Angebotsanfrage bearbeiten':'Angebotsanfrage ansehen'));assert.doesNotMatch(list,/Kampagne/);
+  globalThis.p14CampaignResult={campaigns:[row],count:21,categoryIds:[]};
+  const index=renderToStaticMarkup(await CampaignIndex({params:{}}));assert.match(index,/Meine Angebotsanfragen/);assert.match(index,/Neue Angebotsanfrage/);assert.match(index,/Seiten der Angebotsanfragen/);assert.doesNotMatch(index,/Kampagne/);
+  const detail=renderToStaticMarkup(await CampaignDetail({id:row.id}));assert.match(detail,/<h1>Angebotsanfrage<\/h1>/);assert.match(detail,/Zur Übersicht der Angebotsanfragen/);assert.doesNotMatch(detail,/Kampagne/);
+ }
+ globalThis.p14CampaignResult={campaigns:[],count:0};const empty=renderToStaticMarkup(await CampaignIndex({params:{fehler:'erstellen'}}));assert.match(empty,/Noch keine Angebotsanfragen/);assert.match(empty,/Die Angebotsanfrage.*konnte nicht erstellt/s);
+ globalThis.p14CampaignResult={campaigns:[],count:0};const admin=renderToStaticMarkup(await CampaignIndex({admin:true,params:{}}));assert.match(admin,/Werbekampagnen prüfen/);assert.doesNotMatch(admin,/Angebotsanfrage/);
+});
+test('P14 form separates customer wording from admin and preserves routes, fields and advertising navigation',()=>{
+ const row={...campaign,internal_name:'',targets:[]};const customer=render(CampaignForm,{campaign:row,categoryIds:[]});assert.match(customer,/Angaben zur Anzeige/);assert.match(customer,/Bezeichnung der Angebotsanfrage/);assert.match(customer,/Die Anzeige wird erst nach Freigabe/);assert.doesNotMatch(customer,/Kampagne/);assert.match(customer,/name="internal_name"/);assert.match(customer,/name="campaign_id"/);
+ const admin=render(CampaignForm,{campaign:row,categoryIds:[],admin:true});assert.match(admin,/Interner Kampagnenname/);assert.doesNotMatch(admin,/Angebotsanfrage/);
+ for(const [file,text] of [['page.tsx','Meine Angebotsanfragen'],['[id]/page.tsx','Angebotsanfrage']])assert.match(readFileSync(new URL('../src/app/(energieheld)/firma/werbung/'+file,import.meta.url),'utf8'),new RegExp('title: "'+text+'"'));
+ const dashboard=readFileSync(new URL('../src/app/(energieheld)/firma/page.tsx',import.meta.url),'utf8');assert.match(dashboard,/Angebotsanfragen/);assert.match(dashboard,/href="\/firma\/werbung"/);
+ const navigation=readFileSync(new URL('../src/components/portal/account-menu.tsx',import.meta.url),'utf8');assert.match(navigation,/Werbung/);
+});

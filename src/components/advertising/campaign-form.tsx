@@ -198,9 +198,9 @@ export function CampaignForm({
         </div>
       </fieldset>
       <fieldset className={styles.formSection}>
-        <legend>Kampagnenziel</legend>
+        <legend>{admin ? "Kampagnenziel" : "Angaben zur Anzeige"}</legend>
         <div className={styles.formFields}>
-          <label>{admin ? "Interner Kampagnenname" : "Name der Kampagne"}
+          <label>{admin ? "Interner Kampagnenname" : "Bezeichnung der Angebotsanfrage"}
             <input name="internal_name" required maxLength={120} value={values.internal_name} onChange={(e) => set("internal_name", e.target.value)} />
           </label>
           <label>Ziel-URL
@@ -330,7 +330,7 @@ export function CampaignForm({
       {admin && <BannerSearchFields value={metadata} terms={bannerTerms} onChange={setMetadata} includeName={false} />}
       <fieldset className={styles.formSection}>
         <legend>Hinweise oder Wünsche</legend>
-        <p className={styles.sectionHint}>Gibt es etwas, das wir bei Ihrer Kampagne berücksichtigen sollen?</p>
+        <p className={styles.sectionHint}>{admin ? "Gibt es etwas, das wir bei Ihrer Kampagne berücksichtigen sollen?" : "Gibt es etwas, das wir bei Ihrer Angebotsanfrage berücksichtigen sollen?"}</p>
         <label>Ihre Hinweise (optional)
         <textarea
           name="body_text"
@@ -342,7 +342,7 @@ export function CampaignForm({
         </label>
       </fieldset>
       <p>
-        {admin ? "Redaktionelle Änderungen an einer freigegebenen Kampagne werden sofort wirksam. Entwürfe werden erst nach Freigabe ausgespielt." : "Mit dem Einreichen wird die Kampagne zur Prüfung gesendet. Sie wird erst nach Freigabe im bestätigten Zeitraum angezeigt."}
+        {admin ? "Redaktionelle Änderungen an einer freigegebenen Kampagne werden sofort wirksam. Entwürfe werden erst nach Freigabe ausgespielt." : "Mit dem Einreichen wird Ihre Angebotsanfrage zur Prüfung gesendet. Die Anzeige wird erst nach Freigabe im bestätigten Zeitraum ausgespielt."}
       </p>
       <div className={styles.actions}>
         <button className="button" name="intent" value="save" disabled={busy || (admin && campaign.status === "approved" && (availabilityLoading || !!availabilityError || hasBookedSelection))}>

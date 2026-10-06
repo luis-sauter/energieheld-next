@@ -34,8 +34,8 @@ export async function loadAdAvailability(client: SupabaseClient, start: string, 
   return { slots };
 }
 export const AD_BUCKET = "ad-media";
-const failed =
-  "Die Kampagne konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.";
+const failed = (admin: boolean) =>
+  admin ? "Das Banner konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut." : "Die Angebotsanfrage konnte nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.";
 export async function ownAdProfile(client: SupabaseClient) {
   const {
     data: { user },
@@ -127,7 +127,7 @@ export async function loadAdCampaigns(
     .order("id", { ascending: true })
     .range((page - 1) * 20, page * 20 - 1);
   if (error)
-    return { error: "Werbekampagnen konnten gerade nicht geladen werden." };
+    return { error: admin ? "Werbekampagnen konnten gerade nicht geladen werden." : "Angebotsanfragen konnten gerade nicht geladen werden." };
   const rows = (data ?? []).map((row) => ({
     unavailableTargets: (row.targets ?? [])
       .filter((t: { target_type: string; category_id: string | null }) => {
@@ -175,7 +175,7 @@ export async function prepareAdUpload(
   if (admin && await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
   if (own && !own.profileId) return own;
   const id = form.get("campaign_id");
-  if (!isProfileId(id)) return { error: failed };
+  if (!isProfileId(id)) return { error: failed(admin) };
   let query = client
     .from("company_ad_campaigns")
     .select("*")
@@ -183,7 +183,7 @@ export async function prepareAdUpload(
   if (own?.profileId) query = query.eq("profile_id", own.profileId);
   const { data: campaign, error } = await query.maybeSingle();
   if (error || !campaign || campaign.archived_at || (!admin && !["draft", "rejected"].includes(campaign.status)))
-    return { error: "Diese Kampagne kann derzeit nicht bearbeitet werden." };
+    return { error: admin ? "Dieses Banner kann derzeit nicht bearbeitet werden." : "Diese Angebotsanfrage kann derzeit nicht bearbeitet werden." };
   const type = form.get("file_type"),
     size = Number(form.get("file_size"));
   const ext =
@@ -210,7 +210,7 @@ export async function saveOwnAd(
   if (own && !own.profileId) return own;
   const id = form.get("campaign_id"),
     submit = form.get("intent") === "submit";
-  if (!isProfileId(id)) return { error: failed };
+  if (!isProfileId(id)) return { error: failed(admin) };
   const values = validateAdValues(form);
   if (!values.data) return { error: values.error };
   if (own &&
@@ -230,7 +230,7 @@ export async function saveOwnAd(
   if (own?.profileId) query = query.eq("profile_id", own.profileId);
   const { data: campaign, error } = await query.maybeSingle();
   if (error || !campaign || campaign.archived_at || (!admin && !["draft", "rejected"].includes(campaign.status)))
-    return { error: "Diese Kampagne kann derzeit nicht bearbeitet werden." };
+    return { error: admin ? "Dieses Banner kann derzeit nicht bearbeitet werden." : "Diese Angebotsanfrage kann derzeit nicht bearbeitet werden." };
   // Existing media comes from the authorized row, never an arbitrary hidden field.
   values.data.image_path = campaign.image_path;
   let file = form.get("image");
@@ -242,7 +242,7 @@ export async function saveOwnAd(
       !uploadedPath.startsWith(prefix) ||
       !/^[0-9a-f-]{36}\.(jpg|png|webp)$/.test(uploadedPath.slice(prefix.length))
     )
-      return { error: "Das Bild gehört nicht zu dieser Kampagne." };
+      return { error: admin ? "Das Bild gehört nicht zu diesem Banner." : "Das Bild gehört nicht zu dieser Angebotsanfrage." };
     const downloaded = await client.storage
       .from(AD_BUCKET)
       .download(uploadedPath);
@@ -292,7 +292,7 @@ export async function saveOwnAd(
         ? "Ein ausgewählter Platz ist in diesem Zeitraum bereits belegt."
         : saved.error.message?.includes("ad_target_not_assigned")
         ? "Ein ausgewähltes Gewerk ist Ihrer Firma nicht mehr zugeordnet. Bitte laden Sie die Seite neu."
-        : failed,
+        : failed(admin),
     };
   }
   // Old media is unreferenced now. It can be removed while the campaign is still editable.
@@ -300,7 +300,7 @@ export async function saveOwnAd(
     await client.storage.from(AD_BUCKET).remove([campaign.image_path]);
   return {
     success: submit
-      ? "Ihre Werbekampagne wurde zur Prüfung eingereicht."
+      ? admin ? "Das Banner wurde zur Prüfung eingereicht." : "Ihre Angebotsanfrage wurde zur Prüfung eingereicht."
       : "Der Entwurf wurde gespeichert.",
   };
 }

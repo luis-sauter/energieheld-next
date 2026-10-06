@@ -160,7 +160,7 @@ export function validateAdValues(form: FormData): {
   )
     return {
       error:
-        "Bitte geben Sie einen Kampagnennamen (max. 120 Zeichen), eine Überschrift (max. 100) und höchstens 400 Zeichen Beschreibung ein.",
+        "Bitte geben Sie eine Bezeichnung (max. 120 Zeichen), eine Überschrift (max. 100) und höchstens 400 Zeichen Beschreibung ein.",
     };
   const selected = form.getAll("targets");
   if (

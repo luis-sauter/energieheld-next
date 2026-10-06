@@ -27,7 +27,7 @@ export async function saveCampaign(
   try {
     result = await saveOwnAd(await createClient(), form);
   } catch {
-    return { error: "Die Kampagne konnte gerade nicht gespeichert werden." };
+    return { error: "Die Angebotsanfrage konnte gerade nicht gespeichert werden." };
   }
   if (result.unauthenticated) redirect("/login");
   if (result.success) {
