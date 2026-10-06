@@ -557,6 +557,7 @@ test('P14 customer list and detail use request language in all editable and read
   globalThis.p14CampaignResult={campaigns:[row],count:21,categoryIds:[]};
   const index=renderToStaticMarkup(await CampaignIndex({params:{}}));assert.match(index,/Meine Angebotsanfragen/);assert.match(index,/Neue Angebotsanfrage/);assert.match(index,/Seiten der Angebotsanfragen/);assert.doesNotMatch(index,/Kampagne/);
   const detail=renderToStaticMarkup(await CampaignDetail({id:row.id}));assert.match(detail,/<h1>Angebotsanfrage<\/h1>/);assert.match(detail,/Zur Übersicht der Angebotsanfragen/);assert.doesNotMatch(detail,/Kampagne/);
+  assert.equal(detail.includes('<p role="status">Ihre Angebotsanfrage wurde zur Prüfung eingereicht.</p>'),status==='pending');
  }
  globalThis.p14CampaignResult={campaigns:[],count:0};const empty=renderToStaticMarkup(await CampaignIndex({params:{fehler:'erstellen'}}));assert.match(empty,/Noch keine Angebotsanfragen/);assert.match(empty,/Die Angebotsanfrage.*konnte nicht erstellt/s);
  globalThis.p14CampaignResult={campaigns:[],count:0};const admin=renderToStaticMarkup(await CampaignIndex({admin:true,params:{}}));assert.match(admin,/Werbekampagnen prüfen/);assert.doesNotMatch(admin,/Angebotsanfrage/);
