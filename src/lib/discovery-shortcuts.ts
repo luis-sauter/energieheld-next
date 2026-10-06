@@ -1,12 +1,10 @@
-import type { PublicTravelTerm } from "./reiseportal-filter-options";
-
-// Presentation only: existing public audience terms, no assignments or new taxonomy.
-export const audienceShortcutPresentation: Record<string, { icon: string; image?: string }> = {
-  familie: { icon: "familienurlaub", image: "/reiseportal/redesign/mottoreisen/familienurlaub.webp" },
-  paar: { icon: "romantik-zu-zweit", image: "/reiseportal/redesign/mottoreisen/romantik-zu-zweit.webp" },
-  "mit-hund": { icon: "mit-hund" }, // No matching dog asset exists; do not substitute an unrelated photo.
+// Navigation for existing audience slugs, not a list of assigned profile terms.
+// Like the theme shortcuts, a link may honestly lead to zero matching results.
+export const audienceShortcutPresentation: Record<string, { label: string; icon: string; image: string }> = {
+  "mit-hund": { label: "Mit Hund", icon: "mit-hund", image: "/reiseportal/quicklinks/mit-hund.svg" },
+  familie: { label: "Mit Kindern", icon: "familienurlaub", image: "/reiseportal/redesign/mottoreisen/familienurlaub.webp" },
+  paar: { label: "Zu zweit", icon: "romantik-zu-zweit", image: "/reiseportal/redesign/mottoreisen/romantik-zu-zweit.webp" },
 };
-export function discoveryAudienceShortcuts(terms: PublicTravelTerm[]) {
-  return terms.filter(term => term.dimension === "audience" && audienceShortcutPresentation[term.slug])
-    .map(term => ({ slug: term.slug, label: term.label, ...audienceShortcutPresentation[term.slug] }));
+export function discoveryAudienceShortcuts() {
+  return Object.entries(audienceShortcutPresentation).map(([slug, presentation]) => ({ slug, ...presentation }));
 }

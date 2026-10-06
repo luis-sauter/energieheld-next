@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 240" fill="none">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="480" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D9F0FB"/><stop offset="1" stop-color="#FAF7F2"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h480v240H0z"/>
+  <circle cx="410" cy="46" r="32" fill="#FF8A4C" opacity=".5"/>
+  <path d="M0 160c84-51 129-8 194 10s178-71 286-33v103H0z" fill="#1E5A7A" opacity=".12"/>
+  <path d="M0 198c138-59 232 57 480-22v64H0z" fill="#174761" opacity=".12"/>
+  <path d="M144 170v-35l28-36 29 24h65l18 24v24h-24v34h-16v-34h-56v34h-16v-36h-28z" fill="#1E5A7A"/>
+  <path d="M172 100V61l36 18v44m-62 15-32-12" stroke="#1E5A7A" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="189" cy="90" r="4" fill="#FAF7F2"/>
+  <path d="m195 116 19 10" stroke="#FF8A4C" stroke-width="8" stroke-linecap="round"/>
+  <g fill="#1E5A7A" opacity=".22" transform="translate(334 104) rotate(24)">
+    <ellipse cy="13" rx="13" ry="11"/><ellipse cx="-17" cy="-3" rx="6" ry="8"/>
+    <ellipse cx="-6" cy="-14" rx="6" ry="8"/><ellipse cx="8" cy="-13" rx="6" ry="8"/>
+    <ellipse cx="19" cy="-2" rx="6" ry="8"/>
+  </g>
+  <g fill="#1E5A7A" opacity=".13" transform="translate(388 163) rotate(-12) scale(.8)">
+    <ellipse cy="13" rx="13" ry="11"/><ellipse cx="-17" cy="-3" rx="6" ry="8"/>
+    <ellipse cx="-6" cy="-14" rx="6" ry="8"/><ellipse cx="8" cy="-13" rx="6" ry="8"/>
+    <ellipse cx="19" cy="-2" rx="6" ry="8"/>
+  </g>
+</svg>

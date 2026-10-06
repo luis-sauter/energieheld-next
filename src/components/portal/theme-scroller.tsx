@@ -5,7 +5,7 @@ import { useRotationMotion } from "./use-rotation-motion";
 import styles from "./theme-scroller.module.css";
 
 export const themeScrollerDelay = 3000;
-export const compactScrollSpeed = 18; // Pixels/second, independent of display refresh rate.
+export const compactScrollSpeed = 30; // Pixels/second, independent of display refresh rate.
 export function continuousThemeScroll(left: number, seconds: number, max: number, direction: number) {
   const next = Math.max(0, Math.min(max, left + direction * compactScrollSpeed * seconds));
   return { left: next, direction: next >= max ? -1 : next <= 0 ? 1 : direction };

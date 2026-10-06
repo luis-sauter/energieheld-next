@@ -57,22 +57,22 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     const listing = bySlug.get(slug);
     return listing && image && !listing.isDemo && !listing.isPreview ? [{ ...listing, images: [image] }] : [];
   });
-  const discoveryAudiences = discoveryAudienceShortcuts(terms);
+  const discoveryAudiences = discoveryAudienceShortcuts();
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
     <HomeTravelFinder banners={searchBanners.banners} listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={mergePublicTravelTerms(terms,searchBanners.terms)} error={directory.error ?? searchBanners.error} />
 
-    <nav className={`container ${styles.quicklinks}`} aria-label="Schnell zu Mottoreisen" data-travel-quicklinks>
+    <nav className={`container ${styles.quicklinks}`} aria-label="Schnell zu Mottoreisen und Mit wem?" data-travel-quicklinks>
       <ThemeScroller count={travelThemes.length + discoveryAudiences.length} label="Mottoreisen" compact>
+        {discoveryAudiences.map((entry) => <a key={`audience:${entry.slug}`} href={`/unterkuenfte-a-z?zielgruppe=${encodeURIComponent(entry.slug)}`} data-theme-image>
+          <Image src={entry.image} alt="" fill sizes="(max-width: 640px) 45vw, (max-width: 1100px) 23vw, 200px" loading="lazy" />
+          <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.icon} /></span><span>{entry.label}</span>
+        </a>)}
         {travelThemes.map((entry) => <a key={entry.slug} href={`/unterkuenfte-a-z?thema=${entry.slug}`} data-theme-image>
           <Image src={`/reiseportal/redesign/mottoreisen/${entry.slug}.webp`} alt="" fill sizes="(max-width: 640px) 45vw, (max-width: 1100px) 23vw, 200px" loading="lazy" />
           <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.slug} /></span>
           <span>{entry.title}</span>
-        </a>)}
-        {discoveryAudiences.map((entry) => <a key={`audience:${entry.slug}`} href={`/unterkuenfte-a-z?zielgruppe=${encodeURIComponent(entry.slug)}`} data-theme-image={entry.image ? true : undefined}>
-          {entry.image && <Image src={entry.image} alt="" fill sizes="(max-width: 640px) 45vw, (max-width: 1100px) 23vw, 200px" loading="lazy" />}
-          <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.icon} /></span><span>{entry.label}</span>
         </a>)}
       </ThemeScroller>
     </nav>

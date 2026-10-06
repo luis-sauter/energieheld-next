@@ -40,6 +40,9 @@ const {default:Home}=await import('../src/app/(energieheld)/page.tsx');
 const {DiscoveryCard}=await import('../src/components/portal/reise-overview.tsx');
 const {AccommodationCard}=await import('../src/components/portal/discovery-detail.tsx');
 const {travelThemes,destinations}=await import('../src/data/reiseportal-discovery.ts');
+const {discoveryAudienceShortcuts}=await import('../src/lib/discovery-shortcuts.ts');
+const {filterTravelListings}=await import('../src/lib/reiseportal-facets.ts');
+const {readTravelFilterValues}=await import('../src/lib/reiseportal-filter-options.ts');
 test('homepage composes existing search, all central themes, four destinations and real featured profiles as server HTML',async()=>{
  globalThis.homeFixture.calls=[];
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({q:'Nordic Walking',ziel:'schweiz'})}));
@@ -126,7 +129,7 @@ test('all existing Premium and A–J ads reach the unchanged shared advertising 
 test('homepage controls share the inspiration heading and compact shortcuts have no playback controls',async()=>{
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
  const compact=html.split('<nav')[1].split('</nav>')[0];
- assert.equal((compact.match(/data-theme-image="true"/g)||[]).length,travelThemes.length);
+ assert.equal((compact.match(/data-theme-image="true"/g)||[]).length,travelThemes.length+3);
  assert.doesNotMatch(compact,/<button/);
  const inspiration=html.split('aria-labelledby="inspiration-title"')[1].split('</section>')[0];
  const header=inspiration.split('<div class="header">')[1].split('<div class="rail"')[0];
@@ -137,15 +140,34 @@ test('homepage controls share the inspiration heading and compact shortcuts have
 });
 
 
-test('audience shortcuts use existing public terms, matching local images and never fabricate dog imagery or assignments',async()=>{
+test('audience shortcuts appear first with public labels, unchanged audience links and a local dog illustration',async()=>{
  try{
   globalThis.homeFixture.terms=[{term_key:'audience:paar',dimension:'audience',slug:'paar',label:'Paar'},{term_key:'audience:familie',dimension:'audience',slug:'familie',label:'Familie'},{term_key:'audience:mit-hund',dimension:'audience',slug:'mit-hund',label:'Mit Hund'}];
   const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));const compact=html.split('<nav')[1].split('</nav>')[0];
-  for(const slug of ['paar','familie','mit-hund'])assert.ok(compact.includes('href="/unterkuenfte-a-z?zielgruppe='+slug+'"'));
+  const links=[...compact.matchAll(/href="([^"]+)"/g)].map(match=>match[1]);
+  assert.deepEqual(links.slice(0,3),['/unterkuenfte-a-z?zielgruppe=mit-hund','/unterkuenfte-a-z?zielgruppe=familie','/unterkuenfte-a-z?zielgruppe=paar']);
+  assert.deepEqual(links.slice(3),travelThemes.map(entry=>'/unterkuenfte-a-z?thema='+entry.slug));
+  for(const [slug,label] of [['mit-hund','Mit Hund'],['familie','Mit Kindern'],['paar','Zu zweit']]){
+   const card=compact.split('href="/unterkuenfte-a-z?zielgruppe='+slug+'"')[1].split('</a>')[0];
+   assert.ok(card.includes('>'+label+'</span>'));
+   assert.match(card,/loading="lazy"/);assert.match(card,/alt=""/);
+  }
   for(const [slug,image] of [['paar','romantik-zu-zweit'],['familie','familienurlaub']]){const card=compact.split('href="/unterkuenfte-a-z?zielgruppe='+slug+'"')[1].split('</a>')[0];assert.match(card,/<img/);assert.ok(card.includes(image+'.webp'));}
-  assert.doesNotMatch(compact.split('href="/unterkuenfte-a-z?zielgruppe=mit-hund"')[1].split('</a>')[0],/<img/);
-  assert.equal((compact.match(/data-theme-image="true"/g)||[]).length,travelThemes.length+2);
-  globalThis.homeFixture.terms=[];assert.doesNotMatch(renderToStaticMarkup(await Home({searchParams:Promise.resolve({})})),/zielgruppe=mit-hund/);
+  const dog=compact.split('href="/unterkuenfte-a-z?zielgruppe=mit-hund"')[1].split('</a>')[0];
+  assert.match(dog,/src="\/reiseportal\/quicklinks\/mit-hund.svg"/);
+  assert.match(dog,/travel-quicklink-icon/);
+  const graphic=read('public/reiseportal/quicklinks/mit-hund.svg');
+  assert.match(graphic,/viewBox="0 0 480 240"/);
+  assert.doesNotMatch(graphic,/<script|<image|<text|href=|url\(https?:/);
+  assert.equal((compact.match(/data-theme-image="true"/g)||[]).length,travelThemes.length+3);
+  assert.equal((html.match(/data-travel-quicklinks/g)||[]).length,1);
+  assert.deepEqual(globalThis.homeFixture.terms.map(t=>[t.term_key,t.slug,t.label]),[
+   ['audience:paar','paar','Paar'],['audience:familie','familie','Familie'],['audience:mit-hund','mit-hund','Mit Hund']]);
+  // Public RLS omits terms without an approved assignment. Navigation stays
+  // available; it must not manufacture a profile assignment or hide the dog link.
+  globalThis.homeFixture.terms=[];
+  const empty=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
+  for(const slug of ['mit-hund','familie','paar'])assert.ok(empty.includes('href="/unterkuenfte-a-z?zielgruppe='+slug+'"'));
  }finally{delete globalThis.homeFixture.terms;}
 });
 test('full inspiration rail renders every central theme with an existing image and valid destination',async()=>{
@@ -153,4 +175,24 @@ test('full inspiration rail renders every central theme with an existing image a
  assert.equal((inspiration.match(/class="discovery-card"/g)||[]).length,travelThemes.length);
  assert.equal((inspiration.match(/<img /g)||[]).length,travelThemes.length);
  for(const {slug} of travelThemes){assert.ok(inspiration.includes('/mottoreisen/'+slug+'"'));assert.ok(inspiration.includes('/mottoreisen/'+slug+'.webp'));}
+});
+
+test('audience shortcut deep links reuse existing facet filtering, survive URL reload and never invent terms',()=>{
+ const terms=['paar','familie','mit-hund'].map(slug=>({term_key:'audience:'+slug,dimension:'audience',slug,label:slug}));
+ const shortcuts=discoveryAudienceShortcuts();
+ assert.deepEqual(shortcuts.map(s=>s.slug),['mit-hund','familie','paar']);
+ const audienceProfiles=terms.map((term,index)=>({...profiles[index],travelTermKeys:[term.term_key]}));
+ for(const shortcut of shortcuts){
+  const path='/unterkuenfte-a-z?zielgruppe='+encodeURIComponent(shortcut.slug);
+  const values=readTravelFilterValues(Object.fromEntries(new URL(path,'https://portal.invalid').searchParams));
+  const matching=filterTravelListings(audienceProfiles,values);
+  assert.deepEqual(matching.map(p=>p.id),[audienceProfiles.find(p=>p.travelTermKeys.includes('audience:'+shortcut.slug)).id]);
+  const reloaded=readTravelFilterValues(Object.fromEntries(new URL(path,'https://portal.invalid').searchParams));
+  assert.deepEqual(filterTravelListings(audienceProfiles,reloaded).map(p=>p.id),matching.map(p=>p.id));
+ }
+ const dog=readTravelFilterValues({zielgruppe:'mit-hund'});
+ assert.deepEqual(filterTravelListings(audienceProfiles.filter(p=>!p.travelTermKeys.includes('audience:mit-hund')),dog),[]);
+ const seed=read('supabase/migrations/20260926160000_reiseportal_travel_taxonomy.sql');
+ for(const shortcut of shortcuts)assert.ok(seed.includes("('audience:"+shortcut.slug+"', 'audience', '"+shortcut.slug+"'"));
+ assert.deepEqual(terms.map(t=>t.term_key),['audience:paar','audience:familie','audience:mit-hund']);
 });
