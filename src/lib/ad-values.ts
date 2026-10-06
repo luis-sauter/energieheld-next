@@ -50,6 +50,7 @@ export type AdCampaign = AdValues & {
   id: string;
   profile_id: string | null;
   is_editorial?: boolean;
+  lifecycle_group_id?: string | null;
   archived_at?: string | null;
   deletion_requested_at?: string | null;
   status: "draft" | "pending" | "approved" | "rejected" | "paused";

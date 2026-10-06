@@ -278,7 +278,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
           {!(options.archived?.length) && <p>Es sind noch keine archivierten Banner vorhanden.</p>}
           <label>Bannergröße<select value={size} onChange={event => setSize(event.target.value as BannerSize)}>{Object.entries(bannerSizes).map(([key,label]) => <option key={key} value={key}>{label}</option>)}</select></label>
           <p>{adPlacements[placement]}</p>
-          <label className={styles.choice}><input type="checkbox" required /> Archivierten Banner als unabhängige Kopie einsetzen</label>
+
         </fieldset>
         {error && <p role="alert">{error}</p>}
         <div className={styles.actions}><button type="submit" className="button button-primary" disabled={busy || blocked || !archivedId || Boolean(options.error)}>{busy ? 'Setzt ein …' : 'Banner einsetzen'}</button><button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button></div>

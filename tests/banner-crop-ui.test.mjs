@@ -39,7 +39,7 @@ test('archive choice replaces new-upload fields and inserts chosen archived bann
  let tree=render(props);find(tree,n=>n.type==='input'&&n.props.type==='radio'&&!n.props.checked).props.onChange();
  tree=render(props);assert.equal(find(tree,n=>n.type==='input'&&n.props.type==='file'),undefined);
  const select=find(tree,n=>n.type==='select'&&n.props.required);select.props.onChange({target:{value:'original'}});
- tree=render(props);assert.ok(find(tree,n=>n.type==='input'&&n.props.type==='checkbox'&&n.props.required));
+ tree=render(props);assert.equal(find(tree,n=>n.type==='input'&&n.props.type==='checkbox'),undefined);
  await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});
  assert.deepEqual(calls,[{archived_id:'original',placement:'sidebar_12',size:'large',confirmed:'yes'}]);assert.equal(inserted.ad.id,'copy');assert.equal(inserted.metadata.city,'Ort');
 });

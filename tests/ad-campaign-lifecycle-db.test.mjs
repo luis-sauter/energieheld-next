@@ -1,6 +1,8 @@
 import test, { before, after, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import './helpers/load-ts.mjs';
+import { selectableArchivedBanners } from '../src/lib/ad-archive.ts';
 import { createMediaTestDatabase } from './helpers/media-database.mjs';
 
 let db, ids, today, baseline, afterMigration;
@@ -32,13 +34,14 @@ before(async () => {
   await db.query("insert into company_profile_travel_terms values($1,'theme:nordic-walking')", [ids[0]]);
   for (const file of ['20260917203041_company_ad_campaigns.sql', '20260918202110_company_ad_campaign_targets.sql', '20260925091403_company_directory_order.sql', '20260925103400_directory_demo_and_sidebar_order.sql', '20260925160039_expand_legacy_advertising_rail.sql', '20260930120000_ad_target_placements.sql', '20260930143000_portal_ad_target_areas.sql', '20260930170000_editorial_ad_campaigns.sql', '20260930190000_inline_banner_presentation.sql', '20261001090000_fixed_banner_slot_contents.sql', '20261001170000_banner_display_order.sql']) await db.exec(await read(file));
   today = (await db.query("select (now() at time zone 'Europe/Berlin')::date::text as day")).rows[0].day;
-  baseline = (await db.query("select jsonb_build_object('profiles',(select jsonb_agg(to_jsonb(p)) from company_profiles p),'ads',(select jsonb_agg(to_jsonb(a)) from company_ad_campaigns a),'targets',(select jsonb_agg(to_jsonb(t)) from company_ad_campaign_targets t),'policies',(select jsonb_agg(to_jsonb(p) order by schemaname,tablename,policyname) from pg_policies p)) as snapshot")).rows[0].snapshot;
+  baseline = (await db.query("select jsonb_build_object('profiles',(select jsonb_agg(to_jsonb(p)) from company_profiles p),'ads',(select jsonb_agg(to_jsonb(a)-'lifecycle_group_id') from company_ad_campaigns a),'targets',(select jsonb_agg(to_jsonb(t)) from company_ad_campaign_targets t),'policies',(select jsonb_agg(to_jsonb(p) order by schemaname,tablename,policyname) from pg_policies p)) as snapshot")).rows[0].snapshot;
   await db.exec(await read('20261001190000_public_portal_search.sql'));
   await db.exec(await read('20261001193000_portal_search_plain_excerpts.sql'));
   await db.exec(await read('20261001230000_banner_search_metadata.sql'));
   await db.exec(await read('20261002160000_ad_presentation_crop.sql'));
   await db.exec(await read('20261006120000_ad_campaign_lifecycle.sql'));
-  afterMigration = (await db.query("select jsonb_build_object('profiles',(select jsonb_agg(to_jsonb(p)) from company_profiles p),'ads',(select jsonb_agg(to_jsonb(a)) from company_ad_campaigns a),'targets',(select jsonb_agg(to_jsonb(t)) from company_ad_campaign_targets t),'policies',(select jsonb_agg(to_jsonb(p) order by schemaname,tablename,policyname) from pg_policies p)) as snapshot")).rows[0].snapshot;
+  await db.exec(await read('20261006140000_ad_campaign_lineage.sql'));
+  afterMigration = (await db.query("select jsonb_build_object('profiles',(select jsonb_agg(to_jsonb(p)) from company_profiles p),'ads',(select jsonb_agg(to_jsonb(a)-'lifecycle_group_id') from company_ad_campaigns a),'targets',(select jsonb_agg(to_jsonb(t)) from company_ad_campaign_targets t),'policies',(select jsonb_agg(to_jsonb(p) order by schemaname,tablename,policyname) from pg_policies p)) as snapshot")).rows[0].snapshot;
 });
 after(async () => db?.close()); beforeEach(async () => db.exec('begin')); afterEach(async () => db.exec('rollback'));
 
@@ -118,5 +121,33 @@ test('delete removes only matching creative crop references and retains fixed sl
  await actor('authenticated',admin);await rpc(id,'archive');await rpc(id,'prepare_delete');await db.query('delete from storage.objects where name=$1',[image]);await rpc(id,'delete');await actor('postgres');
  const after=(await db.query("select * from ad_slot_presentations where target_type='homepage' and placement='sidebar_top'")).rows[0];
  assert.equal(after.crop_reference,null);assert.equal(after.focus_x,null);assert.equal(after.display_source,before.display_source);assert.equal(after.size,before.size);assert.equal(after.placement,before.placement);
+});
+
+
+
+test('lineage persists through three cycles, blocks repeat reuse and retains booking history',async()=>{
+ const original=await campaign();await actor('authenticated',admin);await rpc(original,'archive');
+ const before=(await db.query('select * from company_ad_campaign_targets where campaign_id=$1',[original])).rows;
+ let current=original;
+ assert.equal(selectableArchivedBanners((await db.query('select * from company_ad_campaigns')).rows).length,1);
+ for(let cycle=0;cycle<3;cycle++){
+  const copy=(await rpc(current,'reuse')).rows[0].id;
+ assert.equal(selectableArchivedBanners((await db.query('select * from company_ad_campaigns')).rows).length,0);
+  await actor('postgres');assert.equal((await row(current)).lifecycle_group_id,original);assert.equal((await row(copy)).lifecycle_group_id,original);
+  assert.equal((await db.query('select * from company_ad_campaign_targets where campaign_id=$1',[copy])).rows.length,0);
+  await actor('authenticated',admin);await db.exec('savepoint duplicate');await assert.rejects(rpc(original,'reuse'));await db.exec('rollback to duplicate');
+  await rpc(copy,'archive');current=copy;
+ assert.equal(selectableArchivedBanners((await db.query('select * from company_ad_campaigns')).rows).length,1);
+ }
+ await actor('postgres');assert.equal((await db.query('select * from company_ad_campaigns where lifecycle_group_id=$1',[original])).rows.length,4);
+ assert.deepEqual((await db.query('select * from company_ad_campaign_targets where campaign_id=$1',[original])).rows,before);
+});
+test('lineage migration adds no ordinary write privileges and keeps archived creative immutable',async()=>{
+ const id=await campaign();await actor('authenticated',admin);await rpc(id,'archive');const copy=(await rpc(id,'reuse')).rows[0].id;
+ await actor('postgres');for(const role of ['anon','authenticated'])assert.equal((await db.query("select has_column_privilege($1,'company_ad_campaigns','lifecycle_group_id','UPDATE') as allowed",[role])).rows[0].allowed,false);
+ for(const sql of ['update company_ad_campaigns set lifecycle_group_id=gen_random_uuid() where id=$1','update company_ad_campaigns set headline=\'Changed\' where id=$1']){
+  await db.exec('savepoint immutable');await assert.rejects(db.query(sql,[id]));await db.exec('rollback to immutable');
+ }
+ assert.notEqual(copy,id);
 });
 

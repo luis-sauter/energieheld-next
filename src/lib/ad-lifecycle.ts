@@ -21,6 +21,8 @@ export async function changeAdLifecycle(client: SupabaseClient, form: FormData):
     }
     if (!original.archived_at) return { error: 'Bitte archivieren Sie das Banner zuerst.' };
     if (action === 'reuse') {
+      if (!Object.hasOwn(original, 'lifecycle_group_id'))
+        return { error: 'Die Archiv-Wiederverwendung ist noch nicht bereit. Bitte die Lineage-Migration abschließen.' };
       const created = await rpc(id, 'reuse');
       if (created.error || !isProfileId(created.data)) return { error: 'Der neue Entwurf konnte nicht erstellt werden.' };
       const destination = `/admin/werbung/${created.data}`;
