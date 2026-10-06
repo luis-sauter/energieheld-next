@@ -38,6 +38,7 @@ before(async () => {
   await db.exec(await read('20261002160000_ad_presentation_crop.sql'));
   await db.exec(await read('20261006120000_ad_campaign_lifecycle.sql'));
   await db.exec(await read('20261006143408_public_travel_search_banners.sql'));
+  await db.exec(await read('20261006145449_public_travel_search_banner_terms.sql'));
   afterMigration = (await db.query("select jsonb_build_object('profiles',(select jsonb_agg(to_jsonb(p)) from company_profiles p),'ads',(select jsonb_agg(to_jsonb(a)) from company_ad_campaigns a),'targets',(select jsonb_agg(to_jsonb(t)) from company_ad_campaign_targets t),'policies',(select jsonb_agg(to_jsonb(p) order by schemaname,tablename,policyname) from pg_policies p)) as snapshot")).rows[0].snapshot;
 });
 after(async () => db?.close()); beforeEach(async () => db.exec('begin')); afterEach(async () => db.exec('rollback'));
@@ -95,4 +96,12 @@ test('public profile relationship never exposes draft profile IDs and public pro
   const before=(await db.query('select jsonb_agg(to_jsonb(t)) as rows from company_ad_campaign_targets t')).rows[0].rows;
   await actor();const result=await projection();assert.ok(result.metadata.every(b=>b.profile_id!==ids[0]));
   await actor('postgres');assert.deepEqual((await db.query('select jsonb_agg(to_jsonb(t)) as rows from company_ad_campaign_targets t')).rows[0].rows,before);
+});
+
+test('public banner-only taxonomy labels remain usable without broadening travel_terms RLS',async()=>{
+ const id=await campaign();await actor('authenticated',admin);await save(id,null,'QA','Ort',['audience:mit-hund']);
+ await actor();assert.equal((await db.query("select * from travel_terms where term_key='audience:mit-hund'")).rows.length,0);
+ const projected=(await projection()).terms;assert.ok(projected.some(t=>t.term_key==='audience:mit-hund'&&t.label==='Mit Hund'));
+ assert.equal(projected.some(t=>t.term_key==='feature:unassigned'),false);
+ await actor('postgres');await db.query("update company_ad_campaigns set status='paused' where id=$1",[id]);await actor();assert.equal((await projection()).terms.some(t=>t.term_key==='audience:mit-hund'),false);
 });

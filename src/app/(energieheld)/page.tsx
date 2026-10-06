@@ -15,7 +15,7 @@ import { ThemeScroller } from "@/components/portal/theme-scroller";
 import { HomeTravelFinder } from "@/components/portal/travel-finder";
 import { readTravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { discoveryAudienceShortcuts } from "@/lib/discovery-shortcuts";
-import { loadTravelSearchBanners } from "@/lib/public-travel-search-banners";
+import { loadTravelSearchBanners, mergePublicTravelTerms } from "@/lib/public-travel-search-banners";
 import { loadPublicAds } from "@/lib/public-ads";
 import { loadPublicSidebarOrder } from "@/lib/public-sidebar-order";
 import styles from "./home.module.css";
@@ -61,7 +61,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
-    <HomeTravelFinder banners={searchBanners.banners} listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={terms} error={directory.error ?? searchBanners.error} />
+    <HomeTravelFinder banners={searchBanners.banners} listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={mergePublicTravelTerms(terms,searchBanners.terms)} error={directory.error ?? searchBanners.error} />
 
     <nav className={`container ${styles.quicklinks}`} aria-label="Schnell zu Mottoreisen" data-travel-quicklinks>
       <ThemeScroller count={travelThemes.length + discoveryAudiences.length} label="Mottoreisen" compact>
