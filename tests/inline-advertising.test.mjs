@@ -26,11 +26,12 @@ test('archive insertion rejects non-admin, unconfirmed, booked and historical oc
 });
 test('archive insertion copies existing media independently, selects only this new page/slot, and keeps archived original bookings untouched',async()=>{
  const copyId='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
- const db=client({reuseId:copyId,campaign:{archived_at:'2026-10-06',is_editorial:true,targets:[target(),target('reiseziele/deutschland','sidebar_top')]}}),before=structuredClone(db.row);
+ const db=client({reuseId:copyId,metadata:{postal_code:'12345',city:'QA Ort',term_keys:['theme:wellnessangebote']},campaign:{archived_at:'2026-10-06',is_editorial:true,targets:[target(),target('reiseziele/deutschland','sidebar_top')]}}),before=structuredClone(db.row);
  const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:id,confirmed:'yes',placement:'sidebar_12',size:'small'}));
  assert.ok(result.success,result.error);assert.equal(result.ad.id,copyId);assert.equal(result.ad.placement,'sidebar_12');assert.deepEqual(db.calls.find(c=>c.original).original,before);
  const saves=db.calls.filter(c=>c.rpc==='save_ad_campaign');assert.ok(saves.length);for(const save of saves){assert.equal(save.data.p_campaign_id,copyId);assert.deepEqual(save.data.p_data.targets,[target('reiseziele/schweiz','sidebar_12')]);assert.equal(save.data.p_data.requested_start_date,berlinToday());}
  assert.ok(db.calls.find(c=>c.upload).upload.startsWith(`campaigns/${copyId}/creative/`));assert.equal(db.calls.find(c=>c.upload).upsert,false);assert.ok(!db.calls.some(c=>c.remove));
+ const metadataSave=db.calls.find(c=>c.rpc==='save_ad_banner_search_metadata');assert.equal(metadataSave.data.p_postal_code,'12345');assert.equal(metadataSave.data.p_city,'QA Ort');assert.deepEqual(metadataSave.data.p_term_keys,['theme:wellnessangebote']);assert.equal(result.metadata.city,'QA Ort');
 });
 
 test('shared/company metadata edits use only the admin metadata RPC after page/source authorization', async()=>{
@@ -80,7 +81,7 @@ const form = (values = {}) => {
   return data;
 };
 
-function client({ authenticated = true, admin = true, campaign = {}, saveError = null, reviewError = null, removeError = null, settings = [], active = [], reuseId = null } = {}) {
+function client({ authenticated = true, admin = true, campaign = {}, saveError = null, reviewError = null, removeError = null, settings = [], active = [], reuseId = null, metadata = null } = {}) {
   const calls = [];
   const row = { id, is_editorial: false, profile_id: "existing-company", status: "approved", image_path: image,
     internal_name: "Existing", headline: "Existing image alt", body_text: "Existing text", target_url: "https://example.org/old",
@@ -93,7 +94,7 @@ function client({ authenticated = true, admin = true, campaign = {}, saveError =
       return { select(columns) { call.columns = columns; return this; }, eq(key, value) { call.filters.push([key,value]); return this; },
         is(key,value) { call.filters.push([key,value]); return this; },
         in(key,value) { call.filters.push([key,value]); return this; },order(){return this;},
-        then(resolve) { return Promise.resolve({ data: table==='ad_slot_presentations'?settings:[], error: null }).then(resolve); },
+        then(resolve) { const data=table==='ad_slot_presentations'?settings:metadata&&table==='ad_banner_search_metadata'?[{banner_key:`campaign:${reuseId}`,postal_code:metadata.postal_code,city:metadata.city}]:metadata&&table==='ad_banner_search_terms'?metadata.term_keys.map(term_key=>({banner_key:`campaign:${reuseId}`,term_key})):[];return Promise.resolve({ data, error: null }).then(resolve); },
         async maybeSingle() { return { data: table === "portal_admins" ? admin ? { user_id: "verified-admin" } : null : structuredClone(row), error: null }; } };
     },
     async rpc(name, data) {
