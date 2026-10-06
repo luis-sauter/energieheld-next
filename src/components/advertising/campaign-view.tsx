@@ -31,6 +31,7 @@ export function CampaignSlot({
   showLabel = true,
   reordering = false,
   editorialPromo = false,
+  searchResult = false,
 }: {
   placement: AdPlacementId;
   ad?: ActiveAd;
@@ -38,8 +39,10 @@ export function CampaignSlot({
   showLabel?: boolean;
   reordering?: boolean;
   editorialPromo?: boolean;
+  searchResult?: boolean;
 }) {
-  const inline = useInlineBanners();
+  const context = useInlineBanners();
+  const inline = searchResult ? null : context;
   const ad = inline && !preview && !reordering && Object.hasOwn(inline.overrides, placement) ? inline.overrides[placement] ?? undefined : initialAd;
   if (!preview && !inline && ad?.suppressed) return null;
   const displayAd = !preview && (ad?.suppressed || !ad?.imageUrl) ? undefined : ad;

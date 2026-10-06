@@ -57,7 +57,7 @@ const render = (values, mode = "directory") => renderToStaticMarkup(createElemen
 
 test("both routes use the same finder and show actual initial totals", () => {
   const home = source("src/app/(energieheld)/page.tsx");
-  assert.match(home, /<HomeTravelFinder listings=/);
+  assert.match(home, /<HomeTravelFinder.*listings=/);
   assert.equal((home.match(/travelThemes\.map/g) ?? []).length, 2);
   assert.match(home, /discoveryAudienceShortcuts\(terms\)/);
   assert.match(home, /href=\{`\/unterkuenfte-a-z\?thema=\$\{entry\.slug\}`\}/);
@@ -90,7 +90,7 @@ test("A–Z keeps hero above results, updates the URL locally and has mobile lay
   const css = source("src/app/globals.css");
   assert.ok(directory.indexOf("<TravelFinder") < directory.indexOf("unterkunft-ergebnisse"));
   assert.match(directory, /window\.history\.replaceState/);
-  assert.match(directory, /filterTravelListings\(listings, filterValues\)/);
+  assert.match(directory, /travelSearchResults\(listings, banners, filterValues\)/);
   assert.match(directory, /DirectoryOrderEditor/);
   assert.match(css, /\.reise-finder-grid \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/);
   assert.match(css, /\.reise-finder-grid \{ grid-template-columns: minmax\(0, 1fr\); \}/);

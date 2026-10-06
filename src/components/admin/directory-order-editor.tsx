@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type PointerEvent } from "react";
+import { useRef, useState, type ReactNode, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { energieheld } from "@/config/energieheld";
 import { directoryItemKey, moveDirectoryId } from "@/lib/company-directory-order";
@@ -81,9 +81,13 @@ export function DirectoryOrderEditor({
   premiumFirst = false,
   travelLabels,
   freshnessStatuses,
+  renderResults,
+  editingExtras,
 }: {
   listings: Listing[];
   hiddenDemoKeys?: string[];
+  renderResults?: (listings: Listing[]) => ReactNode;
+  editingExtras?: ReactNode;
   saveOrder: (ids: string[]) => Promise<{ success?: string; error?: string }>;
   categories?: Category[];
   basePath?: string;
@@ -207,10 +211,11 @@ export function DirectoryOrderEditor({
       )}
       {message && !editing && <p className={styles.success} role="status">{message}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <DirectoryOrderRows listings={shown} categories={categories} basePath={basePath} showVerification={showVerification} premiumFirst={premiumFirst} travelLabels={travelLabels} freshnessStatuses={freshnessStatuses}
+      {!editing && renderResults ? renderResults(shown) : <DirectoryOrderRows listings={shown} categories={categories} basePath={basePath} showVerification={showVerification} premiumFirst={premiumFirst} travelLabels={travelLabels} freshnessStatuses={freshnessStatuses}
         editing={editing} busy={busy} dragged={dragged} target={target}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
-        onMove={(from, to) => setDraft((ids) => moveDirectoryId(ids, from, to, groups))} />
+        onMove={(from, to) => setDraft((ids) => moveDirectoryId(ids, from, to, groups))} />}
+      {editing && editingExtras}
     </div>
   );
 }

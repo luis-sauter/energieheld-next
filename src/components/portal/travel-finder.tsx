@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
 import type { Listing } from "@/types/portal";
 import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, type TravelFilterValues } from "@/lib/reiseportal-filter-options";
-import { filterTravelListings, travelFacetCount, travelFilterParams, travelFilterUrl, type TravelFacet } from "@/lib/reiseportal-facets";
+import { travelFacetCount, travelFilterParams, travelFilterUrl, type TravelFacet } from "@/lib/reiseportal-facets";
 import { travelSearchUrl, travelSearchReturnUrl } from "@/lib/travel-search-intent";
+import { travelSearchResults, matchTravelSearchBanners, type TravelSearchBanner } from "@/lib/travel-search-banners";
 import { SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
 import { Breadcrumbs } from "./breadcrumbs";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
@@ -13,10 +14,11 @@ import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 type Options = ReturnType<typeof availableTravelFilters>;
 type FacetOptions = { slug: string; label: string }[];
 
-export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, origin = "directory" }: {
+export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, banners = [], origin = "directory" }: {
   mode: "home" | "directory" | "search";
   origin?: "home" | "directory";
   listings: Listing[];
+  banners?: TravelSearchBanner[];
   options: Options;
   values: TravelFilterValues;
   onChange: (values: TravelFilterValues) => void;
@@ -25,7 +27,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
 }) {
   const portalQuery = values.query.trim();
   const filterValues = { ...values, query: "" };
-  const count = filterTravelListings(listings, filterValues).length;
+  const count = travelSearchResults(listings, banners, filterValues).count;
   const update = (key: keyof TravelFilterValues, value: string) => onChange({ ...values, [key]: value });
   const facets: { key: TravelFacet; label: string; all: string; entries: FacetOptions }[] = [
     { key: "destination", label: "Wohin?", all: "Alle Reiseziele", entries: options.destinations },
@@ -59,7 +61,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
                   <option value={values[key]}>Nicht verfügbar (0)</option>}
                 {entries.map(({ slug, label: optionLabel }) => {
                   const optionCount = travelFacetCount(listings, filterValues, key, slug);
-                  return <option key={slug} value={slug} disabled={optionCount === 0 && values[key] !== slug}>
+                  return <option key={slug} value={slug} disabled={optionCount === 0 && !matchTravelSearchBanners(banners, { ...filterValues, [key]: slug }).length && values[key] !== slug}>
                     {optionLabel} ({optionCount})
                   </option>;
                 })}
@@ -102,7 +104,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
   </section>;
 }
 
-export function HomeTravelFinder({ listings, terms, error, initialValues }: { listings: Listing[]; terms: PublicTravelTerm[]; error?: string | null; initialValues: TravelFilterValues }) {
+export function HomeTravelFinder({ listings, terms, error, initialValues, banners }: { listings: Listing[]; terms: PublicTravelTerm[]; error?: string | null; initialValues: TravelFilterValues; banners?: TravelSearchBanner[] }) {
   const [values, setValues] = useState<TravelFilterValues>(initialValues);
   useEffect(() => {
     const url = travelSearchReturnUrl(values, 'home');
@@ -113,8 +115,8 @@ export function HomeTravelFinder({ listings, terms, error, initialValues }: { li
     window.addEventListener('popstate', restore);
     return () => window.removeEventListener('popstate', restore);
   }, []);
-  const options = useMemo(() => availableTravelFilters(listings, terms), [listings, terms]);
-  return <TravelFinder mode="home" listings={listings} options={options}
+  const options = useMemo(() => availableTravelFilters(listings, terms, banners?.flatMap(b => b.term_keys)), [listings, terms, banners]);
+  return <TravelFinder mode="home" banners={banners} listings={listings} options={options}
     values={values} onChange={setValues} error={error} />;
 }
 

@@ -11,8 +11,8 @@ export type PublicTravelTerm = {
 
 type Option = { slug: string; label: string };
 
-export function availableTravelFilters(listings: Listing[], terms: PublicTravelTerm[]) {
-  const assigned = new Set(listings.flatMap((listing) => listing.travelTermKeys ?? []));
+export function availableTravelFilters(listings: Listing[], terms: PublicTravelTerm[], bannerTermKeys: string[] = []) {
+  const assigned = new Set([...listings.flatMap((listing) => listing.travelTermKeys ?? []), ...bannerTermKeys]);
   const options = (dimension: PublicTravelTerm["dimension"]): Option[] => terms
     .filter((term) => term.dimension === dimension && assigned.has(term.term_key))
     .map(({ slug, label }) => ({ slug, label }));
