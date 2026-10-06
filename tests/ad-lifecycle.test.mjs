@@ -14,7 +14,7 @@ function fixture({ admin=true, archived=true, attachFails=false, cleanupFails=fa
     list:async folder=>{calls.push(['list',folder]);return {data:calls.some(c=>c[0]==='remove')?[]:[{name:`${id}.png`}],error:null};},
   };
   const client={auth:{getUser:async()=>({data:{user:{id}},error:null})},from(table){
-    const query={select(){return query;},eq(){return query;},maybeSingle:async()=>table==='portal_admins'?{data:admin?{user_id:id}:null}:{data:{id,archived_at:archived?'2026-10-06':null,image_path:image}}};return query;
+    const query={select(){return query;},eq(){return query;},maybeSingle:async()=>table==='portal_admins'?{data:admin?{user_id:id}:null}:{data:{id,lifecycle_group_id:null,archived_at:archived?'2026-10-06':null,image_path:image}}};return query;
   },storage:{from:()=>media},rpc:async(name,args)=>{
     calls.push(['rpc',args.p_action,args.p_id,args.p_image_path]);
     return {data:args.p_action==='reuse'?copy:id,error:attachFails&&args.p_action==='attach_copy'?{}:null};

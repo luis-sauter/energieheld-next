@@ -8,8 +8,9 @@ export function CampaignLifecycle({ id, archived, disabled = false, children, on
   onArchived?: (message: string) => void; onBusyChange?: (busy: boolean) => void;
   onArchive?: (form: FormData) => Promise<{ error?: string; success?: string; redirectTo?: string }>;
 }) {
-  const [intent, setIntent] = useState<'archive' | 'reuse' | 'delete' | null>(null);
+  const [intent, setIntent] = useState<'reuse' | 'delete' | null>(null);
   const [state, action, pending] = useActionState(async (_previous: { error?: string; success?: string; redirectTo?: string }, form: FormData) => {
+    if (form.get('action') === 'archive') form.set('confirmed', 'yes');
     onBusyChange?.(true);
     try {
       const result = onArchive && form.get('action') === 'archive' ? await onArchive(form) : await lifecycleCampaign({}, form);
@@ -24,15 +25,15 @@ export function CampaignLifecycle({ id, archived, disabled = false, children, on
       {archived ? <>
         <button type="button" className="button" disabled={busy} onClick={() => setIntent('reuse')}>Banner wiederverwenden</button>
         <button type="button" className="button" disabled={busy} onClick={() => setIntent('delete')}>Dauerhaft löschen</button>
-      </> : <button type="button" className="button" disabled={busy} onClick={() => setIntent('archive')}>Banner archivieren</button>}
+      </> : <button type="submit" name="action" value="archive" className="button" disabled={busy} formNoValidate>Banner archivieren</button>}
       {children}
     </div>
     {intent && <>
-      <p>{intent === 'archive' ? 'Das Banner wird nicht mehr öffentlich ausgeliefert. Die Buchungsdaten bleiben erhalten.' : intent === 'reuse' ? 'Ein unabhängiger Entwurf entsteht. Seite, Bannerplatz und Zeitraum müssen neu gewählt werden.' : 'Dauerhaftes Löschen entfernt dieses Banner und seine Bilder unwiderruflich.'}</p>
+      <p>{intent === 'reuse' ? 'Ein unabhängiger Entwurf entsteht. Seite, Bannerplatz und Zeitraum müssen neu gewählt werden.' : 'Dauerhaftes Löschen entfernt dieses Banner und seine Bilder unwiderruflich.'}</p>
       <input type="hidden" name="action" value={intent} />
       <label><input key={intent} type="checkbox" name="confirmed" value="yes" required disabled={busy} /> Aktion bestätigen</label>
       <div className={styles.actions}>
-        <button type="submit" className="button" disabled={busy}>{intent === 'archive' ? 'Ja, Banner archivieren' : intent === 'reuse' ? 'Ja, Banner wiederverwenden' : 'Ja, dauerhaft löschen'}</button>
+        <button type="submit" className="button" disabled={busy}>{intent === 'reuse' ? 'Ja, Banner wiederverwenden' : 'Ja, dauerhaft löschen'}</button>
         <button type="button" className="button" disabled={busy} onClick={() => setIntent(null)}>Abbrechen</button>
       </div>
     </>}

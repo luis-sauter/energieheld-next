@@ -26,7 +26,7 @@ test('archive insertion rejects non-admin, unconfirmed, booked and historical oc
 });
 test('archive insertion copies existing media independently, selects only this new page/slot, and keeps archived original bookings untouched',async()=>{
  const copyId='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
- const db=client({reuseId:copyId,metadata:{postal_code:'12345',city:'QA Ort',term_keys:['theme:wellnessangebote']},campaign:{archived_at:'2026-10-06',is_editorial:true,targets:[target(),target('reiseziele/deutschland','sidebar_top')]}}),before=structuredClone(db.row);
+ const db=client({reuseId:copyId,metadata:{postal_code:'12345',city:'QA Ort',term_keys:['theme:wellnessangebote']},campaign:{archived_at:'2026-10-06',lifecycle_group_id:null,is_editorial:true,targets:[target(),target('reiseziele/deutschland','sidebar_top')]}}),before=structuredClone(db.row);
  const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:id,confirmed:'yes',placement:'sidebar_12',size:'small'}));
  assert.ok(result.success,result.error);assert.equal(result.ad.id,copyId);assert.equal(result.ad.placement,'sidebar_12');assert.deepEqual(db.calls.find(c=>c.original).original,before);
  const saves=db.calls.filter(c=>c.rpc==='save_ad_campaign');assert.ok(saves.length);for(const save of saves){assert.equal(save.data.p_campaign_id,copyId);assert.deepEqual(save.data.p_data.targets,[target('reiseziele/schweiz','sidebar_12')]);assert.equal(save.data.p_data.requested_start_date,berlinToday());}

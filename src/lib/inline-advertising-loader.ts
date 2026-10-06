@@ -1,4 +1,5 @@
 import "server-only";
+import { selectableArchivedBanners } from './ad-archive';
 import { createClient } from "./supabase/server";
 import { checkAdmin } from "./admin-review";
 import { signAdImages } from "./ad-campaigns";
@@ -46,7 +47,7 @@ export async function loadInlineBannerOptions(path: string): Promise<InlineBanne
     const legacyKey = (id: string) => legacyBannerKey(legacyBannerPages[path].find(row => row.id === id)!.targetUrl);
     const metadata = await loadBannerMetadata(client, [...rows.map(row => `campaign:${row.id}`), ...legacy.map(row => legacyKey(row.id))]);
     for (const row of legacy) availability[row.placement] = "Belegt · Bestandsbanner";
-    return { label: context.label, archived: ((loaded.data ?? []) as AdCampaign[]).filter(row => row.archived_at && !row.deletion_requested_at).map(row => ({id:row.id,name:row.headline || row.internal_name || 'Archivierter Banner'})), banners: [...pageCampaigns.map((row) => ({ id: row.id,
+    return { label: context.label, archived: selectableArchivedBanners((loaded.data ?? []) as AdCampaign[]), banners: [...pageCampaigns.map((row) => ({ id: row.id,
       placement: displayPlacement(row.placement, settings.rows),
       target_url: row.target_url, imageUrl: row.imageUrl, shared: row.targets.length !== 1,
       source: "campaign" as const, editorial: Boolean(row.is_editorial),

@@ -89,7 +89,7 @@ test('legacy and campaign banners both render archive beside delete; adding offe
 test('inline banner archive is beside existing delete, without a lifecycle card or nested form',()=>{
  const html=renderToStaticMarkup(createElement(InlineBannerDialog,{options:{label:'Startseite',availability:{},banners:[],terms:[]},selected:{placement:'sidebar_top',banner:{id:'existing',source:'campaign',editorial:true,placement:'sidebar_top',target_url:'https://example.org/',imageUrl:'/image.png'}},onClose(){},onSaved(){},onChanged(){},onRemoved(){},onMetadataSaved(){}}));
  assert.match(html,/<div class="actions"><button[^>]*>Banner archivieren<\/button><button[^>]*>Banner löschen<\/button><\/div>/);
- assert.doesNotMatch(html,/Kampagnenverwaltung|Kampagne archivieren|Archivierte Kampagne/);
+ assert.doesNotMatch(html,/Kampagnenverwaltung|Kampagne archivieren|Archivierte Kampagne|Aktion bestätigen|Ja, Banner archivieren/);
  const tags=html.match(/<\/?form\b[^>]*>/g);let depth=0;for(const tag of tags){depth+=tag.startsWith('</')?-1:1;assert.ok(depth>=0&&depth<=1,'forms never nest');}assert.equal(depth,0);
 });
 test('archive controls use banner wording, no separate card, and reuse the existing lifecycle action',()=>{
