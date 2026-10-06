@@ -292,6 +292,35 @@
   outline: 3px solid var(--brand-primary);
   outline-offset: 3px;
 }
+/* Only actual public links opt in; image crop transforms stay independent. */
+.interactiveCreative {
+  position: relative;
+  transform-origin: center;
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+.interactiveCreative:focus-visible {
+  border-color: var(--brand-primary);
+  box-shadow: 0 6px 18px rgb(26 39 49 / 14%);
+}
+@media (hover: hover) and (pointer: fine) {
+  .interactiveCreative:hover {
+    border-color: var(--brand-primary);
+    box-shadow: 0 6px 18px rgb(26 39 49 / 14%);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .interactiveCreative {
+    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  }
+  .interactiveCreative:focus-visible {
+    transform: translateY(-1px) scale(1.01);
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .interactiveCreative:hover {
+    transform: translateY(-1px) scale(1.01);
+  }
+}
 @media (max-width: 700px) {
   .placements {
     grid-template-columns: repeat(2, minmax(0, 1fr));
