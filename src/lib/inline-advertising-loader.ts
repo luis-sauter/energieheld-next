@@ -27,6 +27,7 @@ export async function loadInlineBannerOptions(path: string): Promise<InlineBanne
     ]);
     const today = berlinToday();
     const rows = ((loaded.data ?? []) as AdCampaign[]).filter((row) =>
+      !row.archived_at &&
       row.targets.some((target) => matchesInlineAdContext(target, context)) &&
       ((row.status === "approved" && row.approved_start_date && row.approved_start_date <= today && row.approved_end_date && row.approved_end_date >= today) ||
        (row.is_editorial && row.status !== "approved" && (row.status !== "paused" || (row.approved_end_date && row.approved_end_date >= today)))));
