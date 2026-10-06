@@ -39,6 +39,8 @@ before(async () => {
   await db.exec(await read('20261006120000_ad_campaign_lifecycle.sql'));
   await db.exec(await read('20261006143408_public_travel_search_banners.sql'));
   await db.exec(await read('20261006145449_public_travel_search_banner_terms.sql'));
+  await db.exec(await read('20261006140000_ad_campaign_lineage.sql'));
+  await db.exec(await read('20261006155115_travel_search_advertisers.sql'));
   afterMigration = (await db.query("select jsonb_build_object('profiles',(select jsonb_agg(to_jsonb(p)) from company_profiles p),'ads',(select jsonb_agg(to_jsonb(a)) from company_ad_campaigns a),'targets',(select jsonb_agg(to_jsonb(t)) from company_ad_campaign_targets t),'policies',(select jsonb_agg(to_jsonb(p) order by schemaname,tablename,policyname) from pg_policies p)) as snapshot")).rows[0].snapshot;
 });
 after(async () => db?.close()); beforeEach(async () => db.exec('begin')); afterEach(async () => db.exec('rollback'));
@@ -104,4 +106,45 @@ test('public banner-only taxonomy labels remain usable without broadening travel
  const projected=(await projection()).terms;assert.ok(projected.some(t=>t.term_key==='audience:mit-hund'&&t.label==='Mit Hund'));
  assert.equal(projected.some(t=>t.term_key==='feature:unassigned'),false);
  await actor('postgres');await db.query("update company_ad_campaigns set status='paused' where id=$1",[id]);await actor();assert.equal((await projection()).terms.some(t=>t.term_key==='audience:mit-hund'),false);
+});
+
+async function assignment(id,extra={}) {
+ return db.query('select save_ad_banner_search_assignment($1,NULL,$2,\'90001\',\'QA city\',$3,$4,$5,$6,$7,$8,$9,$10)',[id,'Public creative',extra.terms??['theme:wellnessangebote'],extra.key??null,extra.name??'QA advertiser',extra.profile??null,extra.commercial??true,extra.primary??false,extra.destinations??['oesterreich'],extra.region??'Tirol']);
+}
+test('admin explicit customer/geo assignment, public projection and non-admin denial',async()=>{
+ const id=await campaign();await actor('authenticated',owner);await db.exec('savepoint denied');await assert.rejects(assignment(id),/Admin required/);await db.exec('rollback to denied');
+ await actor('authenticated',admin);await assignment(id,{profile:ids[0]});await actor();
+ const row=(await projection()).metadata.find(b=>b.banner_key===`campaign:${id}`);
+ assert.equal(row.advertiser_key,`profile:${ids[0]}`);assert.deepEqual(row.destination_slugs,['oesterreich']);assert.equal(row.region,'Tirol');
+ assert.equal((await db.query("select has_function_privilege('anon','save_ad_banner_search_assignment(uuid,text,text,text,text,text[],text,text,uuid,boolean,boolean,text[],text)','EXECUTE') AS allowed")).rows[0].allowed,false);
+});
+test('same-host legacy seeds grouped; cross-host misleading label never merged; no fabricated metadata',async()=>{
+ await actor('postgres');const rows=(await db.query("select advertiser_key,destination_slugs,region,postal_code from ad_banner_search_metadata where banner_key like 'legacy:https://hoeflehner.com/%'")).rows;
+ assert.equal(rows.length,4);assert.equal(new Set(rows.map(row=>row.advertiser_key)).size,1);assert.ok(rows.every(row=>row.destination_slugs.length===0&&row.region===''&&row.postal_code===''));
+ const keys=(await db.query("select advertiser_key from ad_banner_search_metadata where banner_key IN ('legacy:https://hofmaran.ch/','legacy:https://josef.bz/de/hotel-hafling/1-0.html')")).rows;assert.equal(new Set(keys.map(row=>row.advertiser_key)).size,2);
+});
+test('unknown advertiser/profile/destination rejected atomically; no booking or creative change',async()=>{
+ const id=await campaign();await actor('postgres');const before=(await db.query('select to_jsonb(c) AS row from company_ad_campaigns c where id=$1',[id])).rows[0].row;
+ await actor('authenticated',admin);
+ for(const extra of [{key:'invented'},{destinations:['invented']},{profile:crypto.randomUUID()}]){
+  await db.exec('savepoint invalid');await assert.rejects(assignment(id,extra));await db.exec('rollback to invalid');
+ }
+ await assignment(id);await actor('postgres');const after=(await db.query('select to_jsonb(c) AS row from company_ad_campaigns c where id=$1',[id])).rows[0].row;
+ for(const key of ['profile_id','target_url','image_path','approved_start_date','approved_end_date'])assert.deepEqual(after[key],before[key]);
+});
+
+test('archive reuse preserves customer and explicit search assignment, without copied booking',async()=>{
+ const id=await campaign();await actor('authenticated',admin);await assignment(id,{destinations:['schweiz'],region:'Wallis'});
+ await db.query("select admin_ad_lifecycle($1,'archive')",[id]);
+ const copy=(await db.query("select admin_ad_lifecycle($1,'reuse') AS id",[id])).rows[0].id;
+ await actor('postgres');const rows=(await db.query('select advertiser_key,destination_slugs,region from ad_banner_search_metadata where campaign_id IN ($1,$2) order by campaign_id',[id,copy])).rows;
+ assert.deepEqual(rows[0],rows[1]);assert.equal((await db.query('select count(*)::int AS n from company_ad_campaign_targets where campaign_id=$1',[copy])).rows[0].n,0);
+});
+test('unapproved search profile identity is not exposed; creative replacement preserves assignment',async()=>{
+ const id=await campaign();await actor('authenticated',admin);await assignment(id,{profile:ids[0]});await actor('postgres');
+ const before=(await db.query('select to_jsonb(m) AS row from ad_banner_search_metadata m where campaign_id=$1',[id])).rows[0].row;
+ const path=`campaigns/${id}/creative/${crypto.randomUUID()}.png`;await db.query("insert into storage.objects(bucket_id,name) values('ad-media',$1)",[path]);await db.query('update company_ad_campaigns set image_path=$1 where id=$2',[path,id]);
+ assert.deepEqual((await db.query('select to_jsonb(m) AS row from ad_banner_search_metadata m where campaign_id=$1',[id])).rows[0].row,before);
+ await db.query("update company_profiles set status='draft' where id=$1",[ids[0]]);await actor();
+ const row=(await projection()).metadata.find(b=>b.banner_key===`campaign:${id}`);assert.equal(row.profile_id,null);assert.equal(row.advertiser_key,null);
 });

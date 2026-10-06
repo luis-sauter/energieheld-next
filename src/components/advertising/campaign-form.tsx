@@ -20,7 +20,7 @@ import { reviewCampaign, saveAdminCampaign, prepareAdminCampaignImage, adminCamp
 import { portalAdAreaLabel, portalAdSections, portalAdSection, requestAdScopes, type RequestAdScope } from "@/lib/ad-target-areas";
 import styles from "./advertising.module.css";
 import { BannerSearchFields } from './banner-search-fields';
-import type { BannerSearchMetadata, BannerSearchTerm } from '@/lib/banner-search-metadata';
+import type { BannerSearchMetadata, BannerSearchTerm, BannerAdvertiserOption } from '@/lib/banner-search-metadata';
 export function removeRequestScope(targets: AdTarget[], scope: RequestAdScope) {
   return targets.filter((target) => target.target_type === "portal_area"
     ? portalAdSection(target.target_key ?? "") !== scope
@@ -62,13 +62,13 @@ export function CampaignForm({
   categoryIds,
   admin = false,
   bannerMetadata,
-  bannerTerms = [],
+  bannerTerms = [], bannerAdvertisers = [],
 }: {
   campaign: AdCampaign;
   categoryIds: string[];
   admin?: boolean;
   bannerMetadata?: BannerSearchMetadata;
-  bannerTerms?: BannerSearchTerm[];
+  bannerTerms?: BannerSearchTerm[]; bannerAdvertisers?: BannerAdvertiserOption[];
 }) {
   const [state, action, busy] = useActionState<AdFormState, FormData>(
     async (_previous, form) => {
@@ -328,7 +328,7 @@ export function CampaignForm({
           onChange={(e) => set("headline", e.target.value)}
         />
       </label>}
-      {admin && <BannerSearchFields value={metadata} terms={bannerTerms} onChange={setMetadata} includeName={false} />}
+      {admin && <BannerSearchFields value={metadata} terms={bannerTerms} advertisers={bannerAdvertisers} onChange={setMetadata} includeName={false} />}
       <fieldset className={styles.formSection}>
         <legend>Hinweise oder Wünsche</legend>
         <p className={styles.sectionHint}>{admin ? "Gibt es etwas, das wir bei Ihrer Kampagne berücksichtigen sollen?" : "Gibt es etwas, das wir bei Ihrer Angebotsanfrage berücksichtigen sollen?"}</p>

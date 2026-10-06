@@ -6,7 +6,7 @@ import { publicBannerCreatives, type BannerSearchData, type SearchAdSource, type
 import type { PublicTravelTerm } from './reiseportal-filter-options';
 import type { TravelSearchBanner } from './travel-search-banners';
 
-type Metadata = BannerSearchData & { term_keys: string[]; profile_id: string | null };
+type Metadata = BannerSearchData & Partial<TravelSearchBanner> & { term_keys: string[]; profile_id: string | null };
 export const loadTravelSearchBanners = cache(async (): Promise<{banners: TravelSearchBanner[]; terms: PublicTravelTerm[]; error: string | null}> => {
   try {
     const client = createPublicClient();
@@ -23,7 +23,7 @@ export const loadTravelSearchBanners = cache(async (): Promise<{banners: TravelS
     for (const {ad,identity,details} of publicBannerCreatives(ads,payload.presentations,payload.metadata)) {
       if (!ad.imageUrl || ad.imageUrl === 'public-creative' || !details || unique.has(identity)) continue;
       const metadata = details as Metadata;
-      unique.set(identity,{banner_key:identity,profile_id:metadata.profile_id,postal_code:metadata.postal_code,city:metadata.city,term_keys:metadata.term_keys,ad:{...ad,headline:metadata.name}});
+      unique.set(identity,{...metadata,banner_key:identity,profile_id:metadata.profile_id,postal_code:metadata.postal_code,city:metadata.city,term_keys:metadata.term_keys,ad:{...ad,headline:metadata.name}});
     }
     return {banners:[...unique.values()],terms:payload.terms ?? [],error:null};
   } catch {

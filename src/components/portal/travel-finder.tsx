@@ -6,7 +6,7 @@ import type { Listing } from "@/types/portal";
 import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, type TravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { travelFacetCount, travelFilterParams, travelFilterUrl, type TravelFacet } from "@/lib/reiseportal-facets";
 import { travelSearchUrl, travelSearchReturnUrl } from "@/lib/travel-search-intent";
-import { travelSearchResults, matchTravelSearchBanners, type TravelSearchBanner } from "@/lib/travel-search-banners";
+import { travelSearchResults, travelSearchAdvertisers, type TravelSearchBanner } from "@/lib/travel-search-banners";
 import { SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
 import { Breadcrumbs } from "./breadcrumbs";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
@@ -61,7 +61,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
                   <option value={values[key]}>Nicht verfügbar (0)</option>}
                 {entries.map(({ slug, label: optionLabel }) => {
                   const optionCount = travelFacetCount(listings, filterValues, key, slug);
-                  return <option key={slug} value={slug} disabled={optionCount === 0 && !matchTravelSearchBanners(banners, { ...filterValues, [key]: slug }).length && values[key] !== slug}>
+                  return <option key={slug} value={slug} disabled={optionCount === 0 && !travelSearchAdvertisers(banners, { ...filterValues, [key]: slug }).length && values[key] !== slug}>
                     {optionLabel} ({optionCount})
                   </option>;
                 })}
@@ -115,7 +115,7 @@ export function HomeTravelFinder({ listings, terms, error, initialValues, banner
     window.addEventListener('popstate', restore);
     return () => window.removeEventListener('popstate', restore);
   }, []);
-  const options = useMemo(() => availableTravelFilters(listings, terms, banners?.flatMap(b => b.term_keys)), [listings, terms, banners]);
+  const options = useMemo(() => availableTravelFilters(listings, terms, banners?.flatMap(b => b.term_keys), banners?.flatMap(b => b.destination_slugs ?? [])), [listings, terms, banners]);
   return <TravelFinder mode="home" banners={banners} listings={listings} options={options}
     values={values} onChange={setValues} error={error} />;
 }

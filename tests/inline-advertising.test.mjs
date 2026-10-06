@@ -31,14 +31,14 @@ test('archive insertion copies existing media independently, selects only this n
  assert.ok(result.success,result.error);assert.equal(result.ad.id,copyId);assert.equal(result.ad.placement,'sidebar_12');assert.deepEqual(db.calls.find(c=>c.original).original,before);
  const saves=db.calls.filter(c=>c.rpc==='save_ad_campaign');assert.ok(saves.length);for(const save of saves){assert.equal(save.data.p_campaign_id,copyId);assert.deepEqual(save.data.p_data.targets,[target('reiseziele/schweiz','sidebar_12')]);assert.equal(save.data.p_data.requested_start_date,berlinToday());}
  assert.ok(db.calls.find(c=>c.upload).upload.startsWith(`campaigns/${copyId}/creative/`));assert.equal(db.calls.find(c=>c.upload).upsert,false);assert.ok(!db.calls.some(c=>c.remove));
- const metadataSave=db.calls.find(c=>c.rpc==='save_ad_banner_search_metadata');assert.equal(metadataSave.data.p_postal_code,'12345');assert.equal(metadataSave.data.p_city,'QA Ort');assert.deepEqual(metadataSave.data.p_term_keys,['theme:wellnessangebote']);assert.equal(result.metadata.city,'QA Ort');
+ const metadataSave=db.calls.find(c=>c.rpc==='save_ad_banner_search_assignment');assert.equal(metadataSave.data.p_postal_code,'12345');assert.equal(metadataSave.data.p_city,'QA Ort');assert.deepEqual(metadataSave.data.p_term_keys,['theme:wellnessangebote']);assert.equal(result.metadata.city,'QA Ort');
 });
 
 test('shared/company metadata edits use only the admin metadata RPC after page/source authorization', async()=>{
  const db=client({campaign:{targets:[target(),target('reiseziele/deutschland','sidebar_top')]}});
  const input=form({headline:'Belegter Name',banner_postal_code:'80331',banner_city:'München'});input.append('banner_terms','theme:wellnessangebote');
  const saved=await saveInlineAdMetadata(db,'/mottoreisen/wellnessangebote',input);assert.ok(saved.success,saved.error);
- assert.deepEqual(db.calls.filter(call=>call.rpc).map(call=>call.rpc),['save_ad_banner_search_metadata']);
+ assert.deepEqual(db.calls.filter(call=>call.rpc).map(call=>call.rpc),['save_ad_banner_search_assignment']);
  assert.equal(db.calls.find(call=>call.rpc).data.p_campaign_id,id);
  assert.ok((await saveInlineAdMetadata(db,'/reiseziele/schweiz',input)).error);
  for(const config of [{admin:false},{authenticated:false}]) assert.ok((await saveInlineAdMetadata(client(config),'/mottoreisen/wellnessangebote',input)).error);
@@ -53,7 +53,7 @@ test('legacy metadata-only edits keep URL overrides and display mappings out of 
  const input=form({campaign_id:'',legacy_id:'city-apart-square',placement:'sidebar_top',original_placement:'sidebar_top',headline:'City Apart',banner_city:'Dresden'});
  const result=await saveInlineAdMetadata(db,'/unterkuenfte-a-z',input);assert.ok(result.success,result.error);
  const writes=db.calls.filter(call=>call.rpc&&!call.rpc.startsWith('get_'));assert.equal(writes.length,1);
- assert.equal(writes[0].data.p_legacy_key,'legacy:https://city-apart-dresden.de/');assert.equal(writes[0].rpc,'save_ad_banner_search_metadata');
+ assert.equal(writes[0].data.p_legacy_key,'legacy:https://city-apart-dresden.de/');assert.equal(writes[0].rpc,'save_ad_banner_search_assignment');
 });
 test('central campaign metadata-only saves compare actual booking fields before selecting the narrow RPC',()=>{
  const db=client();const c={...db.row,placement:'top_banner'};
@@ -93,7 +93,7 @@ function client({ authenticated = true, admin = true, campaign = {}, saveError =
       const call = { table, filters: [] }; calls.push(call);
       return { select(columns) { call.columns = columns; return this; }, eq(key, value) { call.filters.push([key,value]); return this; },
         is(key,value) { call.filters.push([key,value]); return this; },
-        in(key,value) { call.filters.push([key,value]); return this; },order(){return this;},
+        not(key,operator,value) { call.filters.push([key,operator,value]); return this; },in(key,value) { call.filters.push([key,value]); return this; },order(){return this;},
         then(resolve) { const data=table==='ad_slot_presentations'?settings:metadata&&table==='ad_banner_search_metadata'?[{banner_key:`campaign:${reuseId}`,postal_code:metadata.postal_code,city:metadata.city}]:metadata&&table==='ad_banner_search_terms'?metadata.term_keys.map(term_key=>({banner_key:`campaign:${reuseId}`,term_key})):[];return Promise.resolve({ data, error: null }).then(resolve); },
         async maybeSingle() { return { data: table === "portal_admins" ? admin ? { user_id: "verified-admin" } : null : structuredClone(row), error: null }; } };
     },

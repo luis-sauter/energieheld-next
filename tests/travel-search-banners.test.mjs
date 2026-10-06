@@ -16,7 +16,7 @@ registerHooks({
  },
  load(url,context,next){if(/\.tsx?$/.test(url))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(url),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX,target:ScriptTarget.ES2022}}).outputText};return next(url,context);}
 });
-const {matchTravelSearchBanners,travelSearchResults,interleaveTravelResults}=await import('../src/lib/travel-search-banners.ts');
+const {matchTravelSearchBanners,travelSearchResults,travelSearchAdvertisers,selectBestAdvertiserCreative}=await import('../src/lib/travel-search-banners.ts');
 const {publicBannerCreatives}=await import('../src/lib/portal-search-banners.ts');
 const {readTravelFilterValues,availableTravelFilters}=await import('../src/lib/reiseportal-filter-options.ts');
 const {TravelFinder}=await import('../src/components/portal/travel-finder.tsx');
@@ -43,26 +43,29 @@ test('AND, normalized city/postcode and no inferred destination or booking relat
 test('missing/invalid creative and suppressed sources never count',()=>{
  for(const ad of [{...banner().ad,imageUrl:undefined},{...banner().ad,suppressed:true},{...banner().ad,target_url:'javascript:alert(1)'}])assert.equal(matchTravelSearchBanners([banner('x',{ad})],empty).length,0);
 });
-test('59 listings plus 14 unique banners = 73, count equals inline entries, Home and Directory agree',()=>{
- const listings=Array.from({length:59},(_,i)=>listing(String(i))),banners=Array.from({length:14},(_,i)=>banner(`campaign:${i}`));
- const result=travelSearchResults(listings,[...banners,...banners],empty);assert.equal(result.count,73);
- assert.equal(interleaveTravelResults(result.listings,result.banners).length,73);
- for(const mode of ['home','directory']){
-  const html=renderToStaticMarkup(createElement(TravelFinder,{mode,listings,banners:[...banners,...banners],options:availableTravelFilters(listings,[]),values:empty,onChange(){}}));
-  assert.match(html,/73 Unterkünfte anzeigen/);
- }
+test('count uses advertisers, Home and Directory agree, distinct creatives of one customer count once',()=>{
+ const listings=Array.from({length:59},(_,i)=>listing(String(i)));
+ const banners=Array.from({length:4},(_,i)=>banner(`legacy:hoeflehner${i}`,{advertiser_key:'hoeflehner'}));
+ banners.push(...Array.from({length:3},(_,i)=>banner(`legacy:rhoen${i}`,{advertiser_key:'rhoen'})));
+ const result=travelSearchResults(listings,[...banners,...banners],empty);assert.equal(result.count,61);assert.equal(result.advertisers.length,2);
+ for(const mode of ['home','directory'])assert.match(renderToStaticMarkup(createElement(TravelFinder,{mode,listings,banners,options:availableTravelFilters(listings,[]),values:empty,onChange(){}})),/61 Unterkünfte anzeigen/);
 });
-test('two real profile associations follow listing; unmatched relation stays standalone, deterministic sorting and no guessing',()=>{
- const a=listing('a'),b=listing('b');const banners=[banner('x',{profile_id:'a'}),banner('y',{profile_id:'a'}),banner('z',{profile_id:'missing'}),banner('zz')];
- const rows=interleaveTravelResults([a,b],banners);
- assert.deepEqual(rows.slice(0,3).map(row=>row.kind==='listing'?row.listing.id:row.banner.banner_key),['a','x','y']);
- assert.deepEqual(interleaveTravelResults([a,b],banners),rows);
- assert.equal(rows.length,6);assert.deepEqual(rows.filter(r=>r.kind==='listing').map(r=>r.listing.id),['a','b']);
- const reversed=interleaveTravelResults([b,a],banners);assert.equal(reversed[reversed.findIndex(r=>r.kind==='listing'&&r.listing.id==='a')+1].banner.banner_key,'x');
+test('profile identity is stable; uncertain legacy creatives remain distinct; internal promos excluded',()=>{
+ const rows=[banner('a',{profile_id:'p'}),banner('b',{profile_id:'p'}),banner('unknown1'),banner('unknown2'),banner('portal',{commercial:false}),banner('internal',{ad:{...banner().ad,target_url:'https://das-reiseportal.com/reiseziele'}})];
+ assert.equal(travelSearchAdvertisers(rows,empty).length,3);
 });
-test('banner-only results count/render; truly empty remains empty',()=>{
- const result=travelSearchResults([], [banner(),banner('b'),banner('c')],empty);assert.equal(result.count,3);
- assert.equal(interleaveTravelResults([],result.banners).length,3);assert.equal(travelSearchResults([],[],empty).count,0);
+test('canonical no-filter creative, specific metadata selection, deterministic tie, no cross-creative AND',()=>{
+ const general=banner('a',{advertiser_key:'same',primary_creative:true,term_keys:[]}),wellness=banner('b',{advertiser_key:'same',term_keys:['theme:wellnessangebote']}),family=banner('c',{advertiser_key:'same',term_keys:['audience:familie']});
+ assert.equal(travelSearchAdvertisers([family,wellness,general],empty)[0].banner_key,'a');
+ assert.equal(travelSearchAdvertisers([family,wellness,general],{...empty,theme:'wellnessangebote'})[0].banner_key,'b');
+ assert.equal(travelSearchAdvertisers([family,wellness],{...empty,theme:'wellnessangebote',audience:'familie'}).length,0);
+ assert.equal(selectBestAdvertiserCreative([wellness,banner('d',{term_keys:wellness.term_keys})],{...empty,theme:'wellnessangebote'}).banner_key,'b');
+});
+test('explicit geography and normalized region match; no booking destination inference',()=>{
+ const a=banner('geo',{destination_slugs:['oesterreich'],region:'Tirol'});
+ assert.equal(travelSearchAdvertisers([a],{...empty,destination:'oesterreich',location:'tirol'}).length,1);
+ assert.equal(travelSearchAdvertisers([a],{...empty,destination:'schweiz'}).length,0);
+ assert.equal(travelSearchResults([], [a],empty).count,1);assert.equal(travelSearchResults([],[],empty).count,0);
 });
 test('public resolver retains hiding, replacement, crop and canonical legacy identity',()=>{
  const ad={id:'a',path:'/',placement:'sidebar_top',headline:'active',target_url:'https://example.org/',image_path:'campaigns/a/creative/image.png',imageUrl:'/signed',image_available:true};
@@ -79,3 +82,18 @@ test('inline creative retains public label, sponsored URL, P11, crop and never u
  const crop=renderToStaticMarkup(createElement(CampaignSlot,{placement:'sidebar_top',ad:{...original,crop:{focus_x:25,focus_y:75,zoom:1.4}},searchResult:true}));assert.match(crop,/cropImage/);
 });
 
+
+test('search cards have placement-independent geometry and existing public interaction/link semantics',async()=>{
+ const {SearchAdCard}=await import('../src/components/advertising/search-ad-card.tsx');
+ for(const placement of ['top_banner','sidebar_top','sidebar_04']){
+ const html=renderToStaticMarkup(createElement(SearchAdCard,{banner:banner(placement,{advertiser_key:'customer',ad:{...banner().ad,placement,crop:{focus_x:20,focus_y:60,zoom:2}}})}));
+ assert.match(html,/data-advertiser="customer"/);assert.match(html,/interactiveCreative/);assert.match(html,/sponsored noopener noreferrer/);assert.match(html,/loading="lazy"/);assert.doesNotMatch(html,/cropImage|data-placement|data-size|Banner bearbeiten/);
+ }
+ const css=readFileSync(new URL('../src/components/advertising/search-ad-card.module.css',import.meta.url),'utf8');assert.match(css,/object-fit: contain/);assert.match(css,/aspect-ratio: 4 \/ 3/);
+});
+test('same existing inline fields expose customer, explicit geography and taxonomy without booking keys',async()=>{
+ const {BannerSearchFields}=await import('../src/components/advertising/banner-search-fields.tsx');
+ const html=renderToStaticMarkup(createElement(BannerSearchFields,{value:{name:'Example',postal_code:'',city:'',term_keys:[],destination_slugs:['oesterreich']},terms:[],advertisers:[{key:'domain:example.org',name:'Example company'}],onChange(){}}));
+ for(const text of ['Suchzuordnung','Werbekunde','Land / Reiseziel','Region','PLZ','Ort','Allgemeiner Hauptbanner'])assert.ok(html.includes(text));
+ assert.match(html,/name="banner_destinations"/);assert.match(html,/Österreich/);
+});

@@ -10,6 +10,12 @@ export type TravelSearchBanner = {
   postal_code: string;
   city: string;
   term_keys: string[];
+  advertiser_key?: string;
+  advertiser_name?: string;
+  commercial?: boolean;
+  primary_creative?: boolean;
+  destination_slugs?: string[];
+  region?: string;
   ad: ActiveAd;
 };
 
@@ -17,31 +23,35 @@ export type TravelSearchBanner = {
 export function matchTravelSearchBanners(banners: TravelSearchBanner[], values: TravelFilterValues) {
   const unique = new Map<string, TravelSearchBanner>();
   for (const banner of banners) {
-    // There is no proven destination field in banner search metadata.
-    if (values.destination || banner.ad.suppressed || !banner.ad.imageUrl || !/^https?:\/\//i.test(banner.ad.target_url)) continue;
+    if ((values.destination && !banner.destination_slugs?.includes(values.destination)) || banner.ad.suppressed || !banner.ad.imageUrl || !/^https?:\/\//i.test(banner.ad.target_url)) continue;
     if ((['theme', 'audience', 'accommodation', 'feature'] as const).some(dimension =>
       values[dimension] && !banner.term_keys.includes(`${dimension}:${values[dimension]}`))) continue;
-    if (values.location && !normalizeListingSearch(`${banner.city} ${banner.postal_code}`).includes(normalizeListingSearch(values.location))) continue;
+    if (values.location && !normalizeListingSearch(`${banner.city} ${banner.postal_code} ${banner.region ?? ""}`).includes(normalizeListingSearch(values.location))) continue;
     if (!unique.has(banner.banner_key)) unique.set(banner.banner_key, banner);
   }
   return [...unique.values()].sort((a,b) => a.banner_key.localeCompare(b.banner_key, 'de'));
 }
+// Match each creative independently: never combine incomplete metadata across creatives.
+export function selectBestAdvertiserCreative(creatives: TravelSearchBanner[], values: TravelFilterValues) {
+  const active = Boolean(values.destination || values.theme || values.audience || values.accommodation || values.feature || values.location);
+  return [...creatives].sort((a, b) => {
+    const specificity = (row: TravelSearchBanner) => row.term_keys.length + (row.destination_slugs?.length ?? 0);
+    return (active ? specificity(a) - specificity(b) : 0) || Number(Boolean(b.primary_creative)) - Number(Boolean(a.primary_creative)) || a.banner_key.localeCompare(b.banner_key, 'de');
+  })[0];
+}
+export function travelSearchAdvertisers(banners: TravelSearchBanner[], values: TravelFilterValues) {
+  const groups = new Map<string, TravelSearchBanner[]>();
+  for (const banner of matchTravelSearchBanners(banners, values)) {
+    let url: URL;
+    try { url = new URL(banner.ad.target_url); } catch { continue; }
+    if (banner.commercial === false || /(^|\.)das-reiseportal\.com$/i.test(url.hostname)) continue;
+    const key = banner.profile_id ? `profile:${banner.profile_id}` : banner.advertiser_key || `unassigned:${banner.banner_key}`;
+    groups.set(key, [...(groups.get(key) ?? []), banner]);
+  }
+  return [...groups].sort(([a], [b]) => a.localeCompare(b, 'de')).map(([advertiser_key, creatives]) => ({ ...selectBestAdvertiserCreative(creatives, values), advertiser_key }));
+}
 export function travelSearchResults(listings: Listing[], banners: TravelSearchBanner[], values: TravelFilterValues) {
   const normal = filterTravelListings(listings, { ...values, query: '' });
-  const matched = matchTravelSearchBanners(banners, values);
-  return { listings: normal, banners: matched, count: normal.length + matched.length };
-}
-export type TravelResult = { kind: 'listing'; listing: Listing } | { kind: 'banner'; banner: TravelSearchBanner };
-// Preserve listing order and package boundaries. Standalone ads are spread evenly;
-// a safely associated creative always follows its listing, regardless of sort.
-export function interleaveTravelResults(listings: Listing[], banners: TravelSearchBanner[]): TravelResult[] {
-  const ids = new Set(listings.map(row => row.id));
-  const standalone = banners.filter(row => !row.profile_id || !ids.has(row.profile_id));
-  if (!listings.length) return standalone.map(banner => ({kind: 'banner', banner}));
-  return listings.flatMap((listing,index) => {
-    const result: TravelResult[] = [{kind:'listing',listing}, ...banners.filter(row => row.profile_id === listing.id).map(banner => ({kind:'banner' as const,banner}))];
-    const start = Math.floor(index * standalone.length / listings.length);
-    const end = Math.floor((index + 1) * standalone.length / listings.length);
-    return [...result, ...standalone.slice(start,end).map(banner => ({kind:'banner' as const,banner}))];
-  });
+  const advertisers = travelSearchAdvertisers(banners, values);
+  return { listings: normal, advertisers, banners: advertisers, count: normal.length + advertisers.length };
 }
