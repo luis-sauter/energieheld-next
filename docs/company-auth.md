@@ -5,7 +5,7 @@
 - `/registrieren` validiert alle Eingaben serverseitig und ruft `signUp` mit
   `full_name` und `company_name` in `options.data` auf. Nur der vorhandene
   Datenbank-Trigger legt Firma und Profile an.
-- `/login` verwendet `signInWithPassword` und leitet nach `/firma` weiter.
+- `/login` verwendet `signInWithPassword`. Anschließend bestimmen serververifizierte `portal_admins` und `companies.owner_user_id` das Standardziel: Admin → `/admin`, Owner → `/firma`, ohne Zuordnung → `/konto`. Ein exakt erlaubter und berechtigter `next`-Pfad hat Vorrang; externe/uneindeutige Ziele werden ignoriert. Header und Kontomenü verwenden dieselben echten Zuordnungen, keine Metadatenrollen.
 - `/auth/confirm` prüft `token_hash` mit `verifyOtp`; erlaubt sind die
   E-Mail-Bestätigungstypen `email` und `signup`. Ziele sind fest vorgegeben.
 - `/firma` verwendet `getUser` zur serverseitigen Identitätsprüfung und liest

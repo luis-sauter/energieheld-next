@@ -1,5 +1,7 @@
 "use server";
 
+import { loadPortalAccount } from "@/lib/portal-account-loader";
+import { accountLoginDestination } from "@/lib/portal-account";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -49,6 +51,7 @@ export async function login(
 ): Promise<AuthState> {
   const { error, email, password } = validateCredentials(formData);
   if (error) return { error };
+  let destination = "/konto";
   try {
     const supabase = await createClient();
     const { error: loginError } = await supabase.auth.signInWithPassword({
@@ -56,13 +59,14 @@ export async function login(
       password,
     });
     if (loginError) return { error: authErrorMessage(loginError.code) };
+    destination = accountLoginDestination(await loadPortalAccount(supabase), formData.get("next"));
   } catch {
     return {
       error:
         "Die Anmeldung ist gerade nicht erreichbar. Bitte versuchen Sie es erneut.",
     };
   }
-  redirect("/firma");
+  redirect(destination);
 }
 
 export async function logout(): Promise<AuthState> {

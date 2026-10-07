@@ -13,6 +13,7 @@ registerHooks({
       "next/image": 'export default "img"',
       "next/navigation": 'export function redirect(path){throw Error("REDIRECT:"+path)}',
     };
+    if (specifier.endsWith('/portal-account-server')) return {url:'data:text/javascript,export async function getPortalAccount(){globalThis.__companyAccessClientCalls++;const access=globalThis.__companyAccessRole;return {access,hasCompany:access==="forbidden",user:access==="unauthenticated"?null:{email:"test@example.org",user_metadata:{full_name:"Louis Sauter"}}}}',shortCircuit:true};
     if (virtual[specifier]) return { url: `data:text/javascript,${virtual[specifier]}`, shortCircuit: true };
     if (specifier.endsWith(".css")) return { url: 'data:text/javascript,export default {}', shortCircuit: true };
     if (specifier.endsWith("/supabase/server")) return {
@@ -71,9 +72,9 @@ test("shared layout reads existing server auth and renders guest, company and ad
     const html = renderToStaticMarkup(await Layout({ children: createElement("p", null, "Inhalt") }));
     assert.equal(globalThis.__companyAccessClientCalls, 1);
     const header = html.split("</header>")[0];
-    assert.match(header, /Unterkunft eintragen|href="\/registrieren"/);
+    assert.match(header, new RegExp(role === "admin" ? 'href="/admin"' : role === "forbidden" ? 'href="/firma"' : 'href="/fuer-unternehmen"'));
     assert.match(header, /aria-label="Kontomenü öffnen"/);
-    assert.doesNotMatch(header, /href="\/firma"|href="\/admin"|href="\/login"/);
+    assert.doesNotMatch(header, /href="\/login"/);
     if (expected) assert.match(header, new RegExp(`>${expected}<`));
   }
 });
