@@ -126,6 +126,22 @@ export async function updateOwnCompanyProfile(
         ? { submitted_at: null }
         : {}),
   };
+  if (form.has("travel_selection")) {
+    if (intent !== "save") return { error: "Bitte speichern Sie zuerst Ihre Angaben." };
+    const selected = form.getAll("travel_terms");
+    if (selected.length > 100 || selected.some(key => typeof key !== "string" || !/^(theme|audience|accommodation):[a-z0-9-]+$/.test(key))) {
+      return { error: "Die Reiseauswahl ist ungültig." };
+    }
+    if (profile.status === "approved" && selected.length) return { error: "Freigegebene Reisezuordnungen werden von der Redaktion gepflegt." };
+    const fields = Object.fromEntries(profileFields
+      .filter(key => !(key === "country" || key.startsWith("contact_")) || form.has(key))
+      .map(key => [key, values[key] || null]));
+    const { error: saveError } = await supabase.rpc("save_own_travel_profile", {
+      fields, selected_terms: profile.status === "approved" ? null : [...new Set(selected)], expected_status: profile.status,
+    });
+    return saveError ? { error: "Profil und Reiseauswahl konnten nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut." }
+      : { success: "Ihre Änderungen wurden gespeichert." };
+  }
   // Save fields and submission in one atomic UPDATE. The status predicate also
   // prevents overwriting a concurrent moderation decision with a stale state.
   const { data: updated, error: updateError } = await supabase

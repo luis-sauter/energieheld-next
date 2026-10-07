@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { saveProfile } from "@/app/(energieheld)/firma/profil/actions";
 import type { ProfileFormState, ProfileValues } from "@/lib/company-profile";
 import styles from "./auth.module.css";
+import { OwnerTravelSelection, type OwnerTravelSelectionProps } from "./owner-travel-selection";
 
 const fields: {
   name: keyof ProfileValues;
@@ -51,19 +52,22 @@ export function ProfileForm({
   saveAction,
   submitLabel,
   businessAreasHelp,
+  travelSelection,
 }: {
   initialValues: ProfileValues;
   saveAction: SaveAction;
   submitLabel: string;
   businessAreasHelp: string;
+  travelSelection?: OwnerTravelSelectionProps;
 }) {
   const [values, setValues] = useState(initialValues);
   const [state, action, pending] = useActionState(saveAction, {});
   return (
     <form action={action} className={styles.form} aria-busy={pending}>
+      {travelSelection && <OwnerTravelSelection {...travelSelection} pending={pending} />}
       {fields.map(({ name, label, type, multiline, autoComplete }) => (
         <label key={name} className={styles.field} htmlFor={name}>
-          {label}
+          {name === "business_areas" && travelSelection ? "Weitere Informationen zu Ihrem Angebot" : label}
           {name === "display_name" ? " (Pflichtfeld)" : ""}
           {multiline ? (
             <textarea
@@ -136,15 +140,18 @@ export function ProfileForm({
 
 export function CompanyProfileForm({
   initialValues,
+  travelSelection,
 }: {
   initialValues: ProfileValues;
+  travelSelection?: OwnerTravelSelectionProps;
 }) {
   return (
     <ProfileForm
       initialValues={initialValues}
+      travelSelection={travelSelection}
       saveAction={saveProfile}
       submitLabel="Speichern & Profil gestalten"
-      businessAreasHelp="Beschreiben Sie, in welchen Bereichen Ihr Unternehmen tätig ist."
+      businessAreasHelp="Optional: Ergänzen Sie hier Besonderheiten oder Leistungen, die sich nicht über die Auswahl oben abbilden lassen."
     />
   );
 }

@@ -7,6 +7,9 @@ import { companyProfileListing } from "@/lib/company-presentation";
 import { CompanyProfileDesigner } from "@/components/auth/company-media-form";
 import { CompanyPublication } from "@/components/auth/company-publication";
 import { publicSlugForStoredProfile } from "@/lib/reiseportal-demo";
+import { loadEditorialNote, loadOwnerTravelInput } from "@/lib/owner-profile-input";
+import { EditorialNoteForm } from "@/components/auth/editorial-note-form";
+import { TravelSignals } from "@/components/portal/travel-signals";
 
 export const dynamic = "force-dynamic";
 const statusLabels: Record<string, string> = {
@@ -24,6 +27,9 @@ export default async function CompanyDesignPage() {
   const dashboard = await loadCompanyDashboard(client);
   if (!dashboard.authenticated) redirect("/login");
   const profile = dashboard.profile;
+  const [note, travel] = profile && !dashboard.error ? await Promise.all([
+    loadEditorialNote(client, profile.id), loadOwnerTravelInput(client, profile.id),
+  ]) : [null, null];
   let media;
   if (profile && !dashboard.error) {
     try {
@@ -64,6 +70,12 @@ export default async function CompanyDesignPage() {
             listing={companyProfileListing(profile, media)}
             media={media}
           />
+          {travel && ("error" in travel ? <p role="alert">{travel.error}</p> :
+            <section aria-label="Gespeicherte Reisezuordnungen"><h2>Ihre Reisezuordnungen</h2>
+              <TravelSignals termKeys={travel.assignedKeys} limit={30} />
+              <p>{travel.terms.filter(term => term.dimension === "accommodation" && travel.assignedKeys.includes(term.term_key)).map(term => term.label).join(" · ")}</p>
+            </section>)}
+          {note && <EditorialNoteForm initialNote={"note" in note ? note.note : undefined} error={"error" in note ? note.error : undefined} />}
           <CompanyPublication status={profile.status} />
         </>
       )}

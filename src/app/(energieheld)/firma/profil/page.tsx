@@ -6,6 +6,7 @@ import { profileFields, type ProfileValues } from "@/lib/company-profile";
 import { profileStatus } from "@/lib/auth";
 import { CompanyProfileForm } from "@/components/auth/company-profile-form";
 import styles from "@/components/auth/auth.module.css";
+import { loadOwnerTravelInput } from "@/lib/owner-profile-input";
 
 export const metadata = {
   title: "Firmenprofil bearbeiten",
@@ -18,6 +19,7 @@ export default async function CompanyProfilePage() {
   const dashboard = await loadCompanyDashboard(client);
   if (!dashboard.authenticated) redirect("/login");
   const { profile, error } = dashboard;
+  const travel = profile && !error ? await loadOwnerTravelInput(client, profile.id) : null;
   const values = profile
     ? (Object.fromEntries(
         profileFields.map((field) => [field, profile[field] ?? ""]),
@@ -43,7 +45,8 @@ export default async function CompanyProfilePage() {
               gestalten Sie Ihr Profil mit Logo und Bildern. Änderungen an
               veröffentlichten Profilen sind direkt sichtbar.
             </p>
-            <CompanyProfileForm initialValues={values} />
+            {travel && ("error" in travel ? <p role="alert">{travel.error}</p> :
+              <CompanyProfileForm initialValues={values} travelSelection={{ ...travel, approved: profile.status === "approved" }} />)}
           </>
         )}
         <div className={styles.links}>

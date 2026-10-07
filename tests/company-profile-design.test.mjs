@@ -182,6 +182,12 @@ function client(authenticated = true) {
         eq() {
           return this;
         },
+        order() {
+          return this;
+        },
+        then(resolve) {
+          return Promise.resolve({ data: [], error: null }).then(resolve);
+        },
         update() {
           return this;
         },
@@ -224,6 +230,8 @@ test("designer is server protected and renders shared profile with in-place medi
   assert.match(html, /Unternehmensbilder hinzufügen/);
   assert.match(html, /Bauwerk &amp; Energie/);
   assert.match(html, /Kontakt &amp; Standort/);
+  assert.match(html, /<iframe[^>]+maps/);
+  assert.match(html, /Hinweise an die Redaktion/);
   assert.match(html, /data-status="approved">Veröffentlicht/);
   assert.ok(
     html.indexOf('data-status="approved"') <

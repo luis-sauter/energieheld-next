@@ -38,3 +38,17 @@ Gezielte ausführbare Tests: Signup-Redirect/Mailzustand, unbestätigter Login, 
 Live-Mailbestätigung und vollständiges neues Owner-Onboarding erfordern eine separate zugängliche QA-Mailbox. Shared QA-Admin-Passwort niemals ändern. Fehlende Live-Mailprüfung ausdrücklich als offen berichten.
 
 Quellen: [Passwort-Auth](https://supabase.com/docs/guides/auth/passwords), [SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client), [JWT/AMR](https://supabase.com/docs/guides/auth/jwt-fields), [E-Mail-Vorlagen](https://supabase.com/docs/guides/auth/auth-email-templates).
+
+## Owner-Input und redaktionelle Prüfung
+
+Schritt 1 lädt die bestehenden `travel_terms` und Profilzuordnungen: Unterkunftsart, die drei öffentlichen Zielgruppen und Mottoreisen als Mehrfach-Checkboxen. `business_areas` bleibt als optionaler ergänzender Freitext erhalten. `save_own_travel_profile` speichert Stammdaten und angebotene Begriffe atomar, leitet das eigene Profil aus `auth.uid()` ab und sperrt die Profilzeile gegen gleichzeitige Moderation. Unbekannte/nicht angebotene Zuordnungen bleiben erhalten. Es ändert weder Status noch Eigentümer noch Slug.
+
+Bei `approved` sind Zuordnungen im Owner-Formular schreibgeschützt; RPC und Owner-RLS verhindern deren Änderung. Die Redaktion verwendet weiterhin den bestehenden Admin-Taxonomieeditor. Bestehende Freshness-Trigger auf Profilen und Taxonomie bleiben aktiv.
+
+Der Designer lädt dieselbe Profilzeile nach dem Save und aktiviert die bestehende Google-Maps-Darstellung. Keine zweite Adressquelle. Reisezuordnungen werden dort angezeigt.
+
+Optionale Hinweise liegen ausschließlich in `company_profile_editorial_notes`, nicht im öffentlichen Profil. Maximal 4.000 Zeichen Plaintext; leere Eingabe wird als NULL gespeichert. Owner lesen/schreiben nur die eigene Row, Admins lesen alle, anon besitzt keine Rechte. Die Save-Action verwendet ausschließlich die serverseitig ermittelte Profil-ID. Keine Aufnahme in Such-/SEO-Projektionen oder Freischaltungspflichten.
+
+Migrationen: `20261007171635_owner_editorial_notes.sql` und `20261007171657_owner_travel_profile_save.sql`. Beide additiv, keine Bestandsdatenänderung. Profil-/Auth-/Storage-RLS bleibt unverändert. Zusätzliche Taxonomie-Policies betreffen ausschließlich das eigene unveröffentlichte Profil. Neue RPC ist SECURITY INVOKER; öffentliche Ausführung ist widerrufen.
+
+Versionierte gebrandete Mailquellen: [Auth-Templates](auth-email-templates/README.md). Hosted Default SMTP erlaubt derzeit keine Templatebearbeitung: `CUSTOM_SMTP_REQUIRED`. Sender und realer gebrandeter Versand bleiben eine separate Konfigurationsprüfung nach Bereitstellung einer verifizierten SMTP-Konfiguration.

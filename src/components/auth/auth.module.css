@@ -11,6 +11,14 @@
   display: grid;
   gap: 20px;
 }
+.travelGroup { border: 0; padding: 0; margin: 20px 0; min-width: 0; }
+.travelGroup legend { font-weight: 700; margin-bottom: 12px; }
+.travelOptions { display: flex; flex-wrap: wrap; gap: 10px; }
+.travelOption { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; background: var(--white); }
+.travelOption svg { width: 24px; height: 24px; color: var(--brand-primary); }
+.travelOption input { width: 18px; height: 18px; margin: 0; accent-color: var(--brand-primary); }
+.travelOption:has(:checked) { background: var(--surface); border-color: var(--brand-primary); }
+.travelOption:has(:focus-visible) { outline: 3px solid var(--brand-primary); outline-offset: 3px; }
 .field {
   display: grid;
   gap: 6px;

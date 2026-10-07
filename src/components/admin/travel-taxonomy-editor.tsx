@@ -5,9 +5,9 @@ import type { TravelTerm } from "@/lib/admin-travel-taxonomy";
 import styles from "./admin.module.css";
 
 const groups = [
-  ["theme", "Reisearten"],
+  ["theme", "Mottoreisen"],
   ["audience", "Zielgruppen"],
-  ["accommodation", "Unterkunftstyp"],
+  ["accommodation", "Unterkunftsart"],
   ["feature", "Besonderheiten"],
 ] as const;
 
