@@ -93,7 +93,7 @@ test("admin editor groups terms with human labels and explains missing feature e
     assignedKeys: ["audience:paar"],
     toggleAction: async () => ({ success: "Gespeichert." }),
   }));
-  for (const label of ["Reisearten", "Zielgruppen", "Unterkunftstyp", "Besonderheiten", "Paar", "Hotel"])
+  for (const label of ["Mottoreisen", "Zielgruppen", "Unterkunftsart", "Besonderheiten", "Paar", "Hotel"])
     assert.match(html, new RegExp(label));
   assert.match(html, /keine belegten Optionen/);
   assert.doesNotMatch(html, /audience:paar|accommodation:hotel/);

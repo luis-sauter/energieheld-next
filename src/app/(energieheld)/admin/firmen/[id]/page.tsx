@@ -12,6 +12,7 @@ import { TravelTaxonomyEditor } from "@/components/admin/travel-taxonomy-editor"
 import { loadAdminTravelTaxonomy } from "@/lib/admin-travel-taxonomy";
 import { toggleTravelTerm } from "./travel-actions";
 import styles from "@/components/admin/admin.module.css";
+import { loadEditorialNote } from "@/lib/owner-profile-input";
 
 export const metadata = {
   title: "Firmenprofil",
@@ -30,6 +31,7 @@ export default async function ReviewPage({
   requireAdminAccess(result.access);
   if (!result.error && !result.profile) notFound();
   const profile = result.profile;
+  const editorialNote = profile && !result.error ? await loadEditorialNote(client, profile.id) : null;
   const travelTaxonomy = profile && !result.error
     ? await loadAdminTravelTaxonomy(client, profile.id) : null;
   let media;
@@ -123,6 +125,11 @@ export default async function ReviewPage({
                 (category) => category.category_id,
               )}
             />
+            <section aria-labelledby="company-note-title">
+              <h2 id="company-note-title">Hinweise des Unternehmens</h2>
+              {editorialNote && "error" in editorialNote ? <p role="alert">{editorialNote.error}</p> :
+                <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{editorialNote?.note || "Keine Hinweise hinterlegt."}</p>}
+            </section>
             {travelTaxonomy && ("error" in travelTaxonomy
               ? <p role="alert">{travelTaxonomy.error}</p>
               : <TravelTaxonomyEditor terms={travelTaxonomy.terms}

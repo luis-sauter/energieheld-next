@@ -16,6 +16,7 @@ export function CompanyOnboarding({ profile, welcome }: { profile: OnboardingPro
   return <section className={styles.card} aria-labelledby="onboarding-title">
     {welcome && <p className="eyebrow">Willkommen im Firmenbereich</p>}
     <h2 id="onboarding-title">{rejected ? "Änderungen erforderlich" : "Ihr Profil vorbereiten"}</h2>
+    <p>Ihre Angaben und Bilder bilden die Grundlage für die redaktionelle Prüfung und Gestaltung durch DAS Reiseportal.</p>
     <p>Ihr Profil ist noch nicht öffentlich. Vervollständigen Sie zuerst Ihre Stammdaten, gestalten Sie anschließend Ihr Profil und reichen Sie es zur Freischaltung ein. Speichern und Bilder hochladen veröffentlicht es noch nicht.</p>
     <p>{progress.completed} von 3 Vorbereitungsschritten erledigt. Diese Orientierung ersetzt keine Prüfung durch die Redaktion.</p>
     <ol className={styles.steps}>

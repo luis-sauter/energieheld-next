@@ -212,6 +212,7 @@ export function CompanyProfileDesigner({
         </p>
       )}
       <ListingDetail
+        showMap
         listing={listing}
         categories={energieheld.categories}
         presentation="company"
