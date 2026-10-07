@@ -1,4 +1,4 @@
-export type AuthState = { error?: string; success?: string };
+export type AuthState = { error?: string; success?: string; confirmationEmail?: string };
 
 function field(data: FormData, name: string) {
   const value = data.get(name);
