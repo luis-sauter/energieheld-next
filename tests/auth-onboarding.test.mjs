@@ -16,7 +16,7 @@ registerHooks({
  load(u,c,n){if(/\.tsx?$/.test(u))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(u),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX}}).outputText};return n(u,c)}
 });
 const {register,login,requestPasswordReset,resetPassword}=await import('../src/app/(energieheld)/auth-actions.ts');
-const {authRedirectUrl,hasRecentRecovery,recoveryRequestMessage,validateNewPassword}=await import('../src/lib/auth-recovery.ts');
+const {authCallbackOrigin,authRedirectUrl,hasRecentRecovery,recoveryRequestMessage,validateNewPassword}=await import('../src/lib/auth-recovery.ts');
 const {GET:confirm}=await import('../src/app/auth/confirm/route.ts');
 const {GET:recovery}=await import('../src/app/auth/recovery/route.ts');
 const {CompanyOnboarding}=await import('../src/components/auth/company-onboarding.tsx');
@@ -30,7 +30,7 @@ function client({method='recovery',error=null,session=null,revoked=false}={}){
  return {calls,auth:{signUp:async v=>{calls.push(['signup',v]);return {data:{session},error}},signInWithPassword:async()=>({error:{code:'email_not_confirmed'}}),resetPasswordForEmail:async(e,v)=>{calls.push(['request',e,v]);return {error}},getClaims:async()=>({data:{claims},error:null}),getUser:async()=>({data:{user:revoked?null:{id:'verified-user'}},error:null}),verifyOtp:async v=>{calls.push(['otp',v]);return {error}},exchangeCodeForSession:async code=>{calls.push(['exchange',code]);return {error}},updateUser:async v=>{calls.push(['update',v]);return {error}},signOut:async v=>{calls.push(['out',v]);return {error:null}}}};
 }
 function setup(options){globalThis.__origin=origin;return globalThis.__authTestClient=client(options)}
-function request(query){const url=new URL('https://feature-portal-frontend--startling-choux-aaa598.netlify.app/auth/callback'+query);return {url:url.href,nextUrl:url}}
+function request(query){const url=new URL('https://feature-portal-frontend--startling-choux-aaa598.netlify.app/auth/callback'+query);return {url:url.href,nextUrl:url,headers:new Headers({host:url.host})}}
 test('signup sends exact safe confirmation redirect; no session yields confirmation state without immediate login claim',async()=>{
  const c=setup();const state=await register({},form());assert.equal(state.confirmationEmail,'test@example.test');assert.match(state.success,/Bestätigungslink/);assert.doesNotMatch(state.success,/jetzt anmelden/);assert.equal(c.calls[0][1].options.emailRedirectTo,origin+'/auth/confirm');
  setup({session:{}});assert.ok((await register({},form())).error);assert.deepEqual(globalThis.__authTestClient.calls.at(-1),['out',{scope:'local'}]);
@@ -39,6 +39,9 @@ test('signup sends exact safe confirmation redirect; no session yields confirmat
 test('safe redirects reject external origins, userinfo, query, path, non-https and forged next values',()=>{
  for(const bad of [null,'https://evil.example','https://das-reiseportal.com@evil.example','https://das-reiseportal.com/a','https://das-reiseportal.com?next=evil','https://startling-choux-aaa598.netlify.app.evil.example'])assert.throws(()=>authRedirectUrl(bad,'/auth/recovery'));
  assert.equal(authRedirectUrl(origin,'/auth/recovery'),origin+'/auth/recovery');
+ const immutable='https://6ac665b07f92140008b4a8f8--startling-choux-aaa598.netlify.app';
+ assert.equal(authCallbackOrigin({url:origin+'/auth/recovery',headers:new Headers({host:new URL(immutable).host})}),immutable);
+ assert.equal(authCallbackOrigin({url:origin+'/auth/recovery',headers:new Headers({host:'evil.example'})}),origin);
 });
 test('reset requests validate email, use safe callback and hide account/provider errors including rate limit',async()=>{
  for(const error of [null,{code:'user_not_found'},{code:'over_email_send_rate_limit'}]){const c=setup({error});assert.deepEqual(await requestPasswordReset({},form()),{success:recoveryRequestMessage});assert.equal(c.calls[0][2].redirectTo,origin+'/auth/recovery')}

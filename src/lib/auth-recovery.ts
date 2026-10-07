@@ -16,6 +16,16 @@ export function authRedirectUrl(origin: string | null, path: "/auth/confirm" | "
   return new URL(path, url.origin).href;
 }
 
+export function authCallbackOrigin(request: { url: string; headers: Headers }) {
+  // Netlify can normalize request.url to the branch alias. Keep callbacks on
+  // the actual incoming host so the SSR cookies stay on the same QA deploy.
+  const host = request.headers.get("host");
+  const url = new URL(request.url);
+  const candidate = host ? `${url.protocol}//${host}` : url.origin;
+  try { return new URL(authRedirectUrl(candidate, "/auth/confirm")).origin; }
+  catch { return new URL(authRedirectUrl(new URL(request.url).origin, "/auth/confirm")).origin; }
+}
+
 export function validateRecoveryEmail(form: FormData) {
   const input = form.get("email");
   const email = typeof input === "string" ? input.trim() : "";
