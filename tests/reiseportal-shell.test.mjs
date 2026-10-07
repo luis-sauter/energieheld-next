@@ -123,7 +123,7 @@ test("header dropdowns derive only existing theme and destination routes from th
   const html = renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal }));
   assert.equal((html.match(/aria-haspopup="menu"/g) ?? []).length, 2);
   assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 5); // Four navigation triggers and the account menu.
-  assert.match(html, /href="\/registrieren"[^>]*>Unterkunft eintragen<\/a>/);
+  assert.match(html, /href="\/fuer-unternehmen"[^>]*>Unterkunft eintragen<\/a>/);
   assert.match(html, /src="\/brand\/das-reiseportal-logo\.png"/);
 });
 
@@ -133,7 +133,7 @@ test("account button and dropdown groups use server-provided access without perm
   const guest = header("unauthenticated");
   assert.match(guest, /aria-label="Kontomenü öffnen"/);
   assert.match(guest, /aria-label="Mobile Hauptnavigation"/);
-  assert.equal((guest.match(/href="\/registrieren"/g) ?? []).length, 2);
+  assert.equal((guest.match(/href="\/fuer-unternehmen"/g) ?? []).length, 2);
   assert.match(guest, /Unterkunft eintragen/);
   assert.doesNotMatch(guest, /href="\/login"|href="\/firma"|href="\/admin"/);
   assert.deepEqual(accountMenuGroups("unauthenticated").account.map((link) => link.label), ["Einloggen"]);
@@ -141,10 +141,11 @@ test("account button and dropdown groups use server-provided access without perm
 
   const member = header("forbidden");
   assert.doesNotMatch(member, /href="\/firma"|href="\/admin"|href="\/login"/);
-  assert.deepEqual(accountMenuGroups("forbidden").account.map((link) => link.label), ["Firmenbereich", "Profil bearbeiten", "Anfragen", "Werbung", "Statistiken"]);
+  assert.deepEqual(accountMenuGroups("forbidden", true).account.map((link) => link.label), ["Firmenbereich", "Profil bearbeiten", "Anfragen", "Angebotsanfragen", "Statistiken"]);
   assert.deepEqual(accountMenuGroups("forbidden").administration, []);
   const admin = header("admin");
-  assert.doesNotMatch(admin, /href="\/firma"|href="\/admin"|href="\/login"/);
+  assert.match(admin, /href="\/admin"/);
+  assert.doesNotMatch(admin, /href="\/firma"|href="\/login"/);
   assert.deepEqual(accountMenuGroups("admin").administration.map((link) => link.label), ["Adminbereich", "Firmen verwalten", "Werbung verwalten"]);
 
   assert.match(footer("unauthenticated"), /DAS Reiseportal.*Neue Lieblingsorte entdecken/s);

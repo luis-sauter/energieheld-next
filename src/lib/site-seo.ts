@@ -47,7 +47,7 @@ export function siteUrl(path: string, config: SiteSeo = siteSeo()) {
 }
 
 export function privateSeoPath(path: string) {
-  return /^\/(admin|firma|login|registrieren|auth|api)(\/|$)/.test(path) ||
+  return /^\/(admin|firma|konto|login|registrieren|auth|api)(\/|$)/.test(path) ||
     /^\/unterkuenfte\/(demo-gmbh|energieheld-demo-gmbh-c3351d59)(\/|$)/.test(path);
 }
 

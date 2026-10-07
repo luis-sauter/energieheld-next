@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Icon } from "./icon";
 import type { HeaderNavigationItem } from "./navigation-data";
 
-export function MobileNavigation({ items }: { items: HeaderNavigationItem[] }) {
+export function MobileNavigation({ items, cta = { label: "Unterkunft eintragen", href: "/fuer-unternehmen" } }: { items: HeaderNavigationItem[]; cta?: { label: string; href: string } }) {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   return (
     <details
@@ -49,7 +49,7 @@ export function MobileNavigation({ items }: { items: HeaderNavigationItem[] }) {
             {item.children.map((child) => <Link key={child.href} href={child.href}>{child.label}</Link>)}
           </div> : null}
         </div>)}
-        <Link className="button header-cta" href="/registrieren">Unterkunft eintragen</Link>
+        <Link className="button header-cta" href={cta.href}>{cta.label}</Link>
       </nav>
     </details>
   );

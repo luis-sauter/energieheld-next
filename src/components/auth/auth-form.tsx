@@ -6,7 +6,7 @@ import { login, register, logout } from "@/app/(energieheld)/auth-actions";
 import type { AuthState } from "@/lib/auth";
 import styles from "./auth.module.css";
 
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: string }) {
   const signup = mode === "register";
   const [state, action, pending] = useActionState<AuthState, FormData>(
     signup ? register : login,
@@ -14,6 +14,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   );
   return (
     <form action={action} className={styles.form} aria-busy={pending}>
+      {!signup && next && <input type="hidden" name="next" value={next} />}
       {!state.success && (
         <>
           {signup && (
@@ -84,7 +85,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             {pending
               ? "Bitte warten …"
               : signup
-                ? "Firma registrieren"
+                ? "Firmenkonto erstellen"
                 : "Einloggen"}
           </button>
         </>
@@ -100,10 +101,10 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         </p>
       )}
       <div className={styles.links}>
-        <Link href={signup ? "/login" : "/registrieren"}>
+        <Link href={signup ? "/login" : "/fuer-unternehmen"}>
           {signup
             ? "Bereits registriert? Einloggen"
-            : "Noch kein Konto? Firma registrieren"}
+            : "Noch kein Firmenkonto? Unterkunft eintragen"}
         </Link>
       </div>
     </form>

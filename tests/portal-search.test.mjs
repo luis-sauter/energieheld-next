@@ -36,9 +36,9 @@ test('generated editorial catalog follows actual JSX rather than independently m
   const pages = await buildCatalog();
   assert.equal(pages.length, 8);
   const advertising = pages.find(p => p.url === '/werbung');
-  assert.ok(matchSearchDocument({ ...advertising, id: advertising.url, type: 'page' }, 'Werbeplatz Zeitraum'));
-  const sample = publicJsxCopy('<div><h1>Öffentlicher Titel</h1><p>Aktuelle Beschreibung</p><Overview intro="Öffentliche Einführung" /></div>');
-  assert.match(sample, /Aktuelle Beschreibung/); assert.match(sample, /Öffentliche Einführung/);
+  assert.ok(matchSearchDocument({ ...advertising, id: advertising.url, type: 'page' }, 'Bannerplatz Zeitraum'));
+  const sample = publicJsxCopy('<div><h1>Öffentlicher Titel</h1><p>Aktuelle Beschreibung</p><Overview intro="Öffentliche Einführung" /><B2BPage description="Sichtbare Seitenbeschreibung" /></div>');
+  assert.match(sample, /Aktuelle Beschreibung/); assert.match(sample, /Öffentliche Einführung/); assert.match(sample, /Sichtbare Seitenbeschreibung/);
   assert.equal(publicJsxCopy('const adminNote="Interne Notiz"; export const metadata={title:"Privat"};'), '');
   for (const entry of [...travelThemes, ...destinations]) assert.ok(matchSearchDocument({ id: entry.slug, title: entry.title, body: entry.intro, url: entry.slug, type: 'page' }, entry.title));
 });

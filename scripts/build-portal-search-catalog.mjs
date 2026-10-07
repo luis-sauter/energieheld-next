@@ -21,7 +21,7 @@ export function publicJsxCopy(source) {
   function visit(node) {
     if (ts.isJsxText(node)) texts.push(node.text);
     // Visible literal values (e.g. intro props), not metadata/IDs/CSS/asset paths.
-    if (ts.isJsxAttribute(node) && ['title', 'intro', 'label'].includes(node.name.getText(file)) && node.initializer && ts.isStringLiteral(node.initializer)) texts.push(node.initializer.text);
+    if (ts.isJsxAttribute(node) && ['title', 'intro', 'label', 'description'].includes(node.name.getText(file)) && node.initializer && ts.isStringLiteral(node.initializer)) texts.push(node.initializer.text);
     if (ts.isJsxExpression(node) && node.expression && ts.isStringLiteral(node.expression)) texts.push(node.expression.text);
     ts.forEachChild(node, visit);
   }

@@ -10,7 +10,7 @@ const accountLinks = [
   { label: "Firmenbereich", href: "/firma" },
   { label: "Profil bearbeiten", href: "/firma/profil" },
   { label: "Anfragen", href: "/firma/anfragen" },
-  { label: "Werbung", href: "/firma/werbung" },
+  { label: "Angebotsanfragen", href: "/firma/werbung" },
   { label: "Statistiken", href: "/firma/statistiken" },
 ];
 const adminLinks = [
@@ -18,12 +18,12 @@ const adminLinks = [
   { label: "Firmen verwalten", href: "/admin?ansicht=alle" },
   { label: "Werbung verwalten", href: "/admin/werbung" },
 ];
-export function accountMenuGroups(access: AdminAccess) {
+export function accountMenuGroups(access: AdminAccess, hasCompany = false) {
   return access === "unauthenticated" ? { account: [{ label: "Einloggen", href: "/login" }], administration: [] }
-    : { account: accountLinks, administration: access === "admin" ? adminLinks : [] };
+    : { account: hasCompany ? accountLinks : access === "admin" ? [] : [{ label: "Mein Konto", href: "/konto" }], administration: access === "admin" ? adminLinks : [] };
 }
 
-export function AccountMenu({ access, identity }: { access: AdminAccess; identity?: AccountIdentity }) {
+export function AccountMenu({ access, identity, hasCompany = false }: { access: AdminAccess; identity?: AccountIdentity; hasCompany?: boolean }) {
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(logout, {});
   const root = useRef<HTMLDivElement>(null);
@@ -51,7 +51,7 @@ export function AccountMenu({ access, identity }: { access: AdminAccess; identit
   }, [open]);
 
   const signedIn = access !== "unauthenticated";
-  const groups = accountMenuGroups(access);
+  const groups = accountMenuGroups(access, hasCompany);
   return <div className="account-menu" ref={root}>
     <button ref={button} type="button" className="account-trigger" aria-label={open ? "Kontomenü schließen" : "Kontomenü öffnen"} aria-expanded={open} aria-controls="portal-account-menu" onClick={() => setOpen(!open)}>
       {signedIn ? <span aria-hidden="true">{identity?.initials || "K"}</span> : <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.5-4 3-6 7.5-6s7 2 7.5 6"/></svg>}
@@ -60,11 +60,11 @@ export function AccountMenu({ access, identity }: { access: AdminAccess; identit
       {signedIn ? <>
         <div className="account-identity"><strong>{identity?.name || "Mein Konto"}</strong>{identity?.email && <span>{identity.email}</span>}</div>
         <nav aria-label="Konto" onClick={() => setOpen(false)}>
-          <span className="account-group-label">Konto</span>
+          {groups.account.length > 0 && <span className="account-group-label">{hasCompany ? "Mein Unternehmen" : "Konto"}</span>}
           {groups.account.map((link, index) => <Link key={link.href} ref={index === 0 ? firstLink : undefined} href={link.href}>{link.label}</Link>)}
           {groups.administration.length > 0 && <>
             <span className="account-group-label account-divider">Administration</span>
-            {groups.administration.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
+            {groups.administration.map((link, index) => <Link key={link.href} ref={groups.account.length === 0 && index === 0 ? firstLink : undefined} href={link.href}>{link.label}</Link>)}
           </>}
         </nav>
         <form className="account-logout account-divider" action={action}>

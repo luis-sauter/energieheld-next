@@ -1,3 +1,4 @@
+import { accountCta } from "@/lib/portal-account";
 import Image from "next/image";
 import Link from "next/link";
 import type { BrandConfig } from "@/types/portal";
@@ -7,7 +8,8 @@ import { DesktopNavigation } from "./desktop-navigation";
 import { headerNavigation } from "./navigation-data";
 import { AccountMenu, type AccountIdentity } from "./account-menu";
 
-export function PortalHeader({ brand, access = "unauthenticated", identity }: { brand: BrandConfig; access?: AdminAccess; identity?: AccountIdentity }) {
+export function PortalHeader({ brand, access = "unauthenticated", identity, hasCompany = false }: { brand: BrandConfig; access?: AdminAccess; identity?: AccountIdentity; hasCompany?: boolean }) {
+  const cta = accountCta({ access, hasCompany });
   const navigation = headerNavigation(brand);
   return (
     <>
@@ -27,9 +29,9 @@ export function PortalHeader({ brand, access = "unauthenticated", identity }: { 
             />
           </Link>
           <DesktopNavigation items={navigation} />
-          <Link className="button header-cta" href="/registrieren">Unterkunft eintragen</Link>
-          <AccountMenu access={access} identity={identity} />
-          <MobileNavigation items={navigation} />
+          <Link className="button header-cta" href={cta.href}>{cta.label}</Link>
+          <AccountMenu access={access} hasCompany={hasCompany} identity={identity} />
+          <MobileNavigation items={navigation} cta={cta} />
         </div>
       </header>
     </>
