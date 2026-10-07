@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { validRecoverySession } from "@/lib/auth-recovery";
+import { authCallbackOrigin, validRecoverySession } from "@/lib/auth-recovery";
 
 export async function GET(request: NextRequest) {
   const token_hash = request.nextUrl.searchParams.get("token_hash");
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       // No token, code, credential or provider details in errors/logs.
     }
   }
-  const response = NextResponse.redirect(new URL(destination, request.url));
+  const response = NextResponse.redirect(new URL(destination, authCallbackOrigin(request)));
   response.headers.set("Cache-Control", "private, no-store");
   response.headers.set("Referrer-Policy", "no-referrer");
   return response;
