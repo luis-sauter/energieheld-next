@@ -1,0 +1,9 @@
+.card { margin: 1.5rem 0; padding: clamp(1.2rem, 3vw, 2rem); border: 1px solid #dce9ef; border-radius: 1.1rem; background: #fff; box-shadow: 0 10px 30px rgb(30 90 122 / 5%); }
+.card h2 { margin-top: 0; }
+.steps { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.steps li { min-width: 0; padding: 1rem; border: 1px solid #dce9ef; border-radius: .8rem; background: #faf7f2; }
+.steps h3 { margin-top: 0; }
+.steps .current { border: 2px solid #1e5a7a; background: #eef8fc; }
+.status { font-weight: 650; }
+.steps a { max-width: 100%; white-space: normal; text-align: center; }
+@media (max-width: 800px) { .steps { grid-template-columns: 1fr; } }

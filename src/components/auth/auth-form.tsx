@@ -61,6 +61,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
               required
             />
           </label>
+          {!signup && <Link href="/passwort-vergessen">Passwort vergessen?</Link>}
           {signup && (
             <>
               <p id="password-hint">Mindestens 8 Zeichen.</p>
@@ -96,9 +97,12 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
         </p>
       )}
       {state.success && (
-        <p className={styles.success} role="status">
-          {state.success}
-        </p>
+        <div className={styles.success} role="status">
+          {signup && <h2>Bitte bestätigen Sie Ihre E-Mail-Adresse</h2>}
+          <p>{state.success}</p>
+          {state.confirmationEmail && <p>Ihre E-Mail-Adresse: {state.confirmationEmail}</p>}
+          {signup && <p>Bitte prüfen Sie auch Ihren Spam-Ordner. Falls Sie bereits registriert sind, können Sie sich einloggen.</p>}
+        </div>
       )}
       <div className={styles.links}>
         <Link href={signup ? "/login" : "/fuer-unternehmen"}>

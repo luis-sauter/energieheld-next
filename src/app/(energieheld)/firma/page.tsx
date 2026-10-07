@@ -12,6 +12,7 @@ import {
   CompanyOverviewMetrics,
 } from "@/components/dashboard/metrics";
 import dashboardStyles from "@/components/dashboard/dashboard.module.css";
+import { CompanyOnboarding } from "@/components/auth/company-onboarding";
 
 export const metadata = {
   title: "Firmenbereich",
@@ -21,15 +22,14 @@ export const dynamic = "force-dynamic";
 
 export default async function CompanyPage({
   searchParams,
-}: { searchParams?: Promise<{ zeitraum?: string }> } = {}) {
-  const period = analyticsPeriod((await searchParams)?.zeitraum);
+}: { searchParams?: Promise<{ zeitraum?: string; willkommen?: string }> } = {}) {
+  const params = await searchParams;
+  const period = analyticsPeriod(params?.zeitraum);
   const client = await createClient();
-  const [dashboard, metrics] = await Promise.all([
-    loadCompanyDashboard(client),
-    loadCompanyMetrics(client, period),
-  ]);
+  const dashboard = await loadCompanyDashboard(client);
   if (!dashboard.authenticated) redirect("/login");
   const { company, profile, email, error } = dashboard;
+  const metrics = profile?.status === "approved" ? await loadCompanyMetrics(client, period) : { data: null, error: null };
   const location = profile
     ? [profile.postal_code, profile.city, profile.region]
         .filter(Boolean)
@@ -42,12 +42,12 @@ export default async function CompanyPage({
     >
       <p className="eyebrow">Ihr Konto</p>
       <h1>Firmenbereich</h1>
+      {profile && <CompanyOnboarding profile={profile} welcome={params?.willkommen === "1"} />}
       <nav className={dashboardStyles.nav} aria-label="Firmenbereich">
         <Link href="/firma/profil">Profil bearbeiten</Link>
-        <Link href="/firma/profil/gestalten">Profil gestalten</Link>
+        <Link href="/firma/profil/gestalten">Profil &amp; Bilder gestalten</Link>
         <Link href="/firma/anfragen">Anfragen</Link>
-        <Link href="#verifizierung">Verifizierung</Link>
-        <Link href="/firma/werbung">Werbung</Link>
+        <Link href="/firma/werbung">Angebotsanfragen</Link>
         <Link href={`/firma/statistiken?zeitraum=${period}`}>Statistiken</Link>
       </nav>
       {profile && (
@@ -72,7 +72,7 @@ export default async function CompanyPage({
           ]}
         />
       )}
-      <section className={dashboardStyles.section}>
+      {profile?.status === "approved" && <section className={dashboardStyles.section}>
         <h2>Leistungsüberblick</h2>
         <Link
           className="text-link"
@@ -91,7 +91,7 @@ export default async function CompanyPage({
             items={[["Profilaufrufe", metrics.data.traffic.profile_views]]}
           />
         )}
-      </section>
+      </section>}
       {metrics.data && <CompanyOverviewMetrics data={metrics.data} />}
       <div className={styles.card}>
         {error && (
@@ -128,6 +128,8 @@ export default async function CompanyPage({
         </Link>
         {profile && (
           <section id="verifizierung">
+            <h2>Optionale persönliche Verifizierung</h2>
+            <p>Diese Qualitätsfunktion ist unabhängig von der ersten Profilfreischaltung.</p>
             <QualityRequestForm
               review={profile.company_quality_reviews}
               request={profile.company_quality_requests}

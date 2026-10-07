@@ -1,66 +1,40 @@
-# Firmenzugang
+# Firmenzugang und Onboarding
 
-## Ablauf
+## Auth und Zuständigkeiten
+- `/registrieren` validiert Namen, Firma, E-Mail und Passwort serverseitig. `signUp` erhält `full_name`/`company_name`; nur der bestehende `on_auth_user_created_company`-Trigger erstellt Firma und Entwurfsprofil.
+- Hosted **Confirm email** muss aktiviert sein. Ohne Session zeigt die Registrierung den Bestätigungshinweis mit eingegebener E-Mail und Spam-Hinweis. Eine unerwartet sofort ausgestellte Session wird lokal beendet, statt unbestätigten Zugang zu suggerieren.
+- `/auth/confirm` akzeptiert `verifyOtp` für `email`/`signup` oder einen PKCE-Code mit verifiziertem Signup-AMR. Erfolg führt fest nach `/firma?willkommen=1`; abgelaufene Links nach `/login?error=confirmation`.
+- Login verwendet `signInWithPassword`. Serververifizierte `portal_admins` und `companies.owner_user_id` bestimmen Admin → `/admin`, Owner → `/firma`, unzugeordnet → `/konto`. Die bestehende berechtigte `next`-Allowlist bleibt unverändert.
+- Owner-Zugriff auf `/firma` und Speichern läuft weiterhin über `getUser`, eigene Firma, eigenes Profil und RLS; niemals über Metadatenrollen oder übermittelte IDs.
 
-- `/registrieren` validiert alle Eingaben serverseitig und ruft `signUp` mit
-  `full_name` und `company_name` in `options.data` auf. Nur der vorhandene
-  Datenbank-Trigger legt Firma und Profile an.
-- `/login` verwendet `signInWithPassword`. Anschließend bestimmen serververifizierte `portal_admins` und `companies.owner_user_id` das Standardziel: Admin → `/admin`, Owner → `/firma`, ohne Zuordnung → `/konto`. Ein exakt erlaubter und berechtigter `next`-Pfad hat Vorrang; externe/uneindeutige Ziele werden ignoriert. Header und Kontomenü verwenden dieselben echten Zuordnungen, keine Metadatenrollen.
-- `/auth/confirm` prüft `token_hash` mit `verifyOtp`; erlaubt sind die
-  E-Mail-Bestätigungstypen `email` und `signup`. Ziele sind fest vorgegeben.
-- `/firma` verwendet `getUser` zur serverseitigen Identitätsprüfung und liest
-  mit dem Publishable Key und der Nutzersitzung über RLS. Zusätzlich wird auf
-  `companies.owner_user_id = user.id` und dann die eigene `company_id` gefiltert.
-- Logout läuft als Server Action über `signOut` und leitet nach `/` weiter.
-- `/firma/profil` lädt das eigene Profil serverseitig. Die Server Action ermittelt
-  bei jedem Speichern die Firmenzuordnung erneut über den verifizierten Nutzer.
-  Nur die zehn freigegebenen Formularfelder werden übernommen; IDs, Slug,
-  Status und Zeitstempel aus dem Formular werden ignoriert.
-- Normales Speichern erhält `draft` bzw. `pending`. Änderungen an `approved`
-  oder `rejected` werden als `draft` gespeichert. Einreichen speichert die
-  Formulardaten zusammen mit `pending` und der serverseitigen `submitted_at`
-  atomar. Eine zwischenzeitliche Statusänderung führt zum Konflikthinweis.
-- Eine zusätzliche, genehmigte Migration erlaubt UPDATE nur auf diesen zehn
-  Feldern sowie `status` und `submitted_at`. RLS bleibt unverändert und verhindert
-  fremde Zugriffe sowie Selbstfreigaben. Es entstehen keine neuen Tabellen.
+## Ein gemeinsames Profil, drei Schritte
+`/firma/profil` und `/firma/profil/gestalten` verwenden dasselbe `company_profiles`-Profil. Erfolgreiches Stammdaten-Speichern führt bereits zur Gestalten-Seite, deren Loader die gespeicherten Werte lädt; keine zweite Tabelle oder Synchronisation.
 
-## Vorhandene Datenbank und Leserechte
+Draft: Stammdaten → Profil & Bilder → bestehender Erstfreischaltungsbereich `#freischaltung`. Name, Beschreibung, Kontakt, PLZ/Ort und vorhandene Medien geben lediglich Orientierung. Sie erzeugen keine zusätzlichen harten Einreichungspflichten. Automatisch gesetzter Name allein zählt nicht als vorbereiteter Schritt.
 
-Die vorhandenen Tabellen, Trigger und RLS-Regeln wurden nicht geändert.
-Zwei freigegebene Migrationen ergänzen die zuvor fehlenden Leserechte für
-`authenticated`: SELECT auf `companies` und `company_profiles` sowie SELECT
-auf `portal_admins.user_id`, das die bestehenden RLS-Regeln abfragen.
-Die RLS-Regel auf `portal_admins` erlaubt nur den eigenen Eintrag.
-Beide Migrationen sind bereits auf `energieheld-dev` angewendet.
-Sie setzen die bestehende Datenbankstruktur voraus; sie sind kein vollständiges
-Schema für eine leere Datenbank.
+Pending: wird geprüft und ist nicht öffentlich. Rejected: Überarbeitung ohne erfundene Begründung. Approved: öffentlicher Profillink und Leistungsüberblick. Nicht veröffentlichte Profile laden keine Statistikmetriken. Persönliche Verifizierung bleibt optional und unabhängig.
 
-## Supabase-Einstellungen für Bestätigungs-E-Mails
+Normales Speichern und Medien-Upload veröffentlichen keinen Entwurf. Die vorhandene Erstfreigabe und das bestehende Verhalten nach Erstfreigabe bleiben erhalten.
 
-Der Route Handler setzt eine passende **Confirm signup**-Mailvorlage unter
-Supabase Authentication → Email Templates voraus. Der Bestätigungslink muss
-`token_hash` an die Anwendung senden, statt nur `ConfirmationURL` zu verwenden:
+## Passwort vergessen / zurücksetzen
+`/passwort-vergessen` ruft `resetPasswordForEmail` mit sicherem `/auth/recovery`-Redirect auf. Antwort bleibt bei bestehenden, unbekannten oder rate-limitierten Konten neutral; Eingabefehler sind verständlich.
 
-```html
-<a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email">E-Mail-Adresse bestätigen</a>
-```
+`/auth/recovery` akzeptiert Recovery-TokenHash oder PKCE-Code. Callback, Reset-Seite und Save-Action prüfen signierte `getClaims`-AMR `recovery` (höchstens 30 Minuten alt); zusätzlich prüft `getUser` Sitzungswiderruf und Nutzeridentität. Normales Login oder Signup genügt nicht. Passwörter müssen übereinstimmen und mindestens acht Zeichen haben. `updateUser({ password })`, lokale Abmeldung, danach `/login?passwort=geaendert`. Keine Token-/Passwortlogs, keine frei wählbaren Redirects, keine neue Dependency.
 
-Die Registrierung setzt `emailRedirectTo` auf den aktuellen Ursprung plus
-`/auth/confirm`. Unter Authentication → URL Configuration müssen die tatsächliche
-Netlify-Branch-URL mit `/auth/confirm` und bei lokalen Tests z. B.
-`http://localhost:3001/auth/confirm` als Redirect URLs erlaubt sein. Site URL auf
-die gewünschte öffentliche Anwendungs-URL setzen. Keine beliebigen fremden
-Domains freigeben.
+Callbacks entfernen Codes/TokenHash sofort aus der Ziel-URL und setzen `private, no-store` sowie `no-referrer`. Private Auth-Seiten sind noindex/nofollow.
 
-Diese Repository-Änderung verändert keine Supabase-Dashboard-Einstellungen.
-Dokumentation: https://supabase.com/docs/guides/auth/server-side/nextjs
+## Hosted-Konfiguration — Prüfung 2026-10-07
+Projekt `mbcvlqnxluyxznlnitbq`: Confirm email aktiviert und nach Dashboard-Reload verifiziert. Andere Auth-Provider, RLS, Schema, Daten und SMTP nicht verändert.
 
-## Verifikation
+Aktuell Default-Vorlagen und Default-Mailversand, kein Custom SMTP. Standard-ConfirmationURL unterstützt PKCE; alternativ unterstützt der Code eigene Vorlagen mit `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=signup` bzw. `type=recovery`. Kein veralteter Fragment-Token-Flow.
 
-`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`.
-Die Auth-Tests prüfen serverseitige Validierung und die Zuordnung von Nutzer,
-Firma und Profil einschließlich fehlender/ungültiger Sitzungen.
-Für einen vollständigen Live-Test: mit eigener E-Mail registrieren, E-Mail
-bestätigen, Entwurf im Firmenbereich prüfen, ausloggen und den gesperrten
-Firmenbereich erneut aufrufen. Mit zwei getrennten Konten prüfen, dass jeweils
-nur die eigene Firma erscheint. Keine Service-Role-Keys erforderlich.
+Die vorhandene Allowlist `https://**--startling-choux-aaa598.netlify.app/**` deckt Branch- und immutable QA-Callbacks ab. Sie wurde nicht erweitert. Die spätere Produktionsdomain benötigt explizit `/auth/confirm` und `/auth/recovery` in der Allowlist sowie eine passende Site URL; aktuell ist Site URL die Netlify-Hauptseite. Default SMTP hat niedrige Versandgrenzen und eingeschränkte Empfänger; keine produktionsreife Zustellbarkeit behaupten. Custom SMTP bleibt Launch-Aufgabe.
+
+Security Advisor geprüft: vorhandene Definer-/search_path-/Leaked-Password-Hinweise bleiben separat offen. Keine neuen DB-Funktionen oder Grants in diesem Block.
+
+## Verifikation und Grenzen
+Gezielte ausführbare Tests: Signup-Redirect/Mailzustand, unbestätigter Login, Confirmation-Typen, PKCE, Recovery-AMR/Ablauf/Widerruf, Passwortvalidierung/Update/Abmeldung, Neutralität, Onboarding-Zustände, bestehende Owner-/Admin-Grenzen. Finale Gates: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
+
+Live-Mailbestätigung und vollständiges neues Owner-Onboarding erfordern eine separate zugängliche QA-Mailbox. Shared QA-Admin-Passwort niemals ändern. Fehlende Live-Mailprüfung ausdrücklich als offen berichten.
+
+Quellen: [Passwort-Auth](https://supabase.com/docs/guides/auth/passwords), [SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client), [JWT/AMR](https://supabase.com/docs/guides/auth/jwt-fields), [E-Mail-Vorlagen](https://supabase.com/docs/guides/auth/auth-email-templates).

@@ -5,7 +5,7 @@ export function CompanyPublication({ status }: { status: string }) {
   const [state, action, pending] = useActionState(submitFirstPublication, {});
   if (status === "approved" || status === "pending") return null;
   return (
-    <section className="profile-publication">
+    <section id="freischaltung" className="profile-publication">
       <>
         <h2>Bereit für Ihr öffentliches Profil?</h2>
         <p>

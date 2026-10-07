@@ -27,7 +27,7 @@ registerHooks({
       url: 'data:text/javascript,export async function loadCompanyDashboard(){return globalThis.__companyDashboard}', shortCircuit: true,
     };
     if (specifier.endsWith("/dashboard-analytics")) return {
-      url: 'data:text/javascript,export function analyticsPeriod(){return "30d"};export async function loadCompanyMetrics(){return {data:null,error:null}}', shortCircuit: true,
+      url: 'data:text/javascript,export function analyticsPeriod(){return "30d"};export async function loadCompanyMetrics(){globalThis.__metricsCalls=(globalThis.__metricsCalls||0)+1;return {data:null,error:null}}', shortCircuit: true,
     };
     if (specifier.endsWith("/dashboard/metrics")) return {
       url: 'data:text/javascript,export function MetricCards(){return null};export function CompanyOverviewMetrics(){return null}', shortCircuit: true,
@@ -98,4 +98,17 @@ test("existing account and admin routes remain present", () => {
     "registrieren", "login", "firma", "firma/profil", "firma/profil/gestalten",
     "firma/anfragen", "firma/werbung", "firma/statistiken", "admin", "admin/werbung", "admin/firmen/[id]", "admin/firmen/[id]/vorschau",
   ]) assert.ok(existsSync(new URL(`../src/app/(energieheld)/${route}/page.tsx`, import.meta.url)), route);
+});
+
+test("onboarding precedes navigation and skips analytics for unpublished states; approved keeps metrics", async () => {
+  for (const [status, title] of [["draft", "Ihr Profil vorbereiten"], ["pending", "Ihr Profil wird geprüft"], ["rejected", "Änderungen erforderlich"], ["approved", "Profil veröffentlicht"]]) {
+    globalThis.__companyDashboard = { authenticated: true, profile: { status, slug: "real-profile", display_name: "Existing name" } };
+    globalThis.__metricsCalls = 0;
+    const html = renderToStaticMarkup(await CompanyPage({ searchParams: Promise.resolve({ willkommen: "1" }) }));
+    assert.ok(html.indexOf(title) < html.indexOf('<nav'));
+    assert.equal(globalThis.__metricsCalls, status === "approved" ? 1 : 0);
+    if (status !== "approved") assert.doesNotMatch(html, /Leistungsüberblick/);
+    else assert.match(html, /href="\/unterkuenfte\/real-profile"/);
+    assert.match(html, /Angebotsanfragen/);
+  }
 });

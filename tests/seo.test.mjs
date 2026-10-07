@@ -99,7 +99,7 @@ test('robots supports crawlable noindex previews without publishing their sitema
  assert.equal(robotsRules(production).sitemap,'https://portal.example/sitemap.xml');
  assert.equal(robotsRules(siteSeo({})).sitemap,undefined);assert.equal(robotsRules(siteSeo({})).rules.allow,'/');
  assert.equal(robotsHeader('/',siteSeo({})),'noindex, follow');assert.equal(robotsHeader('/',production),undefined);
- for(const path of ['/admin','/admin/werbung','/firma/profil','/login','/registrieren','/auth/confirm','/api/private','/unterkuenfte/demo-gmbh'])assert.equal(robotsHeader(path,production),'noindex, nofollow');
+ for(const path of ['/admin','/admin/werbung','/firma/profil','/login','/registrieren','/passwort-vergessen','/passwort-zuruecksetzen','/auth/confirm','/auth/recovery','/api/private','/unterkuenfte/demo-gmbh'])assert.equal(robotsHeader(path,production),'noindex, nofollow');
 });
 
 test('breadcrumb UI and JSON-LD share hierarchy, current page and absolute URLs; unknown origin omits incomplete schema',()=>{
