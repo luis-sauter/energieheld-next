@@ -3,21 +3,21 @@ import { companyPreparation, type OnboardingProfile } from "@/lib/company-onboar
 import styles from "./company-onboarding.module.css";
 
 const steps = [
-  { title: "Stammdaten", text: "Ergänzen Sie zuerst die wichtigsten Angaben zu Ihrer Unterkunft.", label: "Profil bearbeiten", href: "/firma/profil" },
-  { title: "Profil & Bilder", text: "Prüfen Sie danach die Darstellung und ergänzen Sie Ihre Bilder.", label: "Profil & Bilder gestalten", href: "/firma/profil/gestalten" },
-  { title: "Freischaltung", text: "Wenn alles passt, reichen Sie Ihr Profil zur ersten Prüfung ein.", label: "Zur Freischaltung einreichen", href: "/firma/profil/gestalten#freischaltung" },
+  { title: "Angaben zu Ihrer Unterkunft", text: "Ergänzen Sie zuerst die wichtigsten Angaben zu Ihrer Unterkunft.", label: "Profil bearbeiten", href: "/firma/profil" },
+  { title: "Profil gestalten", text: "Prüfen Sie danach die Darstellung und ergänzen Sie Ihre Bilder.", label: "Profil & Bilder gestalten", href: "/firma/profil/gestalten" },
+  { title: "Redaktionelle Prüfung", text: "Wenn alles passt, reichen Sie Ihr Profil zur ersten Prüfung ein.", label: "Profil zur Prüfung einreichen", href: "/firma/profil/gestalten#freischaltung" },
 ];
 export function CompanyOnboarding({ profile, welcome }: { profile: OnboardingProfile & { slug?: string | null }; welcome?: boolean }) {
   const progress = companyPreparation(profile);
   if (profile.status === "approved") return <section className={styles.card}><h2>Profil veröffentlicht</h2><p>Ihre Unterkunft ist öffentlich im Reiseportal sichtbar.</p>{profile.slug && <Link className="button button-primary" href={`/unterkuenfte/${profile.slug}`}>Öffentliches Profil ansehen</Link>}</section>;
-  if (profile.status === "pending") return <section className={styles.card}><h2>Ihr Profil wird geprüft</h2><p>Ihr Profil wurde zur Erstfreischaltung eingereicht. DAS Reiseportal prüft Ihre Angaben. Es ist noch nicht öffentlich.</p><Link className="button" href="/firma/profil/gestalten">Profil ansehen / weiter bearbeiten</Link></section>;
+  if (profile.status === "pending") return <section className={styles.card}><h2>Wartet auf redaktionelle Prüfung</h2><p>Ihr Profil wurde zur Prüfung eingereicht. Unsere Redaktion prüft Ihre Angaben und Bilder und gestaltet Ihren Auftritt. Rückmeldungen finden Sie hier im Firmenbereich. Das Profil ist noch nicht öffentlich.</p><Link className="button" href="/firma/profil/gestalten">Profil ansehen / weiter bearbeiten</Link></section>;
   const rejected = profile.status === "rejected";
   const next = rejected ? 0 : progress.next;
   return <section className={styles.card} aria-labelledby="onboarding-title">
     {welcome && <p className="eyebrow">Willkommen im Firmenbereich</p>}
     <h2 id="onboarding-title">{rejected ? "Änderungen erforderlich" : "Ihr Profil vorbereiten"}</h2>
     <p>Ihre Angaben und Bilder bilden die Grundlage für die redaktionelle Prüfung und Gestaltung durch DAS Reiseportal.</p>
-    <p>Ihr Profil ist noch nicht öffentlich. Vervollständigen Sie zuerst Ihre Stammdaten, gestalten Sie anschließend Ihr Profil und reichen Sie es zur Freischaltung ein. Speichern und Bilder hochladen veröffentlicht es noch nicht.</p>
+    <p>Ihr Profil ist noch nicht öffentlich. Vervollständigen Sie zuerst Ihre Stammdaten, gestalten Sie anschließend Ihr Profil und reichen Sie es zur Prüfung ein. Speichern und Bilder hochladen veröffentlicht es noch nicht.</p>
     <p>{progress.completed} von 3 Vorbereitungsschritten erledigt. Diese Orientierung ersetzt keine Prüfung durch die Redaktion.</p>
     <ol className={styles.steps}>
       {steps.map((step, index) => <li key={step.href} className={index === next ? styles.current : undefined} aria-current={index === next ? "step" : undefined}>

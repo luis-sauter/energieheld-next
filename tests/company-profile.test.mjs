@@ -227,7 +227,7 @@ test("submission atomically saves fields, sets pending and a server timestamp", 
   );
   assert.equal(
     result.success,
-    "Ihr Profil wurde zur erstmaligen Freischaltung eingereicht.",
+    "Ihr Profil wurde zur Prüfung eingereicht",
   );
   const writes = db.queries.filter((q) => q.payload);
   assert.equal(writes.length, 1);

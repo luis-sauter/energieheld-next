@@ -7,8 +7,8 @@ export function EditorialNoteForm({ initialNote, error }: { initialNote?: string
   const [state, action, pending] = useActionState(saveEditorialNote, {});
   return <section className={styles.card} aria-labelledby="editorial-note-title">
     <h2 id="editorial-note-title">Hinweise an die Redaktion</h2>
-    <p>Gibt es etwas, das wir bei der redaktionellen Gestaltung Ihres Profils besonders berücksichtigen sollen? Hier können Sie uns Hinweise oder gewünschte Schwerpunkte mitteilen.</p>
-    <p>Diese Angaben sind nur für die Redaktion sichtbar und werden nicht automatisch veröffentlicht.</p>
+    <p>Sie haben besondere Wünsche zur Darstellung Ihres Profils oder möchten unserer Redaktion etwas mitteilen? Schreiben Sie uns hier Ihre Hinweise.</p>
+    <p>Nur für Sie und unsere Redaktion sichtbar.</p>
     {error ? <p role="alert">{error}</p> : <form action={action} className={styles.form} aria-busy={pending}>
       <label className={styles.field}>Ihre Hinweise (optional)
         <textarea name="owner_note" rows={6} maxLength={4000} defaultValue={initialNote ?? ""} disabled={pending}

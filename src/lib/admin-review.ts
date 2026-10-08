@@ -231,16 +231,15 @@ export async function updatePublishedCategories(
 }
 
 // Dedicated travel decisions preserve every legacy category relation.
-export async function reviewTravelProfile(client: SupabaseClient, profileId: string, decision: "approved" | "rejected", expectedRevision: number, feedback = ""): Promise<ReviewResult> {
+export async function reviewTravelProfile(client: SupabaseClient, profileId: string, decision: "approved" | "rejected", expectedRevision: number, feedback = "", proposedKeys?: string[]): Promise<ReviewResult> {
   const access = await checkAdmin(client);
   if (access !== "admin") return { access };
   if (!isProfileId(profileId)) return { access, error: "Das Firmenprofil wurde nicht gefunden." };
-  if (!(await canReviewProfiles(client))) return { access, error: "Für diese Entscheidung fehlt die Freigabeberechtigung." };
   if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 1) return { access, error: "Bitte laden Sie den aktuellen Profilstand vor der Entscheidung neu." };
   if (decision === "rejected" && (!feedback.trim() || feedback.trim().length > 4000)) return { access, error: "Bitte geben Sie eine konkrete Rückmeldung mit maximal 4000 Zeichen ein." };
   try {
-    const { data, error } = await client.rpc("review_travel_profile_with_feedback", { p_profile_id: profileId, p_decision: decision, p_feedback: decision === "rejected" ? feedback.trim() : null, p_expected_revision: expectedRevision });
+    const { data, error } = await client.rpc(proposedKeys ? "review_travel_profile_with_proposals" : "review_travel_profile_with_feedback", { p_profile_id: profileId, p_decision: decision, p_feedback: decision === "rejected" ? feedback.trim() : null, p_expected_revision: expectedRevision, ...(proposedKeys ? { p_expected_proposals: proposedKeys } : {}) });
     if (error || data !== decision) return { access, error: "Die Entscheidung konnte nicht gespeichert werden. Möglicherweise wurde der Profilstand inzwischen geändert. Bitte laden Sie die Profilprüfung neu." };
-    return { access, success: decision === "approved" ? "Das Firmenprofil wurde freigegeben." : "Das Firmenprofil wurde zur Überarbeitung zurückgegeben." };
+    return { access, success: decision === "approved" ? "Das Profil wurde veröffentlicht." : "Die Rückfrage wurde gespeichert und ist im Firmenbereich des Gastgebers sichtbar." };
   } catch { return { access, error: "Die Prüfung ist gerade nicht erreichbar. Bitte versuchen Sie es erneut." }; }
 }

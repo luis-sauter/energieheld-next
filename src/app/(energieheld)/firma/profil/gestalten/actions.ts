@@ -19,7 +19,7 @@ export async function submitFirstPublication(): Promise<ProfileFormState> {
   if (dashboard.profile.status === "approved")
     return { error: "Ihr Profil ist bereits freigeschaltet." };
   if (dashboard.profile.status === "pending")
-    return { success: "Die Erstfreischaltung wurde bereits angefragt." };
+    return { success: "Ihr Profil wurde zur Prüfung eingereicht", submitted: true };
   const form = new FormData();
   for (const field of profileFields)
     form.set(field, dashboard.profile[field] ?? "");

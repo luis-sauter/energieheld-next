@@ -14,7 +14,7 @@ import { TravelSignals } from "@/components/portal/travel-signals";
 export const dynamic = "force-dynamic";
 const statusLabels: Record<string, string> = {
   approved: "Veröffentlicht",
-  pending: "Wartet auf Freischaltung",
+  pending: "Wartet auf redaktionelle Prüfung",
   draft: "Entwurf",
   rejected: "Änderungen erforderlich",
 };
@@ -42,8 +42,12 @@ export default async function CompanyDesignPage() {
     <main id="hauptinhalt" className="container detail-page">
       <div className="profile-editor-toolbar">
         <div>
+          <p className="eyebrow">Schritt 2 von 2</p>
           <h1>Profil gestalten</h1>
-          <p>Bearbeiten Sie Logo und Unternehmensbilder direkt im Profil.</p>
+          <h2>Zeigen Sie uns Ihre Unterkunft von ihrer schönsten Seite</h2>
+          <p>Laden Sie Ihr Logo und aussagekräftige Bilder Ihrer Unterkunft hoch. Unsere Redaktion erstellt daraus ein ansprechendes Firmenprofil für DAS Reiseportal.</p>
+          <p>Sie müssen hier keine fertigen Werbetexte verfassen oder das Layout selbst gestalten. Ihre Angaben aus dem vorherigen Schritt übernehmen wir als Grundlage. Besondere Wünsche können Sie uns unten als Hinweis mitteilen.</p>
+          <p>Besonders hilfreich sind Bilder von Zimmern, Außenansichten, besonderen Angeboten und der Umgebung. Sie können bis zu 8 Galeriebilder hinzufügen.</p>
         </div>
         <div className="profile-toolbar-actions">
           {profile && (
@@ -71,9 +75,10 @@ export default async function CompanyDesignPage() {
             media={media}
           />
           {travel && ("error" in travel ? <p role="alert">{travel.error}</p> :
-            <section aria-label="Gespeicherte Reisezuordnungen"><h2>Ihre Reisezuordnungen</h2>
-              <TravelSignals termKeys={travel.assignedKeys} limit={30} />
-              <p>{travel.terms.filter(term => term.dimension === "accommodation" && travel.assignedKeys.includes(term.term_key)).map(term => term.label).join(" · ")}</p>
+            <section aria-label="Gespeicherte Reisevorschläge"><h2>Ihre Reisevorschläge</h2>
+              <p>Ihre gespeicherte Auswahl ist ein Vorschlag für die Redaktion, keine bestätigte öffentliche Zuordnung.</p>
+              <TravelSignals termKeys={travel.proposedKeys} limit={30} />
+              <p>{travel.terms.filter(term => term.dimension === "accommodation" && travel.proposedKeys.includes(term.term_key)).map(term => term.label).join(" · ")}</p>
             </section>)}
           {note && <EditorialNoteForm initialNote={"note" in note ? note.note : undefined} error={"error" in note ? note.error : undefined} />}
           <CompanyPublication status={profile.status} />
