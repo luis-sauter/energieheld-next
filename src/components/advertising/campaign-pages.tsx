@@ -10,7 +10,7 @@ import { CampaignForm, AdminCampaignForm } from "./campaign-form";
 import styles from "./advertising.module.css";
 import { loadBannerMetadata } from '@/lib/banner-search-metadata';
 import { CampaignLifecycle } from './campaign-lifecycle';
-type Params = { seite?: string; fehler?: string; archiv?: string };
+type Params = { seite?: string; fehler?: string; archiv?: string; ansicht?: string };
 export async function CampaignIndex({
   admin = false,
   params,
@@ -25,7 +25,8 @@ export async function CampaignIndex({
         : 1;
   const client = await createClient();
   const archivedOnly = admin && params.archiv === '1';
-  const result = await loadAdCampaigns(client, admin, page, undefined, archivedOnly);
+  const pendingOnly = admin && params.ansicht === "pruefung" && !archivedOnly;
+  const result = await loadAdCampaigns(client, admin, page, undefined, archivedOnly, pendingOnly);
   if ("unauthenticated" in result && result.unauthenticated) redirect("/login");
   if ("access" in result) requireAdminAccess(result.access ?? "forbidden");
   const campaigns = "campaigns" in result ? result.campaigns : undefined,
@@ -36,9 +37,10 @@ export async function CampaignIndex({
       <Link href={base}>
         ← Zurück zum {admin ? "Adminbereich" : "Firmenbereich"}
       </Link>
-      <h1>{admin ? "Werbekampagnen prüfen" : "Meine Angebotsanfragen"}</h1>
-      {admin && campaigns?.some(campaign => Object.hasOwn(campaign, 'archived_at')) && <nav className={styles.actions} aria-label="Kampagnenbestand">
-        <Link href="/admin/werbung" aria-current={!archivedOnly ? 'page' : undefined}>Alle Kampagnen</Link>
+      <h1>{admin ? (pendingOnly ? "Werbeanfragen prüfen" : "Werbung verwalten") : "Meine Angebotsanfragen"}</h1>
+      {admin && <nav className={styles.actions} aria-label="Kampagnenbestand">
+        <Link href="/admin/werbung?ansicht=pruefung" aria-current={pendingOnly ? "page" : undefined}>Offene Angebotsanfragen</Link>
+        <Link href="/admin/werbung" aria-current={!archivedOnly && !pendingOnly ? 'page' : undefined}>Alle Kampagnen</Link>
         <Link href="/admin/werbung?archiv=1" aria-current={archivedOnly ? 'page' : undefined}>Archiv</Link>
       </nav>}
       {admin && campaigns?.length && !Object.hasOwn(campaigns[0], 'archived_at') ? <p role="status">Die Archivverwaltung wird nach der Datenbankaktualisierung verfügbar.</p> : null}
@@ -78,12 +80,12 @@ export async function CampaignIndex({
       )}
       <nav className={styles.actions} aria-label={admin ? "Kampagnenseiten" : "Seiten der Angebotsanfragen"}>
         {page > 1 && (
-          <Link href={`${base}/werbung?seite=${page - 1}${archivedOnly ? '&archiv=1' : ''}`}>
+          <Link href={`${base}/werbung?seite=${page - 1}${archivedOnly ? '&archiv=1' : pendingOnly ? '&ansicht=pruefung' : ''}`}>
             ← Vorherige Seite
           </Link>
         )}
         {count > page * 20 && (
-          <Link href={`${base}/werbung?seite=${page + 1}${archivedOnly ? '&archiv=1' : ''}`}>
+          <Link href={`${base}/werbung?seite=${page + 1}${archivedOnly ? '&archiv=1' : pendingOnly ? '&ansicht=pruefung' : ''}`}>
             Nächste Seite →
           </Link>
         )}

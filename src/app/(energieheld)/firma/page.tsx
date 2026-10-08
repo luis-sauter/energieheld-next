@@ -12,6 +12,7 @@ import {
   CompanyOverviewMetrics,
 } from "@/components/dashboard/metrics";
 import dashboardStyles from "@/components/dashboard/dashboard.module.css";
+import { loadReviewFeedback } from "@/lib/editorial-queue";
 import { CompanyOnboarding } from "@/components/auth/company-onboarding";
 
 export const metadata = {
@@ -29,6 +30,7 @@ export default async function CompanyPage({
   const dashboard = await loadCompanyDashboard(client);
   if (!dashboard.authenticated) redirect("/login");
   const { company, profile, email, error } = dashboard;
+  const feedback = profile?.status === "rejected" ? await loadReviewFeedback(client, profile.id) : null;
   const metrics = profile?.status === "approved" ? await loadCompanyMetrics(client, period) : { data: null, error: null };
   const location = profile
     ? [profile.postal_code, profile.city, profile.region]
@@ -43,6 +45,7 @@ export default async function CompanyPage({
       <p className="eyebrow">Ihr Konto</p>
       <h1>Firmenbereich</h1>
       {profile && <CompanyOnboarding profile={profile} welcome={params?.willkommen === "1"} />}
+      {feedback && <section className={styles.card}><h2>Hinweis der Redaktion</h2>{feedback.error ? <p role="alert">{feedback.error}</p> : <p style={{whiteSpace:"pre-wrap"}}>{feedback.message || "Bitte prüfen und überarbeiten Sie Ihre Angaben."}</p>}<Link className="button button-primary" href="/firma/profil">Profil überarbeiten</Link></section>}
       <nav className={dashboardStyles.nav} aria-label="Firmenbereich">
         <Link href="/firma/profil">Profil bearbeiten</Link>
         <Link href="/firma/profil/gestalten">Profil &amp; Bilder gestalten</Link>

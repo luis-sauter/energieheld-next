@@ -106,24 +106,8 @@ test("company can save business areas as text without assigning categories", asy
   );
 });
 
-test("submission requires non-whitespace business areas; draft saves may be empty", async () => {
-  for (const business_areas of ["", "  \n\t "]) {
-    const db = client();
-    assert.match(
-      (
-        await updateOwnCompanyProfile(
-          db,
-          form({ business_areas, intent: "submit" }),
-        )
-      ).error,
-      /Tätigkeitsbereiche/,
-    );
-    assert.equal(db.queries.length, 0);
-    assert.ok(
-      (await updateOwnCompanyProfile(client(), form({ business_areas })))
-        .success,
-    );
-  }
+test("optional offer details never block first submission or resubmission", async () => {
+ for(const status of ['draft','rejected']) for(const business_areas of ['', '  ']){const db=client({status});const result=await updateOwnCompanyProfile(db,form({business_areas,intent:'submit'}));assert.ok(result.success);const write=db.queries.find(q=>q.payload);assert.equal(write.payload.status,'pending');assert.equal(write.payload.business_areas,null);assert.ok(write.payload.submitted_at);}
 });
 
 test("validates optional email, HTTP(S) website and simple postal code", () => {

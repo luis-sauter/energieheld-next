@@ -574,7 +574,8 @@ test('P14 customer list and detail use request language in all editable and read
   assert.equal(detail.includes('<p role="status">Ihre Angebotsanfrage wurde erfolgreich gesendet.</p>'),status==='pending');
  }
  globalThis.p14CampaignResult={campaigns:[],count:0};const empty=renderToStaticMarkup(await CampaignIndex({params:{fehler:'erstellen'}}));assert.match(empty,/Noch keine Angebotsanfragen/);assert.match(empty,/Die Angebotsanfrage.*konnte nicht erstellt/s);
- globalThis.p14CampaignResult={campaigns:[],count:0};const admin=renderToStaticMarkup(await CampaignIndex({admin:true,params:{}}));assert.match(admin,/Werbekampagnen prüfen/);assert.doesNotMatch(admin,/Angebotsanfrage/);
+ globalThis.p14CampaignResult={campaigns:[],count:0};const admin=renderToStaticMarkup(await CampaignIndex({admin:true,params:{}}));assert.match(admin,/Werbung verwalten/);assert.match(admin,/href="\/admin\/werbung\?archiv=1"/);
+ globalThis.p14CampaignResult={campaigns:[],count:61};const pending=renderToStaticMarkup(await CampaignIndex({admin:true,params:{ansicht:"pruefung",seite:"2"}}));assert.match(pending,/Werbeanfragen prüfen/);assert.match(pending,/seite=1&amp;ansicht=pruefung/);assert.match(pending,/seite=3&amp;ansicht=pruefung/);assert.match(pending,/Alle Kampagnen/);
 });
 test('P14 form separates customer wording from admin and preserves routes, fields and advertising navigation',()=>{
  const row={...campaign,internal_name:'',targets:[]};const customer=render(CampaignForm,{campaign:row,categoryIds:[]});assert.match(customer,/Angaben zur Anzeige/);assert.match(customer,/Bezeichnung der Angebotsanfrage/);assert.match(customer,/Die Anzeige wird erst nach Freigabe/);assert.doesNotMatch(customer,/Kampagne/);assert.match(customer,/name="internal_name"/);assert.match(customer,/name="campaign_id"/);

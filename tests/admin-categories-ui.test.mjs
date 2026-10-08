@@ -41,7 +41,7 @@ registerHooks({
 });
 
 const { ReviewActions } = await import("../src/components/admin/review-actions.tsx");
-function render(status, canReview=true) { return renderToStaticMarkup(createElement(ReviewActions,{profileId:"test-profile",status,canReview})); }
+function render(status, canReview=true) { return renderToStaticMarkup(createElement(ReviewActions,{profileId:"test-profile",status,canReview,expectedRevision:3})); }
 test("pending travel review has explicit decisions and no energy trades",()=>{
  const html=render("pending");assert.match(html,/Firma erstmalig freischalten/);assert.match(html,/Rückfrage erforderlich/);assert.doesNotMatch(html,/type="checkbox"|Öffentliche Gewerke|Trockenbau|Außenbereich|disabled/);
  const denied=render("pending",false);assert.equal((denied.match(/disabled=""/g)||[]).length,2);assert.match(denied,/gesonderte Freigabeberechtigung/);

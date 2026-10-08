@@ -79,23 +79,22 @@ test('review-need filter excludes current Demo and overview counts all matching 
  const tree=directoryTree({freshnessStatuses:statusMap});
  assert.deepEqual(nodes(tree,n=>n.type===ListingRow).map(n=>n.props.listing.id),listings.slice(0,3).map(l=>l.id));
  const overview=nodes(tree,n=>n.props?.className==='admin-freshness-summary')[0];
- const html=renderToStaticMarkup(overview);assert.match(html,/Prüfbedarf 3/);
- for(const label of ['Ungeprüft','Geändert','Überfällig','Geprüft'])assert.ok(html.includes(`${label} 1`));
- assert.ok(html.includes('Prüfung erforderlich 0'));
+ const html=renderToStaticMarkup(overview);assert.match(html,/Prüfung erforderlich 3/);
+ assert.match(html,/Bereits geprüft 1/);assert.doesNotMatch(html,/Ungeprüft|Geändert|Überfällig|Prüfbedarf/);
 });
 test('status pill appears beside profile name, never below the CTA',()=>{
  const html=renderToStaticMarkup(createElement(ListingRow,{listing:listings[0],categories:[],href:'/profile',travel:true,adminStatus:createElement(FreshnessStatus,{status:statuses[0]})}));
  assert.ok(html.indexOf('admin-freshness-status')<html.indexOf('row-profile-link'));
- assert.match(html,/<div class="row-heading">[\s\S]*?<h3>[\s\S]*?Ungeprüft[\s\S]*?<\/div>/);
+ assert.match(html,/<div class="row-heading">[\s\S]*?<h3>[\s\S]*?Prüfung erforderlich[\s\S]*?<\/div>/);
 });
 
-test('withdrawn review has its own filter and contributes once to review need',()=>{
+test('withdrawn review belongs to the same required group and contributes once',()=>{
  const withdrawnMap={...statusMap,[listings[3].id]:'Prüfung erforderlich'};
  globalThis.reviewFilter='Prüfung erforderlich';
  const tree=directoryTree({freshnessStatuses:withdrawnMap});
  assert.deepEqual(nodes(tree,n=>n.type===ListingRow).map(n=>n.props.listing.id),[listings[3].id]);
  const html=renderToStaticMarkup(nodes(tree,n=>n.props?.className==='admin-freshness-summary')[0]);
- assert.match(html,/Prüfbedarf 4/); assert.match(html,/Prüfung erforderlich 1/); assert.match(html,/Geprüft 0/);
+ assert.match(html,/Prüfung erforderlich 4/); assert.match(html,/Bereits geprüft 0/);
  globalThis.reviewFilter='needs-review';
  assert.equal(nodes(directoryTree({freshnessStatuses:withdrawnMap}),n=>n.type===ListingRow).length,4);
 });

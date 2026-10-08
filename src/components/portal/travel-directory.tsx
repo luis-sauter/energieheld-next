@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { FreshnessStatus } from "@/components/admin/freshness-status";
-import { freshnessStates, freshnessMatches, freshnessCounts } from "@/lib/content-freshness";
+import { freshnessMatches, freshnessCounts } from "@/lib/content-freshness";
 import type { AdminFreshnessStatuses } from "@/lib/profile-freshness";
 import styles from "./travel-directory.module.css";
 import type { ActiveAd } from "@/lib/ad-values";
@@ -111,17 +111,17 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
               </button>
             </div>
           </div>
-          {freshnessStatuses !== undefined && <div className="admin-freshness-filter">
+          {freshnessStatuses !== undefined && <div id="inhaltspruefung" className="admin-freshness-filter">
             {freshnessStatuses ? <>
             <ul className="admin-freshness-summary" aria-label="Prüfübersicht">
-              <li><strong>Prüfbedarf {summary!.needsReview}</strong></li>
-              {Object.entries(freshnessStates).map(([status, presentation]) => <li key={status}>{presentation.label} {summary!.counts[status as keyof typeof freshnessStates]}</li>)}
+              <li><strong>Prüfung erforderlich {summary!.needsReview}</strong></li>
+              <li>Bereits geprüft {summary!.counts["Aktuell geprüft"]}</li>
             </ul>
             <label>Prüfstatus
               <select value={reviewFilter} onChange={event => setReviewFilter(event.target.value)}>
                 <option value="">Alle</option>
-                <option value="needs-review">Prüfbedarf</option>
-                {Object.entries(freshnessStates).map(([status, presentation]) => <option key={status} value={status}>{presentation.label}</option>)}
+                <option value="needs-review">Prüfung erforderlich</option>
+                <option value="reviewed">Bereits geprüft</option>
               </select>
             </label></> : <p role="alert">Die Prüfstände konnten nicht geladen werden. Bitte laden Sie die Seite erneut.</p>}
           </div>}

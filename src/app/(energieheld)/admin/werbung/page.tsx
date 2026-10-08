@@ -7,7 +7,7 @@ export const metadata = {
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ seite?: string }>;
+  searchParams: Promise<{ seite?: string; archiv?: string; ansicht?: string }>;
 }) {
   return <CampaignIndex admin params={await searchParams} />;
 }

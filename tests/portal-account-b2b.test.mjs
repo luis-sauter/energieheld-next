@@ -37,7 +37,7 @@ registerHooks({
 const { loadPortalAccount } = await import('../src/lib/portal-account-loader.ts');
 const { accountCta, accountLoginDestination, safeAccountReturnPath } = await import('../src/lib/portal-account.ts');
 const { login, logout } = await import('../src/app/(energieheld)/auth-actions.ts');
-const { accountMenuGroups } = await import('../src/components/portal/account-menu.tsx');
+const { accountMenuGroups, AccountMenu } = await import('../src/components/portal/account-menu.tsx');
 const { PortalHeader } = await import('../src/components/portal/chrome.tsx');
 const { reiseportal } = await import('../src/config/reiseportal.ts');
 const { default: Providers } = await import('../src/app/(energieheld)/fuer-unternehmen/page.tsx');
@@ -86,4 +86,12 @@ test('B2B pages share accessible layout and honest CTAs; auth preserves required
  const registerHtml=renderToStaticMarkup(Register());for(const name of ['full_name','company_name','email','password','password_confirmation'])assert.ok(registerHtml.includes('name="'+name+'"'));assert.match(registerHtml,/Firmenkonto erstellen/);assert.match(registerHtml,/als Entwurf/);
  const account=renderToStaticMarkup(await Account().catch(e=>{assert.match(e.message,/REDIRECT:\/login/);return createElement('p')}));assert.ok(account);
  globalThis.__accountClient=client();assert.match(renderToStaticMarkup(await Account()),/keine Firma zugeordnet/);
+});
+
+
+test('editorial badge is admin-only, hides zero, announces real counts and caps visible number',()=>{
+ for(const total of [0,1,2,100]){const counts={profiles:total,advertising:0,verifications:0,total};const html=renderToStaticMarkup(createElement(AccountMenu,{access:'admin',taskCounts:counts}));assert.equal(html.includes('account-task-badge'),total>0);if(total){assert.match(html,new RegExp(total+' offene Redaktionsaufgaben'));assert.ok(html.includes('>'+ (total>99?'99+':total) +'</span>'));}}
+ for(const access of ['unauthenticated','forbidden']){const html=renderToStaticMarkup(createElement(AccountMenu,{access,taskCounts:{total:2,profiles:2,advertising:0,verifications:0}}));assert.doesNotMatch(html,/account-task-badge|offene Redaktionsaufgaben/);}
+ const failed=renderToStaticMarkup(createElement(AccountMenu,{access:'admin',taskError:'Failed'}));assert.match(failed,/Aufgabenzähler nicht verfügbar/);assert.doesNotMatch(failed,/account-task-badge/);
+ const links=accountMenuGroups('admin').administration;assert.ok(links.some(l=>l.href==='/admin/firmen?ansicht=pruefung'));assert.ok(links.some(l=>l.href==='/admin/werbung?ansicht=pruefung'));
 });

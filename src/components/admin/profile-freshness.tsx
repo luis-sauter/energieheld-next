@@ -49,7 +49,7 @@ export function ProfileFreshness({ state, review, withdraw, disabled, compact = 
       {canWithdraw && <button type="button" disabled={disabled || busy} onClick={() => { setFeedback({}); setConfirming(true); }}>Prüfung zurückziehen</button>}
     </details>}
     {confirming && <div className="profile-freshness-confirm" role="group" aria-label="Prüfung zurückziehen bestätigen">
-      <p>Der aktuelle Prüfstatus wird zurückgezogen. Das Profil erscheint anschließend wieder unter „Prüfbedarf“. Fortfahren?</p>
+      <p>Der aktuelle Prüfstatus wird zurückgezogen. Das Profil erscheint anschließend wieder unter „Prüfung erforderlich“. Fortfahren?</p>
       <button type="button" className="button" disabled={disabled || busy} onClick={() => perform(() => withdraw!(state.content_revision, state.reviewed_at!))}>{busy ? "Prüfaktion wird gespeichert …" : "Rücknahme bestätigen"}</button>
       <button type="button" className="button" disabled={busy} onClick={() => setConfirming(false)}>Rücknahme abbrechen</button>
     </div>}

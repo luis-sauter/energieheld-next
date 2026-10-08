@@ -22,7 +22,7 @@ export const freshnessStates = {
   "Prüfung erforderlich": { label: "Prüfung erforderlich", symbol: "!", needsReview: true, action: "Aktuellen Stand als geprüft markieren" },
 } satisfies Record<FreshnessStatus, { label: string; symbol: string; needsReview: boolean; action: string | null }>;
 export function freshnessMatches(status: FreshnessStatus | undefined, filter: string) {
-  return !filter || Boolean(status && (filter === "needs-review" ? freshnessStates[status].needsReview : status === filter));
+  return !filter || Boolean(status && (filter === "needs-review" ? freshnessStates[status].needsReview : filter === "reviewed" ? !freshnessStates[status].needsReview : status === filter));
 }
 export function freshnessCounts(statuses: (FreshnessStatus | undefined)[]) {
   const counts = Object.fromEntries(Object.keys(freshnessStates).map(status => [status, 0])) as Record<FreshnessStatus, number>;
@@ -52,3 +52,5 @@ export function publicFreshnessLabel(state?: PublicFreshness) {
   const date = state?.checked_at ?? state?.content_updated_at;
   return date ? { date, label: state?.checked_at ? "Zuletzt geprüft" : "Zuletzt aktualisiert" } : null;
 }
+
+export function editorialReviewLabel(status: FreshnessStatus) { return freshnessStates[status].needsReview ? "Prüfung erforderlich" : "Bereits geprüft"; }

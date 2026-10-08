@@ -1,6 +1,7 @@
 import { accountCta } from "@/lib/portal-account";
 import Image from "next/image";
 import Link from "next/link";
+import type { EditorialCounts } from "@/lib/editorial-queue";
 import type { BrandConfig } from "@/types/portal";
 import type { AdminAccess } from "@/lib/admin-review";
 import { MobileNavigation } from "./mobile-navigation";
@@ -8,7 +9,7 @@ import { DesktopNavigation } from "./desktop-navigation";
 import { headerNavigation } from "./navigation-data";
 import { AccountMenu, type AccountIdentity } from "./account-menu";
 
-export function PortalHeader({ brand, access = "unauthenticated", identity, hasCompany = false }: { brand: BrandConfig; access?: AdminAccess; identity?: AccountIdentity; hasCompany?: boolean }) {
+export function PortalHeader({ brand, access = "unauthenticated", identity, hasCompany = false, taskCounts, taskError }: { brand: BrandConfig; access?: AdminAccess; identity?: AccountIdentity; hasCompany?: boolean; taskCounts?: EditorialCounts; taskError?: string }) {
   const cta = accountCta({ access, hasCompany });
   const navigation = headerNavigation(brand);
   return (
@@ -30,7 +31,7 @@ export function PortalHeader({ brand, access = "unauthenticated", identity, hasC
           </Link>
           <DesktopNavigation items={navigation} />
           <Link className="button header-cta" href={cta.href}>{cta.label}</Link>
-          <AccountMenu access={access} hasCompany={hasCompany} identity={identity} />
+          <AccountMenu access={access} hasCompany={hasCompany} identity={identity} taskCounts={taskCounts} taskError={taskError} />
           <MobileNavigation items={navigation} cta={cta} />
         </div>
       </header>

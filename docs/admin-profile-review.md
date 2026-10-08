@@ -13,3 +13,11 @@ The historical review/category RPCs remain available. Their energy-category requ
 ## Verification
 
 Real-role database tests cover travel approval, rejection, denied access, deferred legacy category integrity and unchanged existing records. UI tests cover review ordering, editor entry, private notes, aligned taxonomy controls and existing save/cancel behavior. Live QA must not approve a real profile without explicit permission.
+
+## Editorial dashboard and owner feedback
+
+`20261008150102_editorial_dashboard_workflow.sql` adds bounded admin-only queue and company-search RPCs. The dashboard and header share a request-local snapshot; only pending profiles, non-editorial/non-archived pending advertising requests and pending verification requests count as open tasks. Company management uses server-side search and stable 20-row pagination.
+
+Private review feedback is stored separately from company notes. Owners can read only their own feedback; admins can read it. Direct API writes and anonymous reads are denied. The new decision RPC locks the profile and its content revision, requires a rejection reason, and writes feedback and the decision atomically. A changed revision requires reloading the review. Historical approval RPCs remain compatible.
+
+Public submission no longer requires optional business areas. Editorial UI uses only “Prüfung erforderlich” and “Bereits geprüft”; internal Freshness states, revisions and publication permissions are preserved.

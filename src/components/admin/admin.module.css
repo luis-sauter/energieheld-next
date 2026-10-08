@@ -141,3 +141,17 @@
 .reviewSticky a { min-height: 44px; }
 @media (max-width: 760px) { .taxonomyList { grid-template-columns: 1fr; } }
 @media (max-width: 480px) { .reviewSticky { bottom: 0; padding: 10px; } .reviewSticky > span { display: none; } .reviewSticky a { flex: 1; white-space: normal; text-align: center; } .page > .card { padding: 16px; } }
+.taskGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.taskCard { padding:22px; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); }
+.taskCard h3 { margin:0 0 8px; }
+.workList { list-style:none; padding:0; margin:0 0 20px; }
+.workList li { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px; align-items:center; padding:18px 0; border-bottom:1px solid var(--line); }
+.workList p { margin:4px 0; color:var(--muted); }
+.managementSearch { display:flex; flex-wrap:wrap; align-items:end; gap:16px; padding:20px 0; }
+.managementSearch label { display:grid; gap:6px; flex:1; min-width:180px; }
+.managementSearch input,.managementSearch select { width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; }
+@media(max-width:650px) { .taskGrid {grid-template-columns:1fr;} .workList li {grid-template-columns:1fr;} .workList a {justify-self:start;} }
+
+.reviewFeedback { display:grid; gap:12px; margin-top:20px; min-width:0; }
+.reviewFeedback textarea { width:100%; min-width:0; padding:12px; border:1px solid var(--line); border-radius:8px; font:inherit; resize:vertical; }
+.reviewFeedback button { justify-self:start; }
