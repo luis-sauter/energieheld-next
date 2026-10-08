@@ -229,3 +229,16 @@ export async function updatePublishedCategories(
     };
   }
 }
+
+// Dedicated travel decisions preserve every legacy category relation.
+export async function reviewTravelProfile(client: SupabaseClient, profileId: string, decision: "approved" | "rejected"): Promise<ReviewResult> {
+  const access = await checkAdmin(client);
+  if (access !== "admin") return { access };
+  if (!isProfileId(profileId)) return { access, error: "Das Firmenprofil wurde nicht gefunden." };
+  if (!(await canReviewProfiles(client))) return { access, error: "Für diese Entscheidung fehlt die Freigabeberechtigung." };
+  try {
+    const { data, error } = await client.rpc("review_travel_company_profile", { p_profile_id: profileId, p_decision: decision });
+    if (error || data !== decision) return { access, error: "Die Entscheidung konnte nicht gespeichert werden. Bitte laden Sie die Profilprüfung neu." };
+    return { access, success: decision === "approved" ? "Das Firmenprofil wurde freigegeben." : "Das Firmenprofil wurde zur Überarbeitung zurückgegeben." };
+  } catch { return { access, error: "Die Prüfung ist gerade nicht erreichbar. Bitte versuchen Sie es erneut." }; }
+}

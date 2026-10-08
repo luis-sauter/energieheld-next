@@ -7,7 +7,7 @@ import styles from "./admin.module.css";
 const groups = [
   ["theme", "Mottoreisen"],
   ["audience", "Zielgruppen"],
-  ["accommodation", "Unterkunftsart"],
+  ["accommodation", "Unterkunftsarten"],
   ["feature", "Besonderheiten"],
 ] as const;
 
@@ -47,14 +47,14 @@ export function TravelTaxonomyEditor({ terms, assignedKeys, toggleAction }: {
       return <div key={dimension} className={styles.categories}>
         <h3>{title}</h3>
         {options.length === 0 && <p>Für dieses Merkmal sind noch keine belegten Optionen vorhanden.</p>}
-        {options.map((term) => <div key={term.term_key} className={styles.actions}>
-          <span>{term.label}</span>
+        <div className={styles.taxonomyList}>{options.map((term) => <div key={term.term_key} className={styles.taxonomyRow} data-assigned={selected.has(term.term_key)}>
+          <span>{term.label}{selected.has(term.term_key) && <small className={styles.assignment}>Zugeordnet</small>}</span>
           <button type="button" className="button" disabled={pending}
             aria-label={`${term.label} ${selected.has(term.term_key) ? "entfernen" : "zuordnen"}`}
             onClick={() => toggle(term.term_key)}>
             {selected.has(term.term_key) ? "Entfernen" : "Zuordnen"}
           </button>
-        </div>)}
+        </div>)}</div>
       </div>;
     })}
     {message.error && <p role="alert">{message.error}</p>}

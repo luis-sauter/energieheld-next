@@ -125,3 +125,19 @@
 .actions {
   gap: 10px;
 }
+
+/* Review workflow: fixed action column, never the generic action flex row. */
+.taxonomyList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; }
+.taxonomyRow { display: grid; grid-template-columns: minmax(0, 1fr) 108px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.taxonomyRow > span { overflow-wrap: anywhere; }
+.taxonomyRow button { width: 100%; min-height: 44px; padding-inline: 8px; }
+.taxonomyRow[data-assigned="true"] > span { font-weight: 600; }
+.assignment { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+.reviewHeader { margin-bottom: 24px; }
+.reviewHeader h1 { margin-bottom: 8px; }
+.reviewSection { padding-block: 24px; border-top: 1px solid var(--line); scroll-margin-top: 24px; }
+.reviewNote { white-space: pre-wrap; overflow-wrap: anywhere; }
+.reviewSticky { position: sticky; bottom: 12px; z-index: 15; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; padding: 12px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--white); box-shadow: 0 4px 18px rgb(0 0 0 / .08); }
+.reviewSticky a { min-height: 44px; }
+@media (max-width: 760px) { .taxonomyList { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .reviewSticky { bottom: 0; padding: 10px; } .reviewSticky > span { display: none; } .reviewSticky a { flex: 1; white-space: normal; text-align: center; } .page > .card { padding: 16px; } }

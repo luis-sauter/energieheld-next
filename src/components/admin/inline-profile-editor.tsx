@@ -17,9 +17,11 @@ import { FixedHeadingEditor, InlineContentEditor, SectionPartFrame } from "./inl
 import type { EditorialItem } from "@/lib/profile-content";
 import { InlineEditorHistoryContext, useInlineEditorHistoryController } from "./inline-editor-history";
 
+import Link from "next/link";
+
 const formId = "inline-admin-profile-form";
 
-export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness }: {
+export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness }: {
   listing: Listing;
   categories: Category[];
   values: ProfileValues;
@@ -35,6 +37,7 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   saveContent: (form: FormData) => Promise<{ error?: string; success?: string }>;
   saveBlockImage: (form: FormData) => Promise<MediaState>;
   initialEditing?: boolean;
+  returnHref?: string;
   showVerification?: boolean;
   allowDemoMap?: boolean;
   originalDemoMedia?: boolean;
@@ -124,7 +127,11 @@ export function InlineProfileEditor({ listing, categories, values, media, rows, 
   }
 
   return <InlineEditorHistoryContext.Provider value={history}>
+    {!editing && returnHref && <p><Link className="button" href={returnHref}>Zur Profilprüfung</Link></p>}
     {editing && <div className={styles.toolbar}>
+      {returnHref && <Link className="button" href={returnHref} onNavigate={(event) => {
+        if (busy || contactBusy || mediaEditor.busy || history.busy || (dirty && !window.confirm("Ungespeicherte Profilangaben verwerfen und zur Profilprüfung zurückkehren?"))) event.preventDefault();
+      }}>Zur Profilprüfung</Link>}
       <strong>Bearbeitungsmodus aktiv</strong>
       <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || !history.state.past.length}
         onClick={() => void history.undo()}>↶ Rückgängig</button>
