@@ -19,25 +19,22 @@ registerHooks({resolve(s,c,next){
 const {loadContentReviewPage,loadBannerWorkspacePages,campaignInlinePage}=await import('../src/lib/editorial-workspace.ts');
 const {default:AdminPage}=await import('../src/app/(energieheld)/admin/page.tsx');
 const {default:ContentPage}=await import('../src/app/(energieheld)/admin/inhalte/page.tsx');
-function client({admin=true,states=[],profiles=[],error=false}={}){
- const calls=[];return {calls,auth:{getUser:async()=>({data:{user:{id:'admin'}}})},rpc:async()=>({data:[{path:'/',label:'Startseite'},{path:'/reiseziele/deutschland',label:'Deutschland'},{path:'https://evil.example',label:'unsafe'}],error:null}),from(table){
-  const q={select(fields){calls.push([table,fields]);return this},eq(k,v){if(k==='status')this.status=v;return this},in(k,ids){this.ids=ids;return this},not(k,op,list){this.excluded=list.slice(1,-1).split(',');return this},order(){return this},maybeSingle:async()=>({data:admin?{user_id:'admin'}:null}),range(a,b){
-   if(table==='profile_content_freshness')return Promise.resolve({data:states.slice(a,b+1),error:error?{}:null});
-   const rows=profiles.filter(p=>(!this.status||p.status===this.status)&&(!this.ids||this.ids.includes(p.id))&&(!this.excluded||!this.excluded.includes(p.id)));
-   return Promise.resolve({data:rows.slice(a,b+1),count:rows.length,error:null});
-  }};return q;}};
+function client({admin=true,profiles=[],error=false,payload}={}){
+ const calls=[];return {calls,auth:{getUser:async()=>({data:{user:{id:'admin'}}})},rpc:async(name,args)=>{
+  calls.push([name,args]);
+  if(name==='public_banner_search_contexts')return {data:[{path:'/',label:'Startseite'},{path:'/reiseziele/deutschland',label:'Deutschland'},{path:'https://evil.example',label:'unsafe'}],error:null};
+  if(!admin)return {error:{code:'42501'}};
+  const a=(args.p_page-1)*20;
+  return {data:payload??{count:profiles.length,rows:profiles.slice(a,a+20).map(p=>({city:null,review_status:args.p_reviewed?'Aktuell geprüft':'Noch nicht geprüft',...p}))},error:error?{}:null};
+ },from(table){if(table!=='portal_admins')throw Error('unexpected table scan '+table);return {select(){return this},eq(){return this},maybeSingle:async()=>({data:admin?{user_id:'admin'}:null})}}};
 }
-const now=new Date('2026-10-08T12:00:00Z');
-const state={profile_id:'checked',content_revision:3,reviewed_revision:3,reviewed_at:'2026-10-01T12:00:00Z',content_updated_at:null,content_update_source:null};
-test('internal content review reuses exact Freshness rule, approved-only paging and no media',async()=>{
- const states=[state,{...state,profile_id:'changed',content_revision:4},{...state,profile_id:'withdrawn',review_invalidated_at:'2026-10-02'},{...state,profile_id:'overdue',reviewed_at:'2020-01-01'}];
- const profiles=[...states.map(s=>({id:s.profile_id,status:'approved',display_name:s.profile_id,city:'Real city'})),{id:'missing',status:'approved'},{id:'pending',status:'pending'}];
- const c=client({states,profiles});assert.deepEqual((await loadContentReviewPage(c,true,1,now)).rows.map(p=>p.id),['checked']);
- assert.deepEqual((await loadContentReviewPage(c,false,1,now)).rows.map(p=>p.id),['changed','withdrawn','overdue','missing']);
- const paged=await loadContentReviewPage(client({profiles:Array.from({length:25},(_,i)=>({id:String(i),status:'approved'}))}),false,2,now);assert.equal(paged.count,25);assert.equal(paged.rows.length,5);
- assert.ok(c.calls.every(([,fields])=>!fields.includes('*')&&!/image|media/.test(fields)));
- for(const opts of [{admin:false},{error:true}]){const r=await loadContentReviewPage(client(opts));assert.ok(r.error);assert.equal(r.count,undefined);}
- const many=Array.from({length:501},(_,i)=>({...state,profile_id:String(i)}));const r=await loadContentReviewPage(client({states:many,profiles:[{id:'500',status:'approved'}]}),true,1,now);assert.equal(r.rows[0].id,'500');
+test('content loader uses one bounded RPC, normalizes page and fails explicitly',async()=>{
+ const profiles=Array.from({length:21},(_,i)=>({id:String(i),display_name:'Profile '+i}));
+ const c=client({profiles});const r=await loadContentReviewPage(c,false,2);assert.equal(r.count,21);assert.equal(r.rows.length,1);
+ assert.deepEqual(c.calls,[['editorial_content_review_page',{p_reviewed:false,p_page:2}]]);
+ for(const page of [NaN,0,-1,1.5,100001]){const c=client();await loadContentReviewPage(c,true,page);assert.equal(c.calls[0][1].p_page,1);}
+ for(const opts of [{admin:false},{error:true},{payload:{count:0,rows:[{}]}},{payload:{count:1,rows:[{id:'1',display_name:'P',city:null,review_status:'invalid'}]}},{payload:{count:21,rows:Array(21).fill({})}},{payload:{count:null,rows:[]}},{payload:{count:1,rows:[{id:'1',display_name:'P',city:null,review_status:'Aktuell geprüft'}]}}]){const r=await loadContentReviewPage(client(opts));assert.ok(r.error);assert.equal(r.count,undefined);}
+ const failed=await loadContentReviewPage({rpc:async()=>{throw Error('DB offline')}});assert.match(failed.error,/konnten nicht geladen/);
 });
 test('inline navigation only for active single campaign; original stays unchanged',()=>{
  const original={id:'same-id',status:'approved',approved_start_date:'2026-10-01',approved_end_date:'2026-10-30',targets:[{target_type:'homepage',category_id:null,placement:'sidebar_bottom'}]};const snapshot=JSON.stringify(original);

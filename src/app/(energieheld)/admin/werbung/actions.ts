@@ -70,6 +70,8 @@ export async function reviewCampaign(
   const result = await decideAd(await createClient(), form);
   requireAdminAccess(result.access ?? "forbidden");
   if (result.success) {
+    // Refresh the shared account task badge as well as the decision page.
+    revalidatePath("/", "layout");
     revalidatePath("/admin/werbung", "layout");
     revalidatePath("/firma/werbung", "layout");
     revalidatePath("/experten");

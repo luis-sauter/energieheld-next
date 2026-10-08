@@ -473,3 +473,14 @@ test('P14 owner visibility filter is applied before pagination, never to admin o
  const db=client();await saveOwnAd(db,form({intent:'submit',image:png}));
  assert.equal(db.calls.find(c=>c.rpc==='save_ad_campaign').args.p_submit,true);
 });
+
+test('pending admin request list avoids unused signed previews; normal inventory keeps signed images',async()=>{
+ const path=`campaigns/${id}/creative/123.png`;
+ for(const pending of [true,false]){
+  const c=client({admin:true});let signed=0;
+  const original=c.from.bind(c);
+  c.from=table=>{const q=original(table);q.is=function(){return this};if(table==='company_ad_campaigns')q.range=async()=>({data:[{id,status:'pending',image_path:path,targets:[]}],count:1,error:null});return q;};
+  c.storage.from=()=>({createSignedUrls:async paths=>{signed++;return {data:paths.map(path=>({path,signedUrl:'https://signed.example/preview'})),error:null}}});
+  const r=await loadAdCampaigns(c,true,1,undefined,false,pending);assert.equal(r.count,1);assert.equal(signed,pending?0:1);assert.equal(Boolean(r.campaigns[0].imageUrl),!pending);
+ }
+});

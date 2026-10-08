@@ -1,27 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { checkAdmin } from "./admin-review";
-import { freshnessStatus, type ContentFreshness } from "./content-freshness";
+import { freshnessStates, type FreshnessStatus, type ContentFreshness } from "./content-freshness";
 import { inlineAdContext } from "./inline-ad-context";
 import { berlinToday, type AdCampaign } from "./ad-values";
-export type ContentReviewRow = { id:string; display_name:string; city:string|null; freshness?:ContentFreshness };
-export async function loadContentReviewPage(client:SupabaseClient,reviewed=false,page=1,now=new Date()) {
- if(await checkAdmin(client)!=="admin") return {error:"Keine Berechtigung.",rows:[] as ContentReviewRow[]};
+export type ContentReviewRow = { id:string; display_name:string; city:string|null; freshness?:ContentFreshness|null; review_status:FreshnessStatus };
+export async function loadContentReviewPage(client:SupabaseClient,reviewed=false,page=1) {
  try {
-  const states=new Map<string,ContentFreshness>();
-  // Read review metadata only. Reuse the exact existing date/revision rule.
-  for(let offset=0;;offset+=500){
-   const {data,error}=await client.from("profile_content_freshness").select("profile_id,content_revision,content_updated_at,content_update_source,reviewed_revision,reviewed_at,review_invalidated_at").order("profile_id").range(offset,offset+499);
-   if(error||!data)throw Error();
-   for(const row of data)states.set(row.profile_id,row);
-   if(data.length<500)break;
-  }
-  const checked=[...states].filter(([,s])=>freshnessStatus(s,now)==="Aktuell geprüft").map(([id])=>id);
-  if(reviewed&&!checked.length)return {rows:[] as ContentReviewRow[],count:0};
-  let query=client.from("company_profiles").select("id,display_name,city",{count:"exact"}).eq("status","approved");
-  if(checked.length)query=reviewed?query.in("id",checked):query.not("id","in","("+checked.join(",")+")");
-  const {data,error,count}=await query.order("display_name").order("id").range((page-1)*20,page*20-1);
-  if(error||!data||count===null)throw Error();
-  return {rows:data.map(row=>({...row,freshness:states.get(row.id)})) as ContentReviewRow[],count};
+  const safePage=Number.isSafeInteger(page)&&page>=1&&page<=100000?page:1;
+  // The invoker RPC verifies the admin under RLS; no second auth/table scan.
+  const {data,error}=await client.rpc("editorial_content_review_page",{p_reviewed:reviewed,p_page:safePage});
+  if(error?.code==="42501")return {error:"Keine Berechtigung.",rows:[] as ContentReviewRow[]};
+  if(error||!data||!Number.isSafeInteger(data.count)||data.count<0||!Array.isArray(data.rows)||data.rows.length>20||data.rows.length>data.count)throw Error();
+  if(data.rows.some((row:ContentReviewRow)=>!row||typeof row.id!=="string"||typeof row.display_name!=="string"||(row.city!==null&&typeof row.city!=="string")||!Object.hasOwn(freshnessStates,row.review_status)||((row.review_status==="Aktuell geprüft")!==reviewed)))throw Error();
+  return {rows:data.rows as ContentReviewRow[],count:data.count as number};
  }catch{return {error:"Die Inhaltsprüfungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.",rows:[] as ContentReviewRow[]};}
 }
 export async function loadBannerWorkspacePages(client:SupabaseClient){
