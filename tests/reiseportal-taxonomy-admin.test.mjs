@@ -9,7 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 registerHooks({
   resolve(specifier, context, next) {
     if (specifier.endsWith("admin.module.css")) return {
-      url: 'data:text/javascript,export default { categories: "categories", actions: "actions" }',
+      url: 'data:text/javascript,export default { categories: "categories", taxonomyList: "taxonomyList", taxonomyRow: "taxonomyRow" }',
       shortCircuit: true,
     };
     if (specifier.endsWith("/admin-review")) return {
@@ -97,4 +97,10 @@ test("admin editor groups terms with human labels and explains missing feature e
     assert.match(html, new RegExp(label));
   assert.match(html, /keine belegten Optionen/);
   assert.doesNotMatch(html, /audience:paar|accommodation:hotel/);
+});
+
+test("travel taxonomy uses two fixed columns, aligned actions and explicit assigned status",()=>{
+ const html=renderToStaticMarkup(createElement(TravelTaxonomyEditor,{terms:[{term_key:'theme:natur',dimension:'theme',label:'Natur'},{term_key:'theme:long',dimension:'theme',label:'Langer Titel'}],assignedKeys:['theme:natur'],toggleAction:async()=>({success:'Saved'})}));
+ assert.match(html,/class="taxonomyRow" data-assigned="true"/);assert.match(html,/Zugeordnet/);assert.match(html,/Natur entfernen/);assert.match(html,/Langer Titel zuordnen/);assert.doesNotMatch(html,/class="actions"/);
+ const css=readFileSync(new URL('../src/components/admin/admin.module.css',import.meta.url),'utf8');assert.ok(css.includes("grid-template-columns: minmax(0, 1fr) 108px"));assert.match(css,/min-height: 44px/);assert.match(css,/.taxonomyList { grid-template-columns: 1fr/);
 });

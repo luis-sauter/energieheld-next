@@ -7,6 +7,7 @@ import {
   approvePendingProfile,
   updatePublishedCategories,
   rejectPendingProfile,
+  reviewTravelProfile,
   type ReviewResult,
 } from "@/lib/admin-review";
 
@@ -16,6 +17,7 @@ async function finish(result: ReviewResult, profileId: string) {
     revalidatePath("/admin");
     revalidatePath(`/admin/firmen/${profileId}`);
     revalidatePath("/experten");
+    revalidatePath("/unterkuenfte-a-z");
     revalidatePath("/firma");
     revalidatePath("/firma/profil");
     revalidatePath("/firma/profil/gestalten");
@@ -46,4 +48,11 @@ export async function saveCategories(profileId: string, categoryIds: unknown) {
     ),
     profileId,
   );
+}
+
+export async function approveTravelProfile(profileId: string) {
+  return finish(await reviewTravelProfile(await createClient(), profileId, "approved"), profileId);
+}
+export async function rejectTravelProfile(profileId: string) {
+  return finish(await reviewTravelProfile(await createClient(), profileId, "rejected"), profileId);
 }

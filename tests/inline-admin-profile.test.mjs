@@ -792,3 +792,24 @@ test('shared contact editor exposes clear preview/add/replace/remove actions and
  const filled=renderToStaticMarkup(createElement(ContactImageEditor,{contact:{...contact,person:'Anna',personImage:{src:'https://example.org/contact.png',alt:'Anna'}},save:async()=>({})}));assert.match(filled,/<img/);assert.match(filled,/Ansprechpartnerbild ändern/);assert.match(filled,/Ansprechpartnerbild entfernen/);assert.match(filled,/Anna/);
  const disabled=renderToStaticMarkup(createElement(ContactImageEditor,{contact,save:async()=>({}),disabled:true}));assert.match(disabled,/disabled=""/);
 });
+
+test("explicit editorial entry starts existing editor for all statuses including approved; notes internal and return anchor protected",async()=>{
+ for(const status of ['draft','pending','rejected','approved']){
+  const profile={...publicProfile,status};globalThis.__inlineAdminClient=client({profile});
+  const page=await AdminProfilePreview({params:Promise.resolve({id:profileId}),searchParams:Promise.resolve({bearbeiten:'1'})});
+  const editor=page.props.children.find(c=>c?.type===InlineProfileEditor);assert.ok(editor);assert.equal(editor.props.initialEditing,true);assert.equal(editor.props.returnHref,'/admin/firmen/'+profileId+'#reisezuordnungen');
+  const html=renderToStaticMarkup(page);assert.match(html,/Bearbeitungsmodus aktiv/);assert.match(html,/Hinweise des Unternehmens|Keine Hinweise hinterlegt/);assert.match(html,/Zur Profilprüfung/);assert.match(html,/Rückgängig|Abbrechen|Speichern/);
+ }
+ for(const options of [{authenticated:false},{admin:false}]){globalThis.__inlineAdminClient=client(options);await assert.rejects(AdminProfilePreview({params:Promise.resolve({id:profileId}),searchParams:Promise.resolve({bearbeiten:'1'})}),/REDIRECT|NOT_FOUND/);}
+ const source=readFileSync(new URL('../src/components/admin/inline-profile-editor.tsx',import.meta.url),'utf8');assert.match(source,/onNavigate/);assert.match(source,/dirty && !window.confirm/);assert.match(source,/event.preventDefault()/);
+});
+
+test("review page follows editorial order with three same editor links and one final decision region",async()=>{
+ const {default:ReviewPage}=await import('../src/app/(energieheld)/admin/firmen/[id]/page.tsx');
+ const profile={...publicProfile,status:'pending',owner_note:'Privates Briefing'};globalThis.__inlineAdminClient=client({profile});
+ const html=renderToStaticMarkup(await ReviewPage({params:Promise.resolve({id:profileId})}));
+ const labels=['Aktueller Status','Angaben und Hinweise','Hinweise des Unternehmens','Firmenlogo und Unternehmensbilder','Reisezuordnungen','Optionale Qualitätsprüfung','Prüfung abschließen'];
+ let previous=-1;for(const label of labels){const at=html.indexOf(label);assert.ok(at>previous,label);previous=at;}
+ assert.equal((html.match(/aria-label="Profilentscheidung"/g)||[]).length,1);assert.equal((html.match(/Firma erstmalig freischalten/g)||[]).length,1);assert.equal((html.match(/vorschau[?]bearbeiten=1/g)||[]).length,3);assert.match(html,/Privates Briefing/);assert.doesNotMatch(html,/Öffentliche Gewerke|Trockenbau/);
+ assert.match(html,/aria-label="Redaktionelle Profilaktion"/);
+});

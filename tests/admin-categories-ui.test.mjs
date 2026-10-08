@@ -12,7 +12,7 @@ registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier.endsWith("/admin/actions"))
       return {
-        url: "data:text/javascript,export async function approveProfile(){};export async function rejectProfile(){};export async function saveCategories(){}",
+        url: "data:text/javascript,export async function approveTravelProfile(){};export async function rejectTravelProfile(){}",
         shortCircuit: true,
       };
     if (specifier.endsWith(".module.css"))
@@ -39,51 +39,13 @@ registerHooks({
     return nextLoad(url, context);
   },
 });
-const { ReviewActions } =
-  await import("../src/components/admin/review-actions.tsx");
-const { energieheld } = await import("../src/config/energieheld.ts");
-function render(status, initialCategoryIds = []) {
-  return renderToStaticMarkup(
-    createElement(ReviewActions, {
-      profileId: "test-profile",
-      status,
-      initialCategoryIds,
-    }),
-  );
-}
 
-test("admin UI renders every canonical category and preselects previous assignments", () => {
-  const html = render("pending", ["daemmung", "fassade"]);
-  assert.equal(
-    (html.match(/type="checkbox"/g) ?? []).length,
-    energieheld.categories.length,
-  );
-  for (const category of energieheld.categories)
-    assert.ok(html.includes(`value="${category.id}"`));
-  for (const input of html.match(/<input[^>]+>/g)) {
-    assert.equal(
-      input.includes('checked=""'),
-      /value="(?:daemmung|fassade)"/.test(input),
-    );
-  }
+const { ReviewActions } = await import("../src/components/admin/review-actions.tsx");
+function render(status, canReview=true) { return renderToStaticMarkup(createElement(ReviewActions,{profileId:"test-profile",status,canReview})); }
+test("pending travel review has explicit decisions and no energy trades",()=>{
+ const html=render("pending");assert.match(html,/Firma erstmalig freischalten/);assert.match(html,/Rückfrage erforderlich/);assert.doesNotMatch(html,/type="checkbox"|Öffentliche Gewerke|Trockenbau|Außenbereich|disabled/);
+ const denied=render("pending",false);assert.equal((denied.match(/disabled=""/g)||[]).length,2);assert.match(denied,/gesonderte Freigabeberechtigung/);
 });
-
-test("reviewed and draft profiles show specific messages and disable category changes", () => {
-  for (const [status, message] of [
-    ["rejected", "Für dieses Profil wurden Änderungen angefordert."],
-    ["draft", "Dieses Profil wurde noch nicht zur Prüfung eingereicht."],
-  ]) {
-    const html = render(status, ["dach"]);
-    assert.ok(html.includes(message));
-    assert.match(html, /<fieldset[^>]*disabled=""/);
-    for (const button of html.match(/<button[^>]+>/g))
-      assert.ok(button.includes('disabled=""'));
-  }
-});
-
-test("published company categories remain editable without another publication review", () => {
-  const html = render("approved", ["dach"]);
-  assert.match(html, /Gewerke speichern/);
-  assert.doesNotMatch(html, /<fieldset[^>]*disabled/);
-  assert.doesNotMatch(html, /Rückfrage erforderlich/);
+test("approved, draft and rejected states never offer another initial approval",()=>{
+ for(const status of ['approved','draft','rejected']) {const html=render(status);assert.doesNotMatch(html,/Firma erstmalig freischalten|Rückfrage erforderlich|Gewerke speichern/);assert.match(html,/Profil/);}
 });
