@@ -14,10 +14,11 @@ registerHooks({
       "next/navigation": 'export function redirect(path){throw Error("REDIRECT:"+path)}',
     };
     if (specifier.endsWith('/portal-account-server')) return {url:'data:text/javascript,export async function getPortalAccount(){globalThis.__companyAccessClientCalls++;const access=globalThis.__companyAccessRole;return {access,hasCompany:access==="forbidden",user:access==="unauthenticated"?null:{email:"test@example.org",user_metadata:{full_name:"Louis Sauter"}}}}',shortCircuit:true};
+    if (specifier.endsWith('/editorial-queue-server')) return {url:'data:text/javascript,export async function getEditorialQueue(){return {counts:{profiles:0,advertising:0,verifications:0,total:0},tasks:[]}}',shortCircuit:true};
     if (virtual[specifier]) return { url: `data:text/javascript,${virtual[specifier]}`, shortCircuit: true };
     if (specifier.endsWith(".css")) return { url: 'data:text/javascript,export default {}', shortCircuit: true };
     if (specifier.endsWith("/supabase/server")) return {
-      url: 'data:text/javascript,export async function createClient(){globalThis.__companyAccessClientCalls++;return {auth:{getUser:async()=>({data:{user:{id:"user",email:"louis@example.org",user_metadata:{full_name:"Louis Sauter"}}}})}}}', shortCircuit: true,
+      url: 'data:text/javascript,export async function createClient(){globalThis.__companyAccessClientCalls++;return {from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{message:"Bitte Adresse ergänzen"},error:null})})})}),auth:{getUser:async()=>({data:{user:{id:"user",email:"louis@example.org",user_metadata:{full_name:"Louis Sauter"}}}})}}}', shortCircuit: true,
     };
     if (specifier.endsWith("/auth-actions")) return { url: 'data:text/javascript,export async function logout(){return {}}', shortCircuit: true };
     if (specifier.endsWith("/admin-review")) return {
@@ -110,5 +111,6 @@ test("onboarding precedes navigation and skips analytics for unpublished states;
     if (status !== "approved") assert.doesNotMatch(html, /Leistungsüberblick/);
     else assert.match(html, /href="\/unterkuenfte\/real-profile"/);
     assert.match(html, /Angebotsanfragen/);
+    assert.equal(html.includes("Bitte Adresse ergänzen"), status === "rejected");
   }
 });

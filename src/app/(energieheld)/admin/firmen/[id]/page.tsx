@@ -10,6 +10,8 @@ import { ReviewActions } from "@/components/admin/review-actions";
 import { QualityReviewForm } from "@/components/quality/quality-review-form";
 import { TravelTaxonomyEditor } from "@/components/admin/travel-taxonomy-editor";
 import { loadAdminTravelTaxonomy } from "@/lib/admin-travel-taxonomy";
+import { loadReviewFeedback } from "@/lib/editorial-queue";
+import { loadAdminProfileFreshness } from "@/lib/profile-freshness";
 import { loadEditorialNote } from "@/lib/owner-profile-input";
 import { toggleTravelTerm } from "./travel-actions";
 import styles from "@/components/admin/admin.module.css";
@@ -26,9 +28,9 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
   if (result.error || !result.profile) return <main id="hauptinhalt" className={`container ${styles.page}`}><p role="alert">{result.error}</p></main>;
   const profile = result.profile;
   const editorHref = `/admin/firmen/${profile.id}/vorschau?bearbeiten=1`;
-  const [editorialNote, travelTaxonomy, canReview, media] = await Promise.all([
+  const [editorialNote, travelTaxonomy, canReview, media, feedback, freshness] = await Promise.all([
     loadEditorialNote(client, profile.id), loadAdminTravelTaxonomy(client, profile.id), canReviewProfiles(client),
-    signCompanyMedia(client, profile).catch(() => null),
+    signCompanyMedia(client, profile).catch(() => null), loadReviewFeedback(client, profile.id), loadAdminProfileFreshness(client, profile.id),
   ]);
   const fields = [
     ["Weitere Informationen zum Angebot", profile.business_areas], ["Einreichungsdatum", formatSubmission(profile.submitted_at)],
@@ -56,6 +58,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
           <h3 id="company-note-title">Hinweise des Unternehmens</h3>
           {"error" in editorialNote ? <p role="alert">{editorialNote.error}</p> : <p className={styles.reviewNote}>{editorialNote.note || "Keine Hinweise hinterlegt."}</p>}
           {editorLink}
+          {feedback.error ? <p role="alert">{feedback.error}</p> : feedback.message && <><h3>Hinweis der Redaktion</h3><p className={styles.reviewNote}>{feedback.message}</p></>}
         </section>
         <section aria-labelledby="review-media-title">
           <h3 id="review-media-title">Firmenlogo und Unternehmensbilder</h3>
@@ -68,14 +71,14 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       <div id="reisezuordnungen" className={styles.reviewSection}>
         {!travelTaxonomy ? <p role="alert">Die Reisezuordnungen konnten nicht geladen werden.</p> : "error" in travelTaxonomy ? <p role="alert">{travelTaxonomy.error}</p> : <TravelTaxonomyEditor terms={travelTaxonomy.terms} assignedKeys={travelTaxonomy.assignedKeys} toggleAction={toggleTravelTerm.bind(null, profile.id)} />}
       </div>
-      <section className={styles.reviewSection} aria-labelledby="quality-section-title">
+      <section id="verifizierung" className={styles.reviewSection} aria-labelledby="quality-section-title">
         <h2 id="quality-section-title">Optionale Qualitätsprüfung</h2>
         <p>Die persönliche Verifizierung ist unabhängig von der Erstfreischaltung.</p>
         <QualityReviewForm profileId={profile.id} review={profile.company_quality_reviews} request={profile.company_quality_requests} />
       </section>
       <section id="pruefung" className={styles.reviewSection} aria-labelledby="review-finish-title">
         <h2 id="review-finish-title">Prüfung abschließen</h2>
-        <ReviewActions key={profile.id} profileId={profile.id} status={profile.status} canReview={canReview} />
+        <ReviewActions key={profile.id} profileId={profile.id} status={profile.status} canReview={canReview} expectedRevision={freshness?.content_revision} />
       </section>
     </div>
     <nav className={styles.reviewSticky} aria-label="Redaktionelle Profilaktion"><span>{profile.display_name} · {profileStatus(profile.status)}</span>{editorLink}</nav>

@@ -4,6 +4,7 @@ import { reiseportal } from "@/config/reiseportal";
 import { PortalHeader, PortalFooter } from "@/components/portal/chrome";
 import { getPortalAccount } from "@/lib/portal-account-server";
 
+import { getEditorialQueue } from "@/lib/editorial-queue-server";
 import type { AccountIdentity } from "@/components/portal/account-menu";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export default async function ReiseportalLayout({
   children: ReactNode;
 }) {
   const { access, hasCompany, user } = await getPortalAccount();
+  const queue = access === "admin" ? await getEditorialQueue() : undefined;
   let identity: AccountIdentity | undefined;
   if (user) {
     const name = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name.trim() : "";
@@ -28,7 +30,7 @@ export default async function ReiseportalLayout({
   } as CSSProperties;
   return (
     <div className="reiseportal-shell" style={style}>
-      <PortalHeader brand={reiseportal} access={access} hasCompany={hasCompany} identity={identity} />
+      <PortalHeader brand={reiseportal} access={access} hasCompany={hasCompany} identity={identity} taskCounts={queue?.counts} taskError={queue?.error} />
       {children}
       <PortalFooter brand={reiseportal} />
     </div>

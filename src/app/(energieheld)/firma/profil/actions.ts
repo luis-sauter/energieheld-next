@@ -23,6 +23,8 @@ export async function saveProfile(
   }
   if (result.unauthenticated) redirect("/login");
   if (result.success) {
+    revalidatePath("/", "layout");
+    revalidatePath("/admin/firmen");
     revalidatePath("/firma");
     revalidatePath("/firma/profil");
     revalidatePath("/firma/profil/gestalten");

@@ -32,6 +32,8 @@ export async function submitFirstPublication(): Promise<ProfileFormState> {
   }
   if (result.unauthenticated) redirect("/login");
   if (result.success) {
+    revalidatePath("/", "layout");
+    revalidatePath("/admin/firmen");
     revalidatePath("/firma");
     revalidatePath("/firma/profil/gestalten");
     revalidatePath("/admin");

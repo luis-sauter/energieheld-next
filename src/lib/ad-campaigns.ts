@@ -99,6 +99,7 @@ export async function loadAdCampaigns(
   page = 1,
   id?: string,
   archivedOnly = false,
+  pendingOnly = false,
 ) {
   let profileId: string | undefined;
   let categoryIds: string[] = [];
@@ -119,6 +120,7 @@ export async function loadAdCampaigns(
     );
   if (profileId) query = query.eq("profile_id", profileId);
   if (!admin && !id) query = query.or(customerAdListFilter);
+  if (admin && pendingOnly) query = query.eq('status', 'pending').is('archived_at', null).eq('is_editorial', false);
   if (admin && archivedOnly) query = query.not('archived_at', 'is', null);
   if (id) {
     if (!isProfileId(id)) return { campaigns: [] as AdCampaign[], count: 0 };
