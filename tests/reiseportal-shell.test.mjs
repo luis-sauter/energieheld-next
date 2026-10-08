@@ -146,7 +146,7 @@ test("account button and dropdown groups use server-provided access without perm
   const admin = header("admin");
   assert.match(admin, /href="\/admin"/);
   assert.doesNotMatch(admin, /href="\/firma"|href="\/login"/);
-  assert.deepEqual(accountMenuGroups("admin").administration.map((link) => link.label), ["Redaktionsübersicht", "Firmen prüfen", "Werbung prüfen", "Verifizierungen", "Alle Firmen", "Werbung verwalten"]);
+  assert.deepEqual(accountMenuGroups("admin").administration.map((link) => link.label), ["Redaktion"]);
 
   assert.match(footer("unauthenticated"), /DAS Reiseportal.*Neue Lieblingsorte entdecken/s);
   assert.doesNotMatch(footer("unauthenticated"), /<a\b|<nav\b/);

@@ -4,7 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdminAccess } from "@/lib/admin";
 import { loadAdCampaigns } from "@/lib/ad-campaigns";
 import { createCampaign } from "@/app/(energieheld)/firma/werbung/actions";
-import { createAdminCampaign } from "@/app/(energieheld)/admin/werbung/actions";
+import { campaignInlinePage } from "@/lib/editorial-workspace";
+import { inlineAdContext } from "@/lib/inline-ad-context";
+import { loadBannerPresentations } from "@/lib/banner-presentation-loader";
+import { displayPlacement } from "@/lib/banner-presentation";
 import { CampaignFacts, CampaignList, CampaignSlot } from "./campaign-view";
 import { CampaignForm, AdminCampaignForm } from "./campaign-form";
 import styles from "./advertising.module.css";
@@ -54,17 +57,7 @@ export async function CampaignIndex({
           <button className="button button-primary">Neue Angebotsanfrage</button>
         </form>
       )}
-      {admin && <form action={createAdminCampaign} className={styles.form}>
-        <label>Banner für Anbieter anlegen
-          <select name="profile_id" required defaultValue="">
-            <option value="" disabled>Anbieter auswählen</option>
-            {(await client.from("company_profiles").select("id,display_name").order("display_name")).data?.map((profile) =>
-              <option key={profile.id} value={profile.id}>{profile.display_name}</option>
-            )}
-          </select>
-        </label>
-        <button className="button button-primary">Banner anlegen</button>
-      </form>}
+
       {params.fehler && (
         <p role="alert">
           {admin ? "Das Banner" : "Die Angebotsanfrage"} konnte nicht erstellt werden. Bitte versuchen Sie es
@@ -75,7 +68,7 @@ export async function CampaignIndex({
       {campaigns && (
         <>
           {!campaigns.length && <p>{admin ? "Noch keine Kampagnen in dieser Ansicht." : "Noch keine Angebotsanfragen in dieser Ansicht."}</p>}
-          <CampaignList campaigns={campaigns} admin={admin} />
+          <CampaignList campaigns={campaigns} admin={admin} requestsOnly={pendingOnly} />
         </>
       )}
       <nav className={styles.actions} aria-label={admin ? "Kampagnenseiten" : "Seiten der Angebotsanfragen"}>
@@ -106,6 +99,9 @@ export async function CampaignDetail({
   if ("access" in result) requireAdminAccess(result.access ?? "forbidden");
   const campaign = "campaigns" in result ? result.campaigns?.[0] : undefined;
   if (!campaign && !("error" in result && result.error)) notFound();
+  const inlinePath = admin && campaign ? campaignInlinePage(campaign) : null;
+  const presentation = inlinePath ? await loadBannerPresentations(client, inlineAdContext(inlinePath)!) : null;
+  const inlineHref = inlinePath && !presentation?.error ? `${inlinePath}#banner-${displayPlacement(campaign!.targets[0].placement, presentation?.rows ?? [])}` : null;
   const metadata = admin && campaign ? await loadBannerMetadata(client, [`campaign:${campaign.id}`]) : undefined;
   return (
     <main id="hauptinhalt" className={`container ${styles.page}`}>
@@ -125,7 +121,8 @@ export async function CampaignDetail({
             <p>Archiviert am {new Date(campaign.archived_at).toLocaleDateString('de-DE')}. Dieses Original ist nicht bearbeitbar und wird nicht öffentlich ausgeliefert.</p>
           </> : admin ? (
             <>
-              <h3>Banner gestalten und zuordnen</h3>
+              <h3>Anfrage und Zeitraum prüfen</h3>
+              {inlineHref ? <p><Link className="button button-primary" href={inlineHref}>Banner auf der Seite gestalten</Link> · Derselbe Banner, am tatsächlichen Platz.</p> : <p>Dieser Banner wird hier sicher bearbeitet. Geplante, geteilte oder noch nicht freigegebene Kampagnen werden nicht automatisch auf einer Seite veröffentlicht.</p>}
               <CampaignForm campaign={campaign} categoryIds={[]} admin bannerMetadata={metadata?.values.get(`campaign:${campaign.id}`)} bannerTerms={metadata?.terms} bannerAdvertisers={metadata?.advertisers} />
               {Object.hasOwn(campaign, 'archived_at') && <CampaignLifecycle id={campaign.id} archived={false} />}
               <h3>Freigabe</h3>
