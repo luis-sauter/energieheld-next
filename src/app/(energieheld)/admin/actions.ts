@@ -51,9 +51,9 @@ export async function saveCategories(profileId: string, categoryIds: unknown) {
   );
 }
 
-export async function approveTravelProfile(profileId: string, expectedRevision: number) {
-  return finish(await reviewTravelProfile(await createClient(), profileId, "approved", expectedRevision), profileId);
+export async function approveTravelProfile(profileId: string, expectedRevision: number, proposedKeys?: string[]) {
+  return finish(await reviewTravelProfile(await createClient(), profileId, "approved", expectedRevision, "", proposedKeys), profileId);
 }
-export async function rejectTravelProfile(profileId: string, expectedRevision: number, feedback: string) {
-  return finish(await reviewTravelProfile(await createClient(), profileId, "rejected", expectedRevision, feedback), profileId);
+export async function rejectTravelProfile(profileId: string, expectedRevision: number, feedback: string, proposedKeys?: string[]) {
+  return finish(await reviewTravelProfile(await createClient(), profileId, "rejected", expectedRevision, feedback, proposedKeys), profileId);
 }

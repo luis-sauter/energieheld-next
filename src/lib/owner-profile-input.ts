@@ -10,11 +10,11 @@ export function ownerTravelTerm(term: TravelTerm) {
 export async function loadOwnerTravelInput(client: SupabaseClient, profileId: string) {
   const [terms, assignments] = await Promise.all([
     client.from("travel_terms").select("term_key,dimension,label").order("dimension").order("label"),
-    client.from("company_profile_travel_terms").select("term_key").eq("profile_id", profileId),
+    client.from("company_profile_travel_proposals").select("term_key").eq("profile_id", profileId),
   ]);
-  if (terms.error || assignments.error) return { error: "Ihre Reisezuordnungen konnten nicht geladen werden. Bitte laden Sie die Seite neu." };
+  if (terms.error || assignments.error) return { error: "Ihre Reisevorschläge konnten nicht geladen werden. Bitte laden Sie die Seite neu." };
   return { terms: ((terms.data ?? []) as TravelTerm[]).filter(ownerTravelTerm),
-    assignedKeys: (assignments.data ?? []).map(row => row.term_key as string) };
+    proposedKeys: (assignments.data ?? []).map(row => row.term_key as string) };
 }
 export async function loadEditorialNote(client: SupabaseClient, profileId: string) {
   const { data, error } = await client.from("company_profile_editorial_notes")

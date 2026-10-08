@@ -192,3 +192,22 @@
 .toolDescription { display:block; color:var(--muted); font-weight:400; margin-top:6px; }
 .toolList .bannerPages ul { margin-left:46px; }
 @media(max-width:650px) { .toolList .bannerPages summary { grid-template-columns:28px minmax(0,1fr); } .toolList .bannerPages summary > span:last-child { grid-column:2; } .toolList .bannerPages ul { margin-left:0; } }
+
+/* Local editorial choices, distinct from host proposals and saved assignments. */
+.travelBriefing { padding: 20px; background: white; border: 1px solid var(--line); border-radius: var(--radius); margin-block: 20px; }
+.travelChips { display: flex; flex-wrap: wrap; gap: 12px; padding: 0; list-style: none; }
+.travelChips li { display: flex; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; max-width: 100%; }
+.travelChips small, .travelChoice small { display: block; color: var(--muted); font-size: .85rem; margin-top: 4px; }
+.travelChips svg, .travelChoice svg { width: 24px; height: 24px; flex-shrink: 0; }
+.travelFilters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; margin-block: 20px; }
+.travelFilters label { display: grid; gap: 8px; min-width: 0; }
+.travelFilters input, .travelFilters select { width: 100%; min-width: 0; min-height: 44px; }
+.travelGroup { border: 0; padding: 0; margin-block: 24px; min-width: 0; }
+.travelGroup legend { font-weight: 700; margin-bottom: 12px; }
+.travelChoices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.travelChoice { display: flex; align-items: center; gap: 12px; padding: 12px; min-height: 64px; background: white; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; overflow-wrap: anywhere; }
+.travelChoice input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--brand-primary); }
+.travelChoice[data-assigned="true"] { border-color: var(--brand-primary); background: var(--brand-surface); }
+.travelChoice:focus-within { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.travelPreview { display: grid; gap: 10px; padding-left: 20px; overflow-wrap: anywhere; }
+@media (max-width: 760px) { .travelChoices, .travelFilters { grid-template-columns: minmax(0, 1fr); } .travelBriefing { padding: 16px; } }

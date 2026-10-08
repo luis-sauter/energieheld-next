@@ -96,6 +96,7 @@ function client({ authenticated = true, admin = true, profile = publicProfile, s
         },
       };
     },
+    rpc: async(name)=>({data:name==='admin_profile_travel_review'?{terms:[],assignedKeys:[],proposedKeys:[],revision:3}:null,error:null}),
     storage: { from() { return { createSignedUrls: async (paths) => ({ data: paths.map((path) => ({ path, signedUrl: `https://media.example/${path}` })), error: null }) }; } },
   };
 }
@@ -808,8 +809,8 @@ test("review page follows editorial order with three same editor links and one f
  const {default:ReviewPage}=await import('../src/app/(energieheld)/admin/firmen/[id]/page.tsx');
  const profile={...publicProfile,status:'pending',owner_note:'Privates Briefing'};globalThis.__inlineAdminClient=client({profile});
  const html=renderToStaticMarkup(await ReviewPage({params:Promise.resolve({id:profileId})}));
- const labels=['Aktueller Status','Angaben und Hinweise','Hinweise des Unternehmens','Firmenlogo und Unternehmensbilder','Reisezuordnungen','Optionale Qualitätsprüfung','Prüfung abschließen'];
- let previous=-1;for(const label of labels){const at=html.indexOf(label);assert.ok(at>previous,label);previous=at;}
- assert.equal((html.match(/aria-label="Profilentscheidung"/g)||[]).length,1);assert.equal((html.match(/Firma erstmalig freischalten/g)||[]).length,1);assert.equal((html.match(/vorschau[?]bearbeiten=1/g)||[]).length,3);assert.match(html,/Privates Briefing/);assert.doesNotMatch(html,/Öffentliche Gewerke|Trockenbau/);
+ const labels=['Aktueller Status','Angaben und Hinweise','Hinweise des Unternehmens','Firmenlogo und Unternehmensbilder','Reisezuordnungen','Optionale Qualitätsprüfung','Redaktionelle Entscheidung'];
+ let previous=-1;for(const label of labels){const at=label === "Redaktionelle Entscheidung" ? html.lastIndexOf(label) : html.indexOf(label);assert.ok(at>previous,label);previous=at;}
+ assert.equal((html.match(/aria-label="Profilentscheidung"/g)||[]).length,1);assert.equal((html.match(/Profil veröffentlichen/g)||[]).length,1);assert.equal((html.match(/vorschau[?]bearbeiten=1/g)||[]).length,3);assert.match(html,/Privates Briefing/);assert.doesNotMatch(html,/Öffentliche Gewerke|Trockenbau/);
  assert.match(html,/aria-label="Redaktionelle Profilaktion"/);
 });

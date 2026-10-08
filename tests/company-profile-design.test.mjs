@@ -242,7 +242,7 @@ test("designer is server protected and renders shared profile with in-place medi
     html,
     /Ihr Profil ist veröffentlicht|profile-publication/,
   );
-  assert.doesNotMatch(html, /Profil zur erstmaligen Freischaltung einreichen/);
+  assert.doesNotMatch(html, /Profil zur Prüfung einreichen/);
 });
 test("editor gallery shares the public position and preserves contain logo and all media controls", () => {
   const media = {
@@ -357,10 +357,11 @@ test("only new or rejected profiles can request initial publication; pending and
       createElement(CompanyPublication, { status }),
     );
     assert.equal(
-      html.includes("Profil zur erstmaligen Freischaltung einreichen"),
+      html.includes("Profil zur Prüfung einreichen"),
       ["draft", "rejected"].includes(status),
     );
-    if (status === "approved" || status === "pending") assert.equal(html, "");
+    if (status === "approved") assert.equal(html, "");
+    if (status === "pending") assert.match(html, /Ihr Profil wurde zur Prüfung eingereicht/);
   }
 });
 
@@ -368,7 +369,7 @@ test("editor toolbar reflects all publication states without exposing draft publ
   globalThis.__profileTestClient = client();
   const labels = {
     draft: "Entwurf",
-    pending: "Wartet auf Freischaltung",
+    pending: "Wartet auf redaktionelle Prüfung",
     rejected: "Änderungen erforderlich",
     approved: "Veröffentlicht",
   };

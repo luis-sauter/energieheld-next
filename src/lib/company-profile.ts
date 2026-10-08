@@ -21,6 +21,7 @@ export type ProfileFormState = {
   error?: string;
   success?: string;
   unauthenticated?: boolean;
+  submitted?: boolean;
 };
 
 export function validateProfile(form: FormData) {
@@ -103,6 +104,9 @@ export async function updateOwnCompanyProfile(
     return { error: "Dieses Profil kann derzeit nicht bearbeitet werden." };
   }
 
+  if (intent === "submit" && profile.status === "approved") return { error: "Ihr Profil ist bereits veröffentlicht." };
+  if (intent === "submit" && profile.status === "pending") return { success: "Ihr Profil wurde zur Prüfung eingereicht", submitted: true };
+
   // Never accept ownership, slug, status or timestamps from form data.
   const status =
     intent === "submit" && profile.status !== "approved"
@@ -126,12 +130,11 @@ export async function updateOwnCompanyProfile(
     if (selected.length > 100 || selected.some(key => typeof key !== "string" || !/^(theme|audience|accommodation):[a-z0-9-]+$/.test(key))) {
       return { error: "Die Reiseauswahl ist ungültig." };
     }
-    if (profile.status === "approved" && selected.length) return { error: "Freigegebene Reisezuordnungen werden von der Redaktion gepflegt." };
     const fields = Object.fromEntries(profileFields
       .filter(key => !(key === "country" || key.startsWith("contact_")) || form.has(key))
       .map(key => [key, values[key] || null]));
     const { error: saveError } = await supabase.rpc("save_own_travel_profile", {
-      fields, selected_terms: profile.status === "approved" ? null : [...new Set(selected)], expected_status: profile.status,
+      fields, selected_terms: [...new Set(selected)], expected_status: profile.status,
     });
     return saveError ? { error: "Profil und Reiseauswahl konnten nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut." }
       : { success: "Ihre Änderungen wurden gespeichert." };
@@ -156,9 +159,10 @@ export async function updateOwnCompanyProfile(
         "Das Profil wurde zwischenzeitlich geändert oder ist nicht mehr verfügbar. Bitte laden Sie die Seite neu.",
     };
   return {
+    submitted: intent === "submit" && profile.status !== "approved",
     success:
       intent === "submit" && profile.status !== "approved"
-        ? "Ihr Profil wurde zur erstmaligen Freischaltung eingereicht."
+        ? "Ihr Profil wurde zur Prüfung eingereicht"
         : "Ihre Änderungen wurden gespeichert.",
   };
 }
