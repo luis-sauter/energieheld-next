@@ -4,40 +4,26 @@ import { createClient } from "@/lib/supabase/server";
 import { checkAdmin, adminProfileViews } from "@/lib/admin-review";
 import { requireAdminAccess, formatSubmission } from "@/lib/admin";
 import { getEditorialQueue } from "@/lib/editorial-queue-server";
+import { loadBannerWorkspacePages } from "@/lib/editorial-workspace";
+import { loadAdminMetrics } from "@/lib/dashboard-analytics";
+import { EditorialIcon } from "@/components/admin/editorial-icon";
 import styles from "@/components/admin/admin.module.css";
-import { analyticsPeriod, loadAdminMetrics } from "@/lib/dashboard-analytics";
-import { PeriodPicker, AdminOverviewMetrics } from "@/components/dashboard/metrics";
 export const metadata = { title: "Redaktion", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ ansicht?: string; zeitraum?: string }> }) {
-  const params = await searchParams;
-  const client = await createClient();
-  requireAdminAccess(await checkAdmin(client));
-  if (params.ansicht && adminProfileViews.some(view => view.key === params.ansicht)) redirect(`/admin/firmen?ansicht=${params.ansicht}`);
-  const period = analyticsPeriod(params.zeitraum);
-  const [queue, metrics] = await Promise.all([getEditorialQueue(), loadAdminMetrics(client, period)]);
-  return <main id="hauptinhalt" className={`container ${styles.page}`}>
-    <header className={styles.reviewHeader}><p className="eyebrow">DAS Reiseportal</p><h1>Redaktion</h1><p>Hier verwalten Sie neue Einreichungen, Werbeanfragen und veröffentlichte Unternehmensprofile.</p></header>
-    <section aria-labelledby="tasks-title"><h2 id="tasks-title">Offene Aufgaben</h2>
-      {queue.error ? <p role="alert">{queue.error}</p> : <>
-        {queue.counts?.total === 0 && <p>Aktuell liegen keine neuen Redaktionsaufgaben vor.</p>}
-        <div className={styles.taskGrid}>
-          <article className={styles.taskCard}><h3>Firmenprofile prüfen</h3><p>{queue.counts?.profiles} neue Einreichungen</p><Link className="button button-primary" href="/admin/firmen?ansicht=pruefung">Jetzt prüfen</Link></article>
-          <article className={styles.taskCard}><h3>Werbeanfragen prüfen</h3><p>{queue.counts?.advertising} offene Angebotsanfragen</p><Link className="button button-primary" href="/admin/werbung?ansicht=pruefung">Jetzt prüfen</Link></article>
-        </div>
-        {Boolean(queue.counts?.verifications) && <p><Link href="/admin/aufgaben?art=verification">Optionale Verifizierungen ({queue.counts?.verifications})</Link></p>}
-      </>}
-    </section>
-    <section className={styles.reviewSection}><h2>Als Nächstes bearbeiten</h2>
-      <ul className={styles.workList}>{queue.tasks.map(task => <li key={`${task.kind}:${task.id}`}><div><strong>{task.name || "Neue Einreichung"}</strong><p>{task.kind === "profile" ? "Firmenprofil" : task.kind === "advertising" ? "Werbeanfrage" : "Verifizierung"} · Zur Prüfung · {formatSubmission(task.submitted_at)}</p></div><Link className="button" href={task.href}>{task.kind === "advertising" ? "Werbung prüfen" : task.kind === "profile" ? "Profil prüfen" : "Verifizierung prüfen"}</Link></li>)}</ul>
-      <Link href="/admin/aufgaben">Alle offenen Aufgaben</Link>
-    </section>
-    <section className={styles.reviewSection}><h2>Verwaltung</h2><nav className={styles.taskGrid} aria-label="Redaktionelle Verwaltung">
-      <Link className={styles.taskCard} href="/admin/firmen?ansicht=alle">Alle Firmen verwalten</Link>
-      <Link className={styles.taskCard} href="/admin/werbung">Alle Werbekampagnen</Link>
-      <Link className={styles.taskCard} href="/unterkuenfte-a-z#inhaltspruefung">Redaktionelle Inhaltsprüfungen</Link>
-      <Link className={styles.taskCard} href="/admin/aufgaben?art=verification">Optionale Verifizierungen</Link>
-    </nav></section>
-    <section className={styles.reviewSection}><h2>Statistiken &amp; Auswertung</h2><PeriodPicker period={period} base="/admin" /><p>Statistikzeitraum in Europe/Berlin, einschließlich heute. Das Besucher- und Klick-Tracking ist noch nicht aktiviert.</p>{metrics.error && <p role="alert">{metrics.error}</p>}{metrics.data && <AdminOverviewMetrics data={metrics.data} />}</section>
-  </main>;
+ const params=await searchParams,client=await createClient();requireAdminAccess(await checkAdmin(client));
+ if(params.ansicht&&adminProfileViews.some(view=>view.key===params.ansicht))redirect(`/admin/firmen?ansicht=${params.ansicht}`);
+ const [queue,metrics,banners]=await Promise.all([getEditorialQueue(),loadAdminMetrics(client,"gesamt"),loadBannerWorkspacePages(client)]);
+ const tasks=[{kind:"profile" as const,title:"Firmenprofile",count:queue.counts?.profiles,description:"Neue Einreichungen lesen, gestalten und freischalten.",href:"/admin/firmen?ansicht=pruefung"},{kind:"advertising" as const,title:"Werbeanfragen",count:queue.counts?.advertising,description:"Kundenanfragen, Wunschplätze und Zeiträume prüfen.",href:"/admin/werbung?ansicht=pruefung"},{kind:"verification" as const,title:"Verifizierungsanfragen",count:queue.counts?.verifications,description:"Anfragen zur persönlichen Verifizierung bearbeiten.",href:"/admin/aufgaben?art=verification"}];
+ return <main id="hauptinhalt" className={`container ${styles.page} ${styles.workspace}`}>
+ <header className={styles.workspaceHeader}><p className="eyebrow">DAS Reiseportal · Administration</p><h1>Redaktion</h1><p>Ein Arbeitsbereich für Einreichungen, Inhalte und Banner.</p></header>
+ <section aria-labelledby="tasks-title"><h2 id="tasks-title">Offene Aufgaben</h2>{queue.error&&<p role="alert">{queue.error}</p>}<div className={styles.taskGrid}>{tasks.map(task=><article className={styles.taskCard} key={task.kind}><div className={styles.taskHeading}><EditorialIcon kind={task.kind}/><h3>{task.title}</h3></div><p className={styles.taskNumber}>{task.count??"–"}</p><p>{task.description}</p>{task.count===0&&<p className={styles.quiet}>Keine offenen Anfragen</p>}<Link className={task.count?"button button-primary":"button"} href={task.href}>{task.count?"Jetzt prüfen":"Ansehen"}</Link></article>)}</div></section>
+ <section className={styles.reviewSection}><div className={styles.sectionHeading}><h2>Als Nächstes bearbeiten</h2>{Boolean(queue.tasks.length)&&<Link href="/admin/aufgaben">Alle offenen Aufgaben →</Link>}</div>{queue.error?<p className={styles.quiet}>Die Arbeitsliste ist derzeit nicht verfügbar.</p>:!queue.tasks.length?<p className={styles.emptyState}>Aktuell sind keine neuen Einreichungen offen.</p>:<ul className={styles.workList}>{queue.tasks.map(task=><li key={`${task.kind}:${task.id}`}><div><strong>{task.name||"Neue Einreichung"}</strong><p>{task.kind==="profile"?"Firmenprofil":task.kind==="advertising"?"Werbeanfrage":"Verifizierung"} · {formatSubmission(task.submitted_at)}</p></div><Link className="button" href={task.href}>{task.kind==="advertising"?"Anfrage prüfen":"Jetzt prüfen"}</Link></li>)}</ul>}</section>
+ <section className={styles.reviewSection} aria-labelledby="tools-title"><h2 id="tools-title">Redaktionelle Werkzeuge</h2><div className={styles.toolList}>
+ <article><EditorialIcon kind="profile"/><div><h3>Firmenbestand</h3><p>Unternehmen suchen, Profile bearbeiten und nach Status filtern.</p></div><Link className="button" href="/admin/firmen?ansicht=alle">Firmen verwalten</Link></article>
+ <article><EditorialIcon kind="content"/><div><h3>Inhaltsprüfung</h3><p>Veröffentlichte Profilinhalte prüfen, unabhängig von der Erstfreischaltung.</p></div><Link className="button" href="/admin/inhalte">Inhalte prüfen</Link></article>
+ <article><EditorialIcon kind="advertising"/><div><h3>Kampagnenbestand</h3><p>Bestehende Buchungen, Laufzeiten und das Bannerarchiv verwalten.</p></div><Link className="button" href="/admin/werbung">Kampagnen verwalten</Link></article>
+ <details id="bannerseiten" className={styles.bannerPages}><summary><EditorialIcon kind="advertising"/><span><strong>Bannerplätze gestalten</strong><span className={styles.toolDescription}>Banner direkt auf der tatsächlichen Zielseite bearbeiten.</span></span><span>Zielseite wählen →</span></summary><p>Öffnen Sie die Seite und wählen Sie am gewünschten Platz „Banner hinzufügen“ oder „Banner bearbeiten“.</p>{banners.error?<p role="alert">{banners.error}</p>:<ul>{banners.pages.map((page:{path:string;label:string})=><li key={page.path}><Link href={page.path}>{page.label} →</Link></li>)}</ul>}</details></div></section>
+ <section className={styles.reviewSection} aria-labelledby="evaluation-title"><h2 id="evaluation-title">Auswertungen</h2><p className={styles.quiet}>Aktueller Bestand — unabhängig von einem Statistikzeitraum.</p>{metrics.error&&<p role="alert">{metrics.error}</p>}{metrics.data&&<dl className={styles.inventoryNumbers}><div><dt>Veröffentlichte Unternehmen</dt><dd>{metrics.data.counts.published}</dd></div><div><dt>Aktive Kampagnen</dt><dd>{metrics.data.counts.ads_active}</dd></div><div><dt>Geplante Kampagnen</dt><dd>{metrics.data.counts.ads_scheduled}</dd></div>{metrics.data.counts.leads_open>0&&<div><dt>Offene Leads</dt><dd>{metrics.data.counts.leads_open}</dd></div>}</dl>}<p className={styles.trackingHint}>Besucher- und Klickauswertungen stehen zur Verfügung, sobald die Erfassung aktiviert ist.</p></section>
+ </main>;
 }

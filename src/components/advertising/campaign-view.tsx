@@ -80,6 +80,7 @@ export function CampaignSlot({
   return (
     <section
       className={`${styles.slot} ${placement === "top_banner" ? styles.banner : ""} ${promo ? styles.editorialPromo : ""}`}
+      id={!preview && !reordering && !searchResult ? `banner-${placement}` : undefined}
       data-placement={placement}
       aria-label={`Anzeige – ${adPlacements[placement]}`}
     >
@@ -168,9 +169,11 @@ export function CampaignFacts({ campaign: c }: { campaign: AdCampaign }) {
 export function CampaignList({
   campaigns,
   admin = false,
+  requestsOnly = false,
 }: {
   campaigns: AdCampaign[];
   admin?: boolean;
+  requestsOnly?: boolean;
 }) {
   return (
     <div className={styles.grid}>
@@ -179,13 +182,13 @@ export function CampaignList({
           {admin && <p className="eyebrow">{c.companyName}</p>}
           <h2>{c.internal_name || (admin ? "Neue Werbekampagne" : "Neue Angebotsanfrage")}</h2>
           <CampaignFacts campaign={c} />
-          <CampaignSlot placement={c.placement} ad={c} preview />
+          {!requestsOnly && <CampaignSlot placement={c.placement} ad={c} preview />}
           <Link
             className="button"
             href={`${admin ? "/admin" : "/firma"}/werbung/${c.id}`}
           >
             {admin
-              ? c.archived_at ? "Archiv ansehen" : "Kampagne prüfen"
+              ? c.archived_at ? "Archiv ansehen" : requestsOnly ? "Anfrage prüfen" : "Kampagne prüfen"
               : ["draft", "rejected"].includes(c.status)
                 ? "Angebotsanfrage bearbeiten"
                 : "Angebotsanfrage ansehen"}

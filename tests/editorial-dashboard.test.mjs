@@ -15,6 +15,6 @@ test('all internal invalid/changed/overdue/never-reviewed reasons map to only tw
  const src=readFileSync(new URL('../src/components/portal/travel-directory.tsx',import.meta.url),'utf8');assert.equal((src.slice(src.indexOf('id="inhaltspruefung"'),src.indexOf('{bannerError &&')).match(/<option value=/g)||[]).filter(Boolean).length,3);assert.doesNotMatch(src,/Object.entries\(freshnessStates\)|Prüfbedarf/);
 });
 test('dashboard tasks precede statistics and full companies are a separate paginated server route',()=>{
- const source=readFileSync(new URL('../src/app/(energieheld)/admin/page.tsx',import.meta.url),'utf8');assert.ok(source.indexOf('Offene Aufgaben')<source.indexOf('Statistiken &amp; Auswertung'));assert.doesNotMatch(source,/loadReviewOverview|result.profiles|offizielle Gewerke/);assert.match(source,/admin\/firmen[?]ansicht=/);assert.match(source,/getEditorialQueue/);
+ const source=readFileSync(new URL('../src/app/(energieheld)/admin/page.tsx',import.meta.url),'utf8');assert.ok(source.indexOf('Offene Aufgaben')<source.indexOf('Auswertungen'));assert.doesNotMatch(source,/loadReviewOverview|result.profiles|offizielle Gewerke/);assert.match(source,/admin\/firmen[?]ansicht=/);assert.match(source,/getEditorialQueue/);
  const companies=readFileSync(new URL('../src/app/(energieheld)/admin/firmen/page.tsx',import.meta.url),'utf8');assert.match(companies,/editorial_company_page/);assert.match(companies,/p_page:page/);assert.match(companies,/name="q"/);assert.match(companies,/Nächste Seite/);
 });

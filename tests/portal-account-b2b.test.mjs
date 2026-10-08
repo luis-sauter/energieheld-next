@@ -93,5 +93,5 @@ test('editorial badge is admin-only, hides zero, announces real counts and caps 
  for(const total of [0,1,2,100]){const counts={profiles:total,advertising:0,verifications:0,total};const html=renderToStaticMarkup(createElement(AccountMenu,{access:'admin',taskCounts:counts}));assert.equal(html.includes('account-task-badge'),total>0);if(total){assert.match(html,new RegExp(total+' offene Redaktionsaufgaben'));assert.ok(html.includes('>'+ (total>99?'99+':total) +'</span>'));}}
  for(const access of ['unauthenticated','forbidden']){const html=renderToStaticMarkup(createElement(AccountMenu,{access,taskCounts:{total:2,profiles:2,advertising:0,verifications:0}}));assert.doesNotMatch(html,/account-task-badge|offene Redaktionsaufgaben/);}
  const failed=renderToStaticMarkup(createElement(AccountMenu,{access:'admin',taskError:'Failed'}));assert.match(failed,/Aufgabenzähler nicht verfügbar/);assert.doesNotMatch(failed,/account-task-badge/);
- const links=accountMenuGroups('admin').administration;assert.ok(links.some(l=>l.href==='/admin/firmen?ansicht=pruefung'));assert.ok(links.some(l=>l.href==='/admin/werbung?ansicht=pruefung'));
+ const links=accountMenuGroups('admin').administration;assert.deepEqual(links,[{label:'Redaktion',href:'/admin'}]);
 });

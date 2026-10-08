@@ -582,7 +582,7 @@ test('P14 form separates customer wording from admin and preserves routes, field
  const admin=render(CampaignForm,{campaign:row,categoryIds:[],admin:true});assert.match(admin,/Interner Kampagnenname/);assert.doesNotMatch(admin,/Angebotsanfrage/);
  for(const [file,text] of [['page.tsx','Meine Angebotsanfragen'],['[id]/page.tsx','Angebotsanfrage']])assert.match(readFileSync(new URL('../src/app/(energieheld)/firma/werbung/'+file,import.meta.url),'utf8'),new RegExp('title: "'+text+'"'));
  const dashboard=readFileSync(new URL('../src/app/(energieheld)/firma/page.tsx',import.meta.url),'utf8');assert.match(dashboard,/Angebotsanfragen/);assert.match(dashboard,/href="\/firma\/werbung"/);
- const navigation=readFileSync(new URL('../src/components/portal/account-menu.tsx',import.meta.url),'utf8');assert.match(navigation,/Werbung/);
+ const navigation=readFileSync(new URL('../src/components/portal/account-menu.tsx',import.meta.url),'utf8');assert.match(navigation,/Redaktion/);
 });
 
 

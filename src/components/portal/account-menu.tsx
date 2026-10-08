@@ -14,14 +14,7 @@ const accountLinks = [
   { label: "Angebotsanfragen", href: "/firma/werbung" },
   { label: "Statistiken", href: "/firma/statistiken" },
 ];
-const adminLinks = [
-  { label: "Redaktionsübersicht", href: "/admin" },
-  { label: "Firmen prüfen", href: "/admin/firmen?ansicht=pruefung" },
-  { label: "Werbung prüfen", href: "/admin/werbung?ansicht=pruefung" },
-  { label: "Verifizierungen", href: "/admin/aufgaben?art=verification" },
-  { label: "Alle Firmen", href: "/admin/firmen?ansicht=alle" },
-  { label: "Werbung verwalten", href: "/admin/werbung" },
-];
+const adminLinks = [{ label: "Redaktion", href: "/admin" }];
 export function accountMenuGroups(access: AdminAccess, hasCompany = false) {
   return access === "unauthenticated" ? { account: [{ label: "Einloggen", href: "/login" }], administration: [] }
     : { account: hasCompany ? accountLinks : access === "admin" ? [] : [{ label: "Mein Konto", href: "/konto" }], administration: access === "admin" ? adminLinks : [] };
@@ -56,7 +49,7 @@ export function AccountMenu({ access, identity, hasCompany = false, taskCounts, 
 
   const counts = access === "admin" ? taskCounts : undefined;
   const total = counts?.total ?? 0;
-  const countFor = (href: string) => href === "/admin" ? counts?.total : href.includes("firmen?ansicht=pruefung") ? counts?.profiles : href.includes("werbung?ansicht=pruefung") ? counts?.advertising : href.includes("art=verification") ? counts?.verifications : undefined;
+  const countFor = (href: string) => href === "/admin" ? counts?.total : undefined;
   const signedIn = access !== "unauthenticated";
   const groups = accountMenuGroups(access, hasCompany);
   return <div className="account-menu" ref={root}>
