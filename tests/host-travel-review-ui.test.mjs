@@ -63,3 +63,27 @@ test('submission confirmation is persisted pending or actual server success, nev
  globalThis.__hostSubmission={submitted:true,success:'Saved'};await nodes(tree,e=>e.type==='form')[0].props.action();tree=render('publication',CompanyPublication,{status:'draft'});assert.match(text(tree),/Ihr Profil wurde zur Prüfung eingereicht/);assert.equal(button(tree,'Profil zur Prüfung einreichen'),undefined);
  assert.match(text(render('reloaded',CompanyPublication,{status:'pending'})),/Wartet auf redaktionelle Prüfung/);assert.equal(render('public',CompanyPublication,{status:'approved'}),null);
 });
+
+test('first editorial selection of Peter-like proposals is dirty; explicit save/reload confirms only chosen terms; true no-op never calls save',async()=>{
+ reset();
+ const keys=['accommodation:camping','accommodation:ferienwohnung','audience:familie','theme:campingurlaub','theme:golfurlaub','theme:radwandern','theme:urlaub-am-wasser'];
+ const allTerms=[...keys,'theme:wanderurlaub'].map(k=>({term_key:k,dimension:k.split(':')[0],label:k.split(':')[1]}));
+ let current={terms:allTerms,assignedKeys:[],proposedKeys:keys,revision:20};const calls=[];
+ const refresh=()=>{context=render('peter-provider',TravelReviewProvider,{snapshot:current,children:null,saveAction:async(...args)=>{calls.push(args);return {success:'Reisezuordnungen gespeichert.',assignedKeys:[...args[0]].sort(),revision:23}}}).props.value;return render('peter-editor',TravelTaxonomyEditor)};
+ let tree=refresh();assert.equal(nodes(tree,e=>e.type==='input'&&e.props.type==='checkbox'&&e.props.checked).length,0);
+ assert.equal(nodes(tree,e=>e.type==='small'&&['Bereits bestätigt','Bestätigt und gespeichert'].includes(text(e))).length,0);assert.match(text(tree),/Noch keine Reisezuordnungen gespeichert/);
+ assert.equal(button(tree,'Reisezuordnungen speichern').props.disabled,true);context.save();await Promise.all(tasks);assert.equal(calls.length,0);
+ context.toggle('accommodation:camping');context.toggle('audience:familie');context.toggle('theme:wanderurlaub');tree=refresh();
+ assert.equal(context.dirty,true);assert.equal(button(tree,'Reisezuordnungen speichern').props.disabled,false);
+ assert.match(text(tree),/Zur Übernahme ausgewählt · noch nicht gespeichert/);assert.match(text(tree),/Vorschlag · nicht übernommen/);
+ assert.ok(nodes(tree,e=>e.props?.href==='/unterkuenfte-a-z?thema=wanderurlaub').length);
+ assert.equal(nodes(tree,e=>e.props?.href==='/unterkuenfte-a-z?thema=golfurlaub').length,0);
+ assert.equal(calls.length,0);button(tree,'Reisezuordnungen speichern').props.onClick();await Promise.all(tasks);tree=refresh();
+ assert.equal(context.dirty,false);assert.equal(context.revision,23);assert.equal(calls.length,1);assert.deepEqual(calls[0][1],[]);assert.deepEqual(calls[0][2],keys);
+ assert.match(text(tree),/Bereits bestätigt/);assert.match(text(tree),/Alle ausgewählten Zuordnungen sind bereits gespeichert/);
+ context.save();await Promise.all(tasks);assert.equal(calls.length,1);
+ current={...current,assignedKeys:[...context.assignedKeys],revision:context.revision};states.clear();tree=refresh();
+ assert.equal(context.dirty,false);assert.deepEqual(context.selected,current.assignedKeys);assert.equal(button(tree,'Reisezuordnungen speichern').props.disabled,true);
+ assert.equal(nodes(tree,e=>e.type==='input'&&e.props.type==='checkbox'&&e.props.checked).length,3);
+ assert.equal(globalThis.__hostDecisions.length,0);
+});

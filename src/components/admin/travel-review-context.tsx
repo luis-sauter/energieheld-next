@@ -30,7 +30,7 @@ export function TravelReviewProvider({ snapshot, saveAction, children }: {
     setSelected(current => current.includes(key) ? current.filter(k => k !== key) : [...current, key]);
   }
   function save() {
-    if (saving || deciding || revision === undefined) return;
+    if (saving || deciding || !dirty || revision === undefined) return;
     setMessage({});
     startTransition(async () => {
       try {
