@@ -10,6 +10,8 @@ export async function saveQualityReview(
   const result = await changeQualityReview(await createClient(), form);
   requireAdminAccess(result.access);
   if (result.success) {
+    // Refresh the shared account task badge as well as the decision page.
+    revalidatePath("/", "layout");
     revalidatePath("/admin");
     revalidatePath("/admin/firmen/[id]", "page");
     revalidatePath("/experten", "layout");

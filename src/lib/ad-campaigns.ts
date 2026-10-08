@@ -157,7 +157,8 @@ export async function loadAdCampaigns(
   })) as AdCampaign[];
   try {
     return {
-      campaigns: await signAdImages(client, rows),
+      // Compact pending requests do not render image previews.
+      campaigns: admin && pendingOnly && !id ? rows : await signAdImages(client, rows),
       count: count ?? 0,
       categoryIds,
     };
