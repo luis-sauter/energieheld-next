@@ -122,3 +122,57 @@ test('New public RPCs invoker-only, authenticated/admin bounded, no private-sche
  await actor(owner);await denied(()=>db.query('SELECT save_profile_travel_assignments($1,$2,$3,$4,$5)',[own,[],[],[],1]),/authorized/);
  assert.doesNotMatch(migration,/UPDATE public.portal_admins|INSERT INTO public.travel_terms|ALTER TABLE storage|CREATE POLICY .* ON storage/i);
 });
+
+const peter='9fdfd0f3-8ee5-431c-9ecf-81043ac3ff90';
+const peterKeys=['accommodation:camping','accommodation:ferienwohnung','audience:familie','theme:campingurlaub','theme:golfurlaub','theme:radwandern','theme:urlaub-am-wasser'];
+const correction=await readFile(new URL('../supabase/migrations/20261008224328_correct_peter_travel_proposals.sql',import.meta.url),'utf8');
+async function historicalPeter(){
+ await db.exec('RESET ROLE');
+ await db.query("INSERT INTO company_profiles(id,company_id,display_name,status) VALUES ($1,$2,'Peter','pending')",[peter,owner]);
+ for(const key of peterKeys)await db.query('INSERT INTO company_profile_travel_terms VALUES ($1,$2)',[peter,key]);
+ await db.query('UPDATE profile_content_freshness SET content_revision=13 WHERE profile_id=$1',[peter]);
+}
+async function otherState(){return (await db.query(`SELECT
+ (SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM company_profiles p WHERE id<>$1) profiles,
+ (SELECT jsonb_agg(to_jsonb(t) ORDER BY profile_id,term_key) FROM company_profile_travel_terms t WHERE profile_id<>$1) terms,
+ (SELECT jsonb_agg(to_jsonb(f) ORDER BY profile_id) FROM profile_content_freshness f WHERE profile_id<>$1) freshness`,[peter])).rows;}
+
+test('Peter correction backs up exactly seven historical rows, leaves other/approved profiles untouched, and replay preserves later editorial decisions',async()=>{
+ await historicalPeter();const before=await otherState();
+ await actor(editor);const historical=await snapshot(peter);assert.deepEqual(historical.assignedKeys,peterKeys);assert.deepEqual(historical.proposedKeys,[]);
+ await db.exec('RESET ROLE');await db.exec(correction);
+ assert.deepEqual(await otherState(),before);
+ const receipt=(await db.query('SELECT * FROM private.peter_travel_proposal_correction')).rows[0];
+ assert.equal(receipt.profile_id,peter);assert.deepEqual(receipt.confirmed_before.map(t=>t.term_key),peterKeys);assert.deepEqual(receipt.proposals_before,[]);
+ assert.equal(receipt.freshness_before.content_revision,13);assert.equal(receipt.profile_before.status,'pending');assert.match(receipt.provenance_note,/Admin INSERT.*22:22/);
+ await actor(editor);const migrated=await snapshot(peter);assert.deepEqual(migrated.assignedKeys,[]);assert.deepEqual(migrated.proposedKeys,peterKeys);assert.equal(migrated.revision,20);
+ await save(migrated,['accommodation:camping','audience:familie','theme:wanderurlaub'],peter);
+ const selected=await snapshot(peter);assert.equal(selected.assignedKeys.length,3);assert.equal((await db.query('SELECT status FROM company_profiles WHERE id=$1',[peter])).rows[0].status,'pending');
+ await denied(()=>save(historical,peterKeys,peter),/changed/);
+ await db.exec('RESET ROLE');await db.exec(correction);await actor(editor);assert.deepEqual(await snapshot(peter),selected);
+ await db.exec('RESET ROLE');await db.query('DELETE FROM company_profile_travel_proposals WHERE profile_id=$1',[peter]);await db.exec(correction);
+ assert.equal((await db.query('SELECT count(*) n FROM company_profile_travel_proposals WHERE profile_id=$1',[peter])).rows[0].n,0);
+ assert.equal((await db.query('SELECT count(*) n FROM private.peter_travel_proposal_correction')).rows[0].n,1);assert.deepEqual(await otherState(),before);
+ await actor(owner);await denied(()=>db.query('SELECT * FROM private.peter_travel_proposal_correction'));
+ await actor('','anon');await denied(()=>db.query('SELECT * FROM private.peter_travel_proposal_correction'));await denied(()=>db.query('SELECT * FROM company_profile_travel_proposals'));
+ assert.equal((await db.query('SELECT * FROM company_profile_travel_terms WHERE profile_id=$1',[peter])).rows.length,0);
+ await actor(editor);await decide(await snapshot(peter),'approved',null,peter);const published=await snapshot(peter);await db.exec('RESET ROLE');await db.exec(correction);await actor(editor);assert.deepEqual(await snapshot(peter),published);assert.equal((await db.query('SELECT status FROM company_profiles WHERE id=$1',[peter])).rows[0].status,'approved');
+});
+
+test('Peter correction fails closed for changed revision, terms, proposals, status or missing profile, with no partial transfer',async()=>{
+ await historicalPeter();
+ for(const alter of [
+  `UPDATE profile_content_freshness SET content_revision=14 WHERE profile_id='${peter}'`,
+  `DELETE FROM company_profile_travel_terms WHERE profile_id='${peter}' AND term_key='theme:golfurlaub'`,
+  `INSERT INTO company_profile_travel_proposals VALUES ('${peter}','theme:natur-pur')`,
+  `UPDATE company_profiles SET status='rejected' WHERE id='${peter}'`,
+  `DELETE FROM company_profiles WHERE id='${peter}'`,
+ ]){
+  await db.exec('SAVEPOINT variation');await db.exec(alter);
+  const state=(await db.query('SELECT to_jsonb(p) p FROM company_profiles p WHERE id=$1',[peter])).rows;
+  await denied(()=>db.exec(correction),/baseline changed/);
+  assert.deepEqual((await db.query('SELECT to_jsonb(p) p FROM company_profiles p WHERE id=$1',[peter])).rows,state);
+  assert.equal((await db.query("SELECT to_regclass('private.peter_travel_proposal_correction') t")).rows[0].t,null);
+  await db.exec('ROLLBACK TO SAVEPOINT variation; RELEASE SAVEPOINT variation');
+ }
+});

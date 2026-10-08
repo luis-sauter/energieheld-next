@@ -45,12 +45,13 @@ export function TravelTaxonomyEditor({ published = false }: { published?: boolea
     })}
     <section className={styles.travelBriefing} aria-labelledby="travel-preview-title">
       <h3 id="travel-preview-title">So wird die Unterkunft auffindbar</h3>
-      <p>{dirty ? "Vorschau Ihrer Auswahl — noch nicht gespeichert." : "Gespeicherte Reisezuordnungen."} {!published && "Öffentlich wirksam erst nach Veröffentlichung des Profils."}</p>
+      <p>{dirty ? "Vorschau Ihrer Auswahl — noch nicht gespeichert." : assignedKeys.length ? "Gespeicherte Reisezuordnungen." : "Noch keine Reisezuordnungen gespeichert."} {!published && "Öffentlich wirksam erst nach Veröffentlichung des Profils."}</p>
       {!preview.length ? <p>Keine Reisebereiche ausgewählt.</p> : <ul className={styles.travelPreview}>{preview.map(term => <li key={term.term_key}>{term.href ? <Link href={term.href}>{groups.find(([key]) => key === term.dimension)?.[1]} → {term.label}</Link> : <span>{term.label} · internes Merkmal, kein öffentlicher Filter</span>}</li>)}</ul>}
       <p>Nicht übernommene Gastgebervorschläge schränken keine öffentlichen Suchfilter ein.</p>
     </section>
     <div className={styles.actions}><button type="button" className="button button-primary" disabled={busy || !dirty || revision === undefined} onClick={review.save}>{saving ? "Speichert …" : "Reisezuordnungen speichern"}</button></div>
     {revision === undefined && <p role="alert">Der aktuelle Profilstand fehlt. Bitte laden Sie die Profilprüfung neu.</p>}
+    {!dirty && !busy && revision !== undefined && <p role="status">{assignedKeys.length ? "Alle ausgewählten Zuordnungen sind bereits gespeichert." : "Wählen Sie die Reisebereiche aus, die Sie redaktionell bestätigen möchten."}</p>}
     {dirty && <p role="status">Ungespeicherte Reiseauswahl. Bitte vor der Veröffentlichung speichern.</p>}
     {message.error && <p role="alert">{message.error} <a href="#reisezuordnungen" onClick={() => window.location.reload()}>Profilprüfung neu laden</a></p>}
     {message.success && !dirty && <p role="status">{message.success}</p>}
