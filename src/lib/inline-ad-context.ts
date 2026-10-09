@@ -36,6 +36,10 @@ export type InlineBanner = {
   editorial?: boolean;
   size?: import("./banner-presentation").BannerSize;
   legacy_source?: AdPlacementId;
+  status?: import('./ad-values').AdCampaign['status'];
+  requested_start_date?: string; requested_end_date?: string;
+  approved_start_date?: string | null; approved_end_date?: string | null;
+  updated_at?: string;
   metadata?: import('./banner-search-metadata').BannerSearchMetadata;
 };
 export type InlineBannerResult = {

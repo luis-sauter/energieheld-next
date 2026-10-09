@@ -500,3 +500,6 @@
 .cropFrame > img, .cropFrame > picture { visibility: hidden; }
 .imageCreative .cropFrame[style] > img { height: 100%; }
 .imageCreative .cropFrame .cropImage, .editorialPromo .imageCreative .cropFrame .cropImage { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; visibility: visible; object-fit: cover; }
+
+/* Homepage Premium reserves only the reduced frame, never the full-height original. */
+.slot[data-compact-premium] .cropFrame > :first-child { position: absolute; inset: 0; width: 100%; height: 100%; }

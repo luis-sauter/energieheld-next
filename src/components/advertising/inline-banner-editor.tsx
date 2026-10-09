@@ -42,6 +42,8 @@ export function InlineBannerProvider({ options, children }: { options?: InlineBa
     if (Object.hasOwn(overrides, placement)) {
       const updated = overrides[placement];
       return updated ? { id: updated.id, placement, target_url: updated.target_url, imageUrl: updated.imageUrl,
+        status: updated.status, requested_start_date: updated.requested_start_date, requested_end_date: updated.requested_end_date,
+        approved_start_date: updated.approved_start_date, approved_end_date: updated.approved_end_date, updated_at: updated.updated_at,
         crop: updated.crop, image_width: updated.image_width, image_height: updated.image_height, mobile_image: updated.mobile_image,
         shared: options!.banners.find(item => item.id === updated.id)?.shared ?? false,
         metadata: updated.metadata ?? options!.banners.find(item => item.id === updated.id)?.metadata,
@@ -71,7 +73,7 @@ export function InlineBannerProvider({ options, children }: { options?: InlineBa
       }}
       onSaved={(ad, metadata) => {
         setOverrides((current) => ({ ...current, ...(selected.banner ? { [selected.banner.placement]: null } : {}), [ad.placement]: { ...ad, metadata } }));
-        setMessage(ad.suppressed ? "Gespeichert. Ohne Bild bleibt das Banner öffentlich ausgeblendet." : "Das Banner wurde gespeichert und ist an seinem Platz sichtbar.");
+        setMessage(ad.suppressed ? "Gespeichert. Ohne Bild bleibt das Banner öffentlich ausgeblendet." : ad.status && ad.status !== "approved" ? "Gespeichert. Das Banner ist noch nicht veröffentlicht." : "Das Banner wurde gespeichert. Die öffentliche Anzeige richtet sich nach dem bestätigten Zeitraum.");
         setSelected(null);
         setRevealPlacement(ad.placement);
         router.refresh();
@@ -146,7 +148,10 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
     setError("");
     try {
       const form = mutationForm();
-      if (metadataOnly || (selected.banner && !file && url === selected.banner.target_url && size === (selected.banner.size ?? 'large'))) {
+      const submitter = (event.nativeEvent as SubmitEvent | undefined)?.submitter as HTMLButtonElement | null | undefined;
+      const publishing = submitter?.value === 'publish';
+      if (publishing) form.set('intent', 'publish');
+      if (!publishing && (metadataOnly || (selected.banner && !file && url === selected.banner.target_url && size === (selected.banner.size ?? 'large')))) {
         if (!cropDirty || metadataOnly || !metadataUnchanged) {
           const result = await options.saveMetadata?.(form);
           if (!result?.success) { setError(result?.error ?? 'Die Suchdaten konnten nicht gespeichert werden.'); return; }
@@ -184,6 +189,8 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
   function currentPreview(): ActiveAd {
     return { id: campaignId || selected.banner?.id || "", placement, image_path: null, imageUrl: preview,
       headline: metadata.name, body_text: null, target_url: url, banner_size: size,
+      status: selected.banner?.status, requested_start_date: selected.banner?.requested_start_date, requested_end_date: selected.banner?.requested_end_date,
+      approved_start_date: selected.banner?.approved_start_date, approved_end_date: selected.banner?.approved_end_date, updated_at: selected.banner?.updated_at,
       image_width: selected.banner?.image_width, image_height: selected.banner?.image_height, mobile_image: selected.banner?.mobile_image,
       source: source === "legacy" ? "legacy" : "campaign", crop: cropDirty ? crop : selected.banner?.crop };
   }
@@ -199,6 +206,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
   function mutationForm() {
     const form = new FormData();
     form.set("campaign_id", campaignId); form.set("placement", placement);
+    if (selected.banner?.updated_at) form.set("expected_updated_at", selected.banner.updated_at);
     form.set("target_url", url.trim()); form.set("size", size);
     form.set('headline', metadata.name); form.set('banner_postal_code', metadata.postal_code); form.set('banner_city', metadata.city);
     metadata.term_keys.forEach(key => form.append('banner_terms', key)); appendBannerSearchAssignment(form,metadata);
@@ -257,14 +265,15 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
     if (!["image/jpeg", "image/png", "image/webp"].includes(next.type) || next.size <= 0 || next.size > 5242880) {
       setError("Bitte wählen Sie JPEG, PNG oder WebP mit maximal 5 MB."); return;
     }
-    setCrop(normalizeImageCrop(null)); setCropDirty(false); setNaturalRatio(null);
+    // Keep the saved focus/zoom when replacing only the creative; bind it to the new path on save.
+    setCropDirty(Boolean(selected.banner?.crop)); setNaturalRatio(null);
     setFile(next);
     setPreview(URL.createObjectURL(next));
     setError("");
   }
 
   return <><dialog ref={dialog} className={styles.dialog} aria-labelledby="inline-banner-title"
-    onCancel={(event) => { event.preventDefault(); if (!busyRef.current) onClose(); }}>
+    onCancel={(event) => { if (event.target !== event.currentTarget) return; event.preventDefault(); if (!busyRef.current) onClose(); }}>
     <form onSubmit={save} className={styles.form}>
       <h2 id="inline-banner-title">{selected.banner ? "Banner bearbeiten" : "Banner hinzufügen"}</h2>
       <p>{options.label}</p>
@@ -287,6 +296,10 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
         <div className={styles.actions}><button type="submit" className="button button-primary" disabled={busy || blocked || !archivedId || Boolean(options.error)}>{busy ? 'Setzt ein …' : 'Banner einsetzen'}</button><button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button></div>
       </> : <>
       {!selected.banner && <p className={styles.hint}>Das Banner erscheint ab sofort, bis Sie es entfernen.</p>}
+      {selected.banner?.status && <p role="status" className={styles.hint}>
+        Status: {{ draft: 'Entwurf – nicht öffentlich', pending: 'In Prüfung – nicht öffentlich', rejected: 'Abgelehnt – nicht öffentlich', paused: 'Pausiert – nicht öffentlich', approved: 'Freigegeben' }[selected.banner.status]}.
+        {selected.banner.approved_start_date ? <> Bestätigter Zeitraum: {selected.banner.approved_start_date} bis {selected.banner.approved_end_date}.</> : <> Angefragter Zeitraum: {selected.banner.requested_start_date} bis {selected.banner.requested_end_date}.</>}
+      </p>}
       <p className={styles.hint}>Name, PLZ, Ort und Kategorien gelten für dieses Banner in allen Bereichen und machen es in der Suche auffindbar.</p>
       <fieldset disabled={busy} className={styles.fields}>
         <BannerSearchFields value={metadata} terms={options.terms ?? []} advertisers={options.advertisers} onChange={setMetadata} />
@@ -333,6 +346,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
       {error && <p className={styles.error} role="alert">{error}</p>}
       <div className={styles.actions}>
         <button type="submit" className="button button-primary" disabled={busy || blocked || Boolean(options.error)}>{busy ? "Speichert …" : "Banner speichern"}</button>
+        {selected.banner?.editorial && !metadataOnly && ['draft', 'rejected'].includes(selected.banner.status ?? '') && <button type="submit" name="intent" value="publish" className="button" disabled={busy || blocked || !preview || Boolean(options.error)}>Banner veröffentlichen</button>}
         <button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button>
       </div>
       </>}

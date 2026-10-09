@@ -105,6 +105,15 @@ async function saveInlineAdAtSource(client: SupabaseClient, path: string, input:
   const bound = await authorizedCampaign(client, path, input);
   if (!bound.campaign || !bound.context || !bound.placement) return { error: bound.error };
   const campaign = bound.campaign;
+  if (input.has('expected_updated_at') && input.get('expected_updated_at') !== campaign.updated_at)
+    return { error: 'Dieses Banner wurde inzwischen geändert. Bitte öffnen Sie es erneut.' };
+  // The full-save RPC copies requested dates into approved dates. Protect distinct bookings.
+  if (['approved', 'paused'].includes(campaign.status) &&
+    (campaign.approved_start_date !== campaign.requested_start_date || campaign.approved_end_date !== campaign.requested_end_date))
+    return { error: 'Angefragter und bestätigter Zeitraum unterscheiden sich. Ein reiner Bildwechsel benötigt hier eine gesonderte, zeitraumerhaltende Speicherfunktion.' };
+  const publish = input.get('intent') === 'publish';
+  if (publish && (!campaign.is_editorial || !['draft', 'rejected'].includes(campaign.status)))
+    return { error: 'Bitte veröffentlichen Sie diese Kampagne über die bestehende Verwaltung.' };
   const hasImage = Boolean(input.get("uploaded_path") || campaign.image_path);
   if (!hasImage && !(campaign.is_editorial && campaign.status === "draft")) return { error: "Bitte laden Sie ein Bannerbild hoch." };
   const form = new FormData();
@@ -119,18 +128,17 @@ async function saveInlineAdAtSource(client: SupabaseClient, path: string, input:
     target_url: String(input.get("target_url")).trim(), contact_name: campaign.contact_name || "",
     contact_phone: campaign.contact_phone || "", contact_email: campaign.contact_email || "",
   })) form.set(key, value);
-  form.append("targets", adTargetFormValue({ target_type: bound.context.target_type, target_key: bound.context.target_key,
-    category_id: null, placement: bound.placement }));
+  for (const target of campaign.targets) form.append("targets", adTargetFormValue(target));
   const uploaded = input.get("uploaded_path");
   if (typeof uploaded === "string") form.set("uploaded_path", uploaded);
-  if (fresh && hasImage && ["draft", "rejected"].includes(campaign.status)) form.set("intent", "submit");
+  if ((fresh || publish) && hasImage && ["draft", "rejected"].includes(campaign.status)) form.set("intent", "submit");
   const saved = await saveOwnAd(client, form, true);
   if (!saved.success) return { error: saved.error };
   if (input.has('headline')) {
     const metadata = await saveBannerMetadata(client, input, campaign.id);
     if (metadata.error) return { error: metadata.error };
   }
-  if (fresh && hasImage && campaign.status !== "approved") {
+  if ((fresh || publish) && hasImage && campaign.status !== "approved") {
     const review = new FormData();
     review.set("campaign_id", campaign.id);
     review.set("decision", campaign.status === "paused" ? "resume" : "approve");
