@@ -355,3 +355,41 @@ test('existing draft/pending/paused editorial banner replacement never approves 
   assert.ok(!db.calls.some(c=>c.rpc==='review_ad_campaign'));
  }
 });
+
+
+test('existing editorial draft publishes only on deliberate intent, keeping its ID, URL and targets',async()=>{
+ const db=client({campaign:{is_editorial:true,status:'draft',internal_name:'Banner · Startseite',approved_start_date:null,approved_end_date:null}});
+ const before=structuredClone(db.row);
+ const result=await saveInlineAd(db,'/mottoreisen/wellnessangebote',form({target_url:before.target_url,intent:'publish'}));
+ assert.ok(result.success,result.error);assert.equal(db.row.status,'approved');assert.equal(db.row.id,before.id);
+ assert.equal(db.row.target_url,before.target_url);assert.deepEqual(db.row.targets,before.targets);
+ assert.equal(db.row.approved_start_date,before.requested_start_date);
+ assert.equal(db.row.approved_end_date,before.requested_end_date);
+ assert.equal(db.calls.filter(c=>c.rpc==='create_editorial_ad_campaign').length,0);
+ assert.equal(db.calls.filter(c=>c.rpc==='review_ad_campaign').length,1);
+ for(const campaign of [{is_editorial:false,status:'draft'},{is_editorial:true,status:'paused'}]){
+  const denied=client({campaign});assert.ok((await saveInlineAd(denied,'/mottoreisen/wellnessangebote',form({intent:'publish'}))).error);
+  assert.ok(!denied.calls.some(c=>c.rpc==='save_ad_campaign'||c.rpc==='review_ad_campaign'));
+ }
+});
+
+test('image-only replacement keeps original, campaign attributes and existing booking, then reopens with new path',async()=>{
+ const db=client({campaign:{is_editorial:true}}),before=structuredClone(db.row);
+ const newImage='campaigns/'+id+'/creative/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.png';
+ const result=await saveInlineAd(db,'/mottoreisen/wellnessangebote',form({uploaded_path:newImage,target_url:before.target_url}));
+ assert.ok(result.success,result.error);assert.equal(db.row.image_path,newImage);assert.equal(result.ad.image_path,newImage);
+ for(const key of ['id','profile_id','is_editorial','internal_name','headline','body_text','status','requested_start_date','requested_end_date','approved_start_date','approved_end_date','contact_name','contact_phone','contact_email'])assert.deepEqual(db.row[key],before[key],key);
+ assert.equal(db.row.target_url,before.target_url);assert.deepEqual(db.row.targets,before.targets);
+ assert.ok(!db.calls.some(c=>c.remove));assert.ok(!db.calls.some(c=>c.rpc==='create_editorial_ad_campaign'));
+ const reopened=await db.from('company_ad_campaigns').select('*').eq('id',id).maybeSingle();assert.equal(reopened.data.image_path,newImage);
+});
+
+test('distinct confirmed/requested dates and a stale editor cannot silently mutate campaign or upload',async()=>{
+ for(const config of [{campaign:{approved_start_date:'2026-10-01'}},{campaign:{updated_at:'new-version'}}]){
+  const db=client(config),before=structuredClone(db.row);
+  const input=form({uploaded_path:'campaigns/'+id+'/creative/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.png'});
+  if(config.campaign.updated_at)input.set('expected_updated_at','old-version');
+  const result=await saveInlineAd(db,'/mottoreisen/wellnessangebote',input);
+  assert.ok(result.error);assert.deepEqual(db.row,before);assert.ok(!db.calls.some(c=>c.rpc==='save_ad_campaign'||c.download||c.remove));
+ }
+});

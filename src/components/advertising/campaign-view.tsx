@@ -3,6 +3,7 @@
 import { imageCropStyle } from "@/lib/image-crop";
 import { bannerCropRatio } from "@/lib/banner-presentation";
 import Link from "next/link";
+import { useState } from "react";
 import { useInlineBanners } from "./inline-banner-context";
 import {
   adPlacements,
@@ -32,6 +33,7 @@ export function CampaignSlot({
   reordering = false,
   editorialPromo = false,
   searchResult = false,
+  compactPremium = false,
 }: {
   placement: AdPlacementId;
   ad?: ActiveAd;
@@ -40,7 +42,10 @@ export function CampaignSlot({
   reordering?: boolean;
   editorialPromo?: boolean;
   searchResult?: boolean;
+  compactPremium?: boolean;
 }) {
+  const [naturalRatio, setNaturalRatio] = useState(initialAd?.image_width && initialAd.image_height ? initialAd.image_width / initialAd.image_height : 4);
+  const compact = compactPremium && placement === "top_banner";
   const context = useInlineBanners();
   const inline = searchResult ? null : context;
   const ad = inline && !preview && !reordering && Object.hasOwn(inline.overrides, placement) ? inline.overrides[placement] ?? undefined : initialAd;
@@ -55,8 +60,8 @@ export function CampaignSlot({
   const crop = displayAd?.crop;
   const content = displayAd && (
     displayAd.imageUrl ? (
-      crop ? <span className={styles.cropFrame}
-        style={crop && placement !== "top_banner" ? {aspectRatio:bannerCropRatio(displayAd.banner_size ?? "large",placement)} : undefined}>
+      crop || compact ? <span className={styles.cropFrame}
+        style={compact ? { aspectRatio: naturalRatio / 0.8 } : crop && placement !== "top_banner" ? {aspectRatio:bannerCropRatio(displayAd.banner_size ?? "large",placement)} : undefined}>
       <CreativeImage
         key={displayAd.imageUrl}
         src={displayAd.imageUrl}
@@ -66,7 +71,7 @@ export function CampaignSlot({
         mobile={displayAd.mobile_image}
       />
       {/* The natural original reserves Premium geometry; crop applies only when explicitly saved. */}
-      <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline} mobile={displayAd.mobile_image} crop={crop} />
+      <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline} mobile={displayAd.mobile_image} crop={crop ?? { focus_x: 50, focus_y: 50, zoom: 1 }} />
       </span> : <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline}
         width={displayAd.image_width} height={displayAd.image_height} mobile={displayAd.mobile_image} />
     ) : (
@@ -82,6 +87,11 @@ export function CampaignSlot({
       className={`${styles.slot} ${placement === "top_banner" ? styles.banner : ""} ${promo ? styles.editorialPromo : ""}`}
       id={!preview && !reordering && !searchResult ? `banner-${placement}` : undefined}
       data-placement={placement}
+      data-compact-premium={compact || undefined}
+      onLoadCapture={compact ? event => {
+        const image = event.target as HTMLImageElement;
+        if (image.tagName === "IMG" && image.naturalWidth && image.naturalHeight) setNaturalRatio(image.naturalWidth / image.naturalHeight);
+      } : undefined}
       aria-label={`Anzeige – ${adPlacements[placement]}`}
     >
       {showLabel && <div className={styles.label}>Anzeige{preview ? " · Vorschau" : ""}</div>}

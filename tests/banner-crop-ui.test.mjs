@@ -139,3 +139,36 @@ test('crop save failure reports error and does not close or claim success',async
  tree=render(props);await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});
  assert.equal(closed,false);assert.equal(find(render(props),n=>n.props?.role==='alert').props.children,'Crop fehlgeschlagen');
 });
+
+
+test('loaded draft exposes truthful status, ordinary save preserves it, explicit publish uses existing save; cancel writes nothing',async()=>{
+ states=[];const calls=[];let saved,closed=false;
+ const banner={id:'existing',source:'campaign',placement:'sidebar_top',imageUrl:'/existing.png',target_url:'https://example.org',size:'small',shared:false,editorial:true,status:'draft',requested_start_date:'2026-10-10',requested_end_date:'9999-12-31',updated_at:'saved-version',metadata:{name:'Höflehner',postal_code:'',city:'',term_keys:['theme:natur']}};
+ const props={selected:{placement:banner.placement,banner},options:{label:'Startseite',banners:[banner],availability:{},saveMetadata:async form=>{calls.push({metadata:Object.fromEntries(form)});return{success:'ok'};},save:async form=>{calls.push({save:Object.fromEntries(form)});return{success:'ok',ad:{...banner,status:'approved'}};}},onSaved:ad=>saved=ad,onMetadataSaved(){},onClose(){closed=true;}};
+ let tree=render(props);assert.match(renderToStaticMarkup(tree),/Entwurf – nicht öffentlich/);
+ const publish=find(tree,n=>n.type==='button'&&n.props.value==='publish');assert.ok(publish);
+ await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});assert.ok(calls[0].metadata);assert.equal(calls[0].metadata.intent,undefined);
+ await find(render(props),n=>n.type==='form').props.onSubmit({preventDefault(){},nativeEvent:{submitter:{value:'publish'}}});
+ assert.equal(calls[1].save.intent,'publish');assert.equal(calls[1].save.expected_updated_at,'saved-version');assert.equal(saved.status,'approved');
+ const before=calls.length;find(render(props),n=>n.type==='button'&&n.props.children==='Abbrechen').props.onClick();assert.equal(closed,true);assert.equal(calls.length,before);
+});
+
+test('image replacement keeps stored crop, targets and URL through the actual media-picker/save path',async()=>{
+ states=[];const calls=[];let saved;
+ const banner={id:'existing',source:'campaign',placement:'sidebar_top',imageUrl:'/old.png',target_url:'https://example.org/old',size:'small',shared:false,editorial:true,status:'approved',crop:{focus_x:25,focus_y:75,zoom:1.5},metadata:{name:'Existing',postal_code:'12345',city:'Ort',term_keys:['theme:natur']}};
+ const props={selected:{placement:banner.placement,banner},options:{label:'Startseite',banners:[banner],availability:{},prepare:async form=>{calls.push({prepare:Object.fromEntries(form)});return{campaignId:'existing',uploadPath:'new-image'};},save:async form=>{calls.push({save:Object.fromEntries(form)});return{success:'ok',ad:{...banner,image_path:'new-image',imageUrl:'/new.png'}};},saveCrop:async form=>{calls.push({crop:Object.fromEntries(form)});return{success:'ok'};}},onSaved:ad=>saved=ad,onClose(){}};
+ globalThis.inlineArchiveMedia={storage:{from:()=>({upload:async()=>({error:null})})}};
+ find(render(props),n=>n.type==='button'&&n.props.children==='Bild ersetzen').props.onClick();
+ find(render(props),n=>n.type===BannerMediaPicker).props.onSelected(new File(['image'],'new.png',{type:'image/png'}));
+ await find(render(props),n=>n.type==='form').props.onSubmit({preventDefault(){}});
+ assert.equal(calls[1].save.target_url,banner.target_url);assert.equal(calls[1].save.banner_terms,'theme:natur');assert.equal(calls[1].save.campaign_id,'existing');
+ assert.equal(calls[2].crop.zoom,'1.5');assert.deepEqual(saved.crop,banner.crop);
+ delete globalThis.inlineArchiveMedia;
+});
+
+test('only opt-in homepage Premium reduces natural frame height by 20 percent without changing width or other slots',()=>{
+ const ad={id:'premium',placement:'top_banner',headline:'Premium',imageUrl:'/wide.png',target_url:'https://example.org',image_width:1000,image_height:400};
+ states=[];cursor=0;const html=renderToStaticMarkup(createElement(CampaignSlot,{placement:'top_banner',ad,compactPremium:true}));
+ assert.match(html,/aspect-ratio:3.125/);assert.equal(1000/3.125,320);assert.match(html,/data-compact-premium="true"/);
+ states=[];cursor=0;const standard=renderToStaticMarkup(createElement(CampaignSlot,{placement:'sidebar_top',ad:{...ad,placement:'sidebar_top'},compactPremium:true}));assert.doesNotMatch(standard,/cropFrame|data-compact-premium/);
+});

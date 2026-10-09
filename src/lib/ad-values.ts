@@ -74,7 +74,7 @@ export type ActiveAd = Pick<
   | "target_url"
   | "image_path"
   | "imageUrl"
-  > & { crop?: import("./image-crop").ImageCrop; banner_size?: import("./banner-presentation").BannerSize; source?: "legacy" | "campaign" | "hidden"; suppressed?: boolean;
+  > & { status?: AdCampaign['status']; requested_start_date?: string; requested_end_date?: string; approved_start_date?: string | null; approved_end_date?: string | null; updated_at?: string; crop?: import("./image-crop").ImageCrop; banner_size?: import("./banner-presentation").BannerSize; source?: "legacy" | "campaign" | "hidden"; suppressed?: boolean;
     image_width?: number; image_height?: number; legacy_source?: AdPlacementId;
     mobile_image?: { imageUrl: string; width: number; height: number } };
 export type AdFormState = { error?: string; success?: string };

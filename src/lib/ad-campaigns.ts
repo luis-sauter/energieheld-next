@@ -300,9 +300,7 @@ export async function saveOwnAd(
         : failed(admin),
     };
   }
-  // Old media is unreferenced now. It can be removed while the campaign is still editable.
-  if (uploaded && campaign.image_path && !submit)
-    await client.storage.from(AD_BUCKET).remove([campaign.image_path]);
+  // Keep the previous creative in the central library; replacement changes only its association.
   return {
     success: submit
       ? admin ? "Das Banner wurde zur Prüfung eingereicht." : "Ihre Angebotsanfrage wurde erfolgreich gesendet."
