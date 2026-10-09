@@ -410,8 +410,9 @@ test("homepage shows real travel cards and distributes only homepage ads without
   assert.doesNotMatch(html, /Demo GmbH/);
   assert.match(html, /href="\/unterkuenfte\/bayerischer-wald"/);
   assert.doesNotMatch(html, /Basic Home|Premium Home/);
-  assert.equal((html.match(/data-placement="sidebar_/g) ?? []).length, 10);
-  assert.equal((html.match(/>Anzeige<\/p>/g) ?? []).length, 3);
+  assert.equal((html.match(/data-placement="sidebar_/g) ?? []).length, 6);
+  assert.doesNotMatch(html, /data-placement="sidebar_(?:07|08|09|10|11|12)"/);
+  assert.equal((html.match(/>Anzeige<\/p>/g) ?? []).length, 2);
   const adRequest = requests.find(({ url }) => url.pathname === "/rest/v1/rpc/get_active_ad_campaigns");
   assert.ok(adRequest);
   assert.equal(adRequest.body.p_scope_type, "homepage");

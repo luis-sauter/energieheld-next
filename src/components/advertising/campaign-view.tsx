@@ -113,7 +113,7 @@ export function CampaignSlot({
           </a>
         )
       ) : (
-        <div className={styles.empty}>
+        <div className={styles.empty} data-empty-banner>
           <span>Freier Werbeplatz</span>
           <strong>Hier wird Ihr Unternehmen sichtbar.</strong>
           <p>Im passenden Umfeld. Nah an Ihren Kunden.</p>

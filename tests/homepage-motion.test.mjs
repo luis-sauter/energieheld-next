@@ -48,9 +48,9 @@ test('both homepage areas use the same SSR child scroller and public labels reta
  assert.match(component,/!compact && <div className=\{styles.header\}/);
  assert.match(component,/\{heading\}[\s\S]*styles.controls[\s\S]*\{moreLink\}[\s\S]*zurück[\s\S]*weiter/);
  assert.match(css,/scrollbar-width: none/);assert.match(css,/::-webkit-scrollbar \{ display: none/);
- assert.match(css,/data-theme-image.*:is\(:hover, :focus-visible\)/);assert.match(css,/rgb\(14 68 96 \/ 72%\)/);assert.match(css,/color: white/);assert.match(css,/travel-quicklink-icon\) \{ color: inherit; background: rgb\(14 68 96 \/ 60%\)/);
+ assert.match(css,/data-theme-image.*:is\(:hover, :focus-visible\)/);assert.match(css,/opacity: \.2/);assert.match(css,/opacity: \.55/);assert.match(css,/color: #071522/);assert.match(css,/background: rgb\(255 255 255 \/ 85%\)/);
  assert.match(home,/loading="lazy"/);assert.match(home,/alt="" fill/);
- assert.match(css,/transition: none/);assert.match(css,/transform: none/);
+ assert.match(css,/transition: none/);assert.doesNotMatch(css,/transform: scale/);
 });
 
 test('executed gallery keeps hover, focus and pointer pauses independent and advances only after two idle seconds',async context=>{
