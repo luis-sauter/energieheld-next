@@ -13,6 +13,7 @@ import { uploadPreparedAdminMedia } from "@/lib/admin-media-upload";
 import { moveImageId } from "@/lib/media-order";
 import { hasPersistedImageGridSize, imageGridSlots, normalizeImageGridConfig, resizeImageGridFromPointer, editorialImageAspectRatio } from "@/lib/image-grid-layout";
 import type { MediaState } from "@/lib/company-media";
+import { useMediaLibrary } from "./media-library-context";
 import gridStyles from "@/components/portal/profile-content-blocks.module.css";
 import styles from "./inline-profile.module.css";
 
@@ -23,6 +24,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange, editori
   editorial?: boolean;
 }) {
   const router = useRouter();
+  const library = useMediaLibrary();
   const history = useInlineEditorHistory();
   const busyRef = useRef(false);
   const dragOrder = useRef<{ id: string; pointerId: number; before: string[]; lastTarget: string | null } | null>(null);
@@ -253,10 +255,10 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange, editori
           title={!hasPersistedImageCrop(image) ? "Nach Datenbankaktualisierung verfügbar" : undefined}
           onClick={() => setActiveCropId(image.id)}>Ausschnitt bearbeiten</button>
         {!hasPersistedImageCrop(image) && <small role="status">Ausschnitt nach Datenbankaktualisierung verfügbar.</small>}
-        <label className={styles.imageUpload}>Bild ersetzen
+        {library ? <button type="button" className="button" disabled={busy || history.busy} onClick={() => library.open({kind:"block",blockId:block.id,replacementId:image.id,onApplied:()=>history.clear()})}>Bild ersetzen</button> : <label className={styles.imageUpload}>Bild ersetzen
           <input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || history.busy}
             onChange={(event) => { void upload(event.target.files?.[0], image.id); event.target.value = ""; }} />
-        </label>
+        </label>}
         <form className={styles.imageAlt} onSubmit={(event) => {
           event.preventDefault();
           const data = form("caption");
@@ -278,7 +280,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange, editori
           if (activeCropId === image.id) setActiveCropId(null);
           const data = form("remove"); data.set("image_id", image.id); void run(data);
         }}>Bild löschen</button>
-      </figure> : <label key={`empty-${index}`} className={styles.emptyImageTile} style={{ aspectRatio: displayRatio }}>
+      </figure> : library ? <button key={`empty-${index}`} type="button" className={styles.emptyImageTile} style={{ aspectRatio: displayRatio }} disabled={busy || history.busy} onClick={() => library.open({kind:"block",blockId:block.id,onApplied:()=>history.clear()})}>+ Bild hinzufügen</button> : <label key={`empty-${index}`} className={styles.emptyImageTile} style={{ aspectRatio: displayRatio }}>
         <span>+ Bild hinzufügen</span>
         <input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || history.busy}
           onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} />

@@ -163,7 +163,7 @@ test("published heading and text blocks render publicly without editorial contro
   }
   const visitor = await renderPage({ authenticated: false }, contentRows);
   const admin = await renderPage({ authenticated: true, admin: true }, contentRows);
-  assert.equal(admin.replace(/<div class="profile-admin-actions">[\s\S]*?<\/div>/, ""), visitor);
+  assert.equal(admin.replace(/<dialog class="media-library-dialog"[^>]*><\/dialog>/, "").replace(/<div class="profile-admin-actions">[\s\S]*?<\/div>/, ""), visitor);
 });
 
 test("inline save ignores forged form IDs and updates only the displayed profile", async () => {
@@ -209,7 +209,7 @@ test("verified portal admin gets the entry point while the public view stays unc
   assert.match(admin, /Profil bearbeiten/);
   assert.match(admin, /profile-freshness-compact/);
   assert.doesNotMatch(admin, /Bearbeitungsmodus aktiv|Logo ändern|Alt-Text speichern|inline-admin-profile-form/);
-  assert.equal(admin.replace(/<div class="profile-admin-actions">[\s\S]*?<\/div>/, ""), visitor);
+  assert.equal(admin.replace(/<dialog class="media-library-dialog"[^>]*><\/dialog>/, "").replace(/<div class="profile-admin-actions">[\s\S]*?<\/div>/, ""), visitor);
 });
 
 test("Demo uses its real Supabase media and blocks for the admin editor while public views stay neutral", async () => {
@@ -224,7 +224,7 @@ test("Demo uses its real Supabase media and blocks for the admin editor while pu
   }
   const { element, html, adminClient } = await renderDemoPage({ authenticated: true, admin: true });
   assert.match(html, /Profil bearbeiten/);
-  assert.equal(html.replace(/<div class="profile-admin-actions">[\s\S]*?<\/div>/, ""), visitor.html);
+  assert.equal(html.replace(/<dialog class="media-library-dialog"[^>]*><\/dialog>/, "").replace(/<div class="profile-admin-actions">[\s\S]*?<\/div>/, ""), visitor.html);
   assert.doesNotMatch(html, /Energieheld|Photovoltaik|Elektrotechnik|Energiesysteme|Gebäudetechnik|Bearbeitungsmodus aktiv/);
   const editor = element.props.children.find((child) => child?.type === InlineProfileEditor);
   assert.ok(editor);

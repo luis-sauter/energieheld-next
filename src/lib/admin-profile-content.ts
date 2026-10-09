@@ -1,3 +1,4 @@
+import { retainedProfileMedia } from "./media-retention";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isProfileId, type AdminAccess } from "./admin-review";
 import { checkInlineProfileTarget } from "./inline-admin-profile";
@@ -228,7 +229,7 @@ export async function changeAdminProfileContent(
           const refs = await client.from("profile_content_block_images")
             .select("id", { count: "exact", head: true }).eq("storage_path", path);
           if (refs.error) return { access: "admin", error: failed };
-          if (refs.count === 0) removable.push(path);
+          if (refs.count === 0 && !await retainedProfileMedia(client, path)) removable.push(path);
         }
         if (!removable.length) break;
         const removed = await storage.remove(removable);

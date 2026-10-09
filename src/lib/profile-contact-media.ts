@@ -1,3 +1,4 @@
+import { retainedProfileMedia } from "./media-retention";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { MEDIA_BUCKET, MEDIA_MAX_BYTES, validateMediaFile, type MediaState } from "./company-media";
 
@@ -11,6 +12,7 @@ export async function changeAuthorizedContactImage(client: SupabaseClient, profi
   const storage = client.storage.from(MEDIA_BUCKET);
   const cleanup = async (path: string | null) => {
     if (!isContactImagePath(profile.id, path)) return;
+    if (await retainedProfileMedia(client, path)) return;
     try { const result = await storage.remove([path]); if (result.error) console.error("Contact image cleanup failed."); }
     catch { console.error("Contact image cleanup failed."); }
   };

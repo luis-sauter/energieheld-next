@@ -1,3 +1,4 @@
+import { retainedProfileMedia } from "./media-retention";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isProfileId, type AdminAccess } from "./admin-review";
 import { checkInlineProfileTarget } from "./inline-admin-profile";
@@ -32,6 +33,7 @@ export async function changeAdminBlockImages(
   const config = normalizeImageGridConfig(block.config);
   const storage = client.storage.from(MEDIA_BUCKET);
   const cleanup = async (path: string) => {
+    if (await retainedProfileMedia(client, path)) return;
     try {
       const references = await client.from("profile_content_block_images")
         .select("id", { count: "exact", head: true }).eq("storage_path", path);

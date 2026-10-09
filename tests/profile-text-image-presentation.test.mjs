@@ -11,6 +11,7 @@ let hookState=[],hookCursor=0;
 globalThis.__editorPresentationHooks={state(initial){const i=hookCursor++;if(!(i in hookState))hookState[i]=typeof initial==='function'?initial():initial;return[hookState[i],value=>{hookState[i]=typeof value==='function'?value(hookState[i]):value}];},ref(initial){const i=hookCursor++;if(!(i in hookState))hookState[i]={current:initial};return hookState[i];}};
 registerHooks({resolve(s,c,next){
  if(s==='react'&&c.parentURL?.endsWith('/inline-content-editor.tsx'))return{url:'data:text/javascript,'+encodeURIComponent(`export const useState=v=>globalThis.__editorPresentationHooks.state(v),useRef=v=>globalThis.__editorPresentationHooks.ref(v),useEffect=()=>{};`),shortCircuit:true};
+ if(s.endsWith('/media-library-context')&&c.parentURL?.endsWith('/inline-content-editor.tsx'))return{url:'data:text/javascript,export function useMediaLibrary(){return null}',shortCircuit:true};
  if(s==='next/navigation')return{url:'data:text/javascript,export function useRouter(){return {refresh(){}}}',shortCircuit:true};
  if(s.endsWith('/inline-editor-history'))return{url:'data:text/javascript,export function useInlineEditorHistory(){return {busy:false,clear(){},record(){}}}',shortCircuit:true};
  if(s==='next/image')return{url:'data:text/javascript,'+encodeURIComponent(`import {createElement} from ${JSON.stringify(reactUrl)};export default function Image({fill,unoptimized,...props}){return createElement('img',props)}`),shortCircuit:true};

@@ -12,6 +12,7 @@ import styles from "./admin-media.module.css";
 import inline from "./inline-profile.module.css";
 import { squareMediaFile } from "@/lib/square-media";
 import { DEFAULT_IMAGE_CROP, panImageCrop, type ImageCrop } from "@/lib/image-crop";
+import { useMediaLibrary } from "./media-library-context";
 import { moveImageId } from "@/lib/media-order";
 
 export function useInlineAdminMedia({ saveAction, media, rows, profileName, initials }: {
@@ -22,6 +23,7 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
   initials: string;
 }) {
   const router = useRouter();
+  const library = useMediaLibrary();
   const dialog = useRef<HTMLDialogElement>(null);
   const busyRef = useRef(false);
   const [kind, setKind] = useState<"logo" | "gallery">("gallery");
@@ -62,6 +64,7 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
   }
   function openUpload(next: "logo" | "gallery", replaceId: string | null = null) {
     if (busyRef.current) return;
+    if (library) { library.open({ kind: next, replacementId: replaceId ?? undefined, capacity: GALLERY_LIMIT - galleryImages.length }); return; }
     setFeedback({});
     setKind(next);
     setReplacementId(replaceId);

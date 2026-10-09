@@ -1,3 +1,4 @@
+import { retainedProfileMedia } from "./media-retention";
 import { changeAuthorizedContactImage } from "./profile-contact-media";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { signProfileVideo, changeAuthorizedProfileVideo } from "./profile-video";
@@ -145,6 +146,7 @@ export async function changeOwnCompanyMedia(
   const storage = client.storage.from(MEDIA_BUCKET);
   const cleanup = async (path: string | null) => {
     if (!path) return;
+    if (await retainedProfileMedia(client, path)) return;
     try {
       const result = await storage.remove([path]);
       if (result.error) console.error("Company media cleanup failed.");

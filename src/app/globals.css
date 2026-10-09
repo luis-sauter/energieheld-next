@@ -3497,3 +3497,6 @@ h6 {
 .profile-freshness-confirm { flex-basis: 100%; font-size: .85rem; }
 .profile-freshness-confirm p { max-width: 65ch; }
 .profile-freshness-confirm .button { white-space: normal; max-width: 100%; margin: .25rem .4rem .25rem 0; }
+
+/* Shared, private media picker; native dialog keeps focus within the editor. */
+.media-library-dialog{width:min(1200px,96vw);max-width:96vw;max-height:92dvh;padding:0;border:1px solid #d5e5ed;border-radius:1rem;overflow:auto;box-shadow:0 20px 80px #17476135}.media-library-dialog::backdrop{background:#102b4266}
