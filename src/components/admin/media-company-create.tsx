@@ -8,7 +8,7 @@ export function MediaCompanyCreate({onCreated,onOpen}:{onOpen?:()=>void;onCreate
  useEffect(()=>{const element=dialog.current;return ()=>{if(element?.open)element.close();};},[]);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[matches,setMatches]=useState<{id:string;display_name:string}[]>([]);
  return <><button ref={trigger} type="button" className="button" onClick={()=>{setError('');setMatches([]);onOpen?.();if(!dialog.current?.open)dialog.current?.showModal();}}>+ Neues Unternehmen hinzufügen</button>
- <dialog ref={dialog} className="media-library-dialog" aria-label="Neues Unternehmen" onClose={()=>{formRef.current?.reset();setError('');setMatches([]);trigger.current?.focus({preventScroll:true});}} onCancel={e=>{if(busy)e.preventDefault();}}>
+ <dialog ref={dialog} className="media-library-dialog" aria-label="Neues Unternehmen" onClose={e=>{if(e.target!==e.currentTarget)return;e.stopPropagation();formRef.current?.reset();setError('');setMatches([]);trigger.current?.focus({preventScroll:true});}} onCancel={e=>{if(e.target!==e.currentTarget)return;e.stopPropagation();if(busy)e.preventDefault();}}>
  <form ref={formRef} className={styles.details} onSubmit={async e=>{e.preventDefault();if(busy)return;const form=new FormData(e.currentTarget);setBusy(true);setError('');try{
  const result=await createLibraryCompany(form);if(result.error)setError(result.error);else if(result.matches)setMatches(result.matches);else if(result.id&&result.display_name){dialog.current?.close();onCreated?.({id:result.id,display_name:result.display_name});router.refresh();}
  }catch{setError('Unternehmen konnte nicht angelegt werden.');}finally{setBusy(false);}}}>
