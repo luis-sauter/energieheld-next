@@ -418,7 +418,7 @@ test("homepage shows real travel cards beside the shared long rail and queries o
 test("accommodation cards keep a linked neutral image space when no sourced photo exists", () => {
   const empty = renderToStaticMarkup(createElement(AccommodationCard, { listing: reiseportalPreview[4] }));
   assert.match(empty, /accommodation-card-image--empty/);
-  assert.match(empty, /aria-label="Villner Hof ansehen"/);
+  assert.match(empty, /aria-label="Villner Hof – Details ansehen"/);
   assert.match(empty, /aria-hidden="true">VH<\/span>/);
   assert.doesNotMatch(empty, /<img/);
 
