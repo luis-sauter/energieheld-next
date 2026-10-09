@@ -14,26 +14,27 @@ import { jsonLdGraph, breadcrumbSchema, collectionSchema } from "@/lib/seo-schem
 import { relatedTravelPages } from "@/lib/travel-relations";
 import { TravelRelations } from "./travel-relations";
 import { providerCardImage } from '@/lib/provider-card-media';
+import cardStyles from './accommodation-card.module.css';
 
 export function AccommodationCard({ listing, rotating = false, sizes }: { listing: Listing; rotating?: boolean; sizes?: string }) {
   const image = providerCardImage(listing, 'travel');
   return <article className="accommodation-card">
-    <Link href={`/unterkuenfte/${listing.slug}`}
-      className={`accommodation-card-image${image ? "" : " accommodation-card-image--empty"}`}
-      aria-label={`${listing.name} ansehen`}>
-      {image
-        ? <Image src={image.src} alt={image.alt} fill loading="lazy" unoptimized={/^https?:\/\//.test(image.src)} sizes={sizes ?? (rotating
-          ? "(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 400px"
-          : "(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw")} />
-        : <span aria-hidden="true">{listing.initials}</span>}
+    <Link href={`/unterkuenfte/${listing.slug}`} className={cardStyles.card}
+      aria-label={`${listing.name} – Details ansehen`}>
+      <div className={`accommodation-card-image ${cardStyles.image}${image ? "" : " accommodation-card-image--empty"}`}>
+        {image ? <Image src={image.src} alt={image.alt} fill loading="lazy"
+          unoptimized={/^https?:\/\//.test(image.src)} sizes={sizes ?? (rotating
+            ? "(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 430px"
+            : "(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 25vw")} />
+          : <span className={cardStyles.fallback} aria-hidden="true">{listing.initials}</span>}
+      </div>
+      <div className={`accommodation-card-copy ${cardStyles.copy}`}>
+        <p className={cardStyles.location}>{[listing.location.city, listing.location.region, listing.location.country].filter(Boolean).filter((value, index, all) => all.indexOf(value) === index).join(" · ")}</p>
+        <h3>{listing.name}</h3>
+        <div className={cardStyles.signals}><TravelSignals termKeys={listing.travelTermKeys} /></div>
+        <span className={cardStyles.details}>Details ansehen <span aria-hidden="true">→</span></span>
+      </div>
     </Link>
-    <div className="accommodation-card-copy">
-      <p className="eyebrow">{[listing.location.city, listing.location.country].filter(Boolean).join(", ")}</p>
-      <h3><Link href={`/unterkuenfte/${listing.slug}`}>{listing.name}</Link></h3>
-      <TravelSignals termKeys={listing.travelTermKeys} />
-      {listing.tagline && <p>{listing.tagline}</p>}
-      <Link className="text-link" href={`/unterkuenfte/${listing.slug}`}>Details ansehen →</Link>
-    </div>
   </article>;
 }
 

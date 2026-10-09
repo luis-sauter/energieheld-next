@@ -108,7 +108,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
         </div>}
         <div className={styles.recommendations}>
           {featured.slice(1).map((listing) => <AccommodationCard key={listing.id} listing={listing}
-            sizes="(max-width: 700px) 32vw, (max-width: 1100px) 180px, 200px" />)}
+            sizes="(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 300px" />)}
         </div>
       </div>
     </section>

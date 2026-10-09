@@ -190,7 +190,8 @@ test("destination and motto overviews use only the current visible legacy groups
 test("discovery cards retain signed profile images without sending them to the Next optimizer", () => {
   for (const src of ['/reiseportal/example.webp', 'https://example.supabase.co/storage/v1/object/sign/company-media/profile.jpg?token=test']) {
     const card = AccommodationCard({ listing: { ...reiseportalPreview[0], images: [{ src, alt: 'Profile image' }] } });
-    const image = card.props.children[0].props.children;
+    const descendants = node => Array.isArray(node) ? node.flatMap(descendants) : node && typeof node === 'object' ? [node, ...descendants(node.props?.children)] : [];
+    const image = descendants(card).find(node => node.type === 'img');
     assert.equal(image.props.src, src);
     assert.equal(image.props.unoptimized, src.startsWith('https://'));
     assert.equal(image.props.loading, 'lazy');

@@ -224,3 +224,33 @@ test('central audience labels and assigned icons render in cards and profile hea
  assert.deepEqual(options.audiences.map(e=>e.label),['Mit Kindern','Zu zweit','Mit Hund']);
  assert.deepEqual(activeTravelFilterLabels(readTravelFilterValues({zielgruppe:'familie'}),options),['Mit wem: Mit Kindern']);
 });
+
+
+test('Carola accommodation card has one whole-card profile link, true signals and no nested interactive elements',()=>{
+ const listing={...profiles[0],name:'Ein sehr langer belegter Unterkunftsname mit mehreren Wörtern',location:{...profiles[0].location,city:'Dorf',region:'Region'},travelTermKeys:['theme:natur-pur','theme:wanderurlaub']};
+ const before=JSON.stringify(listing);
+ const html=renderToStaticMarkup(createElement(AccommodationCard,{listing}));
+ assert.equal((html.match(/<a\b/g)||[]).length,1);assert.match(html,/href="\/unterkuenfte\/golfhotel-andreus"/);
+ assert.match(html,/<h3>Ein sehr langer belegter Unterkunftsname mit mehreren Wörtern<\/h3>/);
+ assert.match(html,/Dorf · Region · Deutschland/);assert.match(html,/data-travel-term="theme:natur-pur"/);
+ assert.match(html,/Details ansehen/);assert.doesNotMatch(html,/<button|Merkliste|Favorit|Bewertung|★/);
+ assert.equal(JSON.stringify(listing),before);
+});
+test('same accommodation presentation for home, themes and destinations; no photo or term is invented',()=>{
+ const listing={...profiles[0],directoryPackage:'basic'};
+ const ordinary=renderToStaticMarkup(createElement(AccommodationCard,{listing,sizes:'430px'}));
+ const rotated=renderToStaticMarkup(createElement(AccommodationCard,{listing,rotating:true,sizes:'430px'}));
+ assert.equal(ordinary,rotated);assert.match(ordinary,/Vorhandenes Foto/);
+ const empty=renderToStaticMarkup(createElement(AccommodationCard,{listing:{...listing,travelImage:null,travelTermKeys:[]}}));
+ assert.doesNotMatch(empty,/<img|data-travel-term=/);assert.match(empty,/accommodation-card-image--empty/);assert.match(empty,/Details ansehen/);
+ for(const route of ['reiseziele','mottoreisen'])assert.match(read(`src/app/(energieheld)/${route}/[slug]/page.tsx`),/<DiscoveryDetail/);
+});
+test('Carola styles are isolated, keep text untruncated and provide keyboard/touch/reduced-motion parity',()=>{
+ const css=read('src/components/portal/accommodation-card.module.css');
+ assert.match(css,/aspect-ratio: 7 \/ 8/);assert.match(css,/object-fit: cover/);assert.match(css,/linear-gradient\(to bottom/);
+ assert.match(css,/\.card:focus-visible/);assert.match(css,/\.card:hover/);assert.match(css,/hover: none/);assert.match(css,/prefers-reduced-motion: reduce/);
+ assert.match(css,/overflow-wrap: anywhere/);assert.doesNotMatch(css,/line-clamp|text-overflow: ellipsis/);
+ const home=read('src/app/(energieheld)/page.tsx');assert.match(home,/styles.featuredStay/);assert.match(home,/styles.recommendations/);
+ const directory=read('src/components/portal/travel-directory.tsx');assert.match(directory,/<ListingRow/);assert.doesNotMatch(directory,/AccommodationCard/);
+ const homeCss=read('src/app/(energieheld)/home.module.css');assert.doesNotMatch(homeCss,/accommodation-card-copy|accommodation-card-image/);
+});
