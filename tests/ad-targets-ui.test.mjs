@@ -465,12 +465,13 @@ test("admin reorder view renders twelve controls with dynamic first and last bou
 test("homepage keeps the shared ad rail and uses sourced accommodation cards", () => {
   const source = readFileSync(new URL("../src/app/(energieheld)/page.tsx", import.meta.url), "utf8");
   assert.match(source, /loadPublicAds\(undefined, "homepage"\)/);
-  assert.match(source, /loadPublicSidebarOrder\(\)/);
+  assert.match(source, /<HomeBannerGroup/);
   assert.match(source, /<AccommodationCard/);
   assert.match(source, /loadReiseportalDirectory\(\)/);
   assert.match(source, /featuredStays\.flatMap/);
-  assert.match(source, /<CampaignSlot placement="top_banner"/);
-  assert.match(source, /<AdvertisingRail slots=\{sidebarOrder\} ads=\{ads\}/);
+  assert.match(source, /placements=\{\["top_banner"\]\}/);
+  const group=readFileSync(new URL("../src/components/advertising/home-banner-group.tsx",import.meta.url),"utf8");
+  assert.match(group, /<AdvertisingRail/);assert.match(group,/useInlineBanners/);
   assert.doesNotMatch(source, /Demo GmbH|<ListingRow/);
 });
 // Optional local, static visual fixture. Never writes to the application or DB.

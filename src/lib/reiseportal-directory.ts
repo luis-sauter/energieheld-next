@@ -1,4 +1,5 @@
 import "server-only";
+import { withSavedCardImages } from "./profile-card-images";
 import { reiseportalPreview } from "@/data/reiseportal-preview";
 import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
 import legacyDirectoryMedia from "../data/reiseportal-legacy-directory-media.json" with { type: "json" };
@@ -116,11 +117,11 @@ export async function loadReiseportalDirectory() {
     return { preview: [] as Listing[], database: [] as Listing[], hiddenOrderKeys: [] as string[],
       error: "Die Reisethemen konnten nicht geladen werden." };
   }
-  const database = result.data.listings.filter(travelVisible).map((listing) => withLegacyImages({
+  const database = await withSavedCardImages(result.data.listings.filter(travelVisible).map((listing) => withLegacyImages({
     ...listing,
     directoryPackage: packages.get(listing.id) ?? "basic",
     ...(assignments ? { travelTermKeys: assignments.get(listing.id) ?? [] } : {}),
-  }));
+  })));
   const shown = new Set(database.map(directoryItemKey));
   const hiddenOrderKeys = result.data.orderRows
     .slice().sort((a, b) => a.sort_order - b.sort_order)

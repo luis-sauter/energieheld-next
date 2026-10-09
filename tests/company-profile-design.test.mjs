@@ -581,9 +581,6 @@ test("portal home follows the discovery wireframe with the shared advertising ra
     "Inspiration &amp; Themenwelten",
     'id="destinations-title"',
     'id="stays-title"',
-    'id="partners-title"',
-    'data-placement="top_banner"',
-    'class="commercial-sidebar advertising-rail"',
   ];
   let last = -1;
   for (const marker of ordered) {
@@ -592,6 +589,7 @@ test("portal home follows the discovery wireframe with the shared advertising ra
     last = current;
   }
   assert.match(html, /DAS Reiseportal/);
+  assert.doesNotMatch(html, /Freier Werbeplatz|Premium-Anzeige|Weitere Partner und Gastgeber/);
   assert.match(html, /Finde deinen passenden Urlaub/);
   assert.match(html, /name="q"/);
   assert.doesNotMatch(html, /Expertensuche|Gewerke|Fachbetriebe|Photovoltaik|Sanieren mit Grips/);

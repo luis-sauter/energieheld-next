@@ -3351,7 +3351,7 @@ h6 {
   gap: 18px;
   min-width: 0;
 }
-.accommodation-card { min-width: 0; height: 100%; }
+.accommodation-card { position: relative; min-width: 0; height: 100%; }
 .discovery-home .section { padding-block: clamp(46px, 5vw, 72px); }
 .discovery-home .section-heading { margin-bottom: 22px; }
 .discovery-home .section-heading h2 { margin-bottom: 3px; }

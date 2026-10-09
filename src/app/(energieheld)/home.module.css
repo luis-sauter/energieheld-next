@@ -25,8 +25,7 @@
 .destinations :global(.discovery-card) { border: 0; border-radius: 14px; box-shadow: 0 4px 16px rgb(23 71 97 / 4%); }
 .destinations :global(.discovery-card-image) { aspect-ratio: 1.25; }
 .destinations :global(.discovery-card-title) { padding: 20px; font-size: 1.1rem; }
-.showcase { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-.recommendations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.showcase { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
 .partners { background: var(--brand-surface); margin-bottom: 48px; }
 .premium { margin-bottom: 24px; }
 .premium:empty { display: none; }
@@ -54,13 +53,12 @@
 .provider :global(.button) { flex-shrink: 0; }
 .page a:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 5px; }
 @media (max-width: 1100px) {
-  .showcase { grid-template-columns: minmax(0, 1fr); }
-  .featuredStay { max-width: 600px; width: 100%; justify-self: center; }
-  .recommendations { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .showcase { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .partners :global(.advertising-rail-creatives), .partners :global(.advertising-rail > div) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .destinations :global(.discovery-card-image) { aspect-ratio: 1.7; }
 }
 @media (max-width: 700px) {
+  .showcase { grid-template-columns: minmax(0, 1fr); }
   .page :global(.travel-hero) { min-height: auto; }
   .page :global(.travel-hero-content) { padding-block: 38px; }
   .page :global(.travel-hero h1) { font-size: clamp(2.3rem, 9vw, 3rem); }
@@ -71,7 +69,6 @@
   .page :global(.section-heading) { align-items: flex-start; gap: 12px; }
   .destinations :global(.discovery-card-image) { aspect-ratio: 1.7; }
   .destinations :global(.discovery-card-title) { padding: 16px 20px; }
-  .recommendations { grid-template-columns: minmax(0, 1fr); }
   .partners { margin-bottom: 32px; }
   .partners :global(.advertising-rail-creatives), .partners :global(.advertising-rail > div) { grid-template-columns: minmax(0, 1fr); }
   .partners :global([data-sidebar-slot]:has([data-size])),

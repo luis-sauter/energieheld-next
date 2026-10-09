@@ -4,7 +4,7 @@
 .controls span { font-size: .85rem; }
 .rotation:focus-visible, .controls button:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 4px; }
 .page[hidden] { display: none; }
-.pages { --rows: 3; --card-height: 26rem; --gap: 1.25rem; min-height: calc(var(--rows) * var(--card-height) + (var(--rows) - 1) * var(--gap)); }
+.pages { --rows: 3; --card-height: 20.8rem; --gap: 1.25rem; min-height: calc(var(--rows) * var(--card-height) + (var(--rows) - 1) * var(--gap)); }
 .rotation .page :global(.accommodation-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .pages :global(.accommodation-grid) { gap: var(--gap); grid-auto-rows: minmax(var(--card-height), auto); }
 @media (max-width: 700px) { .pages { --rows: 6; } .rotation .page :global(.accommodation-grid) { grid-template-columns: 1fr; } }

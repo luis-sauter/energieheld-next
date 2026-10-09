@@ -100,7 +100,7 @@ test("server HTML retains actual card links, only one group is exposed to keyboa
   assert.equal((html.match(/hidden="" inert=""/g) ?? []).length, 4);
   assert.match(html, /Vorherige sechs Unterkünfte/);
   assert.match(html, /Nächste sechs Unterkünfte/);
-  assert.match(html, /Gruppe 1 von 5/);
+  assert.match(html, /Unterkünfte entdecken · 30 passende Unterkünfte/);assert.doesNotMatch(html,/Gruppe/);
   assert.match(html, /disabled="" title="Bei reduzierter Bewegung/);
   assert.match(html, /Automatischen Wechsel pausieren/);
 });
