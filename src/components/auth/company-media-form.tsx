@@ -218,7 +218,8 @@ export function CompanyProfileDesigner({
         presentation="company"
         logoEditor={logoEditor}
         contactPersonEditor={<ContactImageEditor contact={listing.contact} save={form => saveCompanyMedia({}, form)} disabled={pending || videoBusy} onBusyChange={setVideoBusy} />}
-        galleryEditor={<ProfileVideoEditor video={listing.video} name={listing.name} gallery={galleryEditor} disabled={pending || videoBusy} save={form => saveCompanyMedia({}, form)} onBusyChange={setVideoBusy} />}
+        galleryEditor={galleryEditor}
+        videoEditor={<ProfileVideoEditor video={listing.video} name={listing.name} gallery={galleryEditor} disabled={pending || videoBusy} save={form => saveCompanyMedia({}, form)} onBusyChange={setVideoBusy} />}
       />
       <dialog
         ref={dialog}

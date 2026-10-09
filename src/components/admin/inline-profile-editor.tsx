@@ -188,6 +188,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
       </section> : undefined}
       logoEditor={editing ? mediaEditor.logoEditor : undefined}
       galleryEditor={editing ? mediaEditor.galleryEditor : undefined}
+      videoEditor={editing ? mediaEditor.videoEditor : undefined}
     />
     {editing && mediaEditor.uploadDialog}
   </InlineEditorHistoryContext.Provider>;

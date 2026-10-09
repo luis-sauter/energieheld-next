@@ -16,9 +16,9 @@ globalThis.__mediaUX={
  async apply(id,target){calls.push(['apply',id,target]);return {success:'Saved'};}
 };
 registerHooks({resolve(s,c,n){const stub=x=>({url:'data:text/javascript,'+encodeURIComponent(x),shortCircuit:true});
- if(s==='react'&&/(?:media-library-(?:browser|company-picker|upload)|portal-video)\.tsx$/.test(c.parentURL??''))return stub('export const useState=v=>globalThis.__mediaUX.state(v),useRef=v=>globalThis.__mediaUX.ref(v),useEffect=(f,d)=>globalThis.__mediaUX.effect(f,d),useId=()=>"picker",startTransition=f=>f();');
- if(s.endsWith('/admin/mediathek/actions'))return stub('export const searchLibraryProfiles=(...a)=>globalThis.__mediaUX.search(...a),libraryProfiles=()=>globalThis.__mediaUX.profiles(),loadLibrary=(...a)=>globalThis.__mediaUX.load(...a),applyLibraryAsset=(...a)=>globalThis.__mediaUX.apply(...a),updateLibraryAsset=async()=>({success:"Saved"}),archiveLibraryAsset=async()=>({}),deleteLibraryAsset=async()=>({}),uploadLibrary=async()=>({}),createLibraryCompany=async()=>({}),removeLibraryVideo=async()=>({});');
- if(s==='@/lib/profile-video-upload'&&c.parentURL?.endsWith('media-library-upload.tsx'))return stub('export const uploadProfileVideo=async(save,file,progress)=>{globalThis.__mediaUX.uploads.push(file.name);progress("Video wird geprüft …");return file.name==="bad.mp4"?{error:"Ungültige Datei"}:{success:"Video verfügbar"};}');
+ if(s==='react'&&/(?:media-library-(?:browser|company-picker|upload)|media-company-create|portal-video)\.tsx$/.test(c.parentURL??''))return stub('export const useState=v=>globalThis.__mediaUX.state(v),useRef=v=>globalThis.__mediaUX.ref(v),useEffect=(f,d)=>globalThis.__mediaUX.effect(f,d),useId=()=>"picker",startTransition=f=>f();');
+ if(s.endsWith('/admin/mediathek/actions'))return stub('export const searchLibraryProfiles=(...a)=>globalThis.__mediaUX.search(...a),libraryProfiles=()=>globalThis.__mediaUX.profiles(),loadLibrary=(...a)=>globalThis.__mediaUX.load(...a),applyLibraryAsset=(...a)=>globalThis.__mediaUX.apply(...a),updateLibraryAsset=async()=>({success:"Saved"}),archiveLibraryAsset=async()=>({}),deleteLibraryAsset=async()=>({}),uploadLibrary=async(id)=>{globalThis.__mediaUX.savedCompany=id;return {success:"Saved"}},createLibraryCompany=async()=>{globalThis.__mediaUX.creates=(globalThis.__mediaUX.creates??0)+1;return {}},removeLibraryVideo=async()=>({});');
+ if(s==='@/lib/profile-video-upload'&&c.parentURL?.endsWith('media-library-upload.tsx'))return stub('export const uploadProfileVideo=async(save,file,progress)=>{globalThis.__mediaUX.uploads.push(file.name);progress("Video wird geprüft …");if(file.name==="bad.mp4")return {error:"Ungültige Datei"};await save(new FormData());return {success:"Video verfügbar"};}');
  if(s==='@/lib/admin-media-upload'&&c.parentURL?.endsWith('media-library-upload.tsx'))return stub('export const uploadPreparedAdminMedia=async(save,file)=>{globalThis.__mediaUX.uploads.push(file.name);return {success:"Bild verfügbar"};}');
  if(s==='next/navigation')return stub('export const useRouter=()=>({refresh(){}})');
  if(s==='next/image')return stub('export default "img"');if(s.endsWith('.module.css'))return stub('export default new Proxy({}, {get:(_,k)=>k})');
@@ -27,13 +27,14 @@ registerHooks({resolve(s,c,n){const stub=x=>({url:'data:text/javascript,'+encode
 const {MediaLibraryUpload}=await import('../src/components/admin/media-library-upload.tsx');
 const {PortalVideo}=await import('../src/components/portal/portal-video.tsx');
 const {MediaLibraryCompanyPicker}=await import('../src/components/admin/media-library-company-picker.tsx');
+const {MediaCompanyCreate}=await import('../src/components/admin/media-company-create.tsx');
 const {MediaLibraryBrowser}=await import('../src/components/admin/media-library-browser.tsx');
 const {revealMediaDetails,restoreMediaGrid}=await import('../src/lib/media-library-navigation.ts');
 const nodes=n=>Array.isArray(n)?n.flatMap(nodes):n&&typeof n==='object'?[n,...nodes(n.props?.children)]:[];
 const text=n=>Array.isArray(n)?n.map(text).join(''):n&&typeof n==='object'?text(n.props?.children):n??'';
 function fixture(Component,props){slots=[];cursor=0;effects=[];calls=[];
  globalThis.document={addEventListener(){},removeEventListener(){},getElementById(){return null;}};globalThis.window={matchMedia:()=>({matches:reduced})};
- const dom={scrollTop:120,scrollTo(v){calls.push(['scroll',v]);this.scrollTop=v.top;},getBoundingClientRect(){return {top:20};},focus(v){calls.push(['focus',v]);},contains(){return true;},querySelector(){return null;}};
+ const dom={scrollTop:120,scrollTo(v){calls.push(['scroll',v]);this.scrollTop=v.top;},getBoundingClientRect(){return {top:20};},focus(v){calls.push(['focus',v]);},contains(){return true;},querySelector(){return null;},open:false,showModal(){this.open=true;calls.push(["show"]);},close(){this.open=false;calls.push(["close"]);},reset(){calls.push(["reset"]);},play(){calls.push(["play"]);return Promise.resolve();}};
  function render(){cursor=0;const tree=Component(props);for(const node of nodes(tree))if(node.props?.ref)node.props.ref.current=node.type==='h3'?{...dom,getBoundingClientRect:()=>({top:620})}:dom;const pending=effects;effects=[];pending.forEach(f=>f());return tree;}
  return {dom,render,all:()=>nodes(render()),button:label=>nodes(render()).find(n=>n.type==='button'&&text(n)===label),async settle(ms=10){render();await new Promise(r=>setTimeout(r,ms));return render();}};
 }
@@ -75,11 +76,32 @@ test('banner context selects without applying/creating a campaign and permits pr
  assert.doesNotMatch(text(f.render()),/Zusätzliche Nutzungserlaubnis|Beleg der Nutzungserlaubnis/);
 });
 
-test('video player never loads until requested and accepts only canonical provider embeds',()=>{
- const f=fixture(PortalVideo,{src:'https://www.youtube.com/watch?v=EWKiPV1So5A',name:'Sonnenhof',external:true});f.render();assert.equal(f.all().some(n=>n.type==='iframe'),false);
- f.button('▶ Sonnenhof – Video laden').props.onClick();const iframe=f.all().find(n=>n.type==='iframe');assert.equal(iframe.props.src,'https://www.youtube-nocookie.com/embed/EWKiPV1So5A?autoplay=0');assert.equal(iframe.props.loading,'lazy');
- const hosted=fixture(PortalVideo,{src:'https://signed.example/video',name:'Video'});hosted.render();assert.equal(hosted.all().some(n=>n.type==='video'),false);hosted.button('▶ Video – Video laden').props.onClick();const video=hosted.all().find(n=>n.type==='video');assert.equal(video.props.controls,true);assert.equal(video.props.preload,'metadata');assert.equal(video.props.autoPlay,undefined);
+test('one-click video preview: external players load only on intent, own video plays directly without autoplay',()=>{
+ const f=fixture(PortalVideo,{src:'https://www.youtube.com/watch?v=EWKiPV1So5A',name:'Sonnenhof',external:true,poster:'/existing.webp'});
+ assert.equal(f.all().some(n=>n.type==='iframe'),false);assert.equal(f.all().find(n=>n.type==='img').props.src,'/existing.webp');
+ assert.doesNotMatch(text(f.render()),/Video laden/);
+ f.all().find(n=>n.props?.['aria-label']==='Sonnenhof abspielen').props.onClick();const iframe=f.all().find(n=>n.type==='iframe');assert.equal(iframe.props.src,'https://www.youtube-nocookie.com/embed/EWKiPV1So5A?autoplay=1&dnt=1');
+ const hosted=fixture(PortalVideo,{src:'https://signed.example/video',name:'Video',poster:'/poster.webp'});
+ assert.equal(hosted.all().find(n=>n.type==='video').props.controls,false);
+ hosted.all().find(n=>n.props?.['aria-label']==='Video abspielen').props.onClick();const video=hosted.all().find(n=>n.type==='video');assert.equal(video.props.controls,true);assert.equal(video.props.preload,'metadata');assert.equal(video.props.autoPlay,undefined);assert.ok(calls.some(c=>c[0]==='play'));
  const invalid=fixture(PortalVideo,{src:'https://evil.example/embed',name:'Bad',external:true});assert.match(text(invalid.render()),/nicht verfügbar/);assert.equal(invalid.all().some(n=>n.type==='iframe'),false);
+});
+
+test('company dialog closes its native backdrop, resets and restores focus on repeated cancel without creating data',()=>{
+ globalThis.__mediaUX.creates=0;let opened=0;
+ const f=fixture(MediaCompanyCreate,{onOpen(){opened++;}});
+ for(let i=0;i<2;i++){
+  f.button('+ Neues Unternehmen hinzufügen').props.onClick();assert.equal(f.dom.open,true);
+  f.button('Abbrechen').props.onClick();assert.equal(f.dom.open,false);
+  f.all().find(n=>n.type==='dialog').props.onClose();assert.ok(calls.some(c=>c[0]==='reset'));assert.ok(calls.some(c=>c[0]==='focus'&&c[1].preventScroll));
+ }
+ assert.equal(opened,2);assert.equal(globalThis.__mediaUX.creates,0);
+ const picker=fixture(MediaLibraryCompanyPicker,{value:current,name:'Sonnenhof',disabled:false,onChange(){}});
+ assert.ok(picker.all().some(n=>n.type===MediaCompanyCreate));
+ picker.all().find(n=>n.props?.['aria-haspopup']).props.onClick();picker.render();
+ picker.all().find(n=>n.type===MediaCompanyCreate).props.onOpen();
+ assert.equal(picker.all().some(n=>n.props?.className==='companyMenu'),false);
+ assert.ok(picker.all().some(n=>n.type===MediaCompanyCreate),'dialog survives dropdown closing');
 });
 
 test('smart upload reuses company picker, continues after per-file failure and retains company/type',async()=>{
@@ -89,4 +111,13 @@ test('smart upload reuses company picker, continues after per-file failure and r
  const input=f.all().find(n=>n.type==='input'&&n.props.type==='file');assert.equal(input.props.multiple,true);input.props.onChange({target:{files:[new File(['bad'],'bad.mp4',{type:'video/mp4'}),new File(['ok'],'good.webm',{type:'video/webm'})],value:''}});await f.settle();
  assert.deepEqual(globalThis.__mediaUX.uploads,['bad.mp4','good.webm']);assert.match(text(f.render()),/bad.mp4: Ungültige Datei/);assert.match(text(f.render()),/good.webm: Video verfügbar/);
  assert.equal(completed.company.id,current);assert.equal(completed.kind,'video');assert.deepEqual(busy,[true,false]);assert.equal(f.all().find(n=>n.type==='select').props.value,'video');
+});
+
+test('profile upload company is preset but can consciously change before file selection',async()=>{
+ let completed;globalThis.__mediaUX.uploads=[];globalThis.__mediaUX.savedCompany=undefined;
+ const f=fixture(MediaLibraryUpload,{profileId:current,profileName:'Sonnenhof',initialKind:'video',onDone:c=>completed=c,onClose(){}});
+ const picker=f.all().find(n=>n.type===MediaLibraryCompanyPicker);assert.equal(picker.props.disabled,false);assert.equal(picker.props.value,current);
+ picker.props.onChange({id:other,display_name:'Andere Firma'});
+ f.all().find(n=>n.type==='input'&&n.props.type==='file').props.onChange({target:{files:[new File(['ok'],'video.mp4',{type:'video/mp4'})],value:''}});await f.settle();
+ assert.equal(globalThis.__mediaUX.savedCompany,other);assert.equal(completed.id,other);
 });

@@ -281,5 +281,5 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
       </form>
     </dialog>
   );
-  return { logoEditor, galleryEditor: <ProfileVideoEditor video={media.video ? { ...media.video, poster: media.images[0]?.src } : undefined} name={profileName} gallery={galleryEditor} openLibrary={() => library?.open({kind:"video"})} save={form=>form.get("intent")==="video-remove" ? removeLibraryVideo(profileId) : saveAction(form)} disabled={Boolean(busy)} onBusyChange={active => { if (active) begin("Video wird gespeichert …"); else end(); }} />, status, uploadDialog, busy: Boolean(busy) };
+  return { logoEditor, galleryEditor, videoEditor: <ProfileVideoEditor video={media.video ? { ...media.video, poster: media.images[0]?.src } : undefined} name={profileName} gallery={galleryEditor} openLibrary={() => library?.open({kind:"video"})} save={form=>form.get("intent")==="video-remove" ? removeLibraryVideo(profileId) : saveAction(form)} disabled={Boolean(busy)} onBusyChange={active => { if (active) begin("Video wird gespeichert …"); else end(); }} />, status, uploadDialog, busy: Boolean(busy) };
 }

@@ -20,7 +20,7 @@ test('central and contextual view render one shared accessible browser with uplo
  for(const props of [{},{initialProfileId:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',target:{profileId:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',kind:'gallery',capacity:3},onClose(){}}]){
  const html=renderToStaticMarkup(createElement(MediaLibraryBrowser,props));
  for(const text of ['Mediathek','Medien in dieser Auswahl suchen','Medien hochladen','Unternehmen','Alle Medien','Nicht verwendete Medien','Werbebanner','Bilder werden geladen','Mediathek-Seiten'])assert.ok(html.includes(text));
- assert.match(html,/type="file"[^>]*multiple/);assert.doesNotMatch(html,/type="submit"/);assert.doesNotMatch(html,/Bilder oder Unternehmen suchen|Ich habe die Nutzungsrechte/);
+ assert.match(html,/type="file"[^>]*multiple/);assert.doesNotMatch(html,/<dialog[^>]*open/);assert.doesNotMatch(html.replace(/<dialog[\s\S]*?<\/dialog>/g,''),/type="submit"/);assert.doesNotMatch(html,/Bilder oder Unternehmen suchen|Ich habe die Nutzungsrechte/);
  if(props.target){assert.match(html,/3 Bildplätze verfügbar/);assert.match(html,/Ausgewählte Bilder verwenden/);assert.match(html,/Abbrechen/);}
  }
 });

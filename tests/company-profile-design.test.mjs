@@ -349,7 +349,9 @@ test("a real video source takes the profile-head slot; otherwise sorted gallery 
     categories: [], presentation: "company",
   }));
   assert.match(withVideo, /<video[^>]*real\.mp4/);
-  assert.doesNotMatch(withVideo, /gallery-main|gallery-thumbs/);
+  assert.match(withVideo, /gallery-main/);
+  assert.match(withVideo, /gallery-thumbs/);
+  assert.ok(withVideo.indexOf('aria-label="Standort"') < withVideo.indexOf('aria-label="Bildergalerie"'));
 });
 test("only new or rejected profiles can request initial publication; pending and approved do not repeat review", () => {
   for (const status of ["draft", "rejected", "pending", "approved"]) {
