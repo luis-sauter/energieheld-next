@@ -1,3 +1,4 @@
+import { ProfilePublicVisibility } from "@/components/admin/profile-public-visibility";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -39,6 +40,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
     ["Straße", profile.street], ["PLZ", profile.postal_code], ["Ort", profile.city], ["Region", profile.region], ["Land", profile.country],
   ];
   const editorLink = <Link className="button button-primary" href={editorHref}>Profil redaktionell bearbeiten</Link>;
+  const visibility = await client.from('company_profile_public_visibility').select('is_listed').eq('profile_id', id).maybeSingle();
   return <main id="hauptinhalt" className={`container ${styles.page}`}>
     <header className={styles.reviewHeader}>
       <Link className="button" href="/admin">Zurück zum Adminbereich</Link>
@@ -50,6 +52,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       </dl>
       {editorLink}
     </header>
+    <ProfilePublicVisibility profileId={id} listed={visibility.data?.is_listed !== false} />
     <TravelReviewProvider key={JSON.stringify(travelTaxonomy)} snapshot={"error" in travelTaxonomy ? { terms: [], assignedKeys: [], proposedKeys: [] } : travelTaxonomy} saveAction={saveTravelTerms.bind(null, profile.id)}>
     <div className={styles.card}>
       <section id="angaben" className={styles.reviewSection} aria-labelledby="review-details-title">

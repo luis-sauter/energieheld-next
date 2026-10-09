@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import {rea
 registerHooks({resolve(s,c,n){if(s==='server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};return n(s,c);}});
 await import('./helpers/load-ts.mjs');
 const {attachMediaLibraryAsset,mediaLibraryUpload,mediaLibraryPage}=await import('../src/lib/media-library-server.ts');
-const {mediaSelectionLimit,mediaNeedsRights,canReuseMediaPath,recordMediaPermission,mediaMayUse,readMediaRights,companySearchPattern}=await import('../src/lib/media-library.ts');
+const {mediaSelectionLimit,canReuseMediaPath,recordMediaPermission,mediaMayUse,readMediaRights,companySearchPattern}=await import('../src/lib/media-library.ts');
 const profile='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',other='dddddddd-dddd-4ddd-8ddd-dddddddddddd',assetId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',block='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 const png=new Blob([new Uint8Array([137,80,78,71,13,10,26,10,0,0,0,0])],{type:'image/png'});
 function mock({admin=true,bucket='company-media',sourceProfile=profile,sourcePath='profiles/'+profile+'/gallery/'+assetId+'.png',rows=[],invalid=false,archived=false,rights=''}={}){
@@ -31,15 +31,13 @@ test('same gallery original reuses path with no physical upload; duplicates and 
  assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'gallery'},false)).error);
  const full=mock({rows:Array.from({length:8},(_,i)=>({id:String(i),storage_path:'x',sort_order:i}))});assert.ok((await attachMediaLibraryAsset(full,assetId,{profileId:profile,kind:'gallery'},false)).error);assert.equal(full.calls.some(v=>v.download||v.upload),false);
 });
-test('foreign and banner reuse uses persisted destination-scoped permission, never a caller boolean',async()=>{
+test('verified admins may select internal cross-company and banner assets without permission paperwork',async()=>{
  const c=mock({sourceProfile:other,sourcePath:'profiles/'+other+'/gallery/'+assetId+'.png'});
- assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'gallery'},true)).error);assert.equal(c.calls.some(v=>v.download||v.upload),false);
- const allowed=mock({sourceProfile:other,sourcePath:'profiles/'+other+'/gallery/'+assetId+'.png',rights:recordMediaPermission('Original license', 'Original license',profile,'Written permission 2026-10-09: all profile images')});
- assert.ok((await attachMediaLibraryAsset(allowed,assetId,{profileId:profile,kind:'gallery'})).success);const copy=allowed.calls.find(v=>v.upload);assert.ok(copy.upload.startsWith('profiles/'+profile+'/gallery/'));assert.equal(copy.options.upsert,false);assert.equal(copy.size,png.size);
- assert.ok((await attachMediaLibraryAsset(allowed,assetId,{profileId:profile,kind:'gallery'})).error);assert.equal(allowed.calls.filter(v=>v.upload).length,1);
- for(const rights of ['', 'Admin owns portal',recordMediaPermission('', '',other,'Only source profile')]){const banner=mock({bucket:'ad-media',rights});assert.ok((await attachMediaLibraryAsset(banner,assetId,{profileId:profile,kind:'logo'},true)).error);assert.equal(banner.calls.some(v=>v.download||v.upload),false);}
- const banner=mock({bucket:'ad-media',rights:recordMediaPermission('License', 'License',profile,'Rights holder allows target profile')});assert.ok((await attachMediaLibraryAsset(banner,assetId,{profileId:profile,kind:'logo'})).success);
- assert.equal(mediaNeedsRights({profile_id:profile,bucket_id:'ad-media'},profile),true);
+ assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'gallery'})).success);
+ assert.ok(c.calls.find(v=>v.upload).upload.startsWith('profiles/'+profile+'/gallery/'));
+ assert.equal(c.calls.find(v=>v.upload).options.upsert,false);
+ for(const rights of ['', 'Original license']) { const banner=mock({bucket:'ad-media',rights});assert.ok((await attachMediaLibraryAsset(banner,assetId,{profileId:profile,kind:'logo'})).success); }
+ const denied=mock({admin:false,bucket:'ad-media'});assert.ok((await attachMediaLibraryAsset(denied,assetId,{profileId:profile,kind:'logo'})).error);assert.equal(denied.calls.some(v=>v.upload||v.download),false);
 });
 
 test('same asset in two contexts uses separate safe paths; repeat context reuses copy and preserves original',async()=>{
@@ -91,8 +89,8 @@ test('company substring search handles case/umlauts and treats regex characters 
  assert.equal(new RegExp(companySearchPattern('.*'),'i').test('Every company'),false);
 });
 
-test('documented reuse scope does not authorize another image kind',async()=>{
+test('historical scoped license metadata is preserved but no longer blocks verified admin selection',async()=>{
  const rights=recordMediaPermission('License','License',profile,'Gallery only',['gallery']);
- const c=mock({sourceProfile:other,rights});assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'logo'})).error);assert.equal(c.calls.some(v=>v.upload||v.download),false);
+ const c=mock({sourceProfile:other,rights});assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'logo'})).success);assert.equal(c.calls.some(v=>v.upload),true);
  assert.equal(mediaMayUse({profile_id:other,bucket_id:'company-media',rights},profile,'gallery'),true);
 });

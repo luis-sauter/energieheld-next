@@ -13,7 +13,7 @@ type OpenTarget = Omit<MediaLibraryTarget, "profileId"> & {
 const Context = createContext<{ open: (target: OpenTarget) => void } | null>(null);
 export function useMediaLibrary() { return useContext(Context); }
 
-export function MediaLibraryProvider({ profileId, children }: { profileId: string; children: ReactNode }) {
+export function MediaLibraryProvider({ profileId, profileName, children }: { profileId: string; profileName?: string; children: ReactNode }) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
@@ -46,7 +46,7 @@ export function MediaLibraryProvider({ profileId, children }: { profileId: strin
       onCancel={event => { event.preventDefault(); void close(); }}
       onClose={() => { setTarget(null); returnFocus.current?.focus(); }}>
       {error && <p role="alert">{error}</p>}
-      {target && <Browser initialProfileId={profileId} target={{ ...target, profileId }} onBusy={setBusy}
+      {target && <Browser initialProfileId={profileId} initialProfileName={profileName} target={{ ...target, profileId }} onBusy={setBusy}
         onClose={close} onApplied={async () => {
           applied.current = true;
           await target.onApplied?.();

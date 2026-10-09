@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+import { BannerMediaPicker } from "./banner-media-picker";
 import { useActionState, useEffect, useRef, useState } from "react";
 import {
   adPlacements,
@@ -61,18 +63,23 @@ export function CampaignForm({
   campaign,
   categoryIds,
   admin = false,
-  bannerMetadata,
+  bannerMetadata, profileName,
   bannerTerms = [], bannerAdvertisers = [],
 }: {
   campaign: AdCampaign;
   categoryIds: string[];
   admin?: boolean;
   bannerMetadata?: BannerSearchMetadata;
+  profileName?: string;
   bannerTerms?: BannerSearchTerm[]; bannerAdvertisers?: BannerAdvertiserOption[];
 }) {
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedPreview, setSelectedPreview] = useState("");
+  useEffect(() => { if (selectedPreview) return () => URL.revokeObjectURL(selectedPreview); }, [selectedPreview]);
   const [state, action, busy] = useActionState<AdFormState, FormData>(
     async (_previous, form) => {
-      const file = form.get("image");
+      const file = admin ? selectedImage : form.get("image");
       // Keep large multipart bodies off Netlify; finalize by validating stored bytes server-side.
       form.delete("image");
       if (!(file instanceof File) || !file.name) return admin ? saveAdminCampaign({}, form) : saveCampaign({}, form);
@@ -94,6 +101,7 @@ export function CampaignForm({
         form.set("uploaded_path", path);
         const saved = await (admin ? saveAdminCampaign({}, form) : saveCampaign({}, form));
         if (saved.error) await storage.remove([path]);
+        else if (admin) { setSelectedImage(null); setSelectedPreview(''); }
         return saved;
       } catch {
         if (path) await storage.remove([path]).catch(() => undefined);
@@ -185,7 +193,7 @@ export function CampaignForm({
     })}
   </div>;
   return (
-    <form action={action} className={`${styles.form} ${styles.requestForm}`}>
+    <><form action={action} className={`${styles.form} ${styles.requestForm}`}>
       <input type="hidden" name="campaign_id" value={campaign.id} />
       <input type="hidden" name="placement" value={values.targets[0]?.placement ?? campaign.placement} />
       {!admin && <input type="hidden" name="headline" value={values.headline || values.internal_name.slice(0, 100)} />}
@@ -310,13 +318,17 @@ export function CampaignForm({
       <fieldset className={styles.formSection}>
         <legend>Haben Sie bereits ein Bannerbild?</legend>
         <p className={styles.sectionHint}>Laden Sie Ihr Bannerbild gerne direkt mit hoch. Falls noch kein passendes Motiv vorhanden ist, melden wir uns bei Ihnen und unterstützen Sie gerne bei der Erstellung.</p>
-        <label>Bannerbild hochladen (optional · JPEG, PNG oder WebP, maximal 5 MB)
+        {admin ? <><button type="button" className="button" disabled={busy || Boolean(campaign.archived_at)} onClick={() => setLibraryOpen(true)}>{campaign.image_path || selectedImage ? 'Bild ersetzen' : 'Bild hinzufügen'}</button>
+          {selectedPreview && <><Image src={selectedPreview} alt="Ausgewähltes Bannerbild" width={0} height={0} unoptimized style={{width:'100%',height:'auto',objectFit:'contain'}} /><p role="status">Bild ausgewählt. Übernahme erst beim Speichern.</p><button type="button" className="button" onClick={() => { setSelectedImage(null); setSelectedPreview(''); }}>Bildauswahl verwerfen</button></>}
+
+        </> : (        <label>Bannerbild hochladen (optional · JPEG, PNG oder WebP, maximal 5 MB)
           <input
           type="file"
           name="image"
           accept="image/jpeg,image/png,image/webp"
           />
-        </label>
+        </label>)}
+
       </fieldset>
       {admin && <label>
         Name / Bezeichnung
@@ -369,7 +381,7 @@ export function CampaignForm({
           {state.success}
         </p>
       )}
-    </form>
+    </form>{libraryOpen && <BannerMediaPicker profileId={campaign.profile_id} profileName={profileName} onClose={() => setLibraryOpen(false)} onSelected={file => { setSelectedImage(file); setSelectedPreview(URL.createObjectURL(file)); }} />}</>
   );
 }
 export function AdminCampaignForm({ campaign: c }: { campaign: AdCampaign }) {

@@ -7,7 +7,7 @@ import { checkAdmin, isProfileId } from './admin-review';
 import { validateMediaFile, MEDIA_BUCKET, MEDIA_MAX_BYTES, type MediaState } from './company-media';
 import { changeAdminCompanyMedia } from './admin-company-media';
 import { changeAdminBlockImages } from './admin-block-images';
-import { canReuseMediaPath, mediaMayUse, mediaTargetPrefix, type MediaLibraryTarget, type MediaAsset, type MediaLibraryPage } from './media-library';
+import { canReuseMediaPath, mediaTargetPrefix, type MediaLibraryTarget, type MediaAsset, type MediaLibraryPage } from './media-library';
 const failure = 'Die Mediathek ist gerade nicht verfügbar. Bitte versuchen Sie es erneut.';
 export async function mediaLibraryPage(client: SupabaseClient, profileId: string | null, kind: string, query: string, page: number, archived = false): Promise<MediaLibraryPage> {
     if (await checkAdmin(client) !== 'admin')
@@ -77,8 +77,6 @@ export async function attachMediaLibraryAsset(client: SupabaseClient, assetId: s
     if (loaded.error || !loaded.data)
         return { error: 'Das Bild ist nicht mehr verfügbar.' };
     const asset = loaded.data as MediaAsset;
-    if (!mediaMayUse(asset, target.profileId, target.kind))
-        return { error: 'Für dieses Unternehmen fehlt eine dokumentierte Nutzungserlaubnis. Bitte prüfen Sie die Bilddetails.' };
     const profile = await client.from('company_profiles').select('id,slug,logo_path,contact_image_path,company_profile_images(id,storage_path)').eq('id', target.profileId).maybeSingle();
     if (profile.error || !profile.data)
         return { error: 'Unternehmen nicht gefunden.' };

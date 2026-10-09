@@ -1192,3 +1192,16 @@ test('destination loader uses approved country records beyond former preview slu
  assert.equal(swiss.length,1);assert.equal(swiss[0].slug,'swiss-stay');assert.equal(swiss[0].directoryPackage,'premium');
  assert.deepEqual(await loadReiseportalDestination('unknown'),[]);
 });
+
+
+test("hidden profiles leave directory, direct URL and sitemap index before media signing; restore retains identity", async () => {
+  const hidden={...travelRow,company_profile_public_visibility:{is_listed:false},company_profile_images:[{id:'hidden',storage_path:'profiles/profile-1/gallery/hidden.png',sort_order:0}]};
+  const requests=api([hidden]);
+  assert.deepEqual((await loadPublicCompanies()).data,[]);
+  assert.equal((await loadPublicCompanyBySlug(hidden.slug)).data,null);
+  const {loadPublicCompanyProfileIndex}=await import('../src/lib/public-companies.ts');
+  assert.deepEqual(await loadPublicCompanyProfileIndex(),[]);
+  assert.equal(requests.some(r=>r.url.pathname.includes('/object/sign/company-media')),false);
+  api([{...hidden,company_profile_public_visibility:{is_listed:true}}]);
+  assert.equal((await loadPublicCompanyBySlug(hidden.slug)).data.id,hidden.id);
+});

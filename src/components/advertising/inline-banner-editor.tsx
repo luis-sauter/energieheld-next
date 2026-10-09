@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import { BannerMediaPicker } from "./banner-media-picker";
 
 import { useEffect, useRef, useState, type ReactNode, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -88,7 +90,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const busyRef = useRef(false);
-  const fileInput = useRef<HTMLInputElement>(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [campaignId, setCampaignId] = useState(selected.banner?.source === "legacy" ? "" : selected.banner?.id ?? "");
   const [source, setSource] = useState(selected.banner?.source);
   const [size, setSize] = useState<BannerSize>(selected.banner?.size ?? "large");
@@ -213,7 +215,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
       if (result.removed) { onRemoved(result.warning); return; }
       if (result.ad) {
         setFile(null); setPreview(""); setCrop(normalizeImageCrop(null)); setCropDirty(false); setSource("campaign"); setCampaignId(result.ad.id);
-        if (fileInput.current) fileInput.current.value = "";
+
         setNotice(result.warning || result.success); onChanged(result.ad);
       }
     } catch { setError("Entfernen ist gerade nicht möglich. Bitte versuchen Sie es erneut."); }
@@ -261,7 +263,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
     setError("");
   }
 
-  return <dialog ref={dialog} className={styles.dialog} aria-labelledby="inline-banner-title"
+  return <><dialog ref={dialog} className={styles.dialog} aria-labelledby="inline-banner-title"
     onCancel={(event) => { event.preventDefault(); if (!busyRef.current) onClose(); }}>
     <form onSubmit={save} className={styles.form}>
       <h2 id="inline-banner-title">{selected.banner ? "Banner bearbeiten" : "Banner hinzufügen"}</h2>
@@ -289,9 +291,10 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
       <fieldset disabled={busy} className={styles.fields}>
         <BannerSearchFields value={metadata} terms={options.terms ?? []} advertisers={options.advertisers} onChange={setMetadata} />
       </fieldset>
-      {metadataOnly && <p className={styles.hint}>Bei gebuchten oder geteilten Bannern ändern Sie hier nur die Suchdaten. Bild, Ziel-URL und Buchung bleiben unverändert.</p>}
+      {metadataOnly && <p className={styles.hint}>Bei gebuchten oder geteilten Bannern ändern Sie hier nur die Suchdaten. Bild, Ziel-URL und Buchung bleiben unverändert. <Link href={`/admin/werbung/${selected.banner!.id}`}>Banner in der bestehenden Verwaltung bearbeiten</Link></p>}
       <fieldset disabled={busy || metadataOnly} className={styles.fields}>
-        <label>{preview ? "Bild ersetzen" : "Bild hinzufügen"}<input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => chooseFile(event.target.files?.[0] ?? null)} /></label>
+        <button type="button" className="button" onClick={() => setLibraryOpen(true)}>{preview ? "Bild ersetzen" : "Bild hinzufügen"}</button>
+        {file && <p role="status">Bild ausgewählt. Erst „Banner speichern“ übernimmt die Änderung.</p>}
         {preview && selected.banner && canRemove &&
           <button type="button" className="button" disabled={Boolean(options.error)} onClick={() => remove("image")}>Bild entfernen</button>}
         <small>JPEG, PNG oder WebP · maximal 5 MB</small>
@@ -348,5 +351,5 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
             </div>
           </> : null)}
         </div>}
-  </dialog>;
+  </dialog>{libraryOpen && <BannerMediaPicker profileId={selected.banner?.profileId} profileName={selected.banner?.profileName} onSelected={chooseFile} onClose={() => setLibraryOpen(false)} />}</>;
 }

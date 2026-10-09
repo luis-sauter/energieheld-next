@@ -22,7 +22,7 @@ import Link from "next/link";
 import { MediaLibraryProvider } from "./media-library-context";
 
 export function InlineProfileEditor(props: React.ComponentProps<typeof ProfileEditor>) {
-  return <MediaLibraryProvider profileId={props.listing.id}><ProfileEditor {...props} /></MediaLibraryProvider>;
+  return <MediaLibraryProvider profileId={props.listing.id} profileName={props.listing.name}><ProfileEditor {...props} /></MediaLibraryProvider>;
 }
 
 const formId = "inline-admin-profile-form";

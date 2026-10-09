@@ -49,6 +49,7 @@ export async function loadInlineBannerOptions(path: string): Promise<InlineBanne
     for (const row of legacy) availability[row.placement] = "Belegt · Bestandsbanner";
     return { label: context.label, archived: selectableArchivedBanners((loaded.data ?? []) as AdCampaign[]), banners: [...pageCampaigns.map((row) => ({ id: row.id,
       placement: displayPlacement(row.placement, settings.rows),
+      profileId: row.profile_id, profileName: metadata.advertisers?.find(a => a.profile_id === row.profile_id)?.name,
       target_url: row.target_url, imageUrl: row.imageUrl, shared: row.targets.length !== 1,
       source: "campaign" as const, editorial: Boolean(row.is_editorial),
       metadata: { ...(metadata.values.get(`campaign:${row.id}`) ?? { postal_code: '', city: '', term_keys: [] }), name: row.headline },

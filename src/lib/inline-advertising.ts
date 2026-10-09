@@ -123,14 +123,14 @@ async function saveInlineAdAtSource(client: SupabaseClient, path: string, input:
     category_id: null, placement: bound.placement }));
   const uploaded = input.get("uploaded_path");
   if (typeof uploaded === "string") form.set("uploaded_path", uploaded);
-  if (hasImage && ["draft", "rejected"].includes(campaign.status)) form.set("intent", "submit");
+  if (fresh && hasImage && ["draft", "rejected"].includes(campaign.status)) form.set("intent", "submit");
   const saved = await saveOwnAd(client, form, true);
   if (!saved.success) return { error: saved.error };
   if (input.has('headline')) {
     const metadata = await saveBannerMetadata(client, input, campaign.id);
     if (metadata.error) return { error: metadata.error };
   }
-  if (hasImage && campaign.status !== "approved") {
+  if (fresh && hasImage && campaign.status !== "approved") {
     const review = new FormData();
     review.set("campaign_id", campaign.id);
     review.set("decision", campaign.status === "paused" ? "resume" : "approve");
