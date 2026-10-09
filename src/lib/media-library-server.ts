@@ -7,7 +7,7 @@ import { checkAdmin, isProfileId } from './admin-review';
 import { validateMediaFile, MEDIA_BUCKET, MEDIA_MAX_BYTES, type MediaState } from './company-media';
 import { changeAdminCompanyMedia } from './admin-company-media';
 import { changeAdminBlockImages } from './admin-block-images';
-import { canReuseMediaPath, mediaNeedsRights, mediaTargetPrefix, type MediaLibraryTarget, type MediaAsset, type MediaLibraryPage } from './media-library';
+import { canReuseMediaPath, mediaMayUse, mediaTargetPrefix, type MediaLibraryTarget, type MediaAsset, type MediaLibraryPage } from './media-library';
 const failure = 'Die Mediathek ist gerade nicht verfügbar. Bitte versuchen Sie es erneut.';
 export async function mediaLibraryPage(client: SupabaseClient, profileId: string | null, kind: string, query: string, page: number, archived = false): Promise<MediaLibraryPage> {
     if (await checkAdmin(client) !== 'admin')
@@ -70,15 +70,15 @@ export async function mediaLibraryUpload(client: SupabaseClient, profileId: stri
     const saved = await client.rpc('media_library_register_upload', { p_profile: profileId, p_path: path, p_name: name, p_hash: hash });
     return saved.error ? { error: failure } : { success: 'Bild ist in der Mediathek verfügbar.' };
 }
-export async function attachMediaLibraryAsset(client: SupabaseClient, assetId: string, target: MediaLibraryTarget, rightsConfirmed: boolean): Promise<MediaState> {
+export async function attachMediaLibraryAsset(client: SupabaseClient, assetId: string, target: MediaLibraryTarget): Promise<MediaState> {
     if (await checkAdmin(client) !== 'admin' || !isProfileId(assetId) || !isProfileId(target.profileId) || !['gallery', 'logo', 'contact', 'block'].includes(target.kind) || target.kind === 'block' && !isProfileId(target.blockId))
         return { error: 'Keine Berechtigung oder ungültiges Bildziel.' };
     const loaded = await client.from('media_library_assets').select('*').eq('id', assetId).is('archived_at', null).is('deletion_requested_at', null).maybeSingle();
     if (loaded.error || !loaded.data)
         return { error: 'Das Bild ist nicht mehr verfügbar.' };
     const asset = loaded.data as MediaAsset;
-    if (mediaNeedsRights(asset, target.profileId) && !rightsConfirmed)
-        return { error: 'Bitte bestätigen Sie die Nutzungsrechte für dieses Unternehmen.' };
+    if (!mediaMayUse(asset, target.profileId, target.kind))
+        return { error: 'Für dieses Unternehmen fehlt eine dokumentierte Nutzungserlaubnis. Bitte prüfen Sie die Bilddetails.' };
     const profile = await client.from('company_profiles').select('id,slug,logo_path,contact_image_path,company_profile_images(id,storage_path)').eq('id', target.profileId).maybeSingle();
     if (profile.error || !profile.data)
         return { error: 'Unternehmen nicht gefunden.' };
