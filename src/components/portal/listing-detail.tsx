@@ -165,6 +165,7 @@ export function ListingDetail({
   logoEditor,
   contactPersonEditor,
   galleryEditor,
+  videoEditor,
   adminAction,
   inlineFields,
   aboutHeading,
@@ -193,6 +194,7 @@ export function ListingDetail({
   logoEditor?: React.ReactNode;
   contactPersonEditor?: React.ReactNode;
   galleryEditor?: React.ReactNode;
+  videoEditor?: React.ReactNode;
   adminAction?: React.ReactNode;
   inlineFields?: InlineProfileFields;
   aboutHeading?: string;
@@ -241,7 +243,7 @@ export function ListingDetail({
       </div>
       <div className="profile-head-grid">
       <div className="profile-header-media">
-        {galleryEditor ?? <ProfileHeaderMedia key={listing.video?.src ?? "gallery"} video={listing.video} name={listing.name} gallery={listing.images.length
+        {videoEditor ?? (listing.video ? undefined : galleryEditor) ?? <ProfileHeaderMedia key={listing.video?.src ?? "gallery"} video={listing.video} name={listing.name} gallery={listing.images.length
             ? <ImageGallery images={listing.images} isDemo={listing.isDemo && !originalDemoMedia} />
             : <div className="gallery-empty"><p>Noch keine Profilbilder vorhanden.</p></div>} />}
       </div>
@@ -319,6 +321,10 @@ export function ListingDetail({
             )}
           </div>
       </section>
+      {listing.video && (galleryEditor || listing.images.length > 0) && <section className="detail-section profile-image-gallery" aria-label="Bildergalerie">
+        <h2>Bildergalerie</h2>
+        {galleryEditor ?? <ImageGallery images={listing.images} isDemo={listing.isDemo && !originalDemoMedia} />}
+      </section>}
       {editorialContent ? (
         <div className="profile-content-canvas">{editorialContent}</div>
       ) : (

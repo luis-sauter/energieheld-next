@@ -1,14 +1,15 @@
 "use client";
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {createLibraryCompany} from '@/app/(energieheld)/admin/mediathek/actions';
 import styles from './media-library.module.css';
-export function MediaCompanyCreate({onCreated}:{onCreated?:(company:{id:string;display_name:string})=>void}) {
- const dialog=useRef<HTMLDialogElement>(null),router=useRouter();
+export function MediaCompanyCreate({onCreated,onOpen}:{onOpen?:()=>void;onCreated?:(company:{id:string;display_name:string})=>void}) {
+ const dialog=useRef<HTMLDialogElement>(null),trigger=useRef<HTMLButtonElement>(null),formRef=useRef<HTMLFormElement>(null),router=useRouter();
+ useEffect(()=>{const element=dialog.current;return ()=>{if(element?.open)element.close();};},[]);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[matches,setMatches]=useState<{id:string;display_name:string}[]>([]);
- return <><button type="button" className="button" onClick={()=>{setError('');setMatches([]);dialog.current?.showModal();}}>+ Neues Unternehmen hinzufügen</button>
- <dialog ref={dialog} className="media-library-dialog" aria-label="Neues Unternehmen" onCancel={e=>{if(busy)e.preventDefault();}}>
- <form className={styles.details} onSubmit={async e=>{e.preventDefault();if(busy)return;const form=new FormData(e.currentTarget);setBusy(true);setError('');try{
+ return <><button ref={trigger} type="button" className="button" onClick={()=>{setError('');setMatches([]);onOpen?.();if(!dialog.current?.open)dialog.current?.showModal();}}>+ Neues Unternehmen hinzufügen</button>
+ <dialog ref={dialog} className="media-library-dialog" aria-label="Neues Unternehmen" onClose={()=>{formRef.current?.reset();setError('');setMatches([]);trigger.current?.focus({preventScroll:true});}} onCancel={e=>{if(busy)e.preventDefault();}}>
+ <form ref={formRef} className={styles.details} onSubmit={async e=>{e.preventDefault();if(busy)return;const form=new FormData(e.currentTarget);setBusy(true);setError('');try{
  const result=await createLibraryCompany(form);if(result.error)setError(result.error);else if(result.matches)setMatches(result.matches);else if(result.id&&result.display_name){dialog.current?.close();onCreated?.({id:result.id,display_name:result.display_name});router.refresh();}
  }catch{setError('Unternehmen konnte nicht angelegt werden.');}finally{setBusy(false);}}}>
  <h2>Neues Unternehmen</h2><p>Wird als nicht veröffentlichter Entwurf ohne Benutzerkonto angelegt.</p>

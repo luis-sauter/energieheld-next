@@ -46,7 +46,7 @@ export function MediaLibraryCompanyPicker({ value, name, disabled, onChange, all
             </ul>
             {!waiting && !items.length && <p role="status">Keine Unternehmen gefunden.</p>}
             <div className={styles.companyPages}><button type="button" disabled={waiting || page === 1} onClick={() => { setWaiting(true); setPage(p => p - 1); }}>Zurück</button><span>Seite {page}</span><button type="button" disabled={waiting || !more} onClick={() => { setWaiting(true); setPage(p => p + 1); }}>Weitere</button></div>
-            <MediaCompanyCreate onCreated={company => { cache.clear(); onChange(company); close(); }} />
         </div>}
+        <MediaCompanyCreate onOpen={() => { setReturnFocus(false); setOpen(false); }} onCreated={company => { cache.clear(); onChange(company); close(); }} />
     </div>;
 }
