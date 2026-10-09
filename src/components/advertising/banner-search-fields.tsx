@@ -1,3 +1,4 @@
+import { BannerAdvertiserPicker, BannerCategoryFilter } from "./banner-selection-search";
 import type { BannerSearchMetadata, BannerSearchTerm, BannerAdvertiserOption } from '@/lib/banner-search-metadata';
 import { destinations } from '@/data/reiseportal-discovery';
 import { publicTravelLabel } from '@/lib/travel-presentation';
@@ -14,10 +15,13 @@ export function BannerSearchFields({ value, terms, onChange, advertisers = [], i
   return <>
     <h3>Suchzuordnung</h3>
     <p>Diese Angaben steuern, bei welchen Unterkunftssuchen die Anzeige zusätzlich erscheint. Sie ändern nicht die gebuchten Werbeplätze.</p>
-    <label>Werbekunde / Firmenprofil<select name="banner_advertiser" value={value.advertiser_key ?? ''} onChange={e => {
-      const selected = advertisers.find(row => row.key === e.target.value);
-      onChange({ ...value, advertiser_key: e.target.value, advertiser_name: selected?.name ?? '', advertiser_profile_id: selected?.profile_id ?? null });
-    }}><option value="">Neuer oder eigenständiger Werbekunde</option>{advertisers.map(row => <option key={row.key} value={row.key}>{row.name}{row.profile_id ? ' · Firmenprofil' : ''}</option>)}</select></label>
+    <BannerAdvertiserPicker value={value.advertiser_key ?? ''}
+      name={advertisers.find(row => row.key === value.advertiser_key)?.name || value.advertiser_name || 'Neuer oder eigenständiger Werbekunde'}
+      advertisers={advertisers} onChange={key => {
+        const selected = advertisers.find(row => row.key === key);
+        onChange({ ...value, advertiser_key: key, advertiser_name: selected?.name ?? '', advertiser_profile_id: selected?.profile_id ?? null });
+      }} />
+    <input type="hidden" name="banner_advertiser" value={value.advertiser_key ?? ''} />
     <input type="hidden" name="banner_profile_id" value={value.advertiser_profile_id ?? ''} />
     <label>Bezeichnung des Werbekunden<input name="banner_advertiser_name" maxLength={120} value={value.advertiser_name ?? ''} onChange={e => onChange({ ...value, advertiser_name: e.target.value })} /></label>
     <label>Art der Anzeige<select name="banner_commercial" value={String(value.commercial !== false)} onChange={e => onChange({ ...value, commercial: e.target.value === 'true' })}>
@@ -37,9 +41,9 @@ export function BannerSearchFields({ value, terms, onChange, advertisers = [], i
     <details className={styles.disclosure}><summary>Kategorien · {value.term_keys.filter(key => !audienceKeys.includes(key)).length} ausgewählt</summary>
     <fieldset className={styles.categories}><legend>Kategorien auswählen</legend>
       <p>Beschreiben den Bannerinhalt – unabhängig vom gebuchten Bereich. Fehlende Angaben dürfen leer bleiben.</p>
-      {categories.map(term => <label key={term.term_key}><input type="checkbox" name="banner_terms" value={term.term_key} checked={value.term_keys.includes(term.term_key)}
+      <BannerCategoryFilter>{categories.map(term => <label key={term.term_key} data-search-label={publicTravelLabel(term.term_key, term.label)}><input type="checkbox" name="banner_terms" value={term.term_key} checked={value.term_keys.includes(term.term_key)}
         onChange={e => toggleTerm(term.term_key, e.target.checked)} />
-        {publicTravelLabel(term.term_key, term.label)} · {dimensions[term.dimension] ?? 'Kategorie'}</label>)}
+        {publicTravelLabel(term.term_key, term.label)} · {dimensions[term.dimension] ?? 'Kategorie'}</label>)}</BannerCategoryFilter>
     </fieldset></details>
   </>;
 }

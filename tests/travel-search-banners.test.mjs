@@ -7,6 +7,8 @@ import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 registerHooks({
  resolve(specifier,context,next){
+  if(specifier==='next/navigation')return {shortCircuit:true,url:'data:text/javascript,export const useRouter=()=>({refresh(){}})'};
+  if(specifier.endsWith('/admin/mediathek/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function searchLibraryProfiles(){throw Error("Unexpected remote company search")};export async function createLibraryCompany(){throw Error("Unexpected company creation")}'};
   if(specifier==='next/link'||specifier==='next/image')return {url:`data:text/javascript,export default ${JSON.stringify(specifier==='next/link'?'a':'img')}`,shortCircuit:true};
   if(specifier.endsWith('.module.css'))return {url:'data:text/javascript,export default new Proxy({}, {get:(_,key)=>key})',shortCircuit:true};
   if(specifier.startsWith('@/')||specifier.startsWith('.')){

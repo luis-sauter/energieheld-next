@@ -12,7 +12,8 @@ let states=[],cursor=0;
 globalThis.__cropHooks={state(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>states[i]=typeof value==='function'?value(states[i]):value];}};
 registerHooks({
  resolve(specifier,context,next){
-  if(specifier==='react' && context.parentURL?.endsWith('.tsx'))return{shortCircuit:true,url:'data:text/javascript,'+encodeURIComponent(`import * as R from ${JSON.stringify(reactUrl)};export const createContext=R.createContext,useContext=R.useContext,useActionState=R.useActionState;export const useState=v=>globalThis.__cropHooks.state(v),useRef=v=>({current:v}),useEffect=()=>{};`)};
+  if(specifier.endsWith('/admin/mediathek/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function searchLibraryProfiles(){throw Error("Unexpected remote company search")};export async function createLibraryCompany(){throw Error("Unexpected company creation")}'};
+  if(specifier==='react' && context.parentURL?.endsWith('.tsx'))return{shortCircuit:true,url:'data:text/javascript,'+encodeURIComponent(`import * as R from ${JSON.stringify(reactUrl)};export const Children=R.Children,cloneElement=R.cloneElement,isValidElement=R.isValidElement,useId=R.useId,useMemo=R.useMemo,createContext=R.createContext,useContext=R.useContext,useActionState=R.useActionState;export const useState=v=>globalThis.__cropHooks.state(v),useRef=v=>({current:v}),useEffect=()=>{};`)};
   if(specifier.endsWith('/admin/werbung/actions'))return{shortCircuit:true,url:'data:text/javascript,export async function lifecycleCampaign(){throw Error("Unexpected lifecycle mutation during crop test")}'};
   if(specifier==='next/navigation')return{shortCircuit:true,url:'data:text/javascript,export function useRouter(){return {refresh(){}}}'};
   if(specifier==='next/link')return{shortCircuit:true,url:'data:text/javascript,export default "a"'};

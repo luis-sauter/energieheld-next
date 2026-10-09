@@ -76,8 +76,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <HomeBannerGroup ads={ads} placements={["sidebar_top", "sidebar_middle", "sidebar_bottom"]} label="Anzeigen vor den Themenwelten" />
 
-    <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige" />
-
     <section className="section container" aria-labelledby="inspiration-title">
       <ThemeScroller count={travelThemes.length} label="Inspiration & Themenwelten"
         heading={<div><p className="eyebrow">Entdecken</p><h2 id="inspiration-title">Inspiration & Themenwelten</h2></div>}
@@ -88,6 +86,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
           basePath="/mottoreisen" />)}
       </ThemeScroller>
     </section>
+
+    <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige" />
 
     <section className={styles.destinations} aria-labelledby="destinations-title"><div className="section container">
       <div className="section-heading"><div><p className="eyebrow">Unterwegs</p><h2 id="destinations-title">Reiseziele</h2></div>
@@ -111,7 +111,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
       </div>
     </section>
 
-    <HomeBannerGroup ads={ads} placements={["sidebar_07", "sidebar_08", "sidebar_09", "sidebar_10", "sidebar_11", "sidebar_12"]} label="Weitere Banner verwalten" adminOnly />
 
     <section className={`${styles.provider} container`} aria-labelledby="provider-title">
       <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Deine Unterkunft auf DAS Reiseportal</h2>

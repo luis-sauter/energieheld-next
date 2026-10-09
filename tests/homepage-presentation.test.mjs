@@ -87,8 +87,8 @@ test('homepage retains selected providers in one equal grid and follows the requ
  assert.equal((html.match(/<article class="accommodation-card"/g)||[]).length,4);
  const stays=html.split('aria-labelledby="stays-title"')[1].split('</section>')[0];
  assert.match(stays,/<div class="showcase">/);assert.doesNotMatch(stays,/featuredStay|recommendations|data-placement/);
- assert.ok(html.indexOf('data-travel-quicklinks') < html.indexOf('data-placement="top_banner"'));
- assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('inspiration-title'));
+ assert.ok(html.indexOf('inspiration-title') < html.indexOf('data-placement="top_banner"'));
+ assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('destinations-title'));
  assert.ok(html.indexOf('destinations-title') < html.indexOf('stays-title'));
  const source=read('src/app/(energieheld)/page.tsx');
  assert.ok(source.indexOf('</nav>') < source.indexOf('placements={["sidebar_top"'));

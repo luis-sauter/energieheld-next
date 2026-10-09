@@ -10,3 +10,8 @@
 
 .check { display: flex !important; align-items: center; gap: 10px !important; }
 .check input[type="checkbox"] { width: 20px !important; height: 20px; min-height: 20px !important; }
+
+/* Hidden filtered checkboxes remain successful form controls, retaining all assignments. */
+.categories label[hidden] { display: none !important; }
+
+.categories label:has(input[type="search"]) { display: grid !important; min-width: 0; }

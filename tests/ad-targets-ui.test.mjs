@@ -616,3 +616,16 @@ test('P11 motion is CSS-only, fine-pointer hover and no-preference gated, keyboa
  assert.match(interaction,/\(hover: hover\) and \(pointer: fine\)/);assert.match(interaction,/prefers-reduced-motion: no-preference/);assert.match(interaction,/transition: transform 200ms ease/);assert.match(interaction,/translateY\(-1px\) scale\(1\.01\)/);assert.doesNotMatch(interaction,/\bimg\b|\.cropImage|:active|will-change/);
  const rail=readFileSync(new URL('../src/components/advertising/advertising-rail.tsx',import.meta.url),'utf8');assert.match(rail,/<CampaignSlot/);
 });
+
+
+test('shared banner advertiser picker preselects the current customer and changes only unsaved search assignment',()=>{
+ const value={name:'Banner',city:'München',postal_code:'80331',term_keys:['theme:natur-pur'],advertiser_key:'profile:a',advertiser_name:'Firma A',advertiser_profile_id:'a',destination_slugs:['deutschland']};
+ const advertisers=[{key:'profile:a',name:'Firma A',profile_id:'a'},{key:'profile:b',name:'Firma B',profile_id:'b'}];let changed;
+ const tree=BannerSearchFields({value,terms:[],advertisers,onChange:next=>changed=next});
+ function nodes(n){return Array.isArray(n)?n.flatMap(nodes):n&&typeof n==='object'?[n,...nodes(n.props?.children)]:[];}
+ const picker=nodes(tree).find(n=>n.type?.name==='BannerAdvertiserPicker');
+ assert.equal(picker.props.value,'profile:a');assert.equal(picker.props.name,'Firma A');assert.equal(changed,undefined);
+ picker.props.onChange('profile:b');assert.equal(changed.advertiser_profile_id,'b');assert.deepEqual(changed.term_keys,value.term_keys);assert.deepEqual(changed.destination_slugs,value.destination_slugs);
+ assert.equal(value.advertiser_key,'profile:a');assert.equal(value.advertiser_profile_id,'a');
+ const hidden=nodes(tree).find(n=>n.type==='input'&&n.props.name==='banner_advertiser');assert.equal(hidden.props.value,'profile:a');
+});
