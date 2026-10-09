@@ -93,7 +93,7 @@ test('company dialog closes its native backdrop, resets and restores focus on re
  for(let i=0;i<2;i++){
   f.button('+ Neues Unternehmen hinzufügen').props.onClick();assert.equal(f.dom.open,true);
   f.button('Abbrechen').props.onClick();assert.equal(f.dom.open,false);
-  f.all().find(n=>n.type==='dialog').props.onClose();assert.ok(calls.some(c=>c[0]==='reset'));assert.ok(calls.some(c=>c[0]==='focus'&&c[1].preventScroll));
+  f.all().find(n=>n.type==='dialog').props.onClose({target:f.dom,currentTarget:f.dom,stopPropagation(){}});assert.ok(calls.some(c=>c[0]==='reset'));assert.ok(calls.some(c=>c[0]==='focus'&&c[1].preventScroll));
  }
  assert.equal(opened,2);assert.equal(globalThis.__mediaUX.creates,0);
  const picker=fixture(MediaLibraryCompanyPicker,{value:current,name:'Sonnenhof',disabled:false,onChange(){}});
