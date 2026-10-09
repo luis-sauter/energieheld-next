@@ -1,3 +1,4 @@
+import {PortalVideo} from './portal-video';
 import type { ProfileContentBlock, ProfileBlockImage, EditorialItem } from "@/lib/profile-content";
 import type { Listing } from "@/types/portal";
 import Image from "next/image";
@@ -44,7 +45,7 @@ export function BlockImageGrid({ block, editorial = false }: { block: ProfileCon
 }
 
 export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[] }) {
-  const visible = blocks.filter((block) => block.type !== "image_grid" || block.images?.length);
+  const visible = blocks.filter((block) => block.type === "video" ? Boolean(block.video) : block.type !== "image_grid" || block.images?.length);
   function renderBlock(block: ProfileContentBlock, paired: boolean, groupAlign?: TextAlignment) {
     const layout = normalizeBlockLayout(block.config);
     const align = block.type === "image_grid" ? undefined : normalizeTextBlockLayout(block.config).text_align;
@@ -52,7 +53,7 @@ export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[]
       data-spacing-top={layout.spacing_top} data-spacing-bottom={layout.spacing_bottom}
       style={{ width: paired ? "100%" : `${layout.width_percent}%`, marginLeft: paired ? 0 : `${layout.offset_percent}%`, textAlign: groupAlign ?? align }}>
       {block.type === "heading" ? <h2>{block.content.text}</h2>
-        : block.type === "text" ? <p>{block.content.text}</p> : <BlockImageGrid block={block} />}
+        : block.type === "text" ? <p>{block.content.text}</p> : block.type === "video" ? <>{block.content.title && <h3>{block.content.title}</h3>}{block.content.text && <p>{block.content.text}</p>}{block.video && <PortalVideo {...block.video} name={block.content.title || "Unternehmensvideo"}/>}</> : <BlockImageGrid block={block} />}
     </section>;
   }
   return <>

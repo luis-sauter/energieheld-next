@@ -14,6 +14,7 @@ import { useInlineEditorHistory } from "./inline-editor-history";
 import { contentBlockRows } from "@/lib/content-block-rows";
 import { useMediaLibrary } from "./media-library-context";
 import { PairedImageEditor } from "./paired-image-editor";
+import { InlineVideoBlockEditor } from "./inline-video-block-editor";
 import { EditorialTextarea } from "./editorial-textarea";
 import { adjacentImageLayout, type ImageShare, type ImageSide } from "@/lib/adjacent-image-layout";
 import { uploadPreparedAdminMedia } from "@/lib/admin-media-upload";
@@ -323,6 +324,10 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
           if (before) form.set("before_block_id", before);
           void run(form, () => setPickerBefore(undefined));
         }}>Bilder</button>}
+        <button type="button" className="button" disabled={busy || history.busy} onClick={()=>{
+          const form=formFor('insert');form.set('type','video');form.set('text','Video');if(before)form.set('before_block_id',before);
+          void run(form,()=>setPickerBefore(undefined));
+        }}>Video</button>
         {!items.some((item) => item.kind === "about") && <button type="button" className="button" disabled={busy || history.busy}
           onClick={() => void run(formFor("section-restore", "section:about"), () => setPickerBefore(undefined))}>Beschreibung wieder hinzufügen</button>}
         {!items.some((item) => item.kind === "business") && <button type="button" className="button" disabled={busy || history.busy}
@@ -356,7 +361,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       <InlineBlockLayout block={block} busy={busy || history.busy} first={index === 0} last={index === items.length - 1}
         save={saveBlock} sectionHidden={items[index]?.hidden} pairedPart={paired}>
         {items[index]?.hidden && <p role="status">Dieser Block ist öffentlich ausgeblendet.</p>}
-        {block.type === "image_grid" ? <InlineImageGridEditor block={block} saveAction={saveImage} />
+        {block.type === "video" ? <InlineVideoBlockEditor block={block} save={saveAction}/> : block.type === "image_grid" ? <InlineImageGridEditor block={block} saveAction={saveImage} />
           : <form key={`${block.id}-${block.content.text}`} className={styles.blockForm} onSubmit={(event) => {
           event.preventDefault();
           const form = formFor("update", block.id);

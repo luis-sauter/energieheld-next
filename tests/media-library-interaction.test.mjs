@@ -16,11 +16,16 @@ globalThis.__mediaUX={
  async apply(id,target){calls.push(['apply',id,target]);return {success:'Saved'};}
 };
 registerHooks({resolve(s,c,n){const stub=x=>({url:'data:text/javascript,'+encodeURIComponent(x),shortCircuit:true});
- if(s==='react'&&/media-library-(browser|company-picker)\.tsx$/.test(c.parentURL??''))return stub('export const useState=v=>globalThis.__mediaUX.state(v),useRef=v=>globalThis.__mediaUX.ref(v),useEffect=(f,d)=>globalThis.__mediaUX.effect(f,d),useId=()=>"picker",startTransition=f=>f();');
- if(s.endsWith('/admin/mediathek/actions'))return stub('export const searchLibraryProfiles=(...a)=>globalThis.__mediaUX.search(...a),libraryProfiles=()=>globalThis.__mediaUX.profiles(),loadLibrary=(...a)=>globalThis.__mediaUX.load(...a),applyLibraryAsset=(...a)=>globalThis.__mediaUX.apply(...a),updateLibraryAsset=async()=>({success:"Saved"}),archiveLibraryAsset=async()=>({}),deleteLibraryAsset=async()=>({}),uploadLibrary=async()=>({});');
+ if(s==='react'&&/(?:media-library-(?:browser|company-picker|upload)|portal-video)\.tsx$/.test(c.parentURL??''))return stub('export const useState=v=>globalThis.__mediaUX.state(v),useRef=v=>globalThis.__mediaUX.ref(v),useEffect=(f,d)=>globalThis.__mediaUX.effect(f,d),useId=()=>"picker",startTransition=f=>f();');
+ if(s.endsWith('/admin/mediathek/actions'))return stub('export const searchLibraryProfiles=(...a)=>globalThis.__mediaUX.search(...a),libraryProfiles=()=>globalThis.__mediaUX.profiles(),loadLibrary=(...a)=>globalThis.__mediaUX.load(...a),applyLibraryAsset=(...a)=>globalThis.__mediaUX.apply(...a),updateLibraryAsset=async()=>({success:"Saved"}),archiveLibraryAsset=async()=>({}),deleteLibraryAsset=async()=>({}),uploadLibrary=async()=>({}),createLibraryCompany=async()=>({}),removeLibraryVideo=async()=>({});');
+ if(s==='@/lib/profile-video-upload'&&c.parentURL?.endsWith('media-library-upload.tsx'))return stub('export const uploadProfileVideo=async(save,file,progress)=>{globalThis.__mediaUX.uploads.push(file.name);progress("Video wird geprüft …");return file.name==="bad.mp4"?{error:"Ungültige Datei"}:{success:"Video verfügbar"};}');
+ if(s==='@/lib/admin-media-upload'&&c.parentURL?.endsWith('media-library-upload.tsx'))return stub('export const uploadPreparedAdminMedia=async(save,file)=>{globalThis.__mediaUX.uploads.push(file.name);return {success:"Bild verfügbar"};}');
+ if(s==='next/navigation')return stub('export const useRouter=()=>({refresh(){}})');
  if(s==='next/image')return stub('export default "img"');if(s.endsWith('.module.css'))return stub('export default new Proxy({}, {get:(_,k)=>k})');
  if(s.startsWith('@/')||s.startsWith('.')){const u=s.startsWith('@/')?new URL('../src/'+s.slice(2),import.meta.url):new URL(s,c.parentURL);for(const ext of ['.ts','.tsx'])if(existsSync(new URL(u.href+ext)))return n(u.href+ext,c);}return n(s,c);
 },load(u,c,n){if(/\.tsx?$/.test(u))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(u),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX}}).outputText};return n(u,c);}});
+const {MediaLibraryUpload}=await import('../src/components/admin/media-library-upload.tsx');
+const {PortalVideo}=await import('../src/components/portal/portal-video.tsx');
 const {MediaLibraryCompanyPicker}=await import('../src/components/admin/media-library-company-picker.tsx');
 const {MediaLibraryBrowser}=await import('../src/components/admin/media-library-browser.tsx');
 const {revealMediaDetails,restoreMediaGrid}=await import('../src/lib/media-library-navigation.ts');
@@ -51,9 +56,9 @@ test('current profile loads automatically; image search and company switch retai
 });
 test('details focus/scroll locally, close restores grid/selection, repeated opening works and apply delegates once',async()=>{
  let applied=0;const f=fixture(MediaLibraryBrowser,{initialProfileId:current,target:{profileId:current,kind:'gallery',capacity:1},onApplied(){applied++;}});f.render();await f.settle();
- f.all().find(n=>n.props?.['aria-label']==='Eigenes Bild auswählen').props.onClick();const trigger={focus:v=>calls.push(['trigger-focus',v])};f.button('Bilddetails & Verwendung').props.onClick({currentTarget:trigger});f.render();assert.match(text(f.render()),/Bilddetails/);assert.ok(calls.some(c=>c[0]==='scroll'&&c[1].behavior==='smooth'));assert.ok(calls.some(c=>c[0]==='focus'&&c[1].preventScroll));
- const NativeFormData=globalThis.FormData;globalThis.FormData=class extends NativeFormData{constructor(){super();}};try{f.all().find(n=>n.type==='form').props.onSubmit({preventDefault(){},currentTarget:{}});await f.settle();await f.settle();}finally{globalThis.FormData=NativeFormData;}assert.equal(f.button('Ausgewähltes Bild verwenden').props.disabled,false);f.button('Bilddetails & Verwendung').props.onClick({currentTarget:trigger});f.render();f.button('Details schließen').props.onClick();assert.equal(f.button('Ausgewähltes Bild verwenden').props.disabled,false);assert.ok(calls.some(c=>c[0]==='trigger-focus'&&c[1].preventScroll));
- reduced=true;f.button('Bilddetails & Verwendung').props.onClick({currentTarget:trigger});f.render();assert.equal(calls.filter(c=>c[0]==='scroll').at(-1)[1].behavior,'instant');f.button('Details schließen').props.onClick();f.button('Ausgewähltes Bild verwenden').props.onClick();await f.settle();assert.equal(applied,1);assert.equal(calls.filter(c=>c[0]==='apply').length,1);reduced=false;
+ f.all().find(n=>n.props?.['aria-label']==='Eigenes Bild auswählen').props.onClick();const trigger={focus:v=>calls.push(['trigger-focus',v])};f.button('Details & Verwendung').props.onClick({currentTarget:trigger});f.render();assert.match(text(f.render()),/Mediendetails/);assert.ok(calls.some(c=>c[0]==='scroll'&&c[1].behavior==='smooth'));assert.ok(calls.some(c=>c[0]==='focus'&&c[1].preventScroll));
+ const NativeFormData=globalThis.FormData;globalThis.FormData=class extends NativeFormData{constructor(){super();}};try{f.all().find(n=>n.type==='form').props.onSubmit({preventDefault(){},currentTarget:{}});await f.settle();await f.settle();}finally{globalThis.FormData=NativeFormData;}assert.equal(f.button('Ausgewähltes Bild verwenden').props.disabled,false);f.button('Details & Verwendung').props.onClick({currentTarget:trigger});f.render();f.button('Details schließen').props.onClick();assert.equal(f.button('Ausgewähltes Bild verwenden').props.disabled,false);assert.ok(calls.some(c=>c[0]==='trigger-focus'&&c[1].preventScroll));
+ reduced=true;f.button('Details & Verwendung').props.onClick({currentTarget:trigger});f.render();assert.equal(calls.filter(c=>c[0]==='scroll').at(-1)[1].behavior,'instant');f.button('Details schließen').props.onClick();f.button('Ausgewähltes Bild verwenden').props.onClick();await f.settle();assert.equal(applied,1);assert.equal(calls.filter(c=>c[0]==='apply').length,1);reduced=false;
 });
 test('navigation never uses window scrolling or scrollIntoView; reduced motion and restoring exact scroll position',()=>{
  const events=[];const container={scrollTop:80,getBoundingClientRect:()=>({top:100}),scrollTo:v=>events.push(v)},heading={getBoundingClientRect:()=>({top:500}),focus:v=>events.push(v)};
@@ -63,9 +68,25 @@ test('navigation never uses window scrolling or scrollIntoView; reduced motion a
 test('banner context selects without applying/creating a campaign and permits profile-less upload',async()=>{
  let picked,uploaded;
  const f=fixture(MediaLibraryBrowser,{onSelected(a){picked=a;},onUpload(file){uploaded=file;}});f.render();await f.settle();
- assert.equal(f.button('Bilder hochladen').props.disabled,false);
+ assert.equal(f.button('Medien hochladen').props.disabled,false);
  f.all().find(n=>n.props?.['aria-label']==='Eigenes Bild auswählen').props.onClick();f.button('Ausgewähltes Bild verwenden').props.onClick();await f.settle();assert.equal(picked.id,asset.id);assert.equal(calls.some(c=>c[0]==='apply'),false);
  const file=new File(['bytes'],'upload.png',{type:'image/png'});
  f.all().find(n=>n.type==='input'&&n.props.type==='file').props.onChange({target:{files:[file],value:'file'}});await f.settle();assert.equal(uploaded,file);assert.equal(calls.some(c=>c[0]==='apply'),false);
  assert.doesNotMatch(text(f.render()),/Zusätzliche Nutzungserlaubnis|Beleg der Nutzungserlaubnis/);
+});
+
+test('video player never loads until requested and accepts only canonical provider embeds',()=>{
+ const f=fixture(PortalVideo,{src:'https://www.youtube.com/watch?v=EWKiPV1So5A',name:'Sonnenhof',external:true});f.render();assert.equal(f.all().some(n=>n.type==='iframe'),false);
+ f.button('▶ Sonnenhof – Video laden').props.onClick();const iframe=f.all().find(n=>n.type==='iframe');assert.equal(iframe.props.src,'https://www.youtube-nocookie.com/embed/EWKiPV1So5A?autoplay=0');assert.equal(iframe.props.loading,'lazy');
+ const hosted=fixture(PortalVideo,{src:'https://signed.example/video',name:'Video'});hosted.render();assert.equal(hosted.all().some(n=>n.type==='video'),false);hosted.button('▶ Video – Video laden').props.onClick();const video=hosted.all().find(n=>n.type==='video');assert.equal(video.props.controls,true);assert.equal(video.props.preload,'metadata');assert.equal(video.props.autoPlay,undefined);
+ const invalid=fixture(PortalVideo,{src:'https://evil.example/embed',name:'Bad',external:true});assert.match(text(invalid.render()),/nicht verfügbar/);assert.equal(invalid.all().some(n=>n.type==='iframe'),false);
+});
+
+test('smart upload reuses company picker, continues after per-file failure and retains company/type',async()=>{
+ let completed;const busy=[];globalThis.__mediaUX.uploads=[];
+ const f=fixture(MediaLibraryUpload,{profileId:current,profileName:'Sonnenhof',initialKind:'video',onDone:(company,kind)=>completed={company,kind},onClose(){},onBusy:v=>busy.push(v)});f.render();
+ const picker=f.all().find(n=>n.type===MediaLibraryCompanyPicker);assert.equal(picker.props.allowAll,false);assert.equal(picker.props.value,current);
+ const input=f.all().find(n=>n.type==='input'&&n.props.type==='file');assert.equal(input.props.multiple,true);input.props.onChange({target:{files:[new File(['bad'],'bad.mp4',{type:'video/mp4'}),new File(['ok'],'good.webm',{type:'video/webm'})],value:''}});await f.settle();
+ assert.deepEqual(globalThis.__mediaUX.uploads,['bad.mp4','good.webm']);assert.match(text(f.render()),/bad.mp4: Ungültige Datei/);assert.match(text(f.render()),/good.webm: Video verfügbar/);
+ assert.equal(completed.company.id,current);assert.equal(completed.kind,'video');assert.deepEqual(busy,[true,false]);assert.equal(f.all().find(n=>n.type==='select').props.value,'video');
 });

@@ -60,7 +60,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
   const [feedback, setFeedback] = useState<ProfileFormState>({});
   const [mapLocation, setMapLocation] = useState(listing.location);
   const history = useInlineEditorHistoryController(saveContent, saveBlockImage, editing);
-  const mediaEditor = useInlineAdminMedia({ saveAction: saveMedia, media, rows, profileName: listing.name, initials: listing.initials });
+  const mediaEditor = useInlineAdminMedia({ profileId: listing.id, saveAction: saveMedia, media, rows, profileName: listing.name, initials: listing.initials });
   const content = splitProfileContent(editing ? contentBlocks : publicContentBlocks ?? contentBlocks, listing.name);
 
   function field(name: keyof ProfileValues, label: string, multiline = false) {

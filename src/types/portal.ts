@@ -33,7 +33,7 @@ export type Listing = {
   services: string[];
   images: PortalImage[];
   /** Only populated when a real profile video source is available. */
-  video?: { src: string; poster?: string };
+  video?: { src: string; poster?: string; external?: boolean };
   logo?: PortalImage;
   contact: { person?: string; personImage?: PortalImage; email: string; phone: string; website: string };
   isDemo: boolean;

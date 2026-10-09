@@ -18,7 +18,7 @@ export async function uploadProfileVideo(save: (form: FormData) => Promise<Media
     const uploaded = await storage.upload(path, file, { contentType: file.type, upsert: false });
     if (uploaded.error) throw new Error("Upload failed");
     progress("Video wird geprüft und gespeichert …");
-    const finish = new FormData(); finish.set("intent", "video-upload"); finish.set("uploaded_path", path);
+    const finish = new FormData(); finish.set("intent", "video-upload"); finish.set("uploaded_path", path); finish.set("file_name", file.name);
     const result = await save(finish);
     if (result.error) await storage.remove([path]);
     return result;

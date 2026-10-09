@@ -1,3 +1,4 @@
+import {externalVideoEmbed} from './external-video';
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MediaState } from "./company-media";
 
@@ -65,12 +66,18 @@ export async function changeAuthorizedProfileVideo(client: SupabaseClient, profi
     const result = await query.select("id").maybeSingle();
     if (result.error || result.data?.id !== profile.id) { await cleanup(next); return { error: failure }; }
   } catch { await cleanup(next); return { error: failure }; }
-  await cleanup(previous);
+  // The catalog retains originals; removing a usage must never delete its source.
   return { success: next ? "Das Video wurde gespeichert." : "Das Video wurde entfernt. Die Galerie wird wieder angezeigt." };
 }
 
 export async function signProfileVideo(client: SupabaseClient, profile: { id: string; video_path?: string | null }) {
-  if (!isProfileVideoPath(profile.id, profile.video_path)) return undefined;
+  if (profile.video_path && !isProfileVideoPath(profile.id, profile.video_path)) return undefined;
+  if (!isProfileVideoPath(profile.id, profile.video_path)) {
+    try {
+      const ref=await client.from('profile_video_uses').select('external_url').eq('profile_id',profile.id).is('block_id',null).maybeSingle();
+      return ref.data?.external_url && externalVideoEmbed(ref.data.external_url) ? {src:ref.data.external_url,external:true} : undefined;
+    } catch { return undefined; }
+  }
   try {
     const { data, error } = await client.storage.from(VIDEO_BUCKET).createSignedUrl(profile.video_path, 3600);
     return !error && data?.signedUrl ? { src: data.signedUrl } : undefined;

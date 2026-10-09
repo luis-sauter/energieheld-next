@@ -1,6 +1,6 @@
 export type MediaLibraryTarget = {
     profileId: string;
-    kind: 'gallery' | 'logo' | 'contact' | 'block';
+    kind: 'gallery' | 'logo' | 'contact' | 'block' | 'video' | 'video_block';
     blockId?: string;
     replacementId?: string;
     capacity?: number;
@@ -9,7 +9,7 @@ export type MediaAsset = {
     id: string;
     profile_id: string | null;
     profile_name: string | null;
-    bucket_id: 'company-media' | 'ad-media' | 'project-media';
+    bucket_id: 'company-media' | 'ad-media' | 'project-media' | 'company-profile-videos' | 'external-video';
     storage_path: string;
     kind: string;
     name: string;
@@ -19,8 +19,10 @@ export type MediaAsset = {
     rights: string;
     archived_at: string | null;
     src: string;
+    mime_type?: string | null;
+    byte_size?: number | null;
     preview_file?: {
-        bucket: 'company-media' | 'ad-media' | 'project-media';
+        bucket: 'company-media' | 'ad-media' | 'project-media' | 'company-profile-videos' | 'external-video';
         path: string;
     };
     usages: {

@@ -12,5 +12,7 @@ export function companySearchCache(search: (query: string, page: number) => Prom
     entries.set(id, { time: Date.now(), result });
     return result;
   }
-  return { has, get };
+  return { has, get, clear: () => entries.clear() };
 }
+
+export type CompanySearchCache = ReturnType<typeof companySearchCache>;

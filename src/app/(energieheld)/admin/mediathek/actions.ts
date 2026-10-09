@@ -96,3 +96,25 @@ export async function deleteLibraryAsset(id: string): Promise<MediaState> {
     const finished = await client.rpc('media_library_finish_delete', { p_asset: id });
     return finished.error ? { error: 'Die Dateilöschung konnte nicht abgeschlossen werden. Bitte erneut versuchen.' } : { success: 'Original und kontrollierte Kopien endgültig gelöscht.' };
 }
+
+export async function createLibraryCompany(form: FormData): Promise<{id?: string;display_name?: string;matches?: {id:string;display_name:string}[];error?: string}> {
+    const client = await createClient();
+    if (await checkAdmin(client) !== 'admin') return { error: 'Keine Berechtigung.' };
+    const fields = ['name','city','country','website'].map(k => String(form.get(k) ?? '').trim());
+    if (!fields[0] || fields[0].length > 200 || fields[1].length > 200 || fields[2].length > 120 || fields[3].length > 1000) return { error: 'Bitte prüfen Sie die Unternehmensangaben.' };
+    if (fields[3]) { try { if (!['http:','https:'].includes(new URL(fields[3]).protocol)) throw Error(); } catch { return { error: 'Bitte eine gültige Website mit https:// angeben.' }; } }
+    const result = await client.rpc('media_library_create_company', { p_name:fields[0],p_city:fields[1],p_country:fields[2],p_website:fields[3],p_override:form.get('override')==='yes' });
+    return result.error ? { error: 'Das Unternehmen konnte nicht angelegt werden.' } : result.data;
+}
+export async function removeLibraryVideo(profileId: string, blockId?: string): Promise<MediaState> {
+    const client = await createClient();
+    if (await checkAdmin(client) !== 'admin' || !isProfileId(profileId) || blockId && !isProfileId(blockId)) return { error:'Keine Berechtigung.' };
+    if (!blockId) {
+        const updated = await client.from('company_profiles').update({video_path:null}).eq('id',profileId).select('id').maybeSingle();
+        if (updated.error || !updated.data) return {error:'Video konnte nicht entfernt werden.'};
+    }
+    let request = client.from('profile_video_uses').delete().eq('profile_id',profileId);
+    request = blockId ? request.eq('block_id',blockId) : request.is('block_id',null);
+    const deleted = await request;
+    return deleted.error ? {error:'Video konnte nicht entfernt werden.'} : {success:'Videoverwendung entfernt. Original bleibt in der Mediathek.'};
+}

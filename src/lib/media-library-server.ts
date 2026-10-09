@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { checkAdmin, isProfileId } from './admin-review';
 import { validateMediaFile, MEDIA_BUCKET, MEDIA_MAX_BYTES, type MediaState } from './company-media';
+import { VIDEO_BUCKET, VIDEO_MAX_BYTES, videoExtension, isProfileVideoPath, validateVideoFile } from './profile-video';
 import { changeAdminCompanyMedia } from './admin-company-media';
 import { changeAdminBlockImages } from './admin-block-images';
 import { canReuseMediaPath, mediaTargetPrefix, type MediaLibraryTarget, type MediaAsset, type MediaLibraryPage } from './media-library';
@@ -20,7 +21,7 @@ export async function mediaLibraryPage(client: SupabaseClient, profileId: string
     const items = data.items as MediaAsset[];
     // Batch signing: never create permanent public URLs, never sign noncatalog paths supplied by a client.
     const urls = new Map<string, string>();
-    for (const bucket of ['company-media', 'ad-media'] as const) {
+    for (const bucket of ['company-media', 'ad-media', VIDEO_BUCKET] as const) {
         const paths = items.filter(a => (a.preview_file?.bucket ?? a.bucket_id) === bucket).map(a => a.preview_file?.path ?? a.storage_path);
         if (!paths.length)
             continue;
@@ -31,7 +32,7 @@ export async function mediaLibraryPage(client: SupabaseClient, profileId: string
             if (value.path && value.signedUrl)
                 urls.set(bucket + ':' + value.path, value.signedUrl);
     }
-    return { count: data.count, items: items.map(a => ({ ...a, src: a.bucket_id === 'project-media' && projectAssets.some(p => p.path === a.storage_path) ? a.storage_path : urls.get((a.preview_file?.bucket ?? a.bucket_id) + ':' + (a.preview_file?.path ?? a.storage_path)) ?? '' })) };
+    return { count: data.count, items: items.map(a => ({ ...a, src: a.bucket_id === 'external-video' ? a.storage_path : a.bucket_id === 'project-media' && projectAssets.some(p => p.path === a.storage_path) ? a.storage_path : urls.get((a.preview_file?.bucket ?? a.bucket_id) + ':' + (a.preview_file?.path ?? a.storage_path)) ?? '' })) };
 }
 export async function mediaLibraryUpload(client: SupabaseClient, profileId: string, form: FormData): Promise<MediaState> {
     if (await checkAdmin(client) !== 'admin' || !isProfileId(profileId))
@@ -39,6 +40,28 @@ export async function mediaLibraryUpload(client: SupabaseClient, profileId: stri
     const profile = await client.from('company_profiles').select('id').eq('id', profileId).maybeSingle();
     if (profile.error || !profile.data)
         return { error: 'Unternehmen nicht gefunden.' };
+    if (form.get('intent') === 'prepare-video') {
+        const extension = videoExtension(form.get('file_type')), size = Number(form.get('file_size'));
+        return extension && Number.isSafeInteger(size) && size > 0 && size <= VIDEO_MAX_BYTES
+            ? { uploadPath: `profiles/${profileId}/video/${crypto.randomUUID()}.${extension}` }
+            : { error: 'Bitte wählen Sie MP4 oder WebM mit maximal 50 MB.' };
+    }
+    if (form.get('intent') === 'video-upload') {
+        const path = form.get('uploaded_path');
+        if (!isProfileVideoPath(profileId, path)) return { error: 'Ungültige Videozuordnung.' };
+        const stored = await client.storage.from(VIDEO_BUCKET).download(path);
+        if (stored.error || !stored.data) return { error: failure };
+        const file = new File([stored.data], 'video', { type: stored.data.type });
+        const valid = await validateVideoFile(file);
+        if (valid.error || !path.endsWith('.' + valid.extension)) return { error: valid.error ?? 'Dateiformat stimmt nicht überein.' };
+        const hash = createHash('sha256').update(Buffer.from(await file.arrayBuffer())).digest('hex');
+        const duplicate = await client.from('media_library_assets').select('id').eq('profile_id', profileId).eq('sha256', hash).is('deleted_at', null).limit(1).maybeSingle();
+        if (duplicate.error) return { error: failure };
+        if (duplicate.data) { await client.storage.from(VIDEO_BUCKET).remove([path]); return { success: 'Dieses Video ist bereits im Katalog vorhanden (gegebenenfalls im Archiv).' }; }
+        const name = String(form.get('file_name') ?? 'Unternehmensvideo').trim().slice(0, 200) || 'Unternehmensvideo';
+        const saved = await client.rpc('media_library_register_video', { p_profile: profileId, p_path: path, p_name: name, p_hash: hash });
+        return saved.error ? { error: failure } : { success: 'Video ist in der Mediathek verfügbar.' };
+    }
     const extension = form.get('file_type') === 'image/jpeg' ? 'jpg' : form.get('file_type') === 'image/png' ? 'png' : form.get('file_type') === 'image/webp' ? 'webp' : null;
     if (form.get('intent') === 'prepare-library') {
         const size = Number(form.get('file_size'));
@@ -67,16 +90,25 @@ export async function mediaLibraryUpload(client: SupabaseClient, profileId: stri
         return { success: 'Dieses Bild ist bereits in der Mediathek vorhanden.' };
     }
     const name = String(form.get('file_name') ?? 'Unternehmensbild').trim().slice(0, 200) || 'Unternehmensbild';
-    const saved = await client.rpc('media_library_register_upload', { p_profile: profileId, p_path: path, p_name: name, p_hash: hash });
+    const imageKind = String(form.get('media_kind') ?? 'gallery');
+    if (!['gallery','logo','contact','block','banner'].includes(imageKind)) return { error: 'Ungültige Bildart.' };
+    const saved = imageKind === 'gallery' ? await client.rpc('media_library_register_upload', { p_profile: profileId, p_path: path, p_name: name, p_hash: hash }) : await client.rpc('media_library_register_image', { p_profile:profileId,p_path:path,p_name:name,p_hash:hash,p_kind:imageKind });
     return saved.error ? { error: failure } : { success: 'Bild ist in der Mediathek verfügbar.' };
 }
 export async function attachMediaLibraryAsset(client: SupabaseClient, assetId: string, target: MediaLibraryTarget): Promise<MediaState> {
-    if (await checkAdmin(client) !== 'admin' || !isProfileId(assetId) || !isProfileId(target.profileId) || !['gallery', 'logo', 'contact', 'block'].includes(target.kind) || target.kind === 'block' && !isProfileId(target.blockId))
+    if (await checkAdmin(client) !== 'admin' || !isProfileId(assetId) || !isProfileId(target.profileId) || !['gallery', 'logo', 'contact', 'block', 'video', 'video_block'].includes(target.kind) || target.kind === 'block' && !isProfileId(target.blockId))
         return { error: 'Keine Berechtigung oder ungültiges Bildziel.' };
     const loaded = await client.from('media_library_assets').select('*').eq('id', assetId).is('archived_at', null).is('deletion_requested_at', null).maybeSingle();
     if (loaded.error || !loaded.data)
         return { error: 'Das Bild ist nicht mehr verfügbar.' };
     const asset = loaded.data as MediaAsset;
+    if (target.kind === 'video' || target.kind === 'video_block') {
+        if (asset.kind !== 'video' || asset.profile_id !== target.profileId || target.kind === 'video_block' && !isProfileId(target.blockId)) return { error: 'Bitte wählen Sie ein Video dieses Unternehmens.' };
+        const applied = await client.rpc('media_library_use_video', { p_profile: target.profileId, p_asset: asset.id, p_block: target.kind === 'video_block' ? target.blockId : null });
+        return applied.error ? { error: failure } : { success: 'Video eingesetzt. Das Original bleibt erhalten.' };
+    }
+    if (asset.kind === 'video') return { error: 'Ein Video kann nicht als Bild eingesetzt werden.' };
+
     const profile = await client.from('company_profiles').select('id,slug,logo_path,contact_image_path,company_profile_images(id,storage_path)').eq('id', target.profileId).maybeSingle();
     if (profile.error || !profile.data)
         return { error: 'Unternehmen nicht gefunden.' };

@@ -16,7 +16,7 @@ export function contentBlockRows(blocks: ProfileContentBlock[]): ContentRow[] {
       samePosition(next, blocks[index + text.length + 1]) ? [next, blocks[index + text.length + 1]] : next ? [next] : [];
     const firstIsImage = first.type === "image_grid";
     const nextIsImage = next?.type === "image_grid";
-    if (next && firstIsImage !== nextIsImage && !overlap(first, next)) {
+    if (next && first.type !== "video" && next.type !== "video" && firstIsImage !== nextIsImage && !overlap(first, next)) {
       const firstStart = normalizeBlockLayout(first.config).offset_percent;
       const nextStart = normalizeBlockLayout(next.config).offset_percent;
       rows.push(firstStart < nextStart ? { left: text, right: following } : { left: following, right: text });
