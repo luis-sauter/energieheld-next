@@ -8,6 +8,7 @@ import { ImageGallery } from "@/components/portal/image-gallery";
 import { type MediaRow, type MediaState } from "@/lib/company-media";
 import { moveImageId } from "@/lib/media-order";
 import type { PortalImage } from "@/types/portal";
+import { useMediaLibrary } from "./media-library-context";
 import styles from "./admin-media.module.css";
 
 type GalleryImage = PortalImage & { id: string };
@@ -20,6 +21,7 @@ export function AdminMediaEditor({ saveAction, profileName, logo, images, rows }
   rows: MediaRow[];
 }) {
   const router = useRouter();
+  const library = useMediaLibrary();
   const dialog = useRef<HTMLDialogElement>(null);
   const busyRef = useRef(false);
   const draggedRef = useRef<string | null>(null);
@@ -59,6 +61,7 @@ export function AdminMediaEditor({ saveAction, profileName, logo, images, rows }
   }
   function openUpload(kind: "logo" | "gallery") {
     if (busyRef.current) return;
+    if (library) {library.open({kind,capacity:8-images.length});return;}
     setFeedback({});
     setUploadKind(kind);
     dialog.current?.showModal();

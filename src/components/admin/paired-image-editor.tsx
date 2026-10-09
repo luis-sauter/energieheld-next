@@ -5,12 +5,14 @@ import { BlockImageGrid } from "@/components/portal/profile-content-blocks";
 import type { ProfileContentBlock } from "@/lib/profile-content";
 import type { MediaState } from "@/lib/company-media";
 import { InlineImageGridEditor } from "./inline-image-grid-editor";
+import { useMediaLibrary } from "./media-library-context";
 import styles from "./inline-profile.module.css";
 
 export function PairedImageEditor({ block, saveImage, busy, onRemove }: {
   block: ProfileContentBlock; saveImage: (form: FormData) => Promise<MediaState>;
   busy: boolean; onRemove: (intent: string, blockId: string) => Promise<boolean>;
 }) {
+  const library = useMediaLibrary();
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const saving = useRef(false);
@@ -24,8 +26,9 @@ export function PairedImageEditor({ block, saveImage, busy, onRemove }: {
     {block.images?.length ? <BlockImageGrid block={block} editorial /> : <p>Bild auswählen und hochladen.</p>}
     <div className={styles.imageTileActions}>
       <button ref={trigger} type="button" className="button" disabled={busy} onClick={() => {
+        if (library && !block.images?.length) { library.open({kind:"block",blockId:block.id}); return; }
         setOpened(true); dialog.current?.showModal();
-      }}>Bild bearbeiten</button>
+      }}>{block.images?.length ? "Bild bearbeiten" : "Bild hinzufügen"}</button>
       <details className={styles.imageMenu}><summary aria-label="Weitere Bildaktionen">⋯</summary>
       <button type="button" className="button" disabled={busy} onClick={() => {
         if (window.confirm("Bild neben diesem Abschnitt wirklich entfernen?")) void onRemove("delete", block.id);

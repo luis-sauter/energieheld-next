@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadReviewProfile } from "@/lib/admin-review";
 import { requireAdminAccess } from "@/lib/admin";
 import { signCompanyMedia } from "@/lib/company-media";
+import { MediaLibraryProvider } from "@/components/admin/media-library-context";
 import { AdminMediaEditor } from "@/components/admin/admin-media-editor";
 import { saveAdminMedia } from "./actions";
 import styles from "@/components/admin/admin.module.css";
@@ -42,13 +43,13 @@ export default async function AdminMediaPage({ params }: {
           {result.error ?? "Die Profilmedien konnten nicht geladen werden. Bitte versuchen Sie es erneut."}
         </p>
       ) : (
-        <AdminMediaEditor
+        <MediaLibraryProvider profileId={profile.id}><AdminMediaEditor
           saveAction={saveAdminMedia.bind(null, profile.id)}
           profileName={profile.display_name}
           logo={media.logo}
           images={media.images}
           rows={profile.company_profile_images}
-        />
+        /></MediaLibraryProvider>
       )}
     </main>
   );

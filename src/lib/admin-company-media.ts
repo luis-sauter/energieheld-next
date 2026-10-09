@@ -1,3 +1,4 @@
+import { retainedProfileMedia } from "./media-retention";
 import { changeAuthorizedContactImage } from "./profile-contact-media";
 import { changeAuthorizedProfileVideo } from "./profile-video";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -42,6 +43,7 @@ export async function changeAdminCompanyMedia(
   const storage = client.storage.from(MEDIA_BUCKET);
   const cleanup = async (path: string | null) => {
     if (!path) return;
+    if (await retainedProfileMedia(client, path)) return;
     try {
       const { error } = await storage.remove([path]);
       if (error) console.error("Admin media cleanup failed.");

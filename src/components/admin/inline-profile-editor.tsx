@@ -19,9 +19,15 @@ import { InlineEditorHistoryContext, useInlineEditorHistoryController } from "./
 
 import Link from "next/link";
 
+import { MediaLibraryProvider } from "./media-library-context";
+
+export function InlineProfileEditor(props: React.ComponentProps<typeof ProfileEditor>) {
+  return <MediaLibraryProvider profileId={props.listing.id}><ProfileEditor {...props} /></MediaLibraryProvider>;
+}
+
 const formId = "inline-admin-profile-form";
 
-export function InlineProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness }: {
+function ProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness }: {
   listing: Listing;
   categories: Category[];
   values: ProfileValues;

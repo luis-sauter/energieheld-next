@@ -208,7 +208,7 @@ test('contact prepare/upload reuses admin authorization and only changes its own
   const invalid=client();assert.ok((await changeAdminCompanyMedia(invalid,profileId,form({intent:'contact-upload',uploaded_path:path}))).error);assert.equal(invalid.calls.some(c=>c.action==='download'||c.action==='update'||c.action==='remove'),false);
  }
  const failed=client({writeError:true});assert.ok((await changeAdminCompanyMedia(failed,profileId,form({intent:'contact-upload',uploaded_path:prepared.uploadPath}))).error);assert.ok(failed.calls.some(c=>c.action==='remove'&&c.paths.includes(prepared.uploadPath)));
- const invalidBytes=client({download:new Blob(['fake'],{type:'image/png'})});assert.ok((await changeAdminCompanyMedia(invalidBytes,profileId,form({intent:'contact-upload',uploaded_path:prepared.uploadPath}))).error);assert.equal(invalidBytes.calls.some(c=>c.payload),false);
+ const invalidBytes=client({download:new Blob(['fake'],{type:'image/png'})});assert.ok((await changeAdminCompanyMedia(invalidBytes,profileId,form({intent:'contact-upload',uploaded_path:prepared.uploadPath}))).error);assert.equal(invalidBytes.calls.some(c=>c.payload&&c.name!=='media_library_retains_file'),false);
 });
 
 
@@ -221,5 +221,5 @@ test('contact replacement/removal CAS preserves names and unrelated media and cl
  }
  const failed=client({contact:previous,writeError:true});assert.ok((await changeAdminCompanyMedia(failed,profileId,form({intent:'contact-upload',uploaded_path:next}))).error);assert.deepEqual(failed.calls.filter(c=>c.action==='remove').flatMap(c=>c.paths),[next]);
  const thrown=client({contact:previous});thrown.storage.from=()=>({download:async()=>{throw Error('private detail')},remove:async paths=>{thrown.calls.push({action:'remove',paths});return {error:null};}});
- const result=await changeAdminCompanyMedia(thrown,profileId,form({intent:'contact-upload',uploaded_path:next}));assert.ok(result.error);assert.equal(result.error.includes('private detail'),false);assert.equal(thrown.calls.some(c=>c.payload),false);assert.deepEqual(thrown.calls.find(c=>c.action==='remove').paths,[next]);
+ const result=await changeAdminCompanyMedia(thrown,profileId,form({intent:'contact-upload',uploaded_path:next}));assert.ok(result.error);assert.equal(result.error.includes('private detail'),false);assert.equal(thrown.calls.some(c=>c.payload&&c.name!=='media_library_retains_file'),false);assert.deepEqual(thrown.calls.find(c=>c.action==='remove').paths,[next]);
 });

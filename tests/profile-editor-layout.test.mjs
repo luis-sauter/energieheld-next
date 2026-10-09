@@ -92,7 +92,7 @@ test("shared image migration preserves admin boundaries and independent copied i
   const images = source("src/lib/admin-block-images.ts");
   assert.match(images, /references\.count !== 0\) return/);
   const content = source("src/lib/admin-profile-content.ts");
-  assert.match(content, /if \(refs\.count === 0\) removable\.push\(path\)/);
+  assert.match(content, /if \(refs\.count === 0 && !await retainedProfileMedia\(client, path\)\) removable\.push\(path\)/);
 });
 
 test("editor text follows live section alignment and paired columns stack on mobile", () => {

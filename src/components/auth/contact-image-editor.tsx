@@ -5,12 +5,14 @@ import { ContactPerson } from "@/components/portal/contact-person";
 import { uploadAdminMedia } from "@/lib/admin-media-upload";
 import type { MediaState } from "@/lib/company-media";
 import type { Listing } from "@/types/portal";
+import { useMediaLibrary } from "@/components/admin/media-library-context";
 import styles from "./contact-image-editor.module.css";
 
 export function ContactImageEditor({ contact, save, disabled = false, onBusyChange }: {
   contact: Listing["contact"]; save: (form: FormData) => Promise<MediaState>; disabled?: boolean; onBusyChange?: (busy: boolean) => void;
 }) {
   const router = useRouter();
+  const library = useMediaLibrary();
   const lock = useRef(false);
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -34,7 +36,7 @@ export function ContactImageEditor({ contact, save, disabled = false, onBusyChan
     <ContactPerson contact={preview ? { ...contact, personImage: { src: preview, alt: "Vorschau des Ansprechpartnerbildes" } } : contact} />
     {!contact.personImage && !preview && <div className={styles.placeholder}>Kein Ansprechpartnerbild</div>}
     <div className={styles.actions}>
-    <button type="button" className="button" disabled={disabled || busy} onClick={() => input.current?.click()}>{contact.personImage ? "Ansprechpartnerbild ändern" : "Ansprechpartnerbild hinzufügen"}</button>
+    <button type="button" className="button" disabled={disabled || busy} onClick={() => library ? library.open({kind:"contact"}) : input.current?.click()}>{contact.personImage ? "Ansprechpartnerbild ändern" : "Ansprechpartnerbild hinzufügen"}</button>
     <input ref={input} type="file" hidden aria-label="Ansprechpartnerbild auswählen" accept="image/jpeg,image/png,image/webp" disabled={disabled || busy} onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void run(file); }} />
     {contact.personImage && <button type="button" className="button" disabled={disabled || busy} onClick={() => void run()}>Ansprechpartnerbild entfernen</button>}
     </div>

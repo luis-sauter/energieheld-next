@@ -12,6 +12,7 @@ import styles from "./inline-profile.module.css";
 import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment } from "@/lib/content-block-layout";
 import { useInlineEditorHistory } from "./inline-editor-history";
 import { contentBlockRows } from "@/lib/content-block-rows";
+import { useMediaLibrary } from "./media-library-context";
 import { PairedImageEditor } from "./paired-image-editor";
 import { EditorialTextarea } from "./editorial-textarea";
 import { adjacentImageLayout, type ImageShare, type ImageSide } from "@/lib/adjacent-image-layout";
@@ -28,6 +29,7 @@ export function SectionPartFrame({ sectionKey, part, align, missing, saveAction,
   saveAction: SaveContent; children: React.ReactNode;
 }) {
   const router = useRouter();
+
   const [previewAlign, setPreviewAlign] = useState(align);
   const [removed, setRemoved] = useState(missing);
   const [busy, setBusy] = useState(false);
@@ -141,6 +143,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
   saveImage: (form: FormData) => Promise<MediaState>;
 }) {
   const router = useRouter();
+  const library = useMediaLibrary();
   const history = useInlineEditorHistory();
   const busyRef = useRef(false);
   const [busy, setBusy] = useState(false);
@@ -386,7 +389,17 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
   function renderAdjacentAction(textId: string, text: string, paired = false) {
     return imagesAvailable && !paired && <div className={styles.adjacentAction}>
           {adjacentDraft?.textId !== textId && <button type="button" className="button" disabled={busy || history.busy}
-            onClick={() => { clearAdjacentDraft(); setAdjacentDraft({ textId, side: "right", share: 50 }); }}>Bild daneben hinzufügen</button>}
+            onClick={() => {
+              if (library) { if (busy) return; setBusy(true); void (async () => {
+                const data = new FormData(); data.set("intent", "pair-image"); data.set("text_block_id", textId); data.set("image_side", "right"); data.set("image_width", "50");
+                const created = await saveAction(data);
+                if (created.error || !created.blockId) { setFeedback({error:created.error ?? "Bildblock konnte nicht angelegt werden."}); return; }
+                history.clear(); router.refresh(); library.open({kind:"block",blockId:created.blockId,
+                  onApplied:async()=>{const arrange=new FormData();arrange.set("intent","pair-layout");arrange.set("text_block_id",textId);arrange.set("image_block_id",created.blockId!);arrange.set("image_side","right");arrange.set("image_width","50");const result=await saveAction(arrange);if(result.error)throw new Error(result.error);history.clear();},
+                  onCancel:async()=>{const removed=await saveAction(formFor("delete",created.blockId!));if(removed.error)throw new Error(removed.error);router.refresh();}});
+              })().catch(()=>setFeedback({error:"Bildblock konnte nicht angelegt werden."})).finally(()=>setBusy(false)); return; }
+              clearAdjacentDraft(); setAdjacentDraft({ textId, side: "right", share: 50 });
+            }}>Bild daneben hinzufügen</button>}
           {adjacentDraft?.textId === textId && <form className={styles.adjacentSetup} onSubmit={createAdjacentImage}>
             <strong>Bild neben diesem Text</strong>
             <label>Bild auswählen
