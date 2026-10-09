@@ -44,11 +44,11 @@ test('foreign video rejected before downloading; spoofed bytes cleaned before li
   assert.ok((await changeAuthorizedProfileVideo(invalid,{id},form({intent:'video-upload',uploaded_path:path}))).error);
   assert.deepEqual(invalid.calls.filter(c=>c.remove).map(c=>c.remove),[[path]]);assert.ok(!invalid.calls.some(c=>c.payload));
 });
-test('replace and remove use compare-and-swap and clean only detached files',async()=>{
+test('replace and remove use compare-and-swap while retaining catalog originals',async()=>{
   const previous=path.replace('bbbbbbbb','cccccccc');
   const c=client();assert.ok((await changeAuthorizedProfileVideo(c,{id,video_path:previous},form({intent:'video-upload',uploaded_path:path}))).success);
   const write=c.calls.find(c=>c.payload);assert.deepEqual(write.payload,{video_path:path});assert.deepEqual(write.filters,[['id',id],['video_path',previous]]);
-  assert.deepEqual(c.calls.filter(c=>c.remove).map(c=>c.remove),[[previous]]);
+  assert.deepEqual(c.calls.filter(c=>c.remove).map(c=>c.remove),[]);
   const fail=client({writeError:true});assert.ok((await changeAuthorizedProfileVideo(fail,{id,video_path:previous},form({intent:'video-upload',uploaded_path:path}))).error);
   assert.deepEqual(fail.calls.filter(c=>c.remove).map(c=>c.remove),[[path]]);
   const remove=client();assert.ok((await changeAuthorizedProfileVideo(remove,{id,video_path:path},form({intent:'video-remove'}))).success);assert.deepEqual(remove.calls.find(c=>c.payload).payload,{video_path:null});

@@ -7,9 +7,9 @@ import { VIDEO_ACCEPT } from "@/lib/profile-video";
 import { uploadProfileVideo } from "@/lib/profile-video-upload";
 import { ProfileHeaderMedia } from "@/components/portal/profile-header-media";
 
-export function ProfileVideoEditor({ video, name, gallery, save, disabled = false, onBusyChange }: {
+export function ProfileVideoEditor({ video, name, gallery, save, disabled = false, onBusyChange, openLibrary }: {
   video?: Listing["video"]; name: string; gallery: ReactNode;
-  save: (form: FormData) => Promise<MediaState>; disabled?: boolean; onBusyChange?: (busy: boolean) => void;
+  save: (form: FormData) => Promise<MediaState>; disabled?: boolean; onBusyChange?: (busy: boolean) => void; openLibrary?: () => void;
 }) {
   const router = useRouter(), input = useRef<HTMLInputElement>(null), lock = useRef(false);
   const [busy, setBusy] = useState(""), [feedback, setFeedback] = useState<MediaState>({});
@@ -27,7 +27,7 @@ export function ProfileVideoEditor({ video, name, gallery, save, disabled = fals
   return <section className="profile-video-editor" aria-label="Profilmedien bearbeiten">
     <ProfileHeaderMedia key={video?.src ?? "gallery"} video={video} name={name} gallery={gallery} />
     <div className="profile-video-actions">
-      <button type="button" className="button" disabled={Boolean(busy) || disabled} onClick={() => input.current?.click()}>{video ? "Video ersetzen" : "Video hinzufügen"}</button>
+      <button type="button" className="button" disabled={Boolean(busy) || disabled} onClick={() => openLibrary ? openLibrary() : input.current?.click()}>{video ? "Video ersetzen" : "Video hinzufügen"}</button>
       {video && <button type="button" className="button" disabled={Boolean(busy) || disabled} onClick={() => {
         if (window.confirm("Das Profilvideo entfernen und wieder die Galerie anzeigen?")) void mutate();
       }}>Video entfernen</button>}

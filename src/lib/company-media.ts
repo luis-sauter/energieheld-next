@@ -22,7 +22,7 @@ export type MediaProfile = {
   company_profile_images?: MediaRow[];
 };
 export type SignedMedia = {
-  video?: { src: string; poster?: string };
+  video?: { src: string; poster?: string; external?: boolean };
   logo?: PortalImage;
   contactImage?: PortalImage;
   images: (PortalImage & { id: string })[];

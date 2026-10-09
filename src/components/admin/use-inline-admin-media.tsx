@@ -1,4 +1,5 @@
 "use client";
+import {removeLibraryVideo} from '@/app/(energieheld)/admin/mediathek/actions';
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -15,12 +16,13 @@ import { DEFAULT_IMAGE_CROP, panImageCrop, type ImageCrop } from "@/lib/image-cr
 import { useMediaLibrary } from "./media-library-context";
 import { moveImageId } from "@/lib/media-order";
 
-export function useInlineAdminMedia({ saveAction, media, rows, profileName, initials }: {
+export function useInlineAdminMedia({ saveAction, media, rows, profileName, initials, profileId }: {
   saveAction: (form: FormData) => Promise<MediaState>;
   media: SignedMedia;
   rows: MediaRow[];
   profileName: string;
   initials: string;
+  profileId: string;
 }) {
   const router = useRouter();
   const library = useMediaLibrary();
@@ -279,5 +281,5 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
       </form>
     </dialog>
   );
-  return { logoEditor, galleryEditor: <ProfileVideoEditor video={media.video ? { ...media.video, poster: media.images[0]?.src } : undefined} name={profileName} gallery={galleryEditor} save={saveAction} disabled={Boolean(busy)} onBusyChange={active => { if (active) begin("Video wird gespeichert …"); else end(); }} />, status, uploadDialog, busy: Boolean(busy) };
+  return { logoEditor, galleryEditor: <ProfileVideoEditor video={media.video ? { ...media.video, poster: media.images[0]?.src } : undefined} name={profileName} gallery={galleryEditor} openLibrary={() => library?.open({kind:"video"})} save={form=>form.get("intent")==="video-remove" ? removeLibraryVideo(profileId) : saveAction(form)} disabled={Boolean(busy)} onBusyChange={active => { if (active) begin("Video wird gespeichert …"); else end(); }} />, status, uploadDialog, busy: Boolean(busy) };
 }

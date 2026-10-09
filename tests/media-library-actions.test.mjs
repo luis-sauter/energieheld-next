@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {registerHooks} from 'node:module';
 registerHooks({resolve(s,c,n){if(s==='server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};if(s==='@/lib/supabase/server')return {url:'data:text/javascript,export const createClient=async()=>globalThis.__mediaActionClient;',shortCircuit:true};if(s.startsWith('@/'))return n(new URL('../src/'+s.slice(2)+'.ts',import.meta.url).href,c);return n(s,c);}});
 await import('./helpers/load-ts.mjs');
-const {searchLibraryProfiles,libraryProfiles,updateLibraryAsset}=await import('../src/app/(energieheld)/admin/mediathek/actions.ts');
+const {searchLibraryProfiles,libraryProfiles,updateLibraryAsset,createLibraryCompany}=await import('../src/app/(energieheld)/admin/mediathek/actions.ts');
 const {recordMediaPermission,readMediaRights,mediaMayUse}=await import('../src/lib/media-library.ts');
 const profile='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',other='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',asset='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 function client({admin=true,rights='Original license',rows=Array.from({length:31},(_,i)=>({id:String(i),display_name:'Company '+i}))}={}){
@@ -18,4 +18,13 @@ test('saving documented permission preserves license/source and other scopes, su
  const reloaded=client({rights:c.saved.rights});const f=form();f.set('permission_evidence','');assert.ok((await updateLibraryAsset(asset,f)).success);assert.equal(readMediaRights(reloaded.saved.rights).permissions.length,1);
  for(const field of ['permission_profile','permission_scope']){const denied=client();const f=form();f.set(field,'invalid');assert.ok((await updateLibraryAsset(asset,f)).error);assert.equal(denied.saved,undefined);}
  const denied=client({admin:false});assert.ok((await updateLibraryAsset(asset,form())).error);assert.equal(denied.saved,undefined);
+});
+
+test('company creation verifies admin and input server-side before atomic RPC; no Auth-user or mail operation',async()=>{
+ const f=new FormData();f.set('name','Pension');f.set('city','Ort');f.set('country','Österreich');f.set('website','https://example.org');
+ const c=client();let args;c.rpc=async(name,parameters)=>{args={name,parameters};return {data:{id:profile,display_name:'Pension'},error:null};};
+ assert.equal((await createLibraryCompany(f)).id,profile);assert.equal(args.name,'media_library_create_company');assert.equal(args.parameters.p_override,false);assert.equal(args.parameters.p_country,'Österreich');
+ f.set('override','yes');await createLibraryCompany(f);assert.equal(args.parameters.p_override,true);
+ f.set('website','javascript:alert(1)');assert.ok((await createLibraryCompany(f)).error);
+ client({admin:false});assert.ok((await createLibraryCompany(f)).error);
 });

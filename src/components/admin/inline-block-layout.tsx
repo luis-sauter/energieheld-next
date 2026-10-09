@@ -115,7 +115,7 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
   ];
   const toolbar = <>
     <div className={styles.blockToolbar} aria-label="Block bearbeiten">
-      <strong className={styles.blockType}>Blocktyp: {pair ? "Text + Bild" : special ? sectionLabel ?? "Redaktioneller Abschnitt" : block.type === "heading" ? "Überschrift" : block.type === "text" ? "Text" : "Bild"}</strong>
+      <strong className={styles.blockType}>Blocktyp: {pair ? "Text + Bild" : special ? sectionLabel ?? "Redaktioneller Abschnitt" : block.type === "heading" ? "Überschrift" : block.type === "text" ? "Text" : block.type === "video" ? "Video" : "Bild"}</strong>
       {pairedPart ? <>
         <div className={styles.controlGroup} role="group" aria-label="Textausrichtung">
           {positions.map(({ value, label }) => <button key={value} type="button" className="button"

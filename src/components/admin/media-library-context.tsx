@@ -46,7 +46,7 @@ export function MediaLibraryProvider({ profileId, profileName, children }: { pro
       onCancel={event => { event.preventDefault(); void close(); }}
       onClose={() => { setTarget(null); returnFocus.current?.focus(); }}>
       {error && <p role="alert">{error}</p>}
-      {target && <Browser initialProfileId={profileId} initialProfileName={profileName} target={{ ...target, profileId }} onBusy={setBusy}
+      {target && <Browser initialProfileId={profileId} initialProfileName={profileName} initialKind={target.kind === "video" || target.kind === "video_block" ? "video" : target.kind} target={{ ...target, profileId }} onBusy={setBusy}
         onClose={close} onApplied={async () => {
           applied.current = true;
           await target.onApplied?.();

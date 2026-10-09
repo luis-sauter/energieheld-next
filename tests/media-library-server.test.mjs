@@ -5,13 +5,14 @@ const {attachMediaLibraryAsset,mediaLibraryUpload,mediaLibraryPage}=await import
 const {mediaSelectionLimit,canReuseMediaPath,recordMediaPermission,mediaMayUse,readMediaRights,companySearchPattern}=await import('../src/lib/media-library.ts');
 const profile='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',other='dddddddd-dddd-4ddd-8ddd-dddddddddddd',assetId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',block='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 const png=new Blob([new Uint8Array([137,80,78,71,13,10,26,10,0,0,0,0])],{type:'image/png'});
-function mock({admin=true,bucket='company-media',sourceProfile=profile,sourcePath='profiles/'+profile+'/gallery/'+assetId+'.png',rows=[],invalid=false,archived=false,rights=''}={}){
+function mock({kind='gallery',admin=true,bucket='company-media',sourceProfile=profile,sourcePath='profiles/'+profile+'/gallery/'+assetId+'.png',rows=[],invalid=false,archived=false,rights=''}={}){
  const calls=[],files=new Map(),objects=new Map(),images=[...rows];let galleryId=0;
- const asset={rights,id:assetId,profile_id:sourceProfile,bucket_id:bucket,storage_path:sourcePath,kind:'gallery',name:'Bild',alt_text:'Alt',archived_at:archived?'now':null};
+ const asset={rights,id:assetId,profile_id:sourceProfile,bucket_id:bucket,storage_path:sourcePath,kind,name:'Bild',alt_text:'Alt',archived_at:archived?'now':null};
  const client={calls,files,images,auth:{getUser:async()=>({data:{user:{id:'admin'}},error:null})},
  from(table){const q={filters:{},action:null,payload:null,select(){return q;},eq(k,v){q.filters[k]=v;return q;},is(k,v){q.filters[k]=v;return q;},limit(){return q;},order(){return q;},update(v){q.action='update';q.payload=v;return q;},insert(v){q.action='insert';q.payload=v;return q;},async maybeSingle(){return result();},async single(){return result();},then(resolve,reject){return Promise.resolve(result()).then(resolve,reject);}};
  function result(){calls.push({table,...q.filters,action:q.action,payload:q.payload});
  if(table==='portal_admins')return {data:admin?{user_id:'admin'}:null,error:null};
+ if(table==='media_library_assets'&&q.filters.sha256)return {data:null,error:null};
  if(table==='media_library_assets')return {data:archived?null:asset,error:null};
  if(table==='media_library_files'){if(q.action==='insert'){files.set(q.payload.context_key,q.payload.storage_path);return {data:{},error:null};}return {data:files.has(q.filters.context_key)?{storage_path:files.get(q.filters.context_key)}:null,error:null};}
  if(table==='company_profiles')return {data:{id:profile,slug:'firma',logo_path:null,contact_image_path:null,company_profile_images:images},error:null};
@@ -93,4 +94,18 @@ test('historical scoped license metadata is preserved but no longer blocks verif
  const rights=recordMediaPermission('License','License',profile,'Gallery only',['gallery']);
  const c=mock({sourceProfile:other,rights});assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'logo'})).success);assert.equal(c.calls.some(v=>v.upload),true);
  assert.equal(mediaMayUse({profile_id:other,bucket_id:'company-media',rights},profile,'gallery'),true);
+});
+
+test('video library uses existing validators, preserves originals and never inserts a video in image/banner targets',async()=>{
+ const bytes=new Uint8Array([0,0,0,20,...Buffer.from('ftypisom'),0,0,0,0,...Buffer.from('mp42')]);
+ const path=`profiles/${profile}/video/${assetId}.mp4`;
+ const c=mock({kind:'video',bucket:'company-profile-videos',sourcePath:path});c.storage.from('company-profile-videos');
+ const prepare=new FormData();for(const [key,value] of Object.entries({intent:'prepare-video',file_type:'video/mp4',file_size:'20'}))prepare.set(key,value);
+ assert.ok((await mediaLibraryUpload(c,profile,prepare)).uploadPath.startsWith(`profiles/${profile}/video/`));
+ const original=c.storage.from; c.storage.from=bucket=>({...original(bucket),download:async()=>({data:new Blob([bytes],{type:'video/mp4'}),error:null})});
+ const finish=new FormData();finish.set('intent','video-upload');finish.set('uploaded_path',path);finish.set('file_name','Original.mp4');
+ assert.ok((await mediaLibraryUpload(c,profile,finish)).success);assert.equal(c.calls.find(call=>call.rpc==='media_library_register_video').args.p_name,'Original.mp4');assert.equal(c.calls.some(call=>call.payload?.video_path),false);
+ assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'video'})).success);assert.equal(c.calls.find(call=>call.rpc==='media_library_use_video').args.p_block,null);
+ assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'gallery'})).error);assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:other,kind:'video'})).error);
+ assert.equal(c.calls.some(call=>call.upload||call.remove),false);
 });

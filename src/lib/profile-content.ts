@@ -1,9 +1,11 @@
+import {VIDEO_BUCKET,isProfileVideoPath} from './profile-video';
+import {externalVideoEmbed} from './external-video';
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ImageGridConfig } from "./image-grid-layout";
 import { normalizeTextBlockLayout, type TextAlignment, type TextBlockLayout } from "./content-block-layout";
 import type { ImageCrop } from "./image-crop";
 
-export type ContentBlockType = "heading" | "text" | "image_grid";
+export type ContentBlockType = "heading" | "text" | "image_grid" | "video";
 export type TextBlockType = Exclude<ContentBlockType, "image_grid">;
 export type HeadingSlot = "about_heading" | "business_areas_heading";
 export const ABOUT_SECTION = "section:about";
@@ -23,19 +25,20 @@ export type ProfileContentBlock = {
   type: ContentBlockType;
   slot: HeadingSlot | null;
   sort_order: number;
-  content: { text: string; layout?: Partial<TextBlockLayout>; hidden?: boolean; order?: string[];
+  content: { text: string; title?:string; layout?: Partial<TextBlockLayout>; hidden?: boolean; order?: string[];
     hidden_blocks?: string[]; deleted_sections?: string[]; pair_layouts?: Record<string, Partial<TextBlockLayout>>;
     adjacent_image_id?: string; pending_image_id?: string; heading_align?: TextAlignment;
     body_align?: TextAlignment; heading_hidden?: boolean };
   config?: Partial<ImageGridConfig & TextBlockLayout>;
   images?: ProfileBlockImage[];
+  video?: {src:string;external?:boolean};
   pair_layout?: Partial<TextBlockLayout>;
 };
 
 export function contentText(value: unknown, type: TextBlockType) {
   if (typeof value !== "string") return null;
   const text = value.trim();
-  return text.length > 0 && text.length <= (type === "heading" ? 200 : 10000)
+  return (text.length > 0 || type === "video") && text.length <= (type === "heading" ? 200 : 10000)
     ? text : null;
 }
 
@@ -145,7 +148,7 @@ export async function loadPublicProfileContent(client: SupabaseClient, profileId
       .order("id");
     if (error) throw error;
     const blocks = ((data ?? []) as ProfileContentBlock[]).filter((block) =>
-      ((block.type === "heading" || block.type === "text") && typeof block.content?.text === "string" ||
+      ((block.type === "heading" || block.type === "text" || block.type === "video") && typeof block.content?.text === "string" ||
         block.type === "image_grid" && block.slot === null &&
         Number.isInteger(block.config?.columns) && (block.config?.columns ?? 0) >= 1 && (block.config?.columns ?? 0) <= 4) &&
       (block.slot === null || block.slot === "about_heading" || block.slot === "business_areas_heading")
@@ -187,6 +190,19 @@ export async function loadPublicProfileContent(client: SupabaseClient, profileId
         if (probe.error) imagesAvailable = false;
       }
     } catch { imagesAvailable = false; }
+    const videoBlocks = blocks.filter(block => block.type === 'video');
+    if (videoBlocks.length) {
+      const refs = await client.from('profile_video_uses').select('block_id,storage_path,external_url').eq('profile_id',profileId).in('block_id',videoBlocks.map(block=>block.id));
+      if (!refs.error) {
+        const paths = (refs.data ?? []).map(row=>row.storage_path).filter((path):path is string=>typeof path==='string' && isProfileVideoPath(profileId,path));
+        const signed = paths.length ? await client.storage.from(VIDEO_BUCKET).createSignedUrls(paths,3600) : {data:[],error:null};
+        const urls = new Map((signed.data ?? []).map(row=>[row.path,row.signedUrl]));
+        for (const block of videoBlocks) { const ref=refs.data?.find(row=>row.block_id===block.id);
+          if (ref?.external_url && externalVideoEmbed(ref.external_url)) block.video={src:ref.external_url,external:true};
+          else if (ref?.storage_path && urls.get(ref.storage_path)) block.video={src:urls.get(ref.storage_path)!};
+        }
+      }
+    }
     return { blocks, available: true, imagesAvailable };
   } catch {
     // The page must retain its structured content before this repository-only migration is deployed.

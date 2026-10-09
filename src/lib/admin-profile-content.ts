@@ -97,7 +97,7 @@ export async function changeAdminProfileContent(
 
   if (intent === "insert") {
     const type = form.get("type");
-    if (type !== "heading" && type !== "text" && type !== "image_grid")
+    if (type !== "heading" && type !== "text" && type !== "image_grid" && type !== "video")
       return { access: "admin", error: "Bitte wählen Sie Überschrift, Text oder Bilder." };
     const blockType: ContentBlockType = type;
     const value = blockType === "image_grid" ? "" : contentText(form.get("text"), blockType);
@@ -111,7 +111,7 @@ export async function changeAdminProfileContent(
     });
     return error || !isProfileId(data)
       ? { access: "admin", error: failed }
-      : { access: "admin", success: "Der Inhaltsblock wurde hinzugefügt." };
+      : { access: "admin", success: "Der Inhaltsblock wurde hinzugefügt.", blockId: data };
   }
 
   if (intent === "reorder") {
@@ -144,7 +144,7 @@ export async function changeAdminProfileContent(
   if (intent === "duplicate") {
     const { data: source, error: sourceError } = await client.from("profile_content_blocks")
       .select("id,type,slot").eq("profile_id", id).eq("id", blockId).is("slot", null).maybeSingle();
-    if (sourceError || !source || !["heading", "text", "image_grid"].includes(source.type))
+    if (sourceError || !source || !["heading", "text", "image_grid", "video"].includes(source.type))
       return { access: "admin", error: missing };
     const { data, error } = await client.rpc("duplicate_profile_content_block", {
       p_profile_id: id, p_block_id: blockId,
@@ -158,7 +158,7 @@ export async function changeAdminProfileContent(
   if (intent === "layout") {
     const { data: block, error: readError } = await client.from("profile_content_blocks")
       .select("id,type,slot,config").eq("profile_id", id).eq("id", blockId).is("slot", null).maybeSingle();
-    if (readError || !block || !["heading", "text", "image_grid"].includes(block.type))
+    if (readError || !block || !["heading", "text", "image_grid", "video"].includes(block.type))
       return { access: "admin", error: missing };
     if (!hasPersistedBlockLayout(block.config))
       return { access: "admin", error: "Die Layoutsteuerung ist verfügbar, sobald die neue Datenbankmigration angewendet ist." };
@@ -247,9 +247,11 @@ export async function changeAdminProfileContent(
   if (block.type === "image_grid")
     return { access: "admin", error: "Dieser Bildblock wird über seine Bildsteuerung bearbeitet." };
   const value = contentText(form.get("text"), block.type);
-  if (!value) return { access: "admin", error: "Bitte geben Sie gültigen Inhalt ein." };
+  if (value === null) return { access: "admin", error: "Bitte geben Sie gültigen Inhalt ein." };
+  const title = block.type === 'video' ? String(form.get('title') ?? '').trim() : undefined;
+  if (title && title.length > 200) return {access:'admin',error:'Titel darf maximal 200 Zeichen enthalten.'};
   const { data, error } = await client.from("profile_content_blocks")
-    .update({ content: { text: value } }).eq("profile_id", id).eq("id", blockId)
+    .update({ content: { text: value, ...(title !== undefined ? {title} : {}) } }).eq("profile_id", id).eq("id", blockId)
     .is("slot", null).select("id").maybeSingle();
   return error || data?.id !== blockId
     ? { access: "admin", error: failed }
