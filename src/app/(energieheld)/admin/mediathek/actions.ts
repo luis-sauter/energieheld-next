@@ -2,7 +2,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { checkAdmin, isProfileId } from '@/lib/admin-review';
 import { mediaLibraryPage, mediaLibraryUpload, attachMediaLibraryAsset } from '@/lib/media-library-server';
-import type { MediaLibraryTarget } from '@/lib/media-library';
+import { companySearchPattern, recordMediaPermission, MEDIA_PERMISSION_KINDS, type MediaLibraryTarget } from '@/lib/media-library';
 import type { MediaState } from '@/lib/company-media';
 export async function libraryProfiles(profileId?: string) {
     const client = await createClient();
@@ -11,29 +11,29 @@ export async function libraryProfiles(profileId?: string) {
     const synced = await client.rpc('media_library_sync');
     if (synced.error)
         return { items: [], error: 'Die Mediathek konnte nicht aktualisiert werden.' };
-    const rows = await client.from('company_profiles').select('id,display_name').order('display_name').limit(500);
-    if (rows.error)
-        return { items: [], error: 'Unternehmen konnten nicht geladen werden.' };
-    if (profileId && !rows.data.some(p => p.id === profileId) && isProfileId(profileId)) {
-        const current = await client.from('company_profiles').select('id,display_name').eq('id', profileId).maybeSingle();
-        if (current.data)
-            rows.data.unshift(current.data);
-    }
-    return { items: rows.data as {
-            id: string;
-            display_name: string;
-        }[] };
+    const current = profileId && isProfileId(profileId) ? await client.from('company_profiles').select('id,display_name').eq('id', profileId).maybeSingle() : null;
+    return { items: current?.data ? [current.data] : [], error: current?.error ? 'Unternehmen konnte nicht geladen werden.' : undefined };
 }
+export async function searchLibraryProfiles(query = '', page = 1) {
+    const client = await createClient();
+    if (await checkAdmin(client) !== 'admin') return { items: [], more: false, error: 'Keine Berechtigung.' };
+    const offset = (Math.max(1, Math.min(10000, Math.floor(page) || 1)) - 1) * 30;
+    let request = client.from('company_profiles').select('id,display_name').order('display_name').order('id');
+    if (query.trim()) request = request.filter('display_name', 'imatch', companySearchPattern(query));
+    const rows = await request.range(offset, offset + 30);
+    return { items: (rows.data ?? []).slice(0, 30), more: (rows.data?.length ?? 0) > 30, error: rows.error ? 'Unternehmen konnten nicht geladen werden.' : undefined };
+}
+
 export async function loadLibrary(profileId: string | null, kind: string, query: string, page: number, archived: boolean) {
     return mediaLibraryPage(await createClient(), profileId, kind, query, page, archived);
 }
 export async function uploadLibrary(profileId: string, form: FormData): Promise<MediaState> {
     return mediaLibraryUpload(await createClient(), profileId, form);
 }
-export async function applyLibraryAsset(id: string, target: MediaLibraryTarget, rights: boolean): Promise<MediaState> {
-    return attachMediaLibraryAsset(await createClient(), id, target, rights);
+export async function applyLibraryAsset(id: string, target: MediaLibraryTarget): Promise<MediaState> {
+    return attachMediaLibraryAsset(await createClient(), id, target);
 }
-export async function updateLibraryAsset(id: string, form: FormData): Promise<MediaState> {
+export async function updateLibraryAsset(id: string, form: FormData): Promise<MediaState & { rights?: string }> {
     const client = await createClient();
     if (await checkAdmin(client) !== 'admin' || !isProfileId(id))
         return { error: 'Keine Berechtigung.' };
@@ -44,8 +44,23 @@ export async function updateLibraryAsset(id: string, form: FormData): Promise<Me
             return { error: 'Bitte prüfen Sie Name und Bilddetails.' };
         fields[key] = v.trim();
     }
+    const loaded = await client.from('media_library_assets').select('rights').eq('id', id).is('deletion_requested_at', null).maybeSingle();
+    if (loaded.error || !loaded.data) return { error: 'Bilddetails konnten nicht geladen werden.' };
+    const destination = String(form.get('permission_profile') ?? '');
+    const evidence = String(form.get('permission_evidence') ?? '').trim();
+    const scope = String(form.get('permission_scope') ?? 'all');
+    const requested = scope.split(',');
+    if (scope !== 'all' && !requested.every(value => MEDIA_PERMISSION_KINDS.some(k => k === value))) return { error: 'Ungültiger Nutzungsumfang.' };
+    const kinds = scope === 'all' ? MEDIA_PERMISSION_KINDS : MEDIA_PERMISSION_KINDS.filter(k => requested.includes(k));
+    if (destination) {
+        if (!isProfileId(destination) || evidence.length > 500) return { error: 'Bitte prüfen Sie die Nutzungserlaubnis.' };
+        const profile = await client.from('company_profiles').select('id').eq('id', destination).maybeSingle();
+        if (profile.error || !profile.data) return { error: 'Zielunternehmen nicht gefunden.' };
+    }
+    fields.rights = recordMediaPermission(loaded.data.rights, fields.rights, destination, evidence, kinds);
+    if (fields.rights.length > 1000) return { error: 'Lizenzangaben und Nutzungserlaubnisse dürfen zusammen maximal 1000 Zeichen enthalten.' };
     const result = await client.from('media_library_assets').update(fields).eq('id', id).is('deletion_requested_at', null).select('id').maybeSingle();
-    return result.error || !result.data ? { error: 'Bilddetails konnten nicht gespeichert werden.' } : { success: 'Bilddetails gespeichert. Bestehende Verwendungs-Alt-Texte bleiben erhalten.' };
+    return result.error || !result.data ? { error: 'Bilddetails konnten nicht gespeichert werden.' } : { success: 'Bilddetails gespeichert. Bestehende Verwendungs-Alt-Texte bleiben erhalten.', rights: fields.rights };
 }
 export async function archiveLibraryAsset(id: string, archived: boolean): Promise<MediaState> {
     const client = await createClient();
