@@ -1,4 +1,5 @@
 import "server-only";
+import { isPubliclyListed } from "./profile-public-visibility";
 import { companyProfileListing } from "./company-presentation";
 import { signCompanyMedia, type MediaRow } from "./company-media";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -10,7 +11,7 @@ export const PUBLIC_COMPANIES_ERROR =
   "Die Unternehmensprofile konnten gerade nicht geladen werden.";
 
 const publicFields =
-  "id,status,slug,display_name,tagline,description,phone,public_email,website,street,postal_code,city,region,country,logo_path,company_profile_images(id,storage_path,alt_text,sort_order),business_areas,company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note)";
+  "id,status,slug,display_name,tagline,description,phone,public_email,website,street,postal_code,city,region,country,logo_path,company_profile_images(id,storage_path,alt_text,sort_order),business_areas,company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note),company_profile_public_visibility(is_listed)";
 // Older public column grants omit street. Keep approved profiles readable until
 // that grant is deployed; the existing city-level map remains available.
 const publicFieldsWithoutStreet = publicFields.replace("website,street,postal_code", "website,postal_code");
@@ -24,16 +25,17 @@ export async function loadPublicCompanyProfileIndex() {
     company_profile_categories: { category_id: string }[] }[] = [];
   for (let offset = 0; ; offset += 500) {
     const { data, error } = await client.from("company_profiles")
-      .select("id,status,slug,display_name,tagline,description,business_areas,city,postal_code,region,country,company_profile_categories(category_id)")
+      .select("id,status,slug,display_name,tagline,description,business_areas,city,postal_code,region,country,company_profile_categories(category_id),company_profile_public_visibility(is_listed)")
       .eq("status", "approved").order("id").range(offset, offset + 499);
     if (error) throw new Error(PUBLIC_COMPANIES_ERROR);
     const rows = data ?? [];
-    profiles.push(...rows.filter(row => row.status === "approved"));
+    profiles.push(...rows.filter(row => row.status === "approved" && isPubliclyListed(row)));
     if (rows.length < 500) return profiles;
   }
 }
 
 type PublicProfile = {
+  company_profile_public_visibility?: {is_listed:boolean} | {is_listed:boolean}[] | null;
   id: string;
   status: string;
   slug: string;
@@ -90,7 +92,7 @@ export async function loadPublicCompanyDirectory(): Promise<Result<{ listings: L
       }
       if (error) throw error;
       const rows = data as unknown as PublicProfile[];
-      profiles.push(...rows.filter((row) => row.status === "approved"));
+      profiles.push(...rows.filter((row) => row.status === "approved" && isPubliclyListed(row)));
       if (rows.length < pageSize) break;
     }
     const orderRows: DirectoryOrderRow[] = [];
@@ -158,7 +160,7 @@ export async function loadPublicCompanyBySlug(
     if (error) throw error;
     return {
       data:
-        data?.status === "approved"
+        data?.status === "approved" && isPubliclyListed(data)
           ? await toListing(client, data as PublicProfile, true)
           : null,
       error: null,

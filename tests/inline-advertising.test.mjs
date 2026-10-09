@@ -315,7 +315,7 @@ test("conflict returns error without approval and storage replacement cleanup st
 });
 
 test("approval failure does not claim public success and keeps saved pending creative", async () => {
-  const db = client({ campaign: { status: "pending" }, reviewError: { message: "ad_booking_conflict" } });
+  const db = client({ campaign: { status: "pending", internal_name: "", is_editorial:true }, reviewError: { message: "ad_booking_conflict" } });
   const result = await saveInlineAd(db, "/mottoreisen/wellnessangebote", form());
   assert.ok(result.error); assert.equal(result.success, undefined); assert.equal(db.row.status, "pending");
 });
@@ -345,4 +345,13 @@ test('crop-only mutations authorize the page/source and never alter campaign, bo
  assert.ok(!legacy.calls.some(x=>x.bucket));
  assert.ok((await saveInlineAdCrop(client(),'/reiseziele/schweiz',form({focus_x:'20',focus_y:'80',zoom:'2'}))).error);
  assert.ok((await saveInlineAdCrop(client(),'/mottoreisen/wellnessangebote',form({focus_x:'-1',focus_y:'80',zoom:'2'}))).error);
+});
+
+test('existing draft/pending/paused editorial banner replacement never approves or resumes implicitly',async()=>{
+ for(const status of ['draft','pending','paused']){
+  const db=client({campaign:{status,internal_name:'Existing banner',is_editorial:true}}),before=structuredClone(db.row);
+  const result=await saveInlineAd(db,'/mottoreisen/wellnessangebote',form());assert.ok(result.success);assert.equal(db.row.status,status);
+  assert.equal(db.row.requested_start_date,before.requested_start_date);assert.equal(db.row.requested_end_date,before.requested_end_date);
+  assert.ok(!db.calls.some(c=>c.rpc==='review_ad_campaign'));
+ }
 });

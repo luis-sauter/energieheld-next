@@ -123,7 +123,7 @@ export async function CampaignDetail({
             <>
               <h3>Anfrage und Zeitraum prüfen</h3>
               {inlineHref ? <p><Link className="button button-primary" href={inlineHref}>Banner auf der Seite gestalten</Link> · Derselbe Banner, am tatsächlichen Platz.</p> : <p>Dieser Banner wird hier sicher bearbeitet. Geplante, geteilte oder noch nicht freigegebene Kampagnen werden nicht automatisch auf einer Seite veröffentlicht.</p>}
-              <CampaignForm campaign={campaign} categoryIds={[]} admin bannerMetadata={metadata?.values.get(`campaign:${campaign.id}`)} bannerTerms={metadata?.terms} bannerAdvertisers={metadata?.advertisers} />
+              <CampaignForm campaign={campaign} categoryIds={[]} admin profileName={campaign.companyName} bannerMetadata={metadata?.values.get(`campaign:${campaign.id}`)} bannerTerms={metadata?.terms} bannerAdvertisers={metadata?.advertisers} />
               {Object.hasOwn(campaign, 'archived_at') && <CampaignLifecycle id={campaign.id} archived={false} />}
               <h3>Freigabe</h3>
               <CampaignSlot

@@ -111,3 +111,12 @@ test('public invoker bridges work without private schema USAGE and expose no new
  await actor(owner);await denied("select media_library_asset_references('company-media',$1)",[path]);
  await db.exec('reset role');assert.equal((await db.query("select count(*)::int n from pg_proc p join pg_namespace s on s.oid=p.pronamespace where s.nspname='public' and p.proname like 'media_library_%' and p.prosecdef")).rows[0].n,0);
 });
+
+test('all known legacy banner originals cataloged idempotently without changing files/profiles/campaigns',async()=>{
+ const before=(await db.query("select (select count(*)::int from storage.objects) objects,(select count(*)::int from company_profiles) profiles,(select count(*)::int from company_ad_campaigns) campaigns")).rows[0];
+ const sql=await readFile(new URL('../supabase/migrations/20261009173214_catalog_legacy_banner_originals.sql',import.meta.url),'utf8');
+ await db.exec(sql);await db.exec(sql);
+ assert.equal((await db.query("select count(*)::int n from media_library_assets where bucket_id='project-media' and kind='banner'")).rows[0].n,97);
+ assert.equal((await db.query("select count(*)::int n from media_library_files where bucket_id='project-media'")).rows[0].n,97);
+ const after=(await db.query("select (select count(*)::int from storage.objects) objects,(select count(*)::int from company_profiles) profiles,(select count(*)::int from company_ad_campaigns) campaigns")).rows[0];assert.deepEqual(after,before);
+});

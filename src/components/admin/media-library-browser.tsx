@@ -3,13 +3,17 @@ import { startTransition, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { applyLibraryAsset, archiveLibraryAsset, deleteLibraryAsset, libraryProfiles, loadLibrary, updateLibraryAsset, uploadLibrary } from '@/app/(energieheld)/admin/mediathek/actions';
 import { uploadPreparedAdminMedia } from '@/lib/admin-media-upload';
-import { mediaMayUse, readMediaRights, mediaSelectionLimit, MEDIA_LIBRARY_PAGE_SIZE, type MediaAsset, type MediaLibraryPage, type MediaLibraryTarget } from '@/lib/media-library';
+import { readMediaRights, mediaSelectionLimit, MEDIA_LIBRARY_PAGE_SIZE, type MediaAsset, type MediaLibraryPage, type MediaLibraryTarget } from '@/lib/media-library';
 import styles from './media-library.module.css';
 import { MediaLibraryCompanyPicker } from './media-library-company-picker';
 import { revealMediaDetails, restoreMediaGrid } from '@/lib/media-library-navigation';
 const kinds = [['', 'Alle Bildtypen'], ['gallery', 'Unternehmensbilder'], ['logo', 'Logos'], ['contact', 'Ansprechpartnerbilder'], ['block', 'Inhaltsblöcke'], ['banner', 'Werbebanner'], ['unused', 'Nicht verwendete Medien']];
-export function MediaLibraryBrowser({ initialProfileId, target, onClose, onApplied, onBusy }: {
+export function MediaLibraryBrowser({ initialProfileId, initialProfileName, initialKind, target, onClose, onApplied, onBusy, onSelected, onUpload }: {
     initialProfileId?: string;
+    initialProfileName?: string;
+    initialKind?: string;
+    onSelected?: (asset: MediaAsset) => void | Promise<void>;
+    onUpload?: (file: File) => void | Promise<void>;
     target?: MediaLibraryTarget;
     onClose?: () => void;
     onApplied?: () => void | Promise<void>;
@@ -18,8 +22,8 @@ export function MediaLibraryBrowser({ initialProfileId, target, onClose, onAppli
     const [profile, setProfile] = useState(initialProfileId ?? ''), [profiles, setProfiles] = useState<{
         id: string;
         display_name: string;
-    }[]>([]);
-    const [query, setQuery] = useState(''), [kind, setKind] = useState(''), [page, setPage] = useState(1), [archived, setArchived] = useState(false), [revision, setRevision] = useState(0);
+    }[]>(initialProfileId && initialProfileName ? [{id:initialProfileId,display_name:initialProfileName}] : []);
+    const [query, setQuery] = useState(''), [kind, setKind] = useState(initialKind ?? ''), [page, setPage] = useState(1), [archived, setArchived] = useState(false), [revision, setRevision] = useState(0);
     const [result, setResult] = useState<MediaLibraryPage>({ items: [], count: 0 }), [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [status, setStatus] = useState(''), [error, setError] = useState('');
     const [selected, setSelected] = useState<MediaAsset[]>([]), [details, setDetails] = useState<MediaAsset | null>(null), [dimensions, setDimensions] = useState('');
     const lock = useRef(false), upload = useRef<HTMLInputElement>(null), container = useRef<HTMLElement>(null), heading = useRef<HTMLHeadingElement>(null), returnDetails = useRef<HTMLElement | null>(null), gridScroll = useRef(0);
@@ -30,13 +34,13 @@ export function MediaLibraryBrowser({ initialProfileId, target, onClose, onAppli
         setDetails(null);
         if (container.current) restoreMediaGrid(container.current, returnDetails.current, gridScroll.current);
     }
-    const limit = mediaSelectionLimit(target), needsRights = Boolean(target && selected.some(a => !mediaMayUse(a, target.profileId, target.kind)));
-    useEffect(() => { let alive = true; startTransition(() => { void libraryProfiles(initialProfileId).then(r => { if (alive) {
+    const limit = onSelected ? 1 : mediaSelectionLimit(target);
+    useEffect(() => { if (initialProfileName) return; let alive = true; startTransition(() => { void libraryProfiles(initialProfileName ? undefined : initialProfileId).then(r => { if (alive) {
         setProfiles(current => [...current, ...r.items.filter(p => !current.some(v => v.id === p.id))]);
         if (r.error)
             setError(r.error);
     } }).catch(() => { if (alive)
-        setError('Unternehmen konnten nicht geladen werden.'); }); }); return () => { alive = false; }; }, [initialProfileId]);
+        setError('Unternehmen konnten nicht geladen werden.'); }); }); return () => { alive = false; }; }, [initialProfileId, initialProfileName]);
     useEffect(() => {
         let alive = true;
         const timer = setTimeout(() => { startTransition(() => { void loadLibrary(profile || null, kind, query, page, archived).then(r => { if (alive) {
@@ -65,7 +69,7 @@ export function MediaLibraryBrowser({ initialProfileId, target, onClose, onAppli
         onBusy?.(false);
     } }
     function toggle(a: MediaAsset) { setSelected(current => current.some(v => v.id === a.id) ? current.filter(v => v.id !== a.id) : limit === 1 ? [a] : current.length < limit ? [...current, a] : current); }
-    function useSelected() { void task(async () => { if (!target || !selected.length || selected.length > limit)
+    function useSelected() { void task(async () => { if (onSelected && selected[0]) { await onSelected(selected[0]); return; } if (!target || !selected.length || selected.length > limit)
         return; let applied = 0; for (const asset of selected) {
         const result = await applyLibraryAsset(asset.id, target);
         if (result.error) {
@@ -79,7 +83,7 @@ export function MediaLibraryBrowser({ initialProfileId, target, onClose, onAppli
         if (applied === selected.length)
             await onApplied?.();
     } }); }
-    function uploadFiles(files: FileList | null) { if (!files?.length || !profile)
+    function uploadFiles(files: FileList | null) { if (files?.[0] && onUpload) { void task(async () => { await onUpload(files[0]); }); return; } if (!files?.length || !profile)
         return; const queue = Array.from(files); void task(async () => { let done = 0; for (const file of queue) {
         const prepare = new FormData(), finish = new FormData();
         prepare.set('intent', 'prepare-library');
@@ -92,9 +96,6 @@ export function MediaLibraryBrowser({ initialProfileId, target, onClose, onAppli
         }
         done++;
     } setStatus(done + ' Bild(er) in der Mediathek verfügbar.'); setKind(''); setQuery(''); setPage(1); reload(); }); }
-    const permission = details ? readMediaRights(details.rights).permissions.find(p => p.profileId === (target?.profileId || profile)) : undefined;
-    const permissionScope = permission?.kinds.length === 4 ? 'all' : permission?.kinds.join(',') || 'all';
-    const permissionCompany = profiles.find(p => p.id === (target?.profileId || profile))?.display_name ?? 'dieses Unternehmen';
     const currentName = profiles.find(p => p.id === profile)?.display_name ?? (profile ? 'Bilder dieses Unternehmens' : 'Alle Unternehmen');
     return <section ref={container} className={styles.library} aria-busy={busy || loading}>
  <header className={styles.header}><div><h2 id="media-library-title">Mediathek</h2><p>{currentName}</p></div>{onClose && <button type="button" className="button" disabled={busy} onClick={onClose}>Schließen</button>}</header>
@@ -103,11 +104,12 @@ export function MediaLibraryBrowser({ initialProfileId, target, onClose, onAppli
  <MediaLibraryCompanyPicker value={profile} name={currentName} disabled={busy} onChange={company => { reset(); setProfile(company.id); setProfiles(current => [company, ...current.filter(p => p.id !== company.id)]); }}/>
 
  <label>Bildtyp<select value={kind} disabled={busy} onChange={e => { reset(); setKind(e.target.value); }}>{kinds.map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select></label>
- <button type="button" className="button button-primary" disabled={busy || !profile || archived} onClick={() => upload.current?.click()}>Bilder hochladen</button>
- <input ref={upload} type="file" hidden multiple accept="image/jpeg,image/png,image/webp" onChange={e => { uploadFiles(e.target.files); e.target.value = ''; }}/>
+ <button type="button" className="button button-primary" disabled={busy || (!profile && !onUpload) || archived} onClick={() => upload.current?.click()}>Bilder hochladen</button>
+ <input ref={upload} type="file" hidden multiple={!onUpload} accept="image/jpeg,image/png,image/webp" onChange={e => { uploadFiles(e.target.files); e.target.value = ''; }}/>
  </div>
+ {onSelected && <div className={styles.options} aria-label="Bildquellen"><button type="button" className="button" disabled={busy} onClick={() => { reset(); setKind('banner'); setProfile(''); }}>Alle Werbebanner</button><button type="button" className="button" disabled={busy || !initialProfileId} onClick={() => { reset(); setKind(''); setProfile(initialProfileId!); }}>Unternehmensbilder</button><button type="button" className="button" disabled={busy} onClick={() => { reset(); setKind(''); setProfile(''); }}>Ganze Mediathek</button></div>}
  <div className={styles.options}><label><input type="checkbox" checked={archived} disabled={busy} onChange={e => { reset(); setArchived(e.target.checked); }}/> Archivierte Bilder</label><span>JPG, PNG, WebP · maximal 5 MB nach Optimierung</span></div>
- {!profile && <p className={styles.hint}>Zum Hochladen ein Unternehmen auswählen. Unternehmen können Sie direkt in der Auswahl suchen.</p>}
+ {!profile && !onUpload && <p className={styles.hint}>Zum Hochladen ein Unternehmen auswählen. Unternehmen können Sie direkt in der Auswahl suchen.</p>}
  {error && <p role="alert" className={styles.error}>{error}</p>}{status && <p role="status">{status}</p>}
  {loading ? <p role="status" className={styles.empty}>Bilder werden geladen …</p> : !result.items.length ? <p className={styles.empty}>Keine Bilder gefunden.{profile && !archived ? ' Sie können Bilder direkt hier hochladen.' : ''}</p> : <div className={styles.grid}>
  {result.items.map(a => <article key={a.id} className={styles.card} data-selected={selected.some(s => s.id === a.id)}>
@@ -131,8 +133,6 @@ export function MediaLibraryBrowser({ initialProfileId, target, onClose, onAppli
             reload();
         } }); }}>
  {([['name', 'Name', 200], ['description', 'Bildbeschreibung', 2000], ['alt_text', 'Alt-Text für neue Verwendungen', 500], ['source', 'Quelle', 1000], ['rights', 'Dokumentierte Nutzungsrechte', 1000]] as const).map(([key, label, max]) => <label key={key}>{label}{key === 'description' ? <textarea name={key} rows={3} maxLength={max} defaultValue={details[key]} disabled={busy}/> : <input name={key} maxLength={max} required={key === 'name'} defaultValue={key === 'rights' ? readMediaRights(details.rights).license : details[key]} disabled={busy}/>}</label>)}
- {target && !mediaMayUse(details, target.profileId, target.kind) && <p className={styles.hint}>Für das bearbeitete Unternehmen fehlt eine dokumentierte Nutzungserlaubnis. Lizenzangaben allein erlauben keine Verwendung für andere Unternehmen.</p>}
- {(target?.profileId || profile) && <fieldset className={styles.permission}><legend>Zusätzliche Nutzungserlaubnis für {permissionCompany}</legend><p>Gilt nur für Profilbilder (Galerie, Logo, Ansprechpartner und Inhaltsblöcke) des {target ? 'bearbeiteten' : 'ausgewählten'} Unternehmens. Nur eine tatsächlich belegte Erlaubnis dokumentieren.</p><input type="hidden" name="permission_profile" value={target?.profileId || profile}/><label>Erlaubte Verwendung<select name="permission_scope" disabled={busy} defaultValue={permissionScope}>{permission && permission.kinds.length > 1 && permission.kinds.length < 4 && <option value={permissionScope}>Bisheriger Umfang: {permission.kinds.map(k => ({ gallery: "Galerie", logo: "Logo", contact: "Ansprechpartnerbild", block: "Inhaltsblöcke" })[k]).join(", ")}</option>}<option value="all">Alle Profilbilder</option><option value="gallery">Nur Galerie</option><option value="logo">Nur Logo</option><option value="contact">Nur Ansprechpartnerbild</option><option value="block">Nur Inhaltsblöcke</option></select></label><label>Beleg der Nutzungserlaubnis<textarea name="permission_evidence" rows={2} maxLength={500} disabled={busy} placeholder="Zum Beispiel schriftliche Erlaubnis, Datum und vereinbarte Verwendung" defaultValue={readMediaRights(details.rights).permissions.find(p => p.profileId === (target?.profileId || profile))?.evidence ?? ''}/></label><small>Leer lassen, wenn keine zusätzliche Erlaubnis vorliegt. Eine gespeicherte Erlaubnis für dieses Unternehmen wird dadurch entfernt; andere Erlaubnisse bleiben erhalten.</small></fieldset>}
  <div className={styles.options}><button className="button button-primary" type="submit" disabled={busy}>Bilddetails speichern</button><button className="button" type="button" disabled={busy} onClick={() => void task(async () => { const r = await archiveLibraryAsset(details.id, !details.archived_at); if (r.error)
             setError(r.error);
         else {
@@ -149,7 +149,6 @@ export function MediaLibraryBrowser({ initialProfileId, target, onClose, onAppli
                 setDetails(null);
             } reload(); }); }}>Original endgültig löschen</button>}</div>
  </form></div></aside>}
- {needsRights && <p className={styles.hint}>Für mindestens ein ausgewähltes Bild fehlt eine Nutzungserlaubnis für dieses Unternehmen. Bitte „Bilddetails & Verwendung“ öffnen.</p>}
- {target && <footer className={styles.footer}><span>{selected.length} ausgewählt · {limit} {limit === 1 ? 'Bildplatz' : 'Bildplätze'} verfügbar. Änderungen werden direkt gespeichert.</span><div>{onClose && <button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button>}<button type="button" className="button button-primary" disabled={busy || loading || !selected.length || archived || needsRights} onClick={useSelected}>{busy ? 'Wird gespeichert …' : limit > 1 ? 'Ausgewählte Bilder verwenden' : 'Ausgewähltes Bild verwenden'}</button></div></footer>}
+ {(target || onSelected) && <footer className={styles.footer}><span>{selected.length} ausgewählt · {limit} {limit === 1 ? 'Bildplatz' : 'Bildplätze'} verfügbar. {onSelected ? 'Übernahme erst beim Speichern im Bannereditor.' : 'Änderungen werden direkt gespeichert.'}</span><div>{onClose && <button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button>}<button type="button" className="button button-primary" disabled={busy || loading || !selected.length || archived} onClick={useSelected}>{busy ? 'Wird gespeichert …' : limit > 1 ? 'Ausgewählte Bilder verwenden' : 'Ausgewähltes Bild verwenden'}</button></div></footer>}
  </section>;
 }

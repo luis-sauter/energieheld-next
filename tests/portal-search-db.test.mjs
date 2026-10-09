@@ -35,6 +35,7 @@ before(async () => {
   baseline = (await db.query("select jsonb_build_object('profiles',(select jsonb_agg(to_jsonb(p)) from company_profiles p),'ads',(select jsonb_agg(to_jsonb(a)) from company_ad_campaigns a),'targets',(select jsonb_agg(to_jsonb(t)) from company_ad_campaign_targets t),'policies',(select jsonb_agg(to_jsonb(p) order by schemaname,tablename,policyname) from pg_policies p)) as snapshot")).rows[0].snapshot;
   await db.exec(await read('20261001190000_public_portal_search.sql'));
   await db.exec(await read('20261001193000_portal_search_plain_excerpts.sql'));
+  await db.exec(await read('20261009173154_company_profile_public_visibility.sql'));
   afterMigration = (await db.query("select jsonb_build_object('profiles',(select jsonb_agg(to_jsonb(p)) from company_profiles p),'ads',(select jsonb_agg(to_jsonb(a)) from company_ad_campaigns a),'targets',(select jsonb_agg(to_jsonb(t)) from company_ad_campaign_targets t),'policies',(select jsonb_agg(to_jsonb(p) order by schemaname,tablename,policyname) from pg_policies p)) as snapshot")).rows[0].snapshot;
 });
 after(async () => db?.close()); beforeEach(async () => db.exec('begin')); afterEach(async () => db.exec('rollback'));
@@ -81,7 +82,7 @@ test('public ad projection excludes pause/expired/drafts and internal campaign/c
 });
 
 test('empty/punctuation/very long input, limit/offset caps and invoker permissions', async () => {
-  assert.deepEqual(afterMigration, baseline);
+  assert.deepEqual({...afterMigration,policies:afterMigration.policies.filter(p=>p.tablename!=='company_profile_public_visibility')}, baseline);
   await actor(); for (const word of ['', '!!!', "' | & : * ( )", 'x'.repeat(2000)]) assert.equal((await query(word)).total, 0);
   const metadata = (await db.query("select prosecdef,proconfig from pg_proc where proname='search_public_portal'")).rows[0]; assert.equal(metadata.prosecdef, false); assert.ok(metadata.proconfig.includes('search_path=""'));
   assert.equal((await db.query("select has_table_privilege('anon','portal_search_documents','UPDATE') as write")).rows[0].write, false);
@@ -109,4 +110,15 @@ test('only captions of actual visible profile images can become results', async 
   await actor(); assert.equal((await query('Blausee')).hits[0].title, 'Pension Sonnenhof');
   await actor('postgres',admin); await db.query("insert into profile_content_blocks(profile_id,type,slot,content) values($1,'heading','about_heading',$2)", [ids[0], { text: 'Über Pension Sonnenhof', hidden_blocks: [block] }]);
   await actor(); assert.equal((await query('Blausee')).total, 0);
+});
+
+test('visibility is reversible/admin-only; search excludes hidden profiles and leaves status untouched',async()=>{
+ const status=(await db.query('select status from company_profiles where id=$1',[ids[0]])).rows[0].status;
+ for(const [role,id] of [['anon',''],['authenticated',owner]]){
+  await actor(role,id);await db.exec('savepoint denied');await assert.rejects(db.query('insert into company_profile_public_visibility values($1,false)',[ids[0]]));await db.exec('rollback to savepoint denied;release savepoint denied');
+ }
+ await actor('authenticated',admin);await db.query('insert into company_profile_public_visibility values($1,false)',[ids[0]]);
+ await actor();assert.equal((await query('Pension Sonnenhof')).hits.length,0);assert.equal((await db.query('select status from company_profiles where id=$1',[ids[0]])).rows[0].status,status);
+ await actor('authenticated',admin);await db.query('update company_profile_public_visibility set is_listed=true where profile_id=$1',[ids[0]]);
+ await actor();assert.equal((await query('Pension Sonnenhof')).hits[0].title,'Pension Sonnenhof');
 });

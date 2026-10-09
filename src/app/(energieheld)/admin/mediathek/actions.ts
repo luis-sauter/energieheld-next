@@ -8,9 +8,6 @@ export async function libraryProfiles(profileId?: string) {
     const client = await createClient();
     if (await checkAdmin(client) !== 'admin')
         return { items: [], error: 'Keine Berechtigung.' };
-    const synced = await client.rpc('media_library_sync');
-    if (synced.error)
-        return { items: [], error: 'Die Mediathek konnte nicht aktualisiert werden.' };
     const current = profileId && isProfileId(profileId) ? await client.from('company_profiles').select('id,display_name').eq('id', profileId).maybeSingle() : null;
     return { items: current?.data ? [current.data] : [], error: current?.error ? 'Unternehmen konnte nicht geladen werden.' : undefined };
 }

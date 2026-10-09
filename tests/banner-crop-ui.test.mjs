@@ -26,6 +26,7 @@ registerHooks({
 });
 const {BannerSearchFields}=await import('../src/components/advertising/banner-search-fields.tsx');
 const {ImageCropControls}=await import('../src/components/admin/image-crop-controls.tsx');
+const {BannerMediaPicker}=await import('../src/components/advertising/banner-media-picker.tsx');
 const {InlineBannerDialog}=await import('../src/components/advertising/inline-banner-editor.tsx');
 const {CampaignSlot}=await import('../src/components/advertising/campaign-view.tsx');
 const {CampaignLifecycle}=await import('../src/components/advertising/campaign-lifecycle.tsx');
@@ -106,8 +107,12 @@ test('dialog crop is opt-in, sizes update immediately; crop-only save uses prese
 test('new local image previews before upload and Premium uses natural ratio',async()=>{
  states=[];let submitted=0;
  const props={selected:{placement:'top_banner'},options:{label:'Reiseziele',banners:[],availability:{},saveMetadata:async()=>({success:'ok'}),saveCrop:async()=>({error:'Crop fehlgeschlagen'}),save:async()=>{submitted++;return{success:'ok',ad:{id:'new',placement:'top_banner',imageUrl:'/saved.png',target_url:'https://example.org',source:'campaign'}};}},onSaved(){throw Error('Must not report successful crop');},onClose(){}};
- let tree=render(props);const input=find(tree,n=>n.type==='input'&&n.props.type==='file');
- input.props.onChange({target:{files:[new File(['image'],'new.png',{type:'image/png'})]}});
+ let tree=render(props);
+ find(tree,n=>n.type==='button'&&n.props.children==='Bild hinzufügen').props.onClick();
+ tree=render(props);
+ const picker=find(tree,n=>n.type===BannerMediaPicker);
+ assert.ok(picker,'existing shared media picker is available');
+ picker.props.onSelected(new File(['image'],'new.png',{type:'image/png'}));
  tree=render(props);const measure=find(tree,n=>n.type==='img'&&n.props.hidden);assert.match(measure.props.src,/^blob:/);
  measure.props.onLoad({currentTarget:{naturalWidth:2048,naturalHeight:333}});
  tree=render(props);assert.equal(find(tree,n=>n.type===ImageCropControls).props.ratio,2048/333);

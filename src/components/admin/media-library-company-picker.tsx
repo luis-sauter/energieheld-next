@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useId, useRef, useState } from 'react';
 import { searchLibraryProfiles } from '@/app/(energieheld)/admin/mediathek/actions';
+import { companySearchCache } from '@/lib/media-library-company-cache';
 import styles from './media-library.module.css';
 type Company = { id: string; display_name: string };
 export function MediaLibraryCompanyPicker({ value, name, disabled, onChange }: { value: string; name: string; disabled: boolean; onChange: (company: Company) => void }) {
     const id = useId(), root = useRef<HTMLDivElement>(null), trigger = useRef<HTMLButtonElement>(null), input = useRef<HTMLInputElement>(null);
     const [open, setOpen] = useState(false), [query, setQuery] = useState(''), [page, setPage] = useState(1), [items, setItems] = useState<Company[]>([]), [more, setMore] = useState(false), [waiting, setWaiting] = useState(true), [error, setError] = useState(''), [active, setActive] = useState(0), [returnFocus, setReturnFocus] = useState(false);
     useEffect(() => { if (!open && returnFocus) trigger.current?.focus({ preventScroll: true }); }, [open, returnFocus]);
+    const [cache] = useState(() => companySearchCache(searchLibraryProfiles));
     const options = [{ id: '', display_name: 'Alle Unternehmen' }, ...items];
     useEffect(() => {
         if (!open) return;
@@ -16,14 +18,15 @@ export function MediaLibraryCompanyPicker({ value, name, disabled, onChange }: {
         return () => document.removeEventListener('pointerdown', outside);
     }, [open]);
     useEffect(() => {
-        if (!open) return;
+        // Preload only the first bounded company page while the dialog opens.
+        if (!open && (query || page !== 1)) return;
         let alive = true;
-        const timer = setTimeout(() => { void searchLibraryProfiles(query, page).then(r => {
+        const timer = setTimeout(() => { void cache.get(query, page).then(r => {
             if (!alive) return;
             setItems(r.items); setMore(r.more); setWaiting(false); setError(r.error ?? ''); setActive(0);
-        }).catch(() => { if (alive) { setError('Unternehmen konnten nicht geladen werden.'); setWaiting(false); } }); }, query ? 180 : 0);
+        }).catch(() => { if (alive) { setError('Unternehmen konnten nicht geladen werden.'); setWaiting(false); } }); }, cache.has(query, page) ? 0 : query ? 100 : 0);
         return () => { alive = false; clearTimeout(timer); };
-    }, [open, query, page]);
+    }, [open, query, page, cache]);
     function close() { setReturnFocus(true); setOpen(false); }
     function choose(company: Company) { onChange(company); close(); }
     function move(next: number) {

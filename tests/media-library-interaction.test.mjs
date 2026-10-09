@@ -59,3 +59,13 @@ test('navigation never uses window scrolling or scrollIntoView; reduced motion a
  const events=[];const container={scrollTop:80,getBoundingClientRect:()=>({top:100}),scrollTo:v=>events.push(v)},heading={getBoundingClientRect:()=>({top:500}),focus:v=>events.push(v)};
  revealMediaDetails(container,heading,true);assert.deepEqual(events,[{preventScroll:true},{top:456,behavior:'instant'}]);restoreMediaGrid(container,heading,80);assert.deepEqual(events.slice(-2),[{top:80,behavior:'instant'},{preventScroll:true}]);
 });
+
+test('banner context selects without applying/creating a campaign and permits profile-less upload',async()=>{
+ let picked,uploaded;
+ const f=fixture(MediaLibraryBrowser,{onSelected(a){picked=a;},onUpload(file){uploaded=file;}});f.render();await f.settle();
+ assert.equal(f.button('Bilder hochladen').props.disabled,false);
+ f.all().find(n=>n.props?.['aria-label']==='Eigenes Bild auswählen').props.onClick();f.button('Ausgewähltes Bild verwenden').props.onClick();await f.settle();assert.equal(picked.id,asset.id);assert.equal(calls.some(c=>c[0]==='apply'),false);
+ const file=new File(['bytes'],'upload.png',{type:'image/png'});
+ f.all().find(n=>n.type==='input'&&n.props.type==='file').props.onChange({target:{files:[file],value:'file'}});await f.settle();assert.equal(uploaded,file);assert.equal(calls.some(c=>c[0]==='apply'),false);
+ assert.doesNotMatch(text(f.render()),/Zusätzliche Nutzungserlaubnis|Beleg der Nutzungserlaubnis/);
+});

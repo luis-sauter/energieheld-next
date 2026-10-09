@@ -23,6 +23,8 @@ export function matchesInlineAdContext(target: AdTarget, context: InlineAdContex
 }
 
 export type InlineBanner = {
+  profileId?: string | null;
+  profileName?: string;
   crop?: import("./image-crop").ImageCrop;
   image_width?: number; image_height?: number; mobile_image?: ActiveAd["mobile_image"];
   id: string;
