@@ -20,7 +20,7 @@ vm.runInNewContext(transpileModule(file,{compilerOptions:{module:ModuleKind.Comm
  if(name.endsWith('.module.css'))return {default:{partners:'partners'}};
  throw Error(name);
 }});
-const render=(ads,placements)=>renderToStaticMarkup(createElement(loaded.exports.HomeBannerGroup,{ads,placements,label:'Existing banners'}));
+const render=(ads,placements,adminOnly=false)=>renderToStaticMarkup(createElement(loaded.exports.HomeBannerGroup,{ads,placements,adminOnly,label:'Existing banners'}));
 test('empty or suppressed public groups produce no container, placeholder or whitespace section',()=>{
  inline=null;assert.equal(render([],slots.slice(0,3)),'');assert.equal(render([{...ad(slots[0]),suppressed:true}],slots.slice(0,3)),'');assert.equal(render([],['top_banner']),'');
 });
@@ -34,4 +34,29 @@ test('admin can edit each empty requested slot and client removal never resurrec
  inline={overrides:{}};let html=render([],slots.slice(0,3));assert.equal((html.match(/Admin empty slot/g)||[]).length,3);
  inline.overrides[slots[0]]=null;html=render([ad(slots[0])],slots.slice(0,3));assert.doesNotMatch(html,/href=/);
  inline=null;assert.equal(render([],slots.slice(0,3)),'');
+});
+
+
+test('historic lower banners are absent publicly but remain individually manageable by admins',()=>{
+ const ads=slots.slice(6).map(slot=>ad(slot)),before=JSON.stringify(ads);
+ inline=null;assert.equal(render(ads,slots.slice(6),true),'');
+ inline={overrides:{}};const html=render(ads,slots.slice(6),true);
+ for(const slot of slots.slice(6))assert.match(html,new RegExp('data-placement="'+slot+'"'));
+ assert.equal(JSON.stringify(ads),before);inline=null;
+});
+
+test('mixed public groups omit image-less and suppressed banners without empty fixed-slot cells',()=>{
+ inline=null;const ads=[ad(slots[0]),{...ad(slots[1]),imageUrl:''},{...ad(slots[2]),suppressed:true}];
+ const html=render(ads,slots.slice(0,3));assert.equal((html.match(/data-placement=/g)||[]).length,1);
+ assert.doesNotMatch(html,/Admin empty slot|sidebar_middle|sidebar_bottom/);
+});
+
+test('homepage-only spacing and empty placeholder cleanup leave other pages and card geometry intact',()=>{
+ const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+ const css=read('src/app/(energieheld)/home.module.css');
+ assert.match(css,/\.page \.partners \{ background: transparent; padding-block: 20px; margin-bottom: 0/);
+ assert.match(css,/\.partners :global\(\[data-empty-banner\]\) \{ display: none/);
+ assert.match(css,/max-width: 700px[\s\S]*?\.page \.partners \{ padding-block: 14px/);
+ const view=read('src/components/advertising/campaign-view.tsx');assert.match(view,/className=\{styles.empty\} data-empty-banner/);
+ const card=read('src/components/portal/accommodation-card.module.css');assert.match(card,/min-height: 16rem; aspect-ratio: 35 \/ 32/);
 });

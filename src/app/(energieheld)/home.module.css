@@ -26,7 +26,8 @@
 .destinations :global(.discovery-card-image) { aspect-ratio: 1.25; }
 .destinations :global(.discovery-card-title) { padding: 20px; font-size: 1.1rem; }
 .showcase { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
-.partners { background: var(--brand-surface); margin-bottom: 48px; }
+.page .partners { background: transparent; padding-block: 20px; margin-bottom: 0; }
+.partners :global([data-empty-banner]) { display: none; }
 .premium { margin-bottom: 24px; }
 .premium:empty { display: none; }
 .partners :global(.advertising-rail) { padding: 0; }
@@ -40,7 +41,7 @@
 .partners :global([data-sidebar-slot]:has([data-size="large"])) { grid-row: span 3; }
 .partners :global(.advertising-rail-creatives > section:has([data-size="medium"])),
 .partners :global([data-sidebar-slot]:has([data-size="medium"])) { grid-row: span 2; }
-/* Keep the shared reorder editor's vertical pointer/keyboard geometry intact.
+/* Keep the shared reorder editor's pointer/keyboard geometry intact.
    Dialogs are outside this layout; only its direct toolbar spans the grid. */
 .partners :global(.advertising-rail > div > div:not([data-sidebar-slot])),
 .partners :global(.advertising-rail > div > p) { grid-column: 1 / -1; }
@@ -69,7 +70,7 @@
   .page :global(.section-heading) { align-items: flex-start; gap: 12px; }
   .destinations :global(.discovery-card-image) { aspect-ratio: 1.7; }
   .destinations :global(.discovery-card-title) { padding: 16px 20px; }
-  .partners { margin-bottom: 32px; }
+  .page .partners { padding-block: 14px; }
   .partners :global(.advertising-rail-creatives), .partners :global(.advertising-rail > div) { grid-template-columns: minmax(0, 1fr); }
   .partners :global([data-sidebar-slot]:has([data-size])),
   .partners :global(.advertising-rail-creatives > section:has([data-size])) { grid-row: auto; }

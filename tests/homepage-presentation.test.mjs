@@ -87,8 +87,8 @@ test('homepage retains selected providers in one equal grid and follows the requ
  assert.equal((html.match(/<article class="accommodation-card"/g)||[]).length,4);
  const stays=html.split('aria-labelledby="stays-title"')[1].split('</section>')[0];
  assert.match(stays,/<div class="showcase">/);assert.doesNotMatch(stays,/featuredStay|recommendations|data-placement/);
- assert.ok(html.indexOf('inspiration-title') < html.indexOf('data-placement="top_banner"'));
- assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('destinations-title'));
+ assert.ok(html.indexOf('data-travel-quicklinks') < html.indexOf('data-placement="top_banner"'));
+ assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('inspiration-title'));
  assert.ok(html.indexOf('destinations-title') < html.indexOf('stays-title'));
  const source=read('src/app/(energieheld)/page.tsx');
  assert.ok(source.indexOf('</nav>') < source.indexOf('placements={["sidebar_top"'));
@@ -120,13 +120,13 @@ test('homepage ad grid preserves stored size and crop renderer and shared vertic
  assert.doesNotMatch(read('src/app/(energieheld)/page.tsx'),/update\(|delete\(|insert\(|company_ad_campaign_targets/);
 });
 
-test('all existing Premium and A–J ads reach the unchanged shared advertising components', async () => {
+test('only Premium and A–F ads appear publicly while stored G–J campaigns stay intact', async () => {
  const original=globalThis.homeFixture.ads;
  try {
   globalThis.homeFixture.ads=[{id:'premium',placement:'top_banner',imageUrl:'/premium.jpg'},...['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sidebar_05','sidebar_06','sidebar_07','sidebar_08','sidebar_09','sidebar_10'].map((placement,i)=>({id:'legacy-'+i,placement,imageUrl:'/existing.jpg'}))];
   const before=JSON.stringify(globalThis.homeFixture.ads);
   const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
-  assert.match(html,/data-ad-count="3"/);assert.match(html,/data-ad-count="4"/);
+  assert.equal((html.match(/data-ad-count="3"/g)||[]).length,2);assert.doesNotMatch(html,/data-ad-count="4"|Weitere Banner verwalten/);
   assert.equal((html.match(/data-placement="top_banner"/g)||[]).length,1);
   assert.equal(JSON.stringify(globalThis.homeFixture.ads),before);
  } finally {globalThis.homeFixture.ads=original;}
