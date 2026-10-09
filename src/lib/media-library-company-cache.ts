@@ -16,3 +16,15 @@ export function companySearchCache(search: (query: string, page: number) => Prom
 }
 
 export type CompanySearchCache = ReturnType<typeof companySearchCache>;
+
+// The same bounded picker/cache can search already-authorized advertiser options.
+export function normalizedCompanyName(value: string) {
+  return value.trim().toLocaleLowerCase('de').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss');
+}
+export function localCompanySearchCache(items: { id: string; display_name: string }[]) {
+  return companySearchCache(async (query, page) => {
+    const matches = items.filter(item => normalizedCompanyName(item.display_name).includes(normalizedCompanyName(query)));
+    const start = (page - 1) * 20;
+    return { items: matches.slice(start, start + 20), more: matches.length > start + 20 };
+  });
+}

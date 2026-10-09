@@ -37,12 +37,12 @@ test('admin can edit each empty requested slot and client removal never resurrec
 });
 
 
-test('historic lower banners are absent publicly but remain individually manageable by admins',()=>{
- const ads=slots.slice(6).map(slot=>ad(slot)),before=JSON.stringify(ads);
- inline=null;assert.equal(render(ads,slots.slice(6),true),'');
- inline={overrides:{}};const html=render(ads,slots.slice(6),true);
- for(const slot of slots.slice(6))assert.match(html,new RegExp('data-placement="'+slot+'"'));
- assert.equal(JSON.stringify(ads),before);inline=null;
+test('homepage removes all G–L rendering for every role while keeping the two new editable groups',()=>{
+ const home=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
+ assert.doesNotMatch(home,/Weitere Banner verwalten|placements=\{\["sidebar_07"/);
+ assert.equal((home.match(/<HomeBannerGroup/g)||[]).length,3);
+ inline={overrides:{}};for(const group of [slots.slice(0,3),['top_banner'],slots.slice(3,6)])assert.match(render([],group),/Admin empty slot/);
+ inline=null;
 });
 
 test('mixed public groups omit image-less and suppressed banners without empty fixed-slot cells',()=>{
