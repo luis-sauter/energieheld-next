@@ -8,8 +8,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 const read = path => readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const slugs = ['golfhotel-andreus','bayerischer-wald','hoeflehner','schafhuber'];
 const profiles = slugs.map(slug=>({id:slug,slug,name:slug,initials:'AB',tagline:'Bestehender Profiltext',description:'',categoryIds:[],travelTermKeys:['theme:natur-pur'],location:{city:'Ort',country:'Deutschland',postalCode:'',region:''},images:[{src:'/reiseportal/hero.jpg',alt:'Vorhandenes Foto'}],services:[],isDemo:false,contact:{email:'',phone:'',website:''}}));
-globalThis.homeFixture = {profiles, ads:[{id:'existing',placement:'top_banner'}], calls:[]};
+globalThis.homeFixture = {profiles, ads:[{id:'existing',placement:'top_banner',imageUrl:'/existing.jpg'}], calls:[]};
 const stubs = {
+ '@/lib/profile-card-images':'export async function loadCardEditing(){return false;} export async function withSavedCardImages(rows){return rows;}',
+ './card-image-editor':'export function CardImageEditor(){return null;}',
  '@/lib/reiseportal-directory': 'export async function loadReiseportalDirectory(){globalThis.homeFixture.calls.push("directory");return {database:globalThis.homeFixture.profiles,preview:[],error:null};}',
  '@/lib/public-travel-taxonomy':'export async function loadPublicTravelTerms(){return globalThis.homeFixture.terms ?? [];}',
  '@/lib/public-ads':'export async function loadPublicAds(_,area){globalThis.homeFixture.calls.push(area);return globalThis.homeFixture.ads;}',
@@ -17,9 +19,11 @@ const stubs = {
  '@/lib/inline-advertising-loader':'export async function loadInlineBannerOptions(path){globalThis.homeFixture.calls.push(path);return undefined;}',
  '@/components/advertising/inline-banner-editor':'export function InlineBannerProvider({children}){return children;}',
  '@/components/advertising/campaign-view':'import {createElement} from "react";export function CampaignSlot({placement,ad}){return ad ? createElement("aside",{"data-placement":placement},ad.id):null;}',
- '@/components/advertising/advertising-rail':'import {createElement} from "react";export function AdvertisingRail({ads}){return createElement("aside",{"aria-label":"Werbeanzeigen","data-ad-count":ads.length});}',
+ '@/components/advertising/advertising-rail':'import {createElement} from "react";export function AdvertisingRail({ads,visibleSlots}){const rows=ads.filter(ad=>!visibleSlots||visibleSlots.includes(ad.placement));return createElement("aside",{"aria-label":"Werbeanzeigen","data-ad-count":rows.length});}',
  '@/components/advertising/discovery-advertising':'export function DiscoveryAdvertising({children}){return children;}',
 };
+stubs['./advertising-rail']=stubs['@/components/advertising/advertising-rail'];
+stubs['./campaign-view']=stubs['@/components/advertising/campaign-view'];
 registerHooks({
  resolve(specifier,context,next){
   if(specifier === 'server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
@@ -52,7 +56,7 @@ test('homepage composes existing search, all central themes, four destinations a
  for(const d of destinations)assert.match(html,new RegExp('href="/reiseziele/'+d.slug+'"'));
  for(const slug of slugs)assert.match(html,new RegExp('href="/unterkuenfte/'+slug+'"'));
  assert.match(html,/href="\/registrieren"/);
- assert.match(html,/data-placement="top_banner"/);assert.match(html,/aria-label="Werbeanzeigen"/);
+ assert.match(html,/data-placement="top_banner"/);assert.match(html,/aria-label="Premium-Anzeige"/);
  assert.deepEqual(globalThis.homeFixture.calls,['homepage','directory','/']);
  assert.doesNotMatch(html,/iframe|maps.googleapis|Merkliste|Bewertungen/);
 });
@@ -78,19 +82,21 @@ test('homepage presentation is scoped, responsive, reserves image geometry and r
  assert.match(css,/@media \(prefers-reduced-motion: reduce\)/);assert.match(css,/aspect-ratio: 1.7/);
  assert.doesNotMatch(read('src/app/(energieheld)/page.tsx'),/use client|maps.googleapis|iframe/);
 });
-test('editorial showcase separates one featured stay and three compact recommendations from all homepage ads', async () => {
+test('homepage retains selected providers in one equal grid and follows the required fixed-slot sequence', async () => {
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
  assert.equal((html.match(/<article class="accommodation-card"/g)||[]).length,4);
- assert.match(html,/<div class="featuredStay"><article/);
- const recommendations=html.split('<div class="recommendations">')[1].split('</section>')[0];
- assert.equal((recommendations.match(/<article/g)||[]).length,3);
  const stays=html.split('aria-labelledby="stays-title"')[1].split('</section>')[0];
- assert.doesNotMatch(stays,/Werbeanzeigen|data-placement/);
- assert.ok(html.indexOf('stays-title') < html.indexOf('partners-title'));
- assert.ok(html.indexOf('partners-title') < html.indexOf('data-placement="top_banner"'));
- assert.ok(html.indexOf('Werbeanzeigen') < html.indexOf('provider-title'));
- assert.match(html,/data-ad-count="1"/);
+ assert.match(stays,/<div class="showcase">/);assert.doesNotMatch(stays,/featuredStay|recommendations|data-placement/);
+ assert.ok(html.indexOf('inspiration-title') < html.indexOf('data-placement="top_banner"'));
+ assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('destinations-title'));
+ assert.ok(html.indexOf('destinations-title') < html.indexOf('stays-title'));
+ const source=read('src/app/(energieheld)/page.tsx');
+ assert.ok(source.indexOf('</nav>') < source.indexOf('placements={["sidebar_top"'));
+ assert.ok(source.indexOf('placements={["sidebar_top"') < source.indexOf('aria-labelledby="inspiration-title"'));
+ assert.ok(source.indexOf('placements={["sidebar_04"') > source.indexOf('aria-labelledby="destinations-title"'));
+ assert.ok(source.indexOf('placements={["sidebar_04"') < source.indexOf('aria-labelledby="stays-title"'));
 });
+
 test('curation uses visually checked provider originals without changing canonical profile galleries or accepting demo profiles', async () => {
  const original=JSON.stringify(profiles);
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
@@ -117,10 +123,10 @@ test('homepage ad grid preserves stored size and crop renderer and shared vertic
 test('all existing Premium and A–J ads reach the unchanged shared advertising components', async () => {
  const original=globalThis.homeFixture.ads;
  try {
-  globalThis.homeFixture.ads=[{id:'premium',placement:'top_banner'},...['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sidebar_05','sidebar_06','sidebar_07','sidebar_08','sidebar_09','sidebar_10'].map((placement,i)=>({id:'legacy-'+i,placement}))];
+  globalThis.homeFixture.ads=[{id:'premium',placement:'top_banner',imageUrl:'/premium.jpg'},...['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sidebar_05','sidebar_06','sidebar_07','sidebar_08','sidebar_09','sidebar_10'].map((placement,i)=>({id:'legacy-'+i,placement,imageUrl:'/existing.jpg'}))];
   const before=JSON.stringify(globalThis.homeFixture.ads);
   const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
-  assert.match(html,/data-ad-count="11"/);
+  assert.match(html,/data-ad-count="3"/);assert.match(html,/data-ad-count="4"/);
   assert.equal((html.match(/data-placement="top_banner"/g)||[]).length,1);
   assert.equal(JSON.stringify(globalThis.homeFixture.ads),before);
  } finally {globalThis.homeFixture.ads=original;}
@@ -247,10 +253,19 @@ test('same accommodation presentation for home, themes and destinations; no phot
 });
 test('Carola styles are isolated, keep text untruncated and provide keyboard/touch/reduced-motion parity',()=>{
  const css=read('src/components/portal/accommodation-card.module.css');
- assert.match(css,/aspect-ratio: 7 \/ 8/);assert.match(css,/object-fit: cover/);assert.match(css,/linear-gradient\(to bottom/);
+ assert.match(css,/aspect-ratio: 35 \/ 32/);assert.match(css,/object-fit: cover/);assert.match(css,/linear-gradient\(to bottom/);
  assert.match(css,/\.card:focus-visible/);assert.match(css,/\.card:hover/);assert.match(css,/hover: none/);assert.match(css,/prefers-reduced-motion: reduce/);
  assert.match(css,/overflow-wrap: anywhere/);assert.doesNotMatch(css,/line-clamp|text-overflow: ellipsis/);
- const home=read('src/app/(energieheld)/page.tsx');assert.match(home,/styles.featuredStay/);assert.match(home,/styles.recommendations/);
+ const home=read('src/app/(energieheld)/page.tsx');assert.match(home,/styles.showcase/);assert.doesNotMatch(home,/styles.featuredStay|styles.recommendations/);
  const directory=read('src/components/portal/travel-directory.tsx');assert.match(directory,/<ListingRow/);assert.doesNotMatch(directory,/AccommodationCard/);
  const homeCss=read('src/app/(energieheld)/home.module.css');assert.doesNotMatch(homeCss,/accommodation-card-copy|accommodation-card-image/);
+});
+
+ test('shorter cards zoom only the photo, preserve focus geometry and honor reduced motion',()=>{
+ const css=read('src/components/portal/accommodation-card.module.css');
+ assert.match(css,/min-height: 16rem; aspect-ratio: 35 \/ 32/);assert.match(css,/\.card:hover \.photo \{ transform: scale\(1\.035\)/);
+ assert.match(css,/@media \(hover: hover\) and \(pointer: fine\)/);assert.match(css,/\.card:hover \.photo \{ transform: none/);
+ assert.doesNotMatch(css,/line-clamp|text-overflow|\.card:hover \{ transform/);
+ const grid=read('src/app/(energieheld)/home.module.css');assert.match(grid,/repeat\(4, minmax\(0, 1fr\)\)/);
+ assert.match(read('src/components/portal/profile-rotation.module.css'),/--card-height: 20.8rem/);
 });

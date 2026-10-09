@@ -15,7 +15,7 @@ export function ProfileRotation({ groups, count }: { groups: ReactNode[]; count:
     setPage((value) => nextProfileGroup(value, direction, groups.length));
     setInteraction((value) => value + 1);
   }
-  return <div ref={root} className={styles.rotation} role="region" aria-label="Passende Unterkünfte in Gruppen"
+  return <div ref={root} className={styles.rotation} role="region" aria-label="Unterkünfte entdecken"
     {...handlers}
     onKeyDown={(event) => {
       // Do not intercept keys belonging to links or other controls.
@@ -26,7 +26,7 @@ export function ProfileRotation({ groups, count }: { groups: ReactNode[]; count:
     }} tabIndex={groups.length > 1 ? 0 : undefined}>
     {groups.length > 1 && <div className={styles.controls}>
       <button type="button" aria-label="Vorherige sechs Unterkünfte" onClick={() => move(-1)}>←</button>
-      <span aria-live={focused ? "polite" : "off"} aria-atomic="true">Gruppe {page + 1} von {groups.length} · {count} Unterkünfte</span>
+      <span aria-live={focused ? "polite" : "off"} aria-atomic="true">Unterkünfte entdecken · {count} passende Unterkünfte</span>
       <button type="button" aria-label="Nächste sechs Unterkünfte" onClick={() => move(1)}>→</button>
       <button type="button" aria-pressed={paused} disabled={reducedMotion}
         title={reducedMotion ? "Bei reduzierter Bewegung ist der automatische Wechsel deaktiviert." : undefined}
@@ -36,7 +36,7 @@ export function ProfileRotation({ groups, count }: { groups: ReactNode[]; count:
     </div>}
     <div className={groups.length > 1 ? styles.pages : undefined}>
       {groups.map((group, index) => <div key={index} hidden={index !== page} inert={index !== page}
-        className={styles.page} aria-label={`Unterkünfte, Gruppe ${index + 1}`}>{group}</div>)}
+        className={styles.page} aria-label={`Unterkünfte ${index * 6 + 1} bis ${Math.min((index + 1) * 6, count)}`}>{group}</div>)}
     </div>
   </div>;
 }

@@ -15,11 +15,15 @@ export function AdvertisingRail({
   ads,
   editor,
   premium,
+  visibleSlots = [...defaultSidebarOrder],
+  showAdvertiseLink = true,
 }: {
   slots: SidebarSlot[];
   ads: ActiveAd[];
   editor?: ReactNode;
   premium?: ReactNode;
+  visibleSlots?: SidebarSlot[];
+  showAdvertiseLink?: boolean;
 }) {
   const inline = useInlineBanners();
   return (
@@ -27,18 +31,18 @@ export function AdvertisingRail({
       <p className="advertising-rail-label">Anzeige</p>
       {premium}
       {editor ?? (inline?.reorder ? <Suspense fallback={<p role="status">Banner-Steuerung lädt …</p>}>
-        <InlineOrderEditor ads={ads} slots={[...defaultSidebarOrder]} saveOrder={inline.reorder} />
+        <InlineOrderEditor ads={ads} slots={[...defaultSidebarOrder]} saveOrder={inline.reorder} visibleSlots={visibleSlots} />
       </Suspense> : (
         <div className="advertising-rail-creatives">
-          {defaultSidebarOrder.map((slot) => {
+          {defaultSidebarOrder.filter(slot => visibleSlots.includes(slot)).map((slot) => {
             const ad = sidebarCreative(slot, ads);
             return ad || inline ? <CampaignSlot key={slot} placement={slot} ad={ad} showLabel={false} /> : null;
           })}
         </div>
       ))}
-      <Link className="advertise-link" href="/werbung">
+      {showAdvertiseLink && <Link className="advertise-link" href="/werbung">
         Hier könnte Ihre Anzeige stehen →
-      </Link>
+      </Link>}
     </aside>
   );
 }

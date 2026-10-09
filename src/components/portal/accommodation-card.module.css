@@ -1,5 +1,6 @@
-.card { position: relative; isolation: isolate; display: flex; align-items: flex-end; width: 100%; height: 100%; min-height: 20rem; aspect-ratio: 7 / 8; overflow: hidden; border-radius: 9px; color: #fff; text-decoration: none; background: #172a32; box-shadow: 0 5px 18px #102b421c; outline: 2px solid transparent; outline-offset: -2px; transition: outline-color .18s ease, box-shadow .18s ease; }
+.card { position: relative; isolation: isolate; display: flex; align-items: flex-end; width: 100%; height: 100%; min-height: 16rem; aspect-ratio: 35 / 32; overflow: hidden; border-radius: 9px; color: #fff; text-decoration: none; background: #172a32; box-shadow: 0 5px 18px #102b421c; outline: 2px solid transparent; outline-offset: -2px; transition: outline-color .18s ease, box-shadow .18s ease; }
 .image { position: absolute; inset: 0; z-index: -2; background: linear-gradient(145deg, #426a7c, #172a32); }
+.photo { position: absolute; inset: 0; transition: transform .35s ease; }
 .image img { object-fit: cover; }
 .card::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(to bottom, transparent 20%, rgb(9 17 21 / 20%) 40%, rgb(9 17 21 / 85%) 72%, #091115 100%); }
 .fallback { display: grid; height: 45%; place-items: center; color: #e7f3fa; font-size: 3rem; font-weight: 700; }
@@ -12,6 +13,9 @@
 .details { display: inline-flex; align-items: center; gap: .6rem; min-height: 44px; padding: .6rem .8rem; margin-left: 0; border-radius: 5px; color: #fff; font-size: .8rem; font-weight: 650; transition: background-color .18s ease; }
 .card.card:focus-visible { outline-color: #2394d5; outline-offset: 3px; box-shadow: 0 5px 20px #102b4230; }
 .card.card:focus-visible .details { background: #096aa9; margin-left: 0; }
-@media (hover: hover) and (pointer: fine) { .card:hover { outline-color: #2394d5; box-shadow: 0 5px 20px #102b4230; } .card:hover .details { background: #096aa9; margin-left: 0; } }
+@media (hover: hover) and (pointer: fine) { .card:hover .photo { transform: scale(1.035); } .card:hover { outline-color: #2394d5; box-shadow: 0 5px 20px #102b4230; } .card:hover .details { background: #096aa9; margin-left: 0; } }
 @media (hover: none) { .details { background: #096aa9; margin-left: 0; } }
-@media (prefers-reduced-motion: reduce) { .card, .details { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .card, .details, .photo { transition: none; } .card:hover .photo { transform: none; } }
+
+.edit { position: absolute; z-index: 2; top: 10px; right: 10px; min-width: 44px; min-height: 44px; border: 1px solid #fff; border-radius: 50%; color: #174761; background: #fff; cursor: pointer; }
+.edit:focus-visible { outline: 3px solid #2394d5; outline-offset: 3px; }

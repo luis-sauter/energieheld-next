@@ -8,6 +8,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 registerHooks({
   resolve(specifier, context, next) {
+    if (specifier.endsWith("card-image-editor")) return {url:'data:text/javascript,export function CardImageEditor(){return null;}',shortCircuit:true};
+    if (specifier.endsWith("profile-card-images")) return {url:'data:text/javascript,export async function loadCardEditing(){return false;}export async function withSavedCardImages(rows){return rows;}',shortCircuit:true};
     if(specifier.endsWith('/admin/werbung/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function lifecycleCampaign(){throw Error("Unexpected banner lifecycle write during shell render")}'};
     if (specifier.endsWith(".module.css")) return { url: 'data:text/javascript,export default {}', shortCircuit: true };
     if (specifier === "server-only") return { url: "data:text/javascript,export {}", shortCircuit: true };

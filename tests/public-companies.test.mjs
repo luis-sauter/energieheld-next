@@ -8,6 +8,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 const source = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
 registerHooks({
   resolve(s, c, next) {
+    if (s.endsWith("card-image-editor")) return {url:'data:text/javascript,export function CardImageEditor(){return null;}',shortCircuit:true};
+    if (s.endsWith("profile-card-images")) return {url:'data:text/javascript,export async function loadCardEditing(){return false;}export async function withSavedCardImages(rows){return rows;}',shortCircuit:true};
     if (s.endsWith(".module.css"))
       return {
         url: "data:text/javascript,export default {}",
@@ -389,7 +391,7 @@ test("public loader retries its existing columns when anon has no street grant",
   assert.equal(denied, 2);
 });
 
-test("homepage shows real travel cards beside the shared long rail and queries only homepage ads", async () => {
+test("homepage shows real travel cards and distributes only homepage ads without changing their fixed slots", async () => {
   const basic = { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: "basic-home", display_name: "Basic Home", package_type: "basic" };
   const premium = { ...row, id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", slug: "premium-home", display_name: "Premium Home", package_type: "premium" };
   const requests = api([premium, basic, legacyRows[0]], false, [], [
@@ -409,7 +411,7 @@ test("homepage shows real travel cards beside the shared long rail and queries o
   assert.match(html, /href="\/unterkuenfte\/bayerischer-wald"/);
   assert.doesNotMatch(html, /Basic Home|Premium Home/);
   assert.equal((html.match(/data-placement="sidebar_/g) ?? []).length, 10);
-  assert.equal((html.match(/>Anzeige<\/p>/g) ?? []).length, 1);
+  assert.equal((html.match(/>Anzeige<\/p>/g) ?? []).length, 3);
   const adRequest = requests.find(({ url }) => url.pathname === "/rest/v1/rpc/get_active_ad_campaigns");
   assert.ok(adRequest);
   assert.equal(adRequest.body.p_scope_type, "homepage");

@@ -26,6 +26,8 @@ export type Listing = {
   directoryImage?: PortalImage;
   /** Curated provider photo for destination/theme cards; null means no suitable photo. */
   travelImage?: PortalImage | null;
+  cardImageAssetId?: string;
+  cardImageCrop?: import("@/lib/image-crop").ImageCrop;
   categoryIds: string[];
   /** Present when the travel taxonomy has been loaded from Supabase. */
   travelTermKeys?: string[];

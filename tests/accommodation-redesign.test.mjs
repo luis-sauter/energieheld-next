@@ -78,7 +78,7 @@ test('A–Z layout is scoped, reserves square images, stacks rail on mobile and 
   const directorySource=source('src/components/portal/travel-directory.tsx');
   assert.match(directorySource,/<AdvertisingLayout ads=\{ads\} sidebarOrder=\{sidebarOrder\}/);
   assert.match(directorySource,/<SidebarOrderEditor/);assert.doesNotMatch(directorySource,/compactOverview|slice\(0, 2\)/);
-  assert.match(source('src/components/advertising/advertising-rail.tsx'),/defaultSidebarOrder\.map/);
+  assert.match(source('src/components/advertising/advertising-rail.tsx'),/defaultSidebarOrder\.filter.*\.map/);
 });
 test('structured zero state is honest while free text still submits globally without matching accommodations',()=>{
   const html=directory([listing('only',true)],{ort:'Missing place',q:'Nordic Walking'});

@@ -71,8 +71,9 @@ test('mobile Premium art direction uses actual verified dimensions without anoth
  const rotationCss=readFileSync(new URL('../src/components/portal/profile-rotation.module.css',import.meta.url),'utf8');assert.match(rotationCss,/--rows: 3/);assert.match(rotationCss,/repeat\(2, minmax\(0, 1fr\)\)/);assert.match(rotationCss,/max-width: 700px.*--rows: 6.*grid-template-columns: 1fr/);
 });
 
-test('homepage Premium occupies its fixed position before the sidebar rail',()=>{
+test('homepage Premium retains its fixed identity exactly once, after themes and before destinations',()=>{
  const home=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
- assert.equal(home.match(/placement="top_banner"/g).length,1);
- assert.ok(home.indexOf('placement="top_banner"')<home.indexOf('<AdvertisingRail'));
+ assert.equal(home.match(/placements=\{\["top_banner"\]\}/g).length,1);
+ assert.ok(home.indexOf('placements={["top_banner"]}')>home.indexOf('aria-labelledby="inspiration-title"'));
+ assert.ok(home.indexOf('placements={["top_banner"]}')<home.indexOf('aria-labelledby="destinations-title"'));
 });

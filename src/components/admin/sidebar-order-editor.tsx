@@ -26,6 +26,7 @@ export function SidebarOrderSlots({
   onPointerUp,
   onMove,
   canMove = () => true,
+  visibleSlots = [...defaultSidebarOrder],
 }: {
   ads: ActiveAd[];
   slots: SidebarSlot[];
@@ -38,6 +39,7 @@ export function SidebarOrderSlots({
   onPointerUp: () => void;
   onMove: (from: number, to: number) => void;
   canMove?: (from: number, to: number) => boolean;
+  visibleSlots?: SidebarSlot[];
 }) {
   const inline = useInlineBanners();
   const sources = isSidebarOrder(slots) ? slots : [...defaultSidebarOrder];
@@ -46,6 +48,7 @@ export function SidebarOrderSlots({
     return ad ? [ad] : [];
   });
   return defaultSidebarOrder.map((slot, index) => {
+    if (!visibleSlots.includes(slot)) return null;
     const ad = sidebarContentAt(contents, sources, index);
     if (!editing && !ad && !inline) return null;
     return (
@@ -76,9 +79,11 @@ export function SidebarOrderSlots({
 export function SidebarOrderEditor({
   ads,
   saveOrder,
+  visibleSlots,
 }: {
   ads: ActiveAd[];
   slots: SidebarSlot[];
+  visibleSlots?: SidebarSlot[];
   saveOrder: (sources: SidebarSlot[], expected?: string[]) => Promise<{ success?: string; error?: string }>;
 }) {
   const router = useRouter();
@@ -170,7 +175,7 @@ export function SidebarOrderEditor({
     const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-sidebar-slot]");
     if (!hit) return;
     const pointerY = event.clientY + window.scrollY;
-    const over = dragBoundsRef.current.find((bounds) => pointerY >= bounds.top && pointerY <= bounds.bottom)?.slot;
+    const over = dragBoundsRef.current.find((bounds) => pointerY >= bounds.top && pointerY <= bounds.bottom && bounds.slot === hit.dataset.sidebarSlot)?.slot;
     if (!over || over === slot || !defaultSidebarOrder.includes(over)) return;
     const from = defaultSidebarOrder.indexOf(slot), to = defaultSidebarOrder.indexOf(over);
     if (!canMove(from, to)) return;
@@ -214,7 +219,7 @@ export function SidebarOrderEditor({
       </div>
       {message && !editing && <p className={styles.success} role="status">{message}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <SidebarOrderSlots ads={currentAds} slots={editing ? draft : savedSources} editing={editing} busy={busy}
+      <SidebarOrderSlots visibleSlots={visibleSlots} ads={currentAds} slots={editing ? draft : savedSources} editing={editing} busy={busy}
         dragged={dragged} target={target} onPointerDown={onPointerDown} onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         canMove={canMove} onMove={(from, to) => { if (canMove(from, to)) setDraft((current) => moveSidebarSlot(current, from, to)); }} />
