@@ -295,3 +295,7 @@
 .flowPreview[data-flow="around"] i, .flowPreview[data-flow="columns"] i { margin-top: 8px; height: 20px; }
 .flowPreview[data-flow="beside"] b:last-child { clear: both; }
 @media(max-width:640px) { .flowChoices { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+
+.sectionClose { position:absolute; top:6px; right:6px; z-index:2; border:1px solid #d5e1e7; background:white; color:#1e5a7a; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:20px; }
+.sectionMenu[open] .blockToolbar { padding-top:42px; }
+.sectionClose:focus-visible { outline:2px solid #1e5a7a; outline-offset:2px; }

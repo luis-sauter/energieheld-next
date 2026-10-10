@@ -189,6 +189,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
       {feedback.success && <span role="status" className={styles.success}>{feedback.success}</span>}
       {feedback.error && <span role="alert" className={styles.error}>{feedback.error}</span>}
       {mediaEditor.status}
+      <button type="button" className="button" onClick={() => { const target = document.getElementById("profile-contact-editor"); target?.scrollIntoView({block:"center", behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"}); target?.focus({preventScroll:true}); }}>Ansprechpartnerbild bearbeiten</button>
       <small>Inhalts- und Bildänderungen werden sofort gespeichert.</small>
     </div>}
     {!editing && feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
@@ -217,8 +218,8 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
         blocks={content.blocks} items={content.items} listing={listing} renderSpecial={renderSpecial}
         editing={editing} available={contentAvailable} imagesAvailable={imagesAvailable}
         saveAction={saveContent} saveImage={saveBlockImage} /> : undefined}
-      contactPersonEditor={editing ? <section aria-label="Ansprechpartner bearbeiten">
-        <h3>Ansprechpartner (optional)</h3>
+      contactPersonEditor={editing ? <section id="profile-contact-editor" tabIndex={-1} aria-label="Ansprechpartner bearbeiten">
+        <h3>Ansprechpartner und Bild bearbeiten</h3>
         {field("contact_first_name", "Vorname")}{field("contact_last_name", "Nachname")}
         <ContactImageEditor contact={listing.contact} save={saveMedia} disabled={busy || mediaEditor.busy || history.busy || Boolean(travel?.busy)} onBusyChange={setContactBusy} />
       </section> : undefined}

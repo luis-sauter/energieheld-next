@@ -109,3 +109,16 @@ test('video library uses existing validators, preserves originals and never inse
  assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'gallery'})).error);assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:other,kind:'video'})).error);
  assert.equal(c.calls.some(call=>call.upload||call.remove),false);
 });
+
+test('transient catalog failure retries exactly once and does not repeat permission failures',async()=>{
+ for(const code of ['PGRST000','PGRST001','PGRST002']){const c=mock();const original=c.rpc;let calls=0;c.rpc=async(...args)=>++calls===1?{error:{code},data:null}:original(...args);assert.equal((await mediaLibraryPage(c,profile,'images','',1)).items.length,1);assert.equal(calls,2);}
+ const c=mock();let calls=0;c.rpc=async()=>{calls++;return{data:null,error:{code:'42501',status:403}}};assert.ok((await mediaLibraryPage(c,profile,'images','',1)).error);assert.equal(calls,1);
+});
+test('failed preview signing preserves catalog items and exposes a recoverable warning',async()=>{
+ const c=mock();let calls=0;c.storage.from=()=>({createSignedUrls:async()=>{calls++;return{data:null,error:{status:503}}}});const result=await mediaLibraryPage(c,profile,'images','',1);assert.equal(result.items.length,1);assert.equal(result.count,1);assert.equal(result.items[0].src,'');assert.match(result.error,/Bildvorschauen/);assert.equal(calls,2);assert.equal(c.calls.some(call=>call.upload||call.remove),false);
+});
+test('transient signing recovery returns the authenticated signed preview',async()=>{
+ const c=mock();const original=c.storage.from;let calls=0;c.storage.from=bucket=>{const store=original(bucket);return{...store,createSignedUrls:async(...args)=>++calls===1?{error:{status:520},data:null}:store.createSignedUrls(...args)}};const result=await mediaLibraryPage(c,profile,'images','',1);assert.equal(result.error,undefined);assert.match(result.items[0].src,/private.invalid/);
+});
+
+test('persistent transient catalog errors stop after two read attempts',async()=>{const c=mock();let calls=0;c.rpc=async()=>{calls++;return{data:null,error:{status:503}}};assert.ok((await mediaLibraryPage(c,profile,'images','',1)).error);assert.equal(calls,2);assert.equal(c.calls.some(v=>v.upload||v.remove),false);});

@@ -9,7 +9,7 @@ import { InlineBlockLayout } from "./inline-block-layout";
 import type { MediaState } from "@/lib/company-media";
 import type { ContentBlockType, EditorialItem, HeadingSlot, ProfileContentBlock } from "@/lib/profile-content";
 import styles from "./inline-profile.module.css";
-import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment } from "@/lib/content-block-layout";
+import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment, type TextImageFlow } from "@/lib/content-block-layout";
 import { useInlineEditorHistory } from "./inline-editor-history";
 import { contentBlockRows } from "@/lib/content-block-rows";
 import { useMediaLibrary } from "./media-library-context";
@@ -152,6 +152,17 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
   const [pickerBefore, setPickerBefore] = useState<string | null | undefined>();
   const [draft, setDraft] = useState<{ type: ContentBlockType; before: string | null } | null>(null);
   const [adjacentDraft, setAdjacentDraft] = useState<AdjacentDraft | null>(null);
+  const [flowOverrides, setFlowOverrides] = useState<Record<string, { base: TextImageFlow; value: TextImageFlow }>>({});
+  function previewFlow(key: string, base: TextImageFlow = "standard") {
+    return flowOverrides[key]?.base === base ? flowOverrides[key].value : base;
+  }
+  async function saveFlow(form: FormData, key: string, base: TextImageFlow = "standard") {
+    const value = form.get("text_flow") as TextImageFlow | null;
+    if (value) setFlowOverrides(current => ({ ...current, [key]: { base, value } }));
+    const ok = await run(form);
+    if (!ok && value) setFlowOverrides(current => { const next = { ...current }; delete next[key]; return next; });
+    return ok;
+  }
   const [pairPreview, setPairPreview] = useState<PairPreview | null>(null);
   const [progress, setProgress] = useState("");
   const previewUrl = useRef<string | null>(null);
@@ -488,7 +499,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
               onClick={() => void setPairLayout(text.id, image.id, side, share)}>{share} % Bild / {100 - share} % Text</button>)}
           </div>
         </div>;
-      const flow = normalizeTextBlockLayout(text?.pair_layout).text_flow ?? "standard";
+      const flow = previewFlow(text!.id, normalizeTextBlockLayout(text?.pair_layout).text_flow);
       const editableText = columns.flat().filter((block) => block.type !== "image_grid").map((block) => renderEditableBlock(block, true));
       const flowText = columns.flat().filter((block) => block.type !== "image_grid").map((block) => block.type === "heading" ? <h2 key={block.id}>{block.content.text}</h2> : <p key={block.id}>{block.content.text}</p>);
       const pairContent = <>
@@ -501,7 +512,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       const indices = pairMembers.map((block) => items.findIndex((item) => item.key === block.id));
       const pairBlock: ProfileContentBlock = { ...text, id: `pair:${text.id}:${image.id}`,
         config: normalizeTextBlockLayout({ width_percent: 100, offset_percent: 0,
-          text_align: normalizeTextBlockLayout(text.config).text_align, ...text.pair_layout }) };
+          text_align: normalizeTextBlockLayout(text.config).text_align, ...text.pair_layout, text_flow: flow }) };
       async function savePair(intent: string, _blockId: string, values: Record<string, string> = {}) {
         const form = new FormData();
         form.set("intent", ({ layout: "pair-frame", move: "pair-move", duplicate: "pair-duplicate",
@@ -509,7 +520,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
         form.set("text_block_id", text!.id);
         form.set("image_block_id", image!.id);
         for (const [key, value] of Object.entries(values)) form.set(key, value);
-        return run(form);
+        return saveFlow(form, text!.id, normalizeTextBlockLayout(text!.pair_layout).text_flow);
       }
       return <InlineBlockLayout key={row.left[0].id} block={pairBlock} save={savePair} pairToolbar={pairToolbar}
         busy={busy || history.busy} first={Math.min(...indices) === 0} last={Math.max(...indices) === items.length - 1}
@@ -538,7 +549,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
     if (item.kind === "block") { if (item.block) pendingBlocks.push(item.block); continue; }
     flush();
     const synthetic: ProfileContentBlock = { id: item.key, profile_id: listing.id, type: "heading", slot: null,
-      sort_order: 0, content: { text: item.heading }, config: item.imageBlock ? item.pairLayout : item.layout };
+      sort_order: 0, content: { text: item.heading }, config: item.imageBlock ? { ...item.pairLayout, text_flow: previewFlow(item.key, item.pairLayout?.text_flow) } : item.layout };
     const index = items.indexOf(item);
     const specialImage = item.imageBlock;
     const preview = specialImage && pairPreview?.textId === item.key && pairPreview.imageId === specialImage.id
@@ -554,7 +565,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       if (intent !== "layout" || !specialImage) return saveBlock(intent, blockId, values);
       const form = formFor("section-pair-frame", blockId);
       for (const [key, value] of Object.entries(values)) form.set(key, value);
-      return run(form);
+      return saveFlow(form, item.key, item.pairLayout?.text_flow);
     }
     const pairToolbar = specialImage && <div className={styles.pairControls} aria-label="Abschnitt und Bild anordnen">
         <div className={styles.adjacentOptions} role="group" aria-label="Bildposition">
@@ -575,8 +586,8 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       busy={busy || history.busy} first={index === 0} last={index === items.length - 1} save={saveSpecial}>
       {item.hidden && <p role="status">Dieser Abschnitt ist öffentlich ausgeblendet.</p>}
 
-      {shownImage ? <TextImageSection text={(item.pairLayout?.text_flow ?? "standard") === "standard" ? renderSpecial(item) : <section>{!item.headingHidden && <h2 style={{textAlign:item.headingAlign}}>{item.heading}</h2>}<p style={{textAlign:item.bodyAlign}}>{item.kind === "about" ? listing.description : listing.businessAreas}</p></section>}
-        editingText={(item.pairLayout?.text_flow ?? "standard") === "standard" ? undefined : renderSpecial(item)} flow={item.pairLayout?.text_flow} image={renderPairedImage(shownImage)}
+      {shownImage ? <TextImageSection text={previewFlow(item.key, item.pairLayout?.text_flow) === "standard" ? renderSpecial(item) : <section>{!item.headingHidden && <h2 style={{textAlign:item.headingAlign}}>{item.heading}</h2>}<p style={{textAlign:item.bodyAlign}}>{item.kind === "about" ? listing.description : listing.businessAreas}</p></section>}
+        editingText={previewFlow(item.key, item.pairLayout?.text_flow) === "standard" ? undefined : renderSpecial(item)} flow={previewFlow(item.key, item.pairLayout?.text_flow)} image={renderPairedImage(shownImage)}
         textWidth={textLayout.width_percent} imageWidth={normalizeBlockLayout(shownImage.config).width_percent}
         imageFirst={normalizeBlockLayout(shownImage.config).offset_percent < textLayout.offset_percent} /> : <>{renderSpecial(item)}{renderAdjacentAction(item.key,
         item.kind === "about" ? listing.description ?? "" : listing.businessAreas ?? "")}</>}
