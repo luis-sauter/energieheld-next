@@ -28,7 +28,7 @@ registerHooks({resolve(s,c,next){
 const {InlineProfileEditor}=await import('../src/components/admin/inline-profile-editor.tsx');
 const nodes=n=>Array.isArray(n)?n.flatMap(nodes):n&&typeof n==='object'?[n,...nodes(n.props?.children)]:[];
 const text=n=>Array.isArray(n)?n.map(text).join(''):n&&typeof n==='object'?text(n.props?.children):n??'';
-function fixture(saveProfile,extra={}){state=[];cursor=0;refreshes=0;clears=0;const props={listing:{name:'Profil',location:{}},categories:[],values:{display_name:'Profil'},media:{},rows:[],saveProfile,saveMedia:async()=>({}),contentBlocks:[],contentAvailable:false,imagesAvailable:false,saveContent:async()=>({}),saveBlockImage:async()=>({}),initialEditing:true,freshness:{},...extra};
+function fixture(saveProfile,extra={}){state=[];cursor=0;refreshes=0;clears=0;const props={listing:{name:'Profil',location:{},images:[]},categories:[],values:{display_name:'Profil'},media:{images:[]},rows:[],saveProfile,saveMedia:async()=>({}),contentBlocks:[],contentAvailable:false,imagesAvailable:false,saveContent:async()=>({}),saveBlockImage:async()=>({}),initialEditing:true,freshness:{},...extra};
  const render=()=>{cursor=0;const wrapped=InlineProfileEditor(props);return wrapped.props.children.type(wrapped.props.children.props)};
  const form=()=>nodes(render()).find(n=>n.type==='form');
  const button=name=>nodes(render()).find(n=>n.type==='button'&&text(n)===name);

@@ -110,6 +110,7 @@ export function ImageGallery({
                   <Image
                     src={image.src}
                     alt=""
+                    loading="lazy"
                     width={150}
                     height={90}
                     unoptimized={!isDemo}

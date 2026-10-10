@@ -1,5 +1,6 @@
 "use client";
 
+import { GALLERY_LIMIT } from "@/lib/gallery-limit";
 import { useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { uploadAdminMedia } from "@/lib/admin-media-upload";
@@ -61,7 +62,7 @@ export function AdminMediaEditor({ saveAction, profileName, logo, images, rows }
   }
   function openUpload(kind: "logo" | "gallery") {
     if (busyRef.current) return;
-    if (library) {library.open({kind,capacity:8-images.length});return;}
+    if (library) {library.open({kind,capacity:GALLERY_LIMIT-images.length});return;}
     setFeedback({});
     setUploadKind(kind);
     dialog.current?.showModal();
@@ -184,8 +185,8 @@ export function AdminMediaEditor({ saveAction, profileName, logo, images, rows }
 
       <section className={styles.section} aria-labelledby="admin-gallery-title">
         <div className={styles.sectionHeading}>
-          <div><h2 id="admin-gallery-title">Bildergalerie</h2><p>{images.length} von 8 Bildern · Ziehen Sie ein Bild am Griff an die gewünschte Stelle.</p></div>
-          <button className="button button-primary" type="button" disabled={Boolean(busy) || images.length >= 8} onClick={() => openUpload("gallery")}>Bild hinzufügen</button>
+          <div><h2 id="admin-gallery-title">Bildergalerie</h2><p>{images.length} von {GALLERY_LIMIT} Bildern · Ziehen Sie ein Bild am Griff an die gewünschte Stelle.</p></div>
+          <button className="button button-primary" type="button" disabled={Boolean(busy) || images.length >= GALLERY_LIMIT} onClick={() => openUpload("gallery")}>Bild hinzufügen</button>
         </div>
         {orderedImages.length ? (
           <>

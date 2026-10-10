@@ -1,3 +1,4 @@
+import { GALLERY_LIMIT } from "./gallery-limit";
 export type MediaLibraryTarget = {
     profileId: string;
     kind: 'gallery' | 'logo' | 'contact' | 'block' | 'video' | 'video_block';
@@ -48,7 +49,7 @@ export function mediaNeedsRights(asset: Pick<MediaAsset, 'profile_id' | 'bucket_
     return asset.bucket_id === 'ad-media' || asset.profile_id !== profileId;
 }
 export function mediaSelectionLimit(target?: MediaLibraryTarget) {
-    return target?.kind === 'gallery' && !target.replacementId ? Math.max(0, Math.min(8, target.capacity ?? 1)) : 1;
+    return target?.kind === 'gallery' && !target.replacementId ? Math.max(0, Math.min(GALLERY_LIMIT, target.capacity ?? 1)) : 1;
 }
 
 // Legacy prose is preserved, but never silently treated as a reuse permission.

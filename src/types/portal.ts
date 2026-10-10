@@ -14,6 +14,7 @@ export type CompanyVerification = {
 };
 
 export type Listing = {
+  galleryInitialized?: boolean;
   id: string;
   slug: string;
   name: string;

@@ -71,7 +71,7 @@ export async function changeAdminCompanyMedia(
     if (!extension || !Number.isSafeInteger(size) || size <= 0 || size > MEDIA_MAX_BYTES)
       return { access, error: "Bitte wählen Sie JPG, PNG oder WebP mit maximal 5 MB." };
     if (intent === "prepare-gallery" && !replacement && rows.length >= GALLERY_LIMIT)
-      return { access, error: "Es sind maximal 8 Bilder möglich." };
+      return { access, error: `Es sind maximal ${GALLERY_LIMIT} Bilder möglich.` };
     return {
       access,
       uploadPath: `profiles/${profile.id}/${intent === "prepare-logo" ? "logo" : "gallery"}/${crypto.randomUUID()}.${extension}`,
@@ -80,7 +80,7 @@ export async function changeAdminCompanyMedia(
 
   if (intent === "logo-upload" || intent === "gallery-upload") {
     if (intent === "gallery-upload" && !replacement && rows.length >= GALLERY_LIMIT)
-      return { access, error: "Es sind maximal 8 Bilder möglich." };
+      return { access, error: `Es sind maximal ${GALLERY_LIMIT} Bilder möglich.` };
     const path = form.get("uploaded_path");
     const kind = intent === "logo-upload" ? "logo" : "gallery";
     const prefix = `profiles/${profile.id}/${kind}/`;

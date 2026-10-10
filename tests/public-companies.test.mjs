@@ -369,7 +369,7 @@ test("public persisted legacy deletion survives loading and cannot resurrect on 
 });
 
 test("public loader retries its existing columns when anon has no street grant", async () => {
-  api([travelRow]);
+  api([{ ...travelRow, gallery_initialized: true }]);
   const fetchWithData = globalThis.fetch;
   let denied = 0;
   globalThis.fetch = async (input, init) => {
@@ -388,6 +388,7 @@ test("public loader retries its existing columns when anon has no street grant",
   const detail = await loadPublicCompanyBySlug(travelRow.slug);
   assert.equal(detail.error, null);
   assert.equal(detail.data.location.street, "");
+  assert.equal(detail.data.galleryInitialized, true);
   assert.equal(denied, 2);
 });
 

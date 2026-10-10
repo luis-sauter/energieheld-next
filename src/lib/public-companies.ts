@@ -11,7 +11,7 @@ export const PUBLIC_COMPANIES_ERROR =
   "Die Unternehmensprofile konnten gerade nicht geladen werden.";
 
 const publicFields =
-  "id,status,slug,display_name,tagline,description,phone,public_email,website,street,postal_code,city,region,country,logo_path,company_profile_images(id,storage_path,alt_text,sort_order),business_areas,company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note),company_profile_public_visibility(is_listed)";
+  "gallery_initialized,id,status,slug,display_name,tagline,description,phone,public_email,website,street,postal_code,city,region,country,logo_path,company_profile_images(id,storage_path,alt_text,sort_order),business_areas,company_profile_categories(category_id),company_quality_reviews(status,verified_at,public_note),company_profile_public_visibility(is_listed)";
 // Older public column grants omit street. Keep approved profiles readable until
 // that grant is deployed; the existing city-level map remains available.
 const publicFieldsWithoutStreet = publicFields.replace("website,street,postal_code", "website,postal_code");
@@ -35,6 +35,7 @@ export async function loadPublicCompanyProfileIndex() {
 }
 
 type PublicProfile = {
+  gallery_initialized?: boolean;
   company_profile_public_visibility?: {is_listed:boolean} | {is_listed:boolean}[] | null;
   id: string;
   status: string;
@@ -74,18 +75,22 @@ export async function loadPublicCompanyDirectory(): Promise<Result<{ listings: L
     // Avoid silently truncating the directory at the API's default row limit.
     const pageSize = 500;
     let streetReadable = true;
+    let galleryReadable = true;
     for (let offset = 0; ; offset += pageSize) {
       let { data, error } = await client
         .from("company_profiles")
-        .select(streetReadable ? publicFields : publicFieldsWithoutStreet)
+        .select((streetReadable ? publicFields : publicFieldsWithoutStreet).replace(galleryReadable ? "" : "gallery_initialized,", ""))
         .eq("status", "approved")
         .order("id")
         .range(offset, offset + pageSize - 1);
+      if (galleryReadable && (error?.code === "42703" || error?.code === "PGRST204") && error.message.includes("gallery_initialized")) {
+        galleryReadable = false; offset -= pageSize; continue;
+      }
       if (error?.code === "42501" && streetReadable) {
         streetReadable = false;
         ({ data, error } = await client
           .from("company_profiles")
-          .select(publicFieldsWithoutStreet)
+          .select(publicFieldsWithoutStreet.replace(galleryReadable ? "" : "gallery_initialized,", ""))
           .eq("status", "approved")
           .order("id")
           .range(offset, offset + pageSize - 1));
@@ -149,10 +154,17 @@ export async function loadPublicCompanyBySlug(
       .eq("status", "approved")
       .eq("slug", slug)
       .maybeSingle();
+    let galleryReadable = true;
+    if ((error?.code === "42703" || error?.code === "PGRST204") && error.message.includes("gallery_initialized")) {
+      galleryReadable = false;
+      ({ data, error } = await client.from("company_profiles")
+        .select(publicFields.replace("gallery_initialized,", "") + ",video_path,contact_first_name,contact_last_name,contact_image_path")
+        .eq("status", "approved").eq("slug", slug).maybeSingle());
+    }
     if (error?.code === "42501") {
       ({ data, error } = await client
         .from("company_profiles")
-        .select(`${publicFieldsWithoutStreet},video_path,contact_first_name,contact_last_name,contact_image_path`)
+        .select(`${publicFieldsWithoutStreet.replace(galleryReadable ? "" : "gallery_initialized,", "")},video_path,contact_first_name,contact_last_name,contact_image_path`)
         .eq("status", "approved")
         .eq("slug", slug)
         .maybeSingle());

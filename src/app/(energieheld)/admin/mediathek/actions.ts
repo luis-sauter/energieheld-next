@@ -118,3 +118,13 @@ export async function removeLibraryVideo(profileId: string, blockId?: string): P
     const deleted = await request;
     return deleted.error ? {error:'Video konnte nicht entfernt werden.'} : {success:'Videoverwendung entfernt. Original bleibt in der Mediathek.'};
 }
+
+export async function initializeLibraryGallery(profileId: string): Promise<MediaState> {
+  const { initializeLegacyGallery } = await import("@/lib/initialize-legacy-gallery");
+  const result = await initializeLegacyGallery(await createClient(), profileId);
+  if (result.success) {
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/", "layout");
+  }
+  return result;
+}

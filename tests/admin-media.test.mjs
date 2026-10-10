@@ -84,8 +84,8 @@ test("admin upload preparation enforces type, size and gallery limit", async () 
     assert.ok(result.error);
     assert.equal(result.uploadPath, undefined);
   }
-  const full = client({ profileRows: Array.from({ length: 8 }, (_, index) => ({ ...rows[0], id: String(index) })) });
-  assert.match((await changeAdminCompanyMedia(full, profileId, form({ intent: "prepare-gallery", file_type: "image/png", file_size: "100" }))).error, /8/);
+  const full = client({ profileRows: Array.from({ length: 40 }, (_, index) => ({ ...rows[0], id: String(index) })) });
+  assert.match((await changeAdminCompanyMedia(full, profileId, form({ intent: "prepare-gallery", file_type: "image/png", file_size: "100" }))).error, /40/);
 });
 
 test("admin upload rejects foreign paths and wrong kind before download or write", async () => {
