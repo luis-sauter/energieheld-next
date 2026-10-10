@@ -128,7 +128,7 @@ export function CampaignForm({
     },
     {},
   );
-  const pristine = !admin && isPristineCustomerAd(campaign);
+  const pristine = !publicRequestKey && !admin && isPristineCustomerAd(campaign);
   const [metadata, setMetadata] = useState(bannerMetadata ?? { name: campaign.headline, postal_code: '', city: '', term_keys: [] });
   const [values, setValues] = useState(() => {
     if (campaign.status === 'draft' && !campaign.targets.length)
