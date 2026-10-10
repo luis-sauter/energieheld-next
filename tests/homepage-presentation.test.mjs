@@ -55,7 +55,7 @@ test('homepage composes existing search, all central themes, four destinations a
  for(const {slug} of travelThemes){assert.match(html,new RegExp('href="/mottoreisen/'+slug+'"'));assert.match(html,new RegExp('href="/unterkuenfte-a-z\\?thema='+slug+'"'));}
  for(const d of destinations)assert.match(html,new RegExp('href="/reiseziele/'+d.slug+'"'));
  for(const slug of slugs)assert.match(html,new RegExp('href="/unterkuenfte/'+slug+'"'));
- assert.match(html,/href="\/registrieren"/);
+ assert.match(html,/href="\/angebot-anfragen"/);
  assert.match(html,/data-placement="top_banner"/);assert.match(html,/aria-label="Premium-Anzeige"/);
  assert.deepEqual(globalThis.homeFixture.calls,['homepage','directory','/']);
  assert.doesNotMatch(html,/iframe|maps.googleapis|Merkliste|Bewertungen/);

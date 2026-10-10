@@ -14,6 +14,7 @@ import {
   type AdCampaign,
   type AdPlacementId,
 } from "@/lib/ad-values";
+import { offerRequestStatuses } from "@/lib/offer-requests";
 import styles from "./advertising.module.css";
 import { energieheld } from "@/config/energieheld";
 
@@ -136,6 +137,7 @@ export function CampaignSlot({
   );
 }
 export function CampaignFacts({ campaign: c }: { campaign: AdCampaign }) {
+  if(c.request_status) return <><span className={styles.status}>{offerRequestStatuses[c.request_status]}</span><p>{c.contact_name} · {c.contact_email}</p><p>Eingang: {new Date(c.created_at).toLocaleString("de-DE")}</p></>;
   return (
     <>
       <span className={styles.status}>{adStatus(c)}</span>
@@ -192,13 +194,13 @@ export function CampaignList({
           {admin && <p className="eyebrow">{c.companyName}</p>}
           <h2>{c.internal_name || (admin ? "Neue Werbekampagne" : "Neue Angebotsanfrage")}</h2>
           <CampaignFacts campaign={c} />
-          {!requestsOnly && <CampaignSlot placement={c.placement} ad={c} preview />}
+          {!requestsOnly && !c.request_status && <CampaignSlot placement={c.placement} ad={c} preview />}
           <Link
             className="button"
             href={`${admin ? "/admin" : "/firma"}/werbung/${c.id}`}
           >
             {admin
-              ? c.archived_at ? "Archiv ansehen" : requestsOnly ? "Anfrage prüfen" : "Kampagne prüfen"
+              ? c.request_status ? "Anfrage bearbeiten" : c.archived_at ? "Archiv ansehen" : requestsOnly ? "Anfrage prüfen" : "Kampagne prüfen"
               : ["draft", "rejected"].includes(c.status)
                 ? "Angebotsanfrage bearbeiten"
                 : "Angebotsanfrage ansehen"}

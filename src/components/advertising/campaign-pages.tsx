@@ -10,6 +10,7 @@ import { loadBannerPresentations } from "@/lib/banner-presentation-loader";
 import { displayPlacement } from "@/lib/banner-presentation";
 import { CampaignFacts, CampaignList, CampaignSlot } from "./campaign-view";
 import { CampaignForm, AdminCampaignForm } from "./campaign-form";
+import { OfferRequestDetail } from "./offer-request-form";
 import styles from "./advertising.module.css";
 import { loadBannerMetadata } from '@/lib/banner-search-metadata';
 import { CampaignLifecycle } from './campaign-lifecycle';
@@ -40,10 +41,10 @@ export async function CampaignIndex({
       <Link href={base}>
         ← Zurück zum {admin ? "Adminbereich" : "Firmenbereich"}
       </Link>
-      <h1>{admin ? (pendingOnly ? "Werbeanfragen prüfen" : "Werbung verwalten") : "Meine Angebotsanfragen"}</h1>
+      <h1>{admin ? (pendingOnly ? "Angebotsanfragen bearbeiten" : "Werbung verwalten") : "Meine Angebotsanfragen"}</h1>
       {admin && <nav className={styles.actions} aria-label="Kampagnenbestand">
         <Link href="/admin/werbung?ansicht=pruefung" aria-current={pendingOnly ? "page" : undefined}>Offene Angebotsanfragen</Link>
-        <Link href="/admin/werbung" aria-current={!archivedOnly && !pendingOnly ? 'page' : undefined}>Alle Kampagnen</Link>
+        <Link href="/admin/werbung" aria-current={!archivedOnly && !pendingOnly ? 'page' : undefined}>Alle Anfragen und Kampagnen</Link>
         <Link href="/admin/werbung?archiv=1" aria-current={archivedOnly ? 'page' : undefined}>Archiv</Link>
       </nav>}
       {admin && campaigns?.length && !Object.hasOwn(campaigns[0], 'archived_at') ? <p role="status">Die Archivverwaltung wird nach der Datenbankaktualisierung verfügbar.</p> : null}
@@ -99,6 +100,7 @@ export async function CampaignDetail({
   if ("access" in result) requireAdminAccess(result.access ?? "forbidden");
   const campaign = "campaigns" in result ? result.campaigns?.[0] : undefined;
   if (!campaign && !("error" in result && result.error)) notFound();
+  if (admin && campaign?.request_status) return <main id="hauptinhalt" className={`container ${styles.page}`}><Link href="/admin/werbung?ansicht=pruefung">← Zur Anfragenübersicht</Link><h1>Angebotsanfrage</h1><OfferRequestDetail campaign={campaign}/><Link href="/admin/werbung">Alle Anfragen und Kampagnen</Link></main>;
   const inlinePath = admin && campaign ? campaignInlinePage(campaign) : null;
   const presentation = inlinePath ? await loadBannerPresentations(client, inlineAdContext(inlinePath)!) : null;
   const inlineHref = inlinePath && !presentation?.error ? `${inlinePath}#banner-${displayPlacement(campaign!.targets[0].placement, presentation?.rows ?? [])}` : null;

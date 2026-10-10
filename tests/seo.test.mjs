@@ -89,7 +89,7 @@ test('real profile metadata uses actual location and normalized sentence excerpt
 
 test('sitemap contains only real stable pages and approved eligible profiles, no invented dates',()=>{
  const entries=sitemapEntries([listing,listing,{...listing,slug:'demo-gmbh'},{...listing,isPreview:true}],production);
- assert.equal(entries.length,23);assert.ok(entries.some(e=>e.url.endsWith('/unterkuenfte/sonnenhof')));
+ assert.equal(entries.length,24);assert.ok(entries.some(e=>e.url.endsWith('/angebot-anfragen')));assert.ok(entries.some(e=>e.url.endsWith('/unterkuenfte/sonnenhof')));
  assert.ok(entries.every(e=>Object.keys(e).join()==='url'));assert.ok(entries.every(e=>!/[?]|\/suche|\/admin|\/firma|\/login|demo/.test(e.url)));
  assert.deepEqual(sitemapEntries([listing],siteSeo({})),[]);
  assert.deepEqual(sitemapEntries([listing],siteSeo({SITE_URL:'https://portal.example',SITE_INDEXING:'enabled',NODE_ENV:'production',CONTEXT:'branch-deploy'})),[]);

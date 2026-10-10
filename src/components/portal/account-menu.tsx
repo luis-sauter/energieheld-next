@@ -7,17 +7,10 @@ import type { EditorialCounts } from "@/lib/editorial-queue";
 import type { AdminAccess } from "@/lib/admin-review";
 
 export type AccountIdentity = { name?: string; email?: string; initials: string };
-const accountLinks = [
-  { label: "Firmenbereich", href: "/firma" },
-  { label: "Profil bearbeiten", href: "/firma/profil" },
-  { label: "Anfragen", href: "/firma/anfragen" },
-  { label: "Angebotsanfragen", href: "/firma/werbung" },
-  { label: "Statistiken", href: "/firma/statistiken" },
-];
 const adminLinks = [{ label: "Redaktion", href: "/admin" }];
-export function accountMenuGroups(access: AdminAccess, hasCompany = false) {
+export function accountMenuGroups(access: AdminAccess) {
   return access === "unauthenticated" ? { account: [{ label: "Einloggen", href: "/login" }], administration: [] }
-    : { account: hasCompany ? accountLinks : access === "admin" ? [] : [{ label: "Mein Konto", href: "/konto" }], administration: access === "admin" ? adminLinks : [] };
+    : { account: [], administration: access === "admin" ? adminLinks : [] };
 }
 
 export function AccountMenu({ access, identity, hasCompany = false, taskCounts, taskError }: { access: AdminAccess; identity?: AccountIdentity; hasCompany?: boolean; taskCounts?: EditorialCounts; taskError?: string }) {
@@ -51,7 +44,7 @@ export function AccountMenu({ access, identity, hasCompany = false, taskCounts, 
   const total = counts?.total ?? 0;
   const countFor = (href: string) => href === "/admin" ? counts?.total : undefined;
   const signedIn = access !== "unauthenticated";
-  const groups = accountMenuGroups(access, hasCompany);
+  const groups = accountMenuGroups(access);
   return <div className="account-menu" ref={root}>
     <button ref={button} type="button" className="account-trigger" aria-label={open ? "Kontomenü schließen" : "Kontomenü öffnen"} aria-description={total > 0 ? `${total} offene Redaktionsaufgaben` : access === "admin" && taskError ? "Aufgabenzähler nicht verfügbar" : undefined} aria-expanded={open} aria-controls="portal-account-menu" onClick={() => setOpen(!open)}>
       {signedIn ? <span aria-hidden="true">{identity?.initials || "K"}</span> : <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.5-4 3-6 7.5-6s7 2 7.5 6"/></svg>}

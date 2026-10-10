@@ -31,7 +31,7 @@ export function PortalHeader({ brand, access = "unauthenticated", identity, hasC
           </Link>
           <DesktopNavigation items={navigation} />
           <Link className="button header-cta" href={cta.href}>{cta.label}</Link>
-          <AccountMenu access={access} hasCompany={hasCompany} identity={identity} taskCounts={taskCounts} taskError={taskError} />
+          {access === "admin" && <AccountMenu access={access} hasCompany={hasCompany} identity={identity} taskCounts={taskCounts} taskError={taskError} />}
           <MobileNavigation items={navigation} cta={cta} />
         </div>
       </header>
@@ -52,6 +52,8 @@ export function PortalFooter({ brand }: { brand: BrandConfig }) {
         <span>
           © {new Date().getFullYear()} {brand.name}
         </span>
+        <Link href="/angebot-anfragen">Unverbindlich anfragen</Link>
+        <Link href="/login?next=/admin">Redaktion / Login</Link>
       </div>
     </footer>
   );

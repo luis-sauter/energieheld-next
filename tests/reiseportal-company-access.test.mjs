@@ -65,7 +65,7 @@ const { default: CompanyPage } = await import("../src/app/(energieheld)/firma/pa
 test("shared layout reads existing server auth and renders guest, company and admin links", async () => {
   for (const [role, expected] of [
     ["unauthenticated", ""],
-    ["forbidden", "LS"],
+    ["forbidden", ""],
     ["admin", "LS"],
   ]) {
     globalThis.__companyAccessRole = role;
@@ -73,8 +73,8 @@ test("shared layout reads existing server auth and renders guest, company and ad
     const html = renderToStaticMarkup(await Layout({ children: createElement("p", null, "Inhalt") }));
     assert.equal(globalThis.__companyAccessClientCalls, 1);
     const header = html.split("</header>")[0];
-    assert.match(header, new RegExp(role === "admin" ? 'href="/admin"' : role === "forbidden" ? 'href="/firma"' : 'href="/fuer-unternehmen"'));
-    assert.match(header, /aria-label="Kontomenü öffnen"/);
+    assert.match(header, new RegExp(role === "admin" ? 'href="/admin"' : 'href="/angebot-anfragen"'));
+    assert.equal(header.includes('aria-label="Kontomenü öffnen"'),role==="admin");
     assert.doesNotMatch(header, /href="\/login"/);
     if (expected) assert.match(header, new RegExp(`>${expected}<`));
   }
