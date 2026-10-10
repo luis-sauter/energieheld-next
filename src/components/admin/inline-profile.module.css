@@ -2,7 +2,8 @@
 .toolbar {
   position: sticky;
   top: 0;
-  z-index: 20;
+  /* Below the shared header (20), including its navigation/account dropdowns. */
+  z-index: 10;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
