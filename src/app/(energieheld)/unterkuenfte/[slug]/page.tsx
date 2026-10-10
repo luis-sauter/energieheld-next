@@ -141,7 +141,7 @@ export default async function AccommodationDetail({
           ) : undefined
         }
       />}
-      <TravelRelations title="Reiseinformationen und passende Rubriken" links={[...relations.destinations, ...relations.themes]} facts={result.terms} />
+      <TravelRelations presentation="profile" title="Reiseinformationen und passende Rubriken" links={[...relations.destinations, ...relations.themes]} facts={result.terms} />
       <Link className="text-link back-link" href="/unterkuenfte-a-z">
         ← Zurück zu Unterkünfte A–Z
       </Link>

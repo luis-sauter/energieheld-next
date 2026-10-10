@@ -151,9 +151,9 @@ test('compact profile header reuses review UI while leaving full details only in
 
 test('edit-mode review selector has precisely the two editorial choices and preserves capability/dirty guards', () => {
   for (const state of [initial, checked, { ...checked, content_revision: 2 }]) {
-    const html = renderToStaticMarkup(createElement(ProfileFreshness, { state, review: async()=>({}), withdraw: async()=>({}), disabled: false, editableStatus: true }));
+    const html = renderToStaticMarkup(createElement(ProfileFreshness, { state, review: async()=>({}), withdraw: async()=>({}), disabled: false, editableStatus: true, onReviewChange:()=>{} }));
     assert.equal((html.match(/type="radio"/g)||[]).length, 2);
-    assert.match(html, /Prüfung erforderlich/); assert.match(html, /Bereits geprüft/); assert.match(html, /Prüfstatus speichern/);
+    assert.match(html, /Prüfung erforderlich/); assert.match(html, /Bereits geprüft/); assert.match(html, /Wird mit „Speichern“ übernommen/); assert.doesNotMatch(html, /<button|Prüfstatus speichern|Rücknahme bestätigen/);
     assert.doesNotMatch(html, /title="(?:Noch nicht geprüft|Aktuell geprüft|Seit Prüfung geändert)"/);
   }
   const blocked = renderToStaticMarkup(createElement(ProfileFreshness, { state: initial, disabled: false, editableStatus: true }));
