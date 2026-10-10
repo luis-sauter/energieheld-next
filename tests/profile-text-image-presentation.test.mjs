@@ -48,7 +48,7 @@ test('editor uses the same surface, compact inline input and modal instead of ex
  assert.match(source,/setPairPreview\(\{ textId, imageId, side, share \}\)/);assert.match(source,/history\.record\(\{ kind: "text"/);
  const modal=readFileSync(new URL('../src/components/admin/paired-image-editor.tsx',import.meta.url),'utf8');
  assert.match(modal,/<BlockImageGrid block=\{block\}/);assert.match(modal,/<dialog/);assert.match(modal,/showModal\(\)/);assert.match(modal,/onCancel/);assert.match(modal,/trigger\.current\?\.focus/);assert.match(modal,/InlineImageGridEditor block=\{block\} saveAction=\{saveImage\} onBusyChange=\{onBusyChange\}/);
- const css=readFileSync(new URL('../src/components/portal/profile-content-blocks.module.css',import.meta.url),'utf8');assert.match(css,/editorialPair \{ display: grid; align-items: center; gap: clamp/);assert.match(css,/@media \(max-width: 640px\) \{\s*\.editorialPair \{ grid-template-columns: minmax\(0, 1fr\) !important/);
+ const css=readFileSync(new URL('../src/components/portal/profile-content-blocks.module.css',import.meta.url),'utf8');assert.match(css,/editorialPair \{ display: grid; align-items: start; gap: clamp/);assert.match(css,/@media \(max-width: 640px\) \{\s*\.editorialPair \{ grid-template-columns: minmax\(0, 1fr\) !important/);
 });
 const {InlineContentEditor}=await import('../src/components/admin/inline-content-editor.tsx');
 function nodes(node){if(!node)return[];if(Array.isArray(node))return node.flatMap(nodes);if(typeof node!=='object')return[];return[node,...nodes(node.props?.children),...nodes(node.props?.pairToolbar)];}
@@ -119,4 +119,14 @@ test('stored field-bound pairs render identically in editor and public view for 
   }
   assert.equal(JSON.stringify(item),before,'stored block metadata must remain unchanged');
  }
+});
+
+for (const flow of ['standard','beside','around','columns']) for (const side of ['left','right']) test('text flow '+flow+' '+side+' preserves all content and media',()=>{
+ const heading=block('heading','heading',50,side==='left'?50:0,'HeadlineUnique');
+ const text=block('text','text',50,side==='left'?50:0,'FirstUnique. SecondUnique\n\nLastUnique');
+ text.pair_layout={text_flow:flow};const img=block('image','image_grid',50,side==='left'?0:50);
+ const html=renderToStaticMarkup(createElement(ProfileContentBlocks,{blocks:side==='left'?[img,heading,text]:[heading,text,img]}));
+ assert.match(html,new RegExp('data-flow="'+flow+'"'));
+ for(const word of ['HeadlineUnique','FirstUnique','SecondUnique','LastUnique']) assert.equal(html.split(word).length-1,1,word);
+ assert.match(html,/src="\/real-image.webp"/);assert.match(html,/Blick ins Tal/);
 });

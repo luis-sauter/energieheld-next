@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import type { ProfileContentBlock } from "@/lib/profile-content";
 import { blockPositionOffset, dragBlockOffset, hasPersistedBlockLayout,
-  normalizeBlockLayout, normalizeTextBlockLayout, type BlockSpacing, type TextAlignment } from "@/lib/content-block-layout";
+  normalizeBlockLayout, normalizeTextBlockLayout, type BlockSpacing, type TextAlignment, type TextImageFlow } from "@/lib/content-block-layout";
 import styles from "./inline-profile.module.css";
 
 export function InlineBlockLayout({ block, busy, first, last, save, children, sectionHidden, sectionLabel, pairedPart = false, editorialPair = false, pairToolbar }: {
@@ -156,6 +156,19 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
           aria-pressed={previewTextAlign === value} disabled={busy || !persisted}
           onClick={() => void setLayout({ text_align: value })}>Text {label === "Mitte" ? "mittig" : label.toLowerCase()}</button>)}
       </div>}
+      {(pair || editorialPair) && <fieldset className={styles.flowChoices}><legend>Text und Bild</legend>
+        {([
+          ["standard", "Standard", "Bild und Text nebeneinander"],
+          ["beside", "Variante A", "Neben dem Bild beginnen, darunter weiter"],
+          ["around", "Variante B", "Oberhalb beginnen, um das Bild fließen"],
+          ["columns", "Variante C", "Oberhalb beginnen, daneben fortsetzen"],
+        ] as const).map(([value, label, description]) => <button key={value} type="button"
+          aria-pressed={(normalizeTextBlockLayout(block.config).text_flow ?? "standard") === value}
+          title={description} disabled={busy || !persisted} onClick={() => void setLayout({text_flow: value as TextImageFlow})}>
+          <span className={styles.flowPreview} data-flow={value} aria-hidden="true"><i/><b/><b/><b/></span>
+          <span>{label}</span><small>{description}</small>
+        </button>)}
+      </fieldset>}
       <details className={styles.spacingControls}><summary>Abstand</summary>
         {(["spacing_top", "spacing_bottom"] as const).map((field) => <div key={field} className={styles.controlGroup}
           role="group" aria-label={field === "spacing_top" ? "Abstand oben" : "Abstand unten"}>

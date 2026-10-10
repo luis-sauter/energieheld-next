@@ -6,7 +6,16 @@ export type BlockLayout = {
   spacing_top: BlockSpacing;
   spacing_bottom: BlockSpacing;
 };
-export type TextBlockLayout = BlockLayout & { text_align: TextAlignment };
+export type TextImageFlow = "standard" | "beside" | "around" | "columns";
+export function validTextImageFlow(value: unknown): value is TextImageFlow {
+  return value === "standard" || value === "beside" || value === "around" || value === "columns";
+}
+export function splitFlowText(text: string) {
+  const boundary = text.match(/\n\s*\n|[.!?]\s+/);
+  const at = boundary ? boundary.index! + boundary[0].length : 0;
+  return { intro: text.slice(0, at), body: text.slice(at) };
+}
+export type TextBlockLayout = BlockLayout & { text_align: TextAlignment; text_flow?: TextImageFlow };
 
 export const DEFAULT_BLOCK_LAYOUT: TextBlockLayout = {
   width_percent: 100, offset_percent: 0, text_align: "left",
@@ -46,7 +55,7 @@ export function normalizeBlockLayout(value: unknown): BlockLayout {
 }
 export function normalizeTextBlockLayout(value: unknown): TextBlockLayout {
   const v = value && typeof value === "object" ? value as Record<string, unknown> : {};
-  return { ...normalizeBlockLayout(value), text_align: validTextAlignment(v.text_align) ? v.text_align : "left" };
+  return { ...normalizeBlockLayout(value), text_align: validTextAlignment(v.text_align) ? v.text_align : "left", ...(validTextImageFlow(v.text_flow) ? { text_flow: v.text_flow } : {}) };
 }
 export function clampBlockOffset(width: number, offset: number) {
   return Math.max(0, Math.min(100 - width, Math.round(offset * 10) / 10));

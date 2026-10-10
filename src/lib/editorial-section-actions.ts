@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ABOUT_SECTION, BUSINESS_SECTION, contentText, editorialOrder, type HeadingSlot, type ProfileContentBlock } from "./profile-content";
-import { normalizeTextBlockLayout, validOffset, validSpacing, validTextAlignment, validWidth } from "./content-block-layout";
+import { normalizeTextBlockLayout, validOffset, validSpacing, validTextImageFlow, validTextAlignment, validWidth } from "./content-block-layout";
 import { isProfileId } from "./admin-review";
 
 type Result = { error?: string; success?: string };
@@ -79,13 +79,14 @@ export async function changeEditorialSection(client: SupabaseClient, profileId: 
     const align = form.get("text_align") ?? old.text_align;
     const top = form.get("spacing_top") ?? old.spacing_top;
     const bottom = form.get("spacing_bottom") ?? old.spacing_bottom;
+    const flow = form.get("text_flow") ?? old.text_flow ?? "standard";
     if (!validWidth(width) || !validOffset(offset) || width + offset > 100 ||
-      !validTextAlignment(align) || !validSpacing(top) || !validSpacing(bottom))
+      !validTextAlignment(align) || !validSpacing(top) || !validSpacing(bottom) || !validTextImageFlow(flow))
       return { error: "Bitte wählen Sie gültige Werte für Breite, Position und Ausrichtung." };
     const saved = await client.from("profile_content_blocks").update({ content: {
       ...metadata.content, pair_layouts: { ...metadata.content.pair_layouts,
         [key as string]: { width_percent: width, offset_percent: offset, text_align: align,
-          spacing_top: top, spacing_bottom: bottom } },
+          spacing_top: top, spacing_bottom: bottom, text_flow: flow } },
     } }).eq("profile_id", profileId).eq("id", metadata.id).eq("slot", "about_heading")
       .select("id").maybeSingle();
     return saved.error || saved.data?.id !== metadata.id ? { error: failed } : { success: "Layout gespeichert." };

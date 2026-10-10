@@ -20,7 +20,7 @@
 }
 
 /* Identical content surface in public view and editor; tools live outside it. */
-.editorialPair { display: grid; align-items: center; gap: clamp(20px, 2.5vw, 32px); padding: clamp(12px, 1.5vw, 20px); border: 1px solid #edf1f2; border-radius: 12px; background: #fffefd; }
+.editorialPair { display: grid; align-items: start; gap: clamp(20px, 2.5vw, 32px); padding: clamp(12px, 1.5vw, 20px); border: 1px solid #edf1f2; border-radius: 12px; background: #fffefd; }
 .editorialText, .editorialImage { min-width: 0; overflow-wrap: anywhere; }
 .editorialText { display: grid; gap: 0; width: 100%; max-width: 65ch; justify-self: center; }
 .editorialText :global(.profile-content-block) { padding: 0 !important; border: 0 !important; background: transparent; box-shadow: none !important; margin: 0 !important; width: 100% !important; margin-left: 0 !important; }
@@ -33,3 +33,21 @@
 .editorialBlock { padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
 .editorialBlock h2 { margin-top: 0; margin-bottom: 12px; }
 .editorialBlock p { line-height: 1.7; }
+
+.flowIntro { grid-column: 1 / -1; min-width: 0; }
+.flowIntro h2 { margin: 0 0 12px; color: var(--brand-primary); }
+.flowIntro p { margin: 0; line-height: 1.7; white-space: pre-wrap; }
+.flowIntro :global(.profile-content-block) { margin: 0 !important; padding: 0 !important; }
+.flowTextEditor { margin: 8px 0 20px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+.flowTextEditor summary { color: var(--brand-primary); cursor: pointer; font-weight: 600; }
+@media (min-width: 641px) {
+  .editorialPair[data-flow="beside"], .editorialPair[data-flow="around"] { display: flow-root; }
+  .editorialPair:is([data-flow="beside"], [data-flow="around"]) .editorialImage { float: right; width: calc(var(--image-share) - 12px); margin: 0 0 16px 24px; }
+  .editorialPair:is([data-flow="beside"], [data-flow="around"])[data-image-side="left"] .editorialImage { float: left; margin: 0 24px 16px 0; }
+  .editorialPair:is([data-flow="beside"], [data-flow="around"]) .editorialText { display: block; width: auto; max-width: none; }
+  .editorialPair[data-flow="around"] .flowIntro { margin-bottom: 16px; }
+}
+@media (max-width: 640px) {
+  .editorialPair .editorialImage { float: none; width: 100%; margin: 0; }
+  .flowIntro { grid-column: auto; }
+}
