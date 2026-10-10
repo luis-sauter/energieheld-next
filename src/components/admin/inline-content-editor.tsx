@@ -488,8 +488,11 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
               onClick={() => void setPairLayout(text.id, image.id, side, share)}>{share} % Bild / {100 - share} % Text</button>)}
           </div>
         </div>;
+      const flow = normalizeTextBlockLayout(text?.pair_layout).text_flow ?? "standard";
+      const editableText = columns.flat().filter((block) => block.type !== "image_grid").map((block) => renderEditableBlock(block, true));
+      const flowText = columns.flat().filter((block) => block.type !== "image_grid").map((block) => block.type === "heading" ? <h2 key={block.id}>{block.content.text}</h2> : <p key={block.id}>{block.content.text}</p>);
       const pairContent = <>
-        <TextImageSection text={columns.flat().filter((block) => block.type !== "image_grid").map((block) => renderEditableBlock(block, true))}
+        <TextImageSection text={flow === "standard" ? editableText : flowText} editingText={flow === "standard" ? undefined : editableText} flow={flow}
           image={image ? renderPairedImage(image) : null} textWidth={textLayout?.width_percent ?? 50}
           imageWidth={imageLayout?.width_percent ?? 50} imageFirst={side === "left"} />
       </>;
@@ -572,7 +575,8 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       busy={busy || history.busy} first={index === 0} last={index === items.length - 1} save={saveSpecial}>
       {item.hidden && <p role="status">Dieser Abschnitt ist öffentlich ausgeblendet.</p>}
 
-      {shownImage ? <TextImageSection text={renderSpecial(item)} image={renderPairedImage(shownImage)}
+      {shownImage ? <TextImageSection text={(item.pairLayout?.text_flow ?? "standard") === "standard" ? renderSpecial(item) : <section>{!item.headingHidden && <h2 style={{textAlign:item.headingAlign}}>{item.heading}</h2>}<p style={{textAlign:item.bodyAlign}}>{item.kind === "about" ? listing.description : listing.businessAreas}</p></section>}
+        editingText={(item.pairLayout?.text_flow ?? "standard") === "standard" ? undefined : renderSpecial(item)} flow={item.pairLayout?.text_flow} image={renderPairedImage(shownImage)}
         textWidth={textLayout.width_percent} imageWidth={normalizeBlockLayout(shownImage.config).width_percent}
         imageFirst={normalizeBlockLayout(shownImage.config).offset_percent < textLayout.offset_percent} /> : <>{renderSpecial(item)}{renderAdjacentAction(item.key,
         item.kind === "about" ? listing.description ?? "" : listing.businessAreas ?? "")}</>}

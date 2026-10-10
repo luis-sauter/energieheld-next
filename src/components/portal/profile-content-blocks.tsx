@@ -1,27 +1,56 @@
+import { Children, cloneElement, isValidElement, type ReactNode, type CSSProperties } from "react";
 import {PortalVideo} from './portal-video';
 import type { ProfileContentBlock, ProfileBlockImage, EditorialItem } from "@/lib/profile-content";
 import type { Listing } from "@/types/portal";
 import Image from "next/image";
 import { normalizeImageGridConfig, publicImageGridColumns, editorialImageAspectRatio } from "@/lib/image-grid-layout";
-import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment } from "@/lib/content-block-layout";
+import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment, type TextImageFlow, splitFlowText } from "@/lib/content-block-layout";
 import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";
 import { imageCaptionPresentation } from "@/lib/image-caption";
 import styles from "./profile-content-blocks.module.css";
 import { contentBlockRows } from "@/lib/content-block-rows";
 
-// Shared public/editor composition; DOM order defines mobile reading order.
-export function TextImageSection({ text, image, textWidth, imageWidth, imageFirst, textAlign }: {
-  text: React.ReactNode; image: React.ReactNode; textWidth: number; imageWidth: number;
-  imageFirst: boolean; textAlign?: TextAlignment;
+
+function flowIntroduction(nodes: ReactNode) {
+  let started = false;
+  function divide(node: ReactNode): {intro: ReactNode; body: ReactNode} {
+    if (!isValidElement<{children?: ReactNode}>(node)) return {intro: null, body: node};
+    if (!started && (node.type === "h2" || node.type === "h3")) return {intro: node, body: null};
+    if (!started && node.type === "p" && typeof node.props.children === "string") {
+      started = true;
+      const parts = splitFlowText(node.props.children);
+      return {intro: parts.intro ? cloneElement(node, {}, parts.intro) : null,
+        body: parts.body ? cloneElement(node, {}, parts.body) : null};
+    }
+    if (!started && node.props.children) {
+      const parts = Children.toArray(node.props.children).map(divide);
+      const intro = parts.map(p => p.intro).filter(Boolean), body = parts.map(p => p.body).filter(Boolean);
+      return {intro: intro.length ? cloneElement(node, {}, intro) : null, body: body.length ? cloneElement(node, {}, body) : null};
+    }
+    return {intro: null, body: node};
+  }
+  const parts = Children.toArray(nodes).map(divide);
+  return {intro: parts.map(p => p.intro), body: parts.map(p => p.body)};
+}
+
+// One contained surface, shared by public view and editor; no content is truncated.
+export function TextImageSection({ text, image, textWidth, imageWidth, imageFirst, textAlign, flow = "standard", editingText }: {
+  text: ReactNode; image: ReactNode; textWidth: number; imageWidth: number;
+  imageFirst: boolean; textAlign?: TextAlignment; flow?: TextImageFlow; editingText?: ReactNode;
 }) {
-  const textColumn = <div key="text" className={styles.editorialText} style={{ textAlign }}>{text}</div>;
+  const split = flow === "around" || flow === "columns" ? flowIntroduction(text) : null;
+  const textColumn = <div key="text" className={styles.editorialText} style={{ textAlign }}>{split?.body ?? text}</div>;
   const imageColumn = <div key="image" className={styles.editorialImage}>{image}</div>;
-  return <div className={styles.editorialPair} data-text-image="true" data-image-side={imageFirst ? "left" : "right"}
-    style={{ gridTemplateColumns: imageFirst
-      ? `minmax(0, ${imageWidth}fr) minmax(0, ${textWidth}fr)`
-      : `minmax(0, ${textWidth}fr) minmax(0, ${imageWidth}fr)` }}>
-    {imageFirst ? [imageColumn, textColumn] : [textColumn, imageColumn]}
-  </div>;
+  return <>
+    <div className={styles.editorialPair} data-text-image="true" data-flow={flow} data-image-side={imageFirst ? "left" : "right"}
+      style={{ "--image-share": imageWidth / (textWidth + imageWidth) * 100 + "%", gridTemplateColumns: imageFirst
+        ? "minmax(0, " + imageWidth + "fr) minmax(0, " + textWidth + "fr)"
+        : "minmax(0, " + textWidth + "fr) minmax(0, " + imageWidth + "fr)" } as CSSProperties}>
+      {split && <div className={styles.flowIntro}>{split.intro}</div>}
+      {flow === "beside" || flow === "around" ? [imageColumn, textColumn] : imageFirst ? [imageColumn, textColumn] : [textColumn, imageColumn]}
+    </div>
+    {editingText && flow !== "standard" && <details className={styles.flowTextEditor}><summary>Text bearbeiten</summary>{editingText}</details>}
+  </>;
 }
 
 export function ProfileBlockImage({ image, crop }: { image: ProfileBlockImage; crop?: ImageCrop }) {
@@ -69,7 +98,7 @@ export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[]
           image={[...row.left, ...row.right].filter((block) => block.type === "image_grid").map((block) => <BlockImageGrid key={block.id} block={block} editorial />)}
           textWidth={normalizeBlockLayout(text?.config).width_percent}
           imageWidth={normalizeBlockLayout([...row.left, ...row.right].find((block) => block.type === "image_grid")?.config).width_percent}
-          imageFirst={row.left[0].type === "image_grid"} textAlign={frame.text_align} />
+          imageFirst={row.left[0].type === "image_grid"} textAlign={frame.text_align} flow={frame.text_flow} />
       </div>;
     })}
   </>;
@@ -108,7 +137,7 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
       style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
       <TextImageSection text={section} image={<BlockImageGrid block={image} editorial />}
         textWidth={item.layout.width_percent} imageWidth={normalizeBlockLayout(image.config).width_percent}
-        imageFirst={normalizeBlockLayout(image.config).offset_percent < item.layout.offset_percent} />
+        imageFirst={normalizeBlockLayout(image.config).offset_percent < item.layout.offset_percent} flow={frame.text_flow} />
     </div>);
   }
   flush();

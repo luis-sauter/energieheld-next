@@ -587,3 +587,16 @@ test("duplicating a text-image pair preserves its frame and delegates shared ima
     call.args.p_block_id === second && call.args.p_profile_id === profileId));
   assert.ok(db.calls.every((call) => !call.operation || call.table !== "company_profiles"));
 });
+
+test('optional flow is admin scoped, persists for free and field-bound pairs and survives unrelated layout edits',async()=>{
+ for(const special of [true,false]) {
+  const about={id:'ffffffff-ffff-4fff-8fff-ffffffffffff',profile_id:profileId,type:'heading',slot:'about_heading',sort_order:0,content:{text:'About',order:['section:about',first,second,'section:business'],...(special?{adjacent_image_id:second,layout:{width_percent:50,offset_percent:0}}:{})}};
+  const text={id:first,profile_id:profileId,type:'text',slot:null,sort_order:0,content:{text:'Retained'},config:{width_percent:50,offset_percent:0}};
+  const image={id:second,profile_id:profileId,type:'image_grid',slot:null,sort_order:1,content:{},config:{columns:1,width_percent:50,offset_percent:50}};
+  const db=client({blocks:[about,text,image]}); const request=value=>form({intent:special?'section-pair-frame':'pair-frame',block_id:'section:about',text_block_id:first,image_block_id:second,...value});const key=special?'section:about':first;
+  for(const flow of ['beside','around','columns','standard']) {assert.ok((await changeAdminProfileContent(db,profileId,slug,request({text_flow:flow}))).success);assert.equal(about.content.pair_layouts[key].text_flow,flow);assert.ok((await changeAdminProfileContent(db,profileId,slug,request({spacing_top:'small'}))).success);assert.equal(about.content.pair_layouts[key].text_flow,flow);}
+  assert.ok((await changeAdminProfileContent(db,profileId,slug,request({text_flow:'truncate'}))).error);
+  assert.notEqual((await changeAdminProfileContent(client({admin:false,blocks:[about,text,image]}),profileId,slug,request({text_flow:'around'}))).access,'admin');
+  assert.equal(text.content.text,'Retained');assert.equal(image.id,second);
+ }
+});

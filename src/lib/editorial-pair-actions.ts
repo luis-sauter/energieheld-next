@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isProfileId } from "./admin-review";
 import { contentBlockRows } from "./content-block-rows";
-import { normalizeTextBlockLayout, validOffset, validSpacing, validTextAlignment, validWidth } from "./content-block-layout";
+import { normalizeTextBlockLayout, validOffset, validSpacing, validTextImageFlow, validTextAlignment, validWidth } from "./content-block-layout";
 import { ensureSection } from "./editorial-section-actions";
 import { editorialOrder, type ProfileContentBlock } from "./profile-content";
 
@@ -51,12 +51,13 @@ export async function changeEditorialPair(client: SupabaseClient, profileId: str
     const align = form.get("text_align") ?? old.text_align;
     const top = form.get("spacing_top") ?? old.spacing_top;
     const bottom = form.get("spacing_bottom") ?? old.spacing_bottom;
+    const flow = form.get("text_flow") ?? old.text_flow ?? "standard";
     if (!validWidth(width) || !validOffset(offset) || width + offset > 100 ||
-      !validTextAlignment(align) || !validSpacing(top) || !validSpacing(bottom))
+      !validTextAlignment(align) || !validSpacing(top) || !validSpacing(bottom) || !validTextImageFlow(flow))
       return { error: "Bitte wählen Sie gültige Werte für Breite, Position, Ausrichtung und Abstand." };
     content.pair_layouts = { ...content.pair_layouts, [text.id]: {
       width_percent: width, offset_percent: offset, text_align: align,
-      spacing_top: top, spacing_bottom: bottom,
+      spacing_top: top, spacing_bottom: bottom, text_flow: flow,
     } };
   } else if (intent === "pair-toggle") {
     const hidden = new Set(content.hidden_blocks ?? []);

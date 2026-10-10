@@ -281,3 +281,17 @@
 .contentEditor [data-text-image] .headingForm textarea,
 .contentEditor [data-text-image] .blockForm textarea[data-editorial-heading] { min-height: 1.25em; }
 .contentEditor [data-text-image] .field textarea { font-weight: 400; }
+
+.flowChoices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; border: 0; padding: 0; margin: 8px 0; }
+.flowChoices legend { font-weight: 600; margin-bottom: 6px; }
+.flowChoices button { min-width: 0; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--brand-primary); cursor: pointer; font: inherit; text-align: left; }
+.flowChoices button[aria-pressed="true"] { border-color: var(--brand-primary); background: #eef7fb; }
+.flowChoices button:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.flowChoices small { display: block; font-size: 11px; color: var(--muted); }
+.flowPreview { display: block; height: 32px; margin-bottom: 5px; }
+.flowPreview i { float: right; width: 35%; height: 24px; background: #bad9e5; border-radius: 3px; margin-left: 4px; }
+.flowPreview b { display: block; height: 4px; background: #8babb9; margin: 4px 0; border-radius: 2px; }
+.flowPreview[data-flow="standard"] b, .flowPreview[data-flow="columns"] b { width: 55%; }
+.flowPreview[data-flow="around"] i, .flowPreview[data-flow="columns"] i { margin-top: 8px; height: 20px; }
+.flowPreview[data-flow="beside"] b:last-child { clear: both; }
+@media(max-width:640px) { .flowChoices { grid-template-columns: repeat(2,minmax(0,1fr)); } }

@@ -42,3 +42,11 @@ test("alignment, spacing and offset validators reject unknown or fractional out-
   assert.equal(layout.validOffset(12.55), false);
   assert.equal(layout.validOffset(-1), false);
 });
+
+test('optional text flow defaults preserve legacy layout; invalid choices cannot become active',()=>{
+ for(const value of ['standard','beside','around','columns']) {assert.equal(layout.validTextImageFlow(value),true);assert.equal(layout.normalizeTextBlockLayout({text_flow:value}).text_flow,value);}
+ for(const value of ['evil',null,{},'hidden']) {assert.equal(layout.validTextImageFlow(value),false);assert.equal(layout.normalizeTextBlockLayout({text_flow:value}).text_flow,undefined);}
+});
+test('flow introductions never drop characters for long, short, multiline and Unicode text',()=>{
+ for(const value of ['', 'Kurz', 'Erster Satz. Danach alles Weitere.', 'Einleitung\n\nWeitere Absätze\n\nEnde', '😀 Über Gäste. '+ 'Ungekürzter Inhalt '.repeat(700)]) {const split=layout.splitFlowText(value);assert.equal(split.intro+split.body,value);}
+});
