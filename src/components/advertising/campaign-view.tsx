@@ -117,7 +117,6 @@ export function CampaignSlot({
             target="_blank"
           >
             {content}
-            {!promo && !reordering && destination && displayAd.imageUrl && <BannerCta />}
             {promo && <div className={styles.promoCopy}>
               <span className={styles.promoLabel}>Reiseinspiration</span>
               <strong>{displayAd.headline}</strong>
@@ -136,6 +135,7 @@ export function CampaignSlot({
           </Link>
         </div>
       )}
+      {!preview && !reordering && displayAd?.imageUrl && destination && <BannerCta placement={placement} />}
     </section>
   );
 }

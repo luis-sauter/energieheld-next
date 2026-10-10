@@ -22,7 +22,7 @@ export function SearchAdCard({ banner, geometry, onGeometry, onEdit, loading = f
       <img src={banner.ad.imageUrl} alt={banner.ad.headline} width={dimensions.width || undefined} height={dimensions.height || undefined}
         loading={dimensions.width && dimensions.height ? 'lazy' : 'eager'} decoding="async"
         onLoad={event => onGeometry?.({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} />
-      {banner.ad.imageUrl && <BannerCta />}
     </a>
+    {banner.ad.imageUrl && <BannerCta placement={banner.ad.placement} />}
   </article>;
 }
