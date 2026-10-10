@@ -123,3 +123,14 @@ test('retired public feature URL does not exclude banners or change advertiser c
   assert.deepEqual(result,travelSearchResults(profiles,banners,{...empty,audience:'paar'}));
  }
 });
+
+test('public image banners keep their original link with exactly one compact CTA; previews and reordering omit it',async()=>{
+ const ad={id:'test',headline:'Test banner',imageUrl:'/existing.jpg',target_url:'https://example.org/banner',placement:'sidebar_top'};
+ for(const placement of ['top_banner','sidebar_top','sidebar_middle','sidebar_bottom']){
+  const html=renderToStaticMarkup(createElement(CampaignSlot,{placement,ad}));
+  assert.equal((html.match(/Mehr entdecken/g)||[]).length,1);assert.ok(html.includes('href="https://example.org/banner"'));assert.match(html,/rel="sponsored noopener noreferrer"/);assert.match(html,/aria-hidden="true">Mehr entdecken/);
+ }
+ for(const props of [{preview:true},{reordering:true},{ad:{...ad,imageUrl:undefined}}])assert.doesNotMatch(renderToStaticMarkup(createElement(CampaignSlot,{placement:'sidebar_top',ad,...props})),/Mehr entdecken/);
+ const {SearchAdCard}=await import('../src/components/advertising/search-ad-card.tsx');
+ const html=renderToStaticMarkup(createElement(SearchAdCard,{banner:{...banner(),ad}}));assert.equal((html.match(/Mehr entdecken/g)||[]).length,1);assert.match(html,/existing.jpg/);
+});

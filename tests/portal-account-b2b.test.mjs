@@ -103,7 +103,7 @@ const {default:ArchivedOwner}=await import('../src/app/(energieheld)/firma/layou
 test('public request reuses original field groups, required contacts/URL, optional placement/dates and no registration',()=>{
  const html=renderToStaticMarkup(OfferPage());for(const name of ['company_name','contact_name','contact_email','contact_phone','internal_name','target_url','body_text','requested_start_date','requested_end_date','consent','request_key'])assert.ok(html.includes('name="'+name+'"'));
  for(const legend of ['Ansprechpartner','Angaben zur Anzeige','Zeitraum (optional)','Wo möchten Sie werben? (optional)','Haben Sie bereits ein Bannerbild?'])assert.ok(html.includes(legend));
- for(const name of ['contact_name','contact_email','contact_phone','internal_name','target_url'])assert.match(html,new RegExp('<input(?=[^>]*name="'+name+'")(?=[^>]*required)[^>]*>'));
+ for(const name of ['company_name','contact_name','contact_email','contact_phone','internal_name','target_url'])assert.match(html,new RegExp('<input(?=[^>]*name="'+name+'")(?=[^>]*required)[^>]*>'));
  for(const name of ['requested_start_date','requested_end_date'])assert.doesNotMatch(html,new RegExp('name="'+name+'"[^>]*required'));
  assert.match(html,/Angebot anfragen/);assert.match(html,/https:\/\/das-reiseportal.com\/datenschutz/);assert.doesNotMatch(html,/name="(?:password)"/);
  assert.throws(()=>ArchivedOwner(),/REDIRECT:\/angebot-anfragen/);
@@ -124,3 +124,5 @@ test('public image submission checks actual stored bytes before invoking submiss
  const foreign=form();foreign.set('uploaded_path','campaigns/foreign/creative/foreign.png');assert.ok((await sendOfferRequest({},foreign)).error);assert.equal(downloads,2);
  const large=form();assert.ok((await prepareOfferImage(large,'image/png',5242881)).error);assert.equal(calls,1);
 });
+
+test('public consent is a single aligned checkbox line with integrated privacy link and final request action',()=>{const html=renderToStaticMarkup(OfferPage());assert.match(html,/<label[^>]*><input(?=[^>]*name="consent")(?=[^>]*required)[^>]*\/><span>[^]*?<a[^>]*href="https:\/\/das-reiseportal.com\/datenschutz"[^>]*>Datenschutzerklärung<\/a> zu\.<\/span><\/label>/);assert.ok(html.indexOf('Ihre Anfrage ist unverbindlich')>html.indexOf('name="consent"'));assert.ok(html.indexOf('value="submit"')>html.indexOf('Ihre Anfrage ist unverbindlich'));});

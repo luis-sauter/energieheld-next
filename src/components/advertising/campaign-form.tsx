@@ -217,7 +217,7 @@ export function CampaignForm({
       <fieldset className={styles.formSection}>
         <legend>Ansprechpartner</legend>
         <p className={styles.sectionHint}>So können wir Ihre Anfrage zuordnen und Sie bei Rückfragen erreichen.</p>
-        {publicRequestKey && <label>Unternehmensname (optional)<input name="company_name" maxLength={120} /></label>}
+        {publicRequestKey && <label>Unternehmensname<input name="company_name" required maxLength={120} /></label>}
         <div className={styles.contactGrid}>
           <label>Name<input name="contact_name" required={Boolean(publicRequestKey)} maxLength={120} value={values.contact_name ?? ""} onChange={(e) => set("contact_name", e.target.value)} /></label>
           <label>E-Mail-Adresse<input name="contact_email" type="email" required={Boolean(publicRequestKey)} maxLength={254} value={values.contact_email ?? ""} onChange={(e) => set("contact_email", e.target.value)} /></label>
@@ -372,11 +372,16 @@ export function CampaignForm({
         />
         </label>
       </fieldset>
-      <p>
-        {publicRequestKey ? "Ihre Anfrage ist unverbindlich. Es entsteht keine Buchung oder Veröffentlichung. Werbeplätze und Zeitraum können offen bleiben." : admin ? "Redaktionelle Änderungen an einer freigegebenen Kampagne werden sofort wirksam. Entwürfe werden erst nach Freigabe ausgespielt." : "Mit dem Einreichen wird Ihre Angebotsanfrage zur Prüfung gesendet. Die Anzeige wird erst nach Freigabe im bestätigten Zeitraum ausgespielt."}
-      </p>
-      {publicRequestKey && <><div hidden aria-hidden="true"><label>Fax<input name="fax" tabIndex={-1} autoComplete="off" /></label></div><label><input name="consent" type="checkbox" required /> Ich stimme der Verarbeitung meiner Angaben zur Bearbeitung der Anfrage zu. <a href="https://das-reiseportal.com/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutzerklärung</a></label></>}
-      <div className={styles.actions}>
+      <div className={publicRequestKey ? styles.requestFooter : undefined}>
+        {publicRequestKey ? <>
+          <div hidden aria-hidden="true"><label>Fax<input name="fax" tabIndex={-1} autoComplete="off" /></label></div>
+          <label className={styles.consentRow}>
+            <input name="consent" type="checkbox" required />
+            <span>Ich stimme der Verarbeitung meiner Angaben zur Bearbeitung der Anfrage gemäß der <a href="https://das-reiseportal.com/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutzerklärung</a> zu.</span>
+          </label>
+          <p className={styles.requestAssurance}>Ihre Anfrage ist unverbindlich. Es entsteht keine Buchung oder Veröffentlichung. Werbeplätze und Zeitraum können offen bleiben.</p>
+        </> : <p>{admin ? "Redaktionelle Änderungen an einer freigegebenen Kampagne werden sofort wirksam. Entwürfe werden erst nach Freigabe ausgespielt." : "Mit dem Einreichen wird Ihre Angebotsanfrage zur Prüfung gesendet. Die Anzeige wird erst nach Freigabe im bestätigten Zeitraum ausgespielt."}</p>}
+      <div className={publicRequestKey ? styles.requestSubmit : styles.actions}>
         {admin && <button className="button" name="intent" value="save" disabled={busy || (campaign.status === "approved" && (availabilityLoading || !!availabilityError || hasBookedSelection))}>
           Banner speichern
         </button>}
@@ -388,6 +393,7 @@ export function CampaignForm({
         >
           {admin ? "Zur Freigabe vormerken" : "Angebot anfragen"}
         </button>}
+      </div>
       </div>
       {busy && <p role="status">Wird gespeichert …</p>}
       {state.error && (
