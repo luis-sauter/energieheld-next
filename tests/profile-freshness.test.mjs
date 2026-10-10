@@ -108,7 +108,7 @@ test('public profile HTML ignores even stale freshness projections and exposes n
 });
 test('review UI stays compact, explicitly separate from save, disabled during pending/unsaved work',()=>{
  const html=renderToStaticMarkup(createElement(ProfileFreshness,{state:initial,review:async()=>({}),disabled:true}));
- assert.match(html,/Noch nicht geprüft/);assert.match(html,/<button[^>]+disabled/);assert.match(html,/Als geprüft markieren/);assert.match(html,/Speichern bestätigt keine Prüfung/);
+ assert.match(html,/Prüfung erforderlich/);assert.match(html,/<button[^>]+disabled/);assert.match(html,/Als geprüft markieren/);assert.match(html,/Speichern bestätigt keine Prüfung/);
  assert.doesNotMatch(html,/content_revision|reviewed_revision|user_id/);
 });
 test('public schema has no freshness projection or invented modification time',()=>{
@@ -143,8 +143,19 @@ test('public directory and detail load no freshness data or RPC',async()=>{
 
 test('compact profile header reuses review UI while leaving full details only in edit mode',()=>{
  const html=renderToStaticMarkup(createElement(ProfileFreshness,{state:checked,review:async()=>({}),disabled:false,compact:true}));
- assert.match(html,/Aktuell geprüft/); assert.match(html,/Zuletzt geprüft: 4. Oktober 2026/); assert.doesNotMatch(html,/Als geprüft markieren/);
+ assert.match(html,/Bereits geprüft/); assert.match(html,/Zuletzt geprüft: 4. Oktober 2026/); assert.doesNotMatch(html,/Als geprüft markieren/);
  assert.doesNotMatch(html,/Nächste Prüfung|Speichern allein|Quelle/);
  const editor=readFileSync(new URL('../src/components/admin/inline-profile-editor.tsx',import.meta.url),'utf8');
- assert.match(editor,/adminAction=\{editing \? undefined/); assert.match(editor,/editing && freshness && <ProfileFreshness/); assert.match(editor,/review=\{reviewFreshness\}[^>]+compact/);
+ assert.match(editor,/adminAction=\{editing \? undefined/); assert.match(editor,/editing && freshness && <ProfileFreshness/); assert.match(editor,/<ProfileFreshness state=\{freshness\} disabled=\{false\} compact/);
+});
+
+test('edit-mode review selector has precisely the two editorial choices and preserves capability/dirty guards', () => {
+  for (const state of [initial, checked, { ...checked, content_revision: 2 }]) {
+    const html = renderToStaticMarkup(createElement(ProfileFreshness, { state, review: async()=>({}), withdraw: async()=>({}), disabled: false, editableStatus: true }));
+    assert.equal((html.match(/type="radio"/g)||[]).length, 2);
+    assert.match(html, /Prüfung erforderlich/); assert.match(html, /Bereits geprüft/); assert.match(html, /Prüfstatus speichern/);
+    assert.doesNotMatch(html, /title="(?:Noch nicht geprüft|Aktuell geprüft|Seit Prüfung geändert)"/);
+  }
+  const blocked = renderToStaticMarkup(createElement(ProfileFreshness, { state: initial, disabled: false, editableStatus: true }));
+  assert.doesNotMatch(blocked, /type="radio"|Prüfstatus speichern/); assert.match(blocked, /gesonderte redaktionelle Prüfberechtigung/);
 });

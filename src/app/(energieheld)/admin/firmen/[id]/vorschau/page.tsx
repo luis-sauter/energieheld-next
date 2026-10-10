@@ -1,3 +1,5 @@
+import { loadAdminTravelTaxonomy } from "@/lib/admin-travel-taxonomy";
+import { saveTravelTerms } from "@/app/(energieheld)/admin/firmen/[id]/travel-actions";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadReviewProfile, canReviewProfiles } from "@/lib/admin-review";
@@ -34,12 +36,13 @@ export default async function AdminProfilePreview({ params, searchParams }: { pa
     const publicResult = await loadReiseportalListingBySlug(slug);
     if (publicResult.data?.id === id) redirect(`/unterkuenfte/${slug}`);
   }
-  const [media, content, note, freshness, canReview] = await Promise.all([
+  const [media, content, note, freshness, canReview, travel] = await Promise.all([
     signCompanyMedia(client, profile, true),
     loadPublicProfileContent(client, profile.id),
     loadEditorialNote(client, profile.id),
     loadAdminProfileFreshness(client, profile.id),
     canReviewProfiles(client),
+    loadAdminTravelTaxonomy(client, profile.id),
   ]);
   const listing = withLegacyImages(companyProfileListing(profile, media));
   const values = Object.fromEntries(profileFields.map((field) => [field, profile[field] ?? ""])) as ProfileValues;
@@ -51,6 +54,8 @@ export default async function AdminProfilePreview({ params, searchParams }: { pa
       {"error" in note ? <p role="alert">{note.error}</p> : <p className={styles.reviewNote}>{note.note || "Keine Hinweise hinterlegt."}</p>}
     </section>
     <InlineProfileEditor initialEditing={editing} returnHref={`/admin/firmen/${id}#reisezuordnungen`} freshness={freshness}
+      travelError={"error" in travel ? travel.error : undefined}
+      travelReview={"error" in travel ? undefined : { snapshot: travel, saveAction: saveTravelTerms.bind(null, id) }}
       reviewFreshness={canReview ? reviewInlineProfile.bind(null, id, slug) : undefined}
       withdrawFreshness={canReview ? withdrawInlineProfileReview.bind(null, id, slug) : undefined}
       listing={listing} categories={[]} showVerification={false}

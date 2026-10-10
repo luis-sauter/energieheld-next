@@ -3463,3 +3463,22 @@ h6 {
 
 /* Shared, private media picker; native dialog keeps focus within the editor. */
 .media-library-dialog{width:min(1200px,96vw);max-width:96vw;max-height:92dvh;padding:0;border:1px solid #d5e5ed;border-radius:1rem;overflow:auto;box-shadow:0 20px 80px #17476135}.media-library-dialog::backdrop{background:#102b4266}
+
+/* Profile discovery uses assigned facts and server-rendered internal links. */
+.travel-relations { padding: clamp(20px, 3vw, 32px); border: 1px solid var(--portal-border, #dce8ef); border-radius: 20px; background: linear-gradient(125deg, #f4faff, #fff 65%); }
+.travel-relations > header p { margin-block: 8px 22px; color: var(--muted); max-width: 65ch; }
+.travel-relations-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.travel-relations-group { min-width: 0; padding: 18px; border: 1px solid var(--portal-border, #dce8ef); border-radius: 14px; background: white; }
+.travel-relations-group h3 { font-size: 1rem; margin: 0; }
+.travel-relations-group p { color: var(--muted); font-size: .85rem; margin: 6px 0 12px; }
+.travel-relations-group ul { margin: 0; gap: 8px; }
+.travel-relations-group a, .travel-relations-fact { display: inline-flex; align-items: center; gap: 10px; padding: 9px 12px; min-height: 44px; border-radius: 10px; background: #f0f7fc; font-size: .9rem; overflow-wrap: anywhere; max-width: 100%; text-decoration: none; }
+.travel-relations-group a { transition: background-color .18s ease, color .18s ease; }
+.travel-relations-group a:hover, .travel-relations-group a:focus-visible { background: #e1eef7; color: var(--portal-primary-deep); }
+.travel-relations-fact { background: #f7f8f9; }
+.profile-review-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.profile-review-choice legend { font-weight: 600; margin-bottom: 8px; }
+.profile-review-choice label { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
+.profile-review-choice input { width: 18px; height: 18px; accent-color: var(--portal-primary); }
+@media (max-width: 600px) { .travel-relations-grid { grid-template-columns: minmax(0, 1fr); } .profile-review-choice { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .travel-relations-group a { transition: none; } }

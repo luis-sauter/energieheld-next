@@ -1,13 +1,14 @@
 "use client";
 import { createContext, useContext, useState, useTransition, type ReactNode } from "react";
 import type { TravelReviewSnapshot, TravelSaveResult } from "@/lib/admin-travel-taxonomy";
+import { useRouter } from "next/navigation";
 import { sameTravelKeys } from "@/lib/travel-review-state";
 
 type ReviewState = TravelReviewSnapshot & {
   selected: string[]; dirty: boolean; busy: boolean; saving: boolean;
   message: TravelSaveResult;
   toggle: (key: string) => void; save: () => void;
-  setDeciding: (pending: boolean) => void;
+  setDeciding: (pending: boolean) => void; reset: () => void;
 };
 const TravelReviewContext = createContext<ReviewState | null>(null);
 export function useTravelReview() { return useContext(TravelReviewContext); }
@@ -17,6 +18,7 @@ export function TravelReviewProvider({ snapshot, saveAction, children }: {
   saveAction: (selected: string[], expected: string[], proposals: string[], revision: number) => Promise<TravelSaveResult>;
   children: ReactNode;
 }) {
+  const router = useRouter();
   const [selected, setSelected] = useState(snapshot.assignedKeys);
   const [saved, setSaved] = useState(snapshot.assignedKeys);
   const [revision, setRevision] = useState(snapshot.revision);
@@ -24,6 +26,13 @@ export function TravelReviewProvider({ snapshot, saveAction, children }: {
   const [saving, startTransition] = useTransition();
   const [deciding, setDeciding] = useState(false);
   const dirty = !sameTravelKeys(selected, saved);
+  const [received, setReceived] = useState(snapshot);
+  if (received !== snapshot) {
+    setReceived(snapshot);
+    if (!dirty && !saving && snapshot.revision !== revision) {
+      setSelected(snapshot.assignedKeys); setSaved(snapshot.assignedKeys); setRevision(snapshot.revision);
+    }
+  }
   function toggle(key: string) {
     if (saving || deciding) return;
     setMessage({});
@@ -36,11 +45,11 @@ export function TravelReviewProvider({ snapshot, saveAction, children }: {
       try {
         const result = await saveAction(selected, saved, snapshot.proposedKeys, revision);
         if (result.success && result.assignedKeys && result.revision !== undefined) {
-          setSaved(result.assignedKeys); setSelected(result.assignedKeys); setRevision(result.revision);
+          setSaved(result.assignedKeys); setSelected(result.assignedKeys); setRevision(result.revision); router.refresh();
         }
         setMessage(result);
       } catch { setMessage({ error: "Die Reisezuordnungen konnten nicht gespeichert werden. Bitte laden Sie die Profilprüfung neu." }); }
     });
   }
-  return <TravelReviewContext value={{ ...snapshot, assignedKeys: saved, revision, selected, dirty, saving, busy: saving || deciding, message, toggle, save, setDeciding }}>{children}</TravelReviewContext>;
+  return <TravelReviewContext value={{ ...snapshot, assignedKeys: saved, revision, selected, dirty, saving, busy: saving || deciding, message, toggle, save, setDeciding, reset: () => { if (!saving && !deciding) { setSelected(saved); setMessage({}); } } }}>{children}</TravelReviewContext>;
 }

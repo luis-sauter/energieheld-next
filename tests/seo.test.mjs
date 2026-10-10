@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { registerHooks } from 'node:module';
 import { readFileSync, existsSync } from 'node:fs';
-import { transpileModule, ModuleKind, JsxEmit } from 'typescript';
+import { transpileModule, ModuleKind, JsxEmit, ScriptTarget } from 'typescript';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -22,7 +22,7 @@ registerHooks({
   }
   return next(s,c);
  },
- load(url,c,next) {if(url.endsWith('.tsx'))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(url),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX}}).outputText};return next(url,c);}
+ load(url,c,next) {if(url.endsWith('.tsx'))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(url),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX,target:ScriptTarget.ES2022}}).outputText};return next(url,c);}
 });
 
 const {siteSeo,siteUrl,robotsHeader}=await import('../src/lib/site-seo.ts');
@@ -134,7 +134,7 @@ test('JSON-LD escapes script termination, HTML, ampersands and Unicode separator
 test('visible relationships use real taxonomy/country data, never infer from descriptive text',()=>{
  const relation=relatedTravelPages([listing]);assert.deepEqual(relation.destinations.map(r=>r.name),['Südtirol/Italien']);assert.deepEqual(relation.themes.map(r=>r.name),['Wellnessangebote']);
  assert.deepEqual(relatedTravelPages([{...listing,travelTermKeys:[],tagline:'Golf Pool Wellness Wandern'}]).themes,[]);
- const html=renderToStaticMarkup(createElement(TravelRelations,{title:'Reiseinformationen',links:[...relation.destinations,...relation.themes],facts:terms.filter(t=>listing.travelTermKeys.includes(t.term_key))}));assert.ok(html.includes('Unterkunftstyp'));assert.ok(html.includes('Pension'));assert.ok(html.includes('href="/mottoreisen/wellnessangebote"'));assert.ok(!html.includes('Pool'));
+ const html=renderToStaticMarkup(createElement(TravelRelations,{title:'Reiseinformationen',links:[...relation.destinations,...relation.themes],facts:terms.filter(t=>listing.travelTermKeys.includes(t.term_key))}));assert.ok(html.includes('Unterkunftsart'));assert.ok(html.includes('Pension'));assert.ok(html.includes('href="/mottoreisen/wellnessangebote"'));assert.ok(!html.includes('Pool'));
 });
 
 test('unknown destination/topic slugs are 404 in metadata and page rendering',async()=>{

@@ -1,6 +1,9 @@
 "use client";
 
 import { ContactImageEditor } from "@/components/auth/contact-image-editor";
+import { TravelReviewProvider, useTravelReview } from "./travel-review-context";
+import { TravelTaxonomyEditor } from "./travel-taxonomy-editor";
+import type { TravelReviewSnapshot, TravelSaveResult } from "@/lib/admin-travel-taxonomy";
 import { ProfileFreshness } from './profile-freshness';
 import type { ContentFreshness } from '@/lib/content-freshness';
 import { useRef, useState } from "react";
@@ -22,12 +25,13 @@ import Link from "next/link";
 import { MediaLibraryProvider } from "./media-library-context";
 
 export function InlineProfileEditor(props: React.ComponentProps<typeof ProfileEditor>) {
-  return <MediaLibraryProvider profileId={props.listing.id} profileName={props.listing.name}><ProfileEditor {...props} /></MediaLibraryProvider>;
+  const editor = <MediaLibraryProvider profileId={props.listing.id} profileName={props.listing.name}><ProfileEditor {...props} /></MediaLibraryProvider>;
+  return props.travelReview ? <TravelReviewProvider snapshot={props.travelReview.snapshot} saveAction={props.travelReview.saveAction}>{editor}</TravelReviewProvider> : editor;
 }
 
 const formId = "inline-admin-profile-form";
 
-function ProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness }: {
+function ProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness, travelError }: {
   listing: Listing;
   categories: Category[];
   values: ProfileValues;
@@ -48,10 +52,13 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
   allowDemoMap?: boolean;
   originalDemoMedia?: boolean;
   freshness?: ContentFreshness | null;
+  travelError?: string;
+  travelReview?: { snapshot: TravelReviewSnapshot; saveAction: (selected: string[], expected: string[], proposals: string[], revision: number) => Promise<TravelSaveResult> };
   withdrawFreshness?: (revision: number, reviewedAt: string) => Promise<{ error?: string; success?: string }>;
   reviewFreshness?: (revision: number) => Promise<{ error?: string; success?: string }>;
 }) {
   const router = useRouter();
+  const travel = useTravelReview();
   const busyRef = useRef(false);
   const [editing, setEditing] = useState(initialEditing);
   const [busy, setBusy] = useState(false);
@@ -111,8 +118,9 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
 
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busyRef.current || contactBusy || mediaEditor.busy || history.busy) return;
+    if (busyRef.current || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)) return;
     const closeAfterSuccess = (event.nativeEvent.submitter as HTMLButtonElement | null)?.value === "close";
+    if (closeAfterSuccess && travel?.dirty) { setFeedback({ error: "Bitte speichern Sie zuerst die Reisezuordnungen oder verwerfen Sie die Reiseauswahl." }); return; }
     busyRef.current = true;
     setBusy(true);
     setFeedback({});
@@ -136,17 +144,17 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
     {!editing && returnHref && <p><Link className="button" href={returnHref}>Zur Profilprüfung</Link></p>}
     {editing && <div className={styles.toolbar}>
       {returnHref && <Link className="button" href={returnHref} onNavigate={(event) => {
-        if (busy || contactBusy || mediaEditor.busy || history.busy || (dirty && !window.confirm("Ungespeicherte Profilangaben verwerfen und zur Profilprüfung zurückkehren?"))) event.preventDefault();
+        if (busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || ((dirty || travel?.dirty) && !window.confirm("Ungespeicherte Profilangaben verwerfen und zur Profilprüfung zurückkehren?"))) event.preventDefault();
       }}>Zur Profilprüfung</Link>}
       <strong>Bearbeitungsmodus aktiv</strong>
-      <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || !history.state.past.length}
+      <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || !history.state.past.length}
         onClick={() => void history.undo()}>↶ Rückgängig</button>
-      <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || !history.state.future.length}
+      <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || !history.state.future.length}
         onClick={() => void history.redo()}>↷ Wiederholen</button>
       <form id={formId} onSubmit={submit}>
-        <button type="submit" value="stay" className="button button-primary" disabled={busy || contactBusy || mediaEditor.busy || history.busy}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
-        <button type="submit" value="close" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy}>Speichern und schließen</button>
-        <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy} onClick={() => { setEditing(false); setDirty(false); setFeedback({}); history.clear(); }}>Abbrechen</button>
+        <button type="submit" value="stay" className="button button-primary" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
+        <button type="submit" value="close" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)}>Speichern und schließen</button>
+        <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)} onClick={() => { if (travel?.dirty && !window.confirm("Ungespeicherte Reiseauswahl verwerfen?")) return; travel?.reset(); setEditing(false); setDirty(false); setFeedback({}); history.clear(); }}>Abbrechen</button>
       </form>
       {busy && <span role="status">Änderungen werden gespeichert …</span>}
       {history.busy && <span role="status">Änderung wird wiederhergestellt …</span>}
@@ -158,7 +166,9 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
       <small>Inhalts- und Bildänderungen werden sofort gespeichert.</small>
     </div>}
     {!editing && feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
-    {editing && freshness && <ProfileFreshness state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || contactBusy || mediaEditor.busy || history.busy || dirty} />}
+    {editing && travelError && <p role="alert">{travelError}</p>}
+    {editing && travel && <TravelTaxonomyEditor compact /> }
+    {editing && freshness && <ProfileFreshness editableStatus state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || dirty || Boolean(travel?.dirty || travel?.busy)} />}
     <ListingDetail
       listing={listing}
       showVerification={showVerification}
@@ -171,7 +181,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
       contactAction={editing ? undefined : contactAction}
       adminAction={editing ? undefined : <div className="profile-admin-actions">
         <button type="button" className={`button ${styles.editButton}`} onClick={() => { setFeedback({}); setEditing(true); }}>Profil bearbeiten</button>
-        {freshness && <ProfileFreshness state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || contactBusy || mediaEditor.busy || history.busy || dirty} compact />}
+        {freshness && <ProfileFreshness state={freshness} disabled={false} compact />}
       </div>}
       inlineFields={editing ? inlineFields : undefined}
       aboutHeading={content.aboutHeading}
@@ -184,7 +194,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
       contactPersonEditor={editing ? <section aria-label="Ansprechpartner bearbeiten">
         <h3>Ansprechpartner (optional)</h3>
         {field("contact_first_name", "Vorname")}{field("contact_last_name", "Nachname")}
-        <ContactImageEditor contact={listing.contact} save={saveMedia} disabled={busy || mediaEditor.busy || history.busy} onBusyChange={setContactBusy} />
+        <ContactImageEditor contact={listing.contact} save={saveMedia} disabled={busy || mediaEditor.busy || history.busy || Boolean(travel?.busy)} onBusyChange={setContactBusy} />
       </section> : undefined}
       logoEditor={editing ? mediaEditor.logoEditor : undefined}
       galleryEditor={editing ? mediaEditor.galleryEditor : undefined}

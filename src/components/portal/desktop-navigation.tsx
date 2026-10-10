@@ -32,7 +32,9 @@ export function DesktopNavigation({ items }: { items: HeaderNavigationItem[] }) 
     };
   }, [open]);
 
-  return <nav ref={root} className="desktop-nav" aria-label="Hauptnavigation">
+  return <nav ref={root} className="desktop-nav" aria-label="Hauptnavigation" onBlur={(event) => {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(null);
+  }}>
     {items.map((item) => item.children?.length ? <div className="desktop-nav-group" key={item.href}>
       <Link href={item.href} onClick={() => setOpen(null)}>{item.label}</Link>
       <button type="button" className="nav-chevron-button"
@@ -71,6 +73,6 @@ export function DesktopNavigation({ items }: { items: HeaderNavigationItem[] }) 
         {item.children.map((child) => <Link key={child.href} href={child.href} role="menuitem"
           onClick={() => setOpen(null)}>{child.label}</Link>)}
       </div>}
-    </div> : <Link key={item.href} href={item.href}>{item.label}</Link>)}
+    </div> : <Link key={item.href} href={item.href} onClick={() => setOpen(null)}>{item.label}</Link>)}
   </nav>;
 }

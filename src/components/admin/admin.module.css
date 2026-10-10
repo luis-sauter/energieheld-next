@@ -211,3 +211,16 @@
 .travelChoice:focus-within { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
 .travelPreview { display: grid; gap: 10px; padding-left: 20px; overflow-wrap: anywhere; }
 @media (max-width: 760px) { .travelChoices, .travelFilters { grid-template-columns: minmax(0, 1fr); } .travelBriefing { padding: 16px; } }
+
+.inlineTravel { margin-block: 16px; padding: 16px 20px; background: white; border: 1px solid var(--line); border-radius: 16px; min-width: 0; }
+.inlineTravel summary { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; min-height: 44px; color: var(--brand-primary); }
+.inlineTravel summary span { font-size: .85rem; color: var(--muted); }
+.inlineTravel summary:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 4px; }
+.inlineTravel h2 { display: none; }
+.inlineTravel .travelChoices { grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 8px; }
+.inlineTravel .travelChoice { padding: 8px 10px; min-height: 48px; font-size: .88rem; }
+.inlineTravel .travelChoice svg { width: 22px; height: 22px; flex-shrink: 0; }
+.inlineTravel .travelChoice small { display: block; color: var(--muted); font-size: .7rem; }
+.inlineTravel .travelGroup { margin-block: 12px; padding: 12px; }
+.inlineTravelSelected { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.inlineTravelSelected li { padding: 5px 10px; border-radius: 20px; color: var(--brand-primary); background: color-mix(in srgb, var(--brand-primary) 7%, white); font-size: .8rem; overflow-wrap: anywhere; }
