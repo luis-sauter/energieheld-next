@@ -789,8 +789,8 @@ test('contact editor appears only in edit mode, shares the existing two save int
 const {ContactImageEditor}=await import('../src/components/auth/contact-image-editor.tsx');
 test('shared contact editor exposes clear preview/add/replace/remove actions and keeps persistence semantics explicit',()=>{
  const contact={phone:'',email:'',website:''};
- const empty=renderToStaticMarkup(createElement(ContactImageEditor,{contact,save:async()=>({})}));assert.match(empty,/Kein Ansprechpartnerbild/);assert.match(empty,/type="file" hidden=""/);assert.match(empty,/Bildänderungen werden direkt gespeichert/);assert.match(empty,/Speichern und schließen/);assert.doesNotMatch(empty,/Ansprechpartnerbild entfernen/);
- const filled=renderToStaticMarkup(createElement(ContactImageEditor,{contact:{...contact,person:'Anna',personImage:{src:'https://example.org/contact.png',alt:'Anna'}},save:async()=>({})}));assert.match(filled,/<img/);assert.match(filled,/Ansprechpartnerbild ändern/);assert.match(filled,/Ansprechpartnerbild entfernen/);assert.match(filled,/Anna/);
+ const empty=renderToStaticMarkup(createElement(ContactImageEditor,{contact,save:async()=>({})}));assert.match(empty,/Kein Ansprechpartnerbild/);assert.match(empty,/type="file" hidden=""/);assert.doesNotMatch(empty,/Bildänderungen werden direkt gespeichert/);assert.doesNotMatch(empty,/Ansprechpartnerbild bearbeiten/);assert.doesNotMatch(empty,/Ansprechpartnerbild entfernen/);
+ const filled=renderToStaticMarkup(createElement(ContactImageEditor,{contact:{...contact,person:'Anna',personImage:{src:'https://example.org/contact.png',alt:'Anna'}},save:async()=>({})}));assert.match(filled,/<img/);assert.match(filled,/Ansprechpartnerbild ändern/);assert.match(filled,/Ansprechpartnerbild entfernen[\s\S]*Ansprechpartnerbild bearbeiten/);assert.match(filled,/Anna/);
  const disabled=renderToStaticMarkup(createElement(ContactImageEditor,{contact,save:async()=>({}),disabled:true}));assert.match(disabled,/disabled=""/);
 });
 

@@ -189,7 +189,6 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
       {feedback.success && <span role="status" className={styles.success}>{feedback.success}</span>}
       {feedback.error && <span role="alert" className={styles.error}>{feedback.error}</span>}
       {mediaEditor.status}
-      <button type="button" className="button" onClick={() => { const target = document.getElementById("profile-contact-editor"); target?.scrollIntoView({block:"center", behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"}); target?.focus({preventScroll:true}); }}>Ansprechpartnerbild bearbeiten</button>
       <small>Inhalts- und Bildänderungen werden sofort gespeichert.</small>
     </div>}
     {!editing && feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
