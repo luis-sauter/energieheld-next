@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Icon } from "./icon";
 import type { HeaderNavigationItem } from "./navigation-data";
 
-export function MobileNavigation({ items, cta = { label: "Unverbindlich anfragen", href: "/angebot-anfragen" } }: { items: HeaderNavigationItem[]; cta?: { label: string; href: string } }) {
+export function MobileNavigation({ items, cta = { label: "Angebot anfragen", href: "/angebot-anfragen" } }: { items: HeaderNavigationItem[]; cta?: { label: string; href: string } }) {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   return (
     <details

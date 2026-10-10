@@ -1,3 +1,4 @@
+import { OfferRequestCta } from "@/components/portal/offer-request-cta";
 import Image from "next/image";
 import { EditorialImageCard } from "@/components/portal/editorial-image-card";
 import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
@@ -70,5 +71,6 @@ export default async function DestinationsPage() {
         </div>
       </section>
     </div>
+    <OfferRequestCta />
   </main>;
 }

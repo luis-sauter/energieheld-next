@@ -58,7 +58,7 @@ export function AdvertisingLayout({
   const hasRail = showEmptySlots || !collapseEmpty || ads.some((ad) => (premiumInSidebar || ad.placement !== "top_banner") && !ad.suppressed && ad.imageUrl);
   const top = ads.find((ad) => ad.placement === "top_banner");
   const premiumSlot = ((!collapseEmpty && !premiumInSidebar) || showEmptySlots || (top?.imageUrl && !top.suppressed))
-    ? <CampaignSlot placement="top_banner" ad={top} /> : undefined;
+    ? <CampaignSlot placement="top_banner" ad={top} showLabel={!premiumInSidebar} /> : undefined;
   const layout = (
     <div className="commercial-layout">
       {!premiumInSidebar && premiumSlot}

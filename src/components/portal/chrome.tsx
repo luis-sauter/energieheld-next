@@ -52,7 +52,7 @@ export function PortalFooter({ brand }: { brand: BrandConfig }) {
         <span>
           © {new Date().getFullYear()} {brand.name}
         </span>
-        <Link href="/angebot-anfragen">Unverbindlich anfragen</Link>
+        <Link href="/angebot-anfragen">Angebot anfragen</Link>
         <Link href="/login?next=/admin">Redaktion / Login</Link>
       </div>
     </footer>

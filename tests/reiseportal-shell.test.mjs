@@ -126,7 +126,7 @@ test("header dropdowns derive only existing theme and destination routes from th
   const html = renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal }));
   assert.equal((html.match(/aria-haspopup="menu"/g) ?? []).length, 2);
   assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 4); // Public header has only the four navigation triggers.
-  assert.match(html, /href="\/angebot-anfragen"[^>]*>Unverbindlich anfragen<\/a>/);
+  assert.match(html, /href="\/angebot-anfragen"[^>]*>Angebot anfragen<\/a>/);
   assert.match(html, /src="\/brand\/das-reiseportal-logo\.png"/);
 });
 
@@ -137,7 +137,7 @@ test("account button and dropdown groups use server-provided access without perm
   assert.doesNotMatch(guest, /aria-label="Kontomenü öffnen"/);
   assert.match(guest, /aria-label="Mobile Hauptnavigation"/);
   assert.equal((guest.match(/href="\/angebot-anfragen"/g) ?? []).length, 2);
-  assert.match(guest, /Unverbindlich anfragen/);
+  assert.match(guest, /Angebot anfragen/);
   assert.doesNotMatch(guest, /href="\/login"|href="\/firma"|href="\/admin"/);
   assert.deepEqual(accountMenuGroups("unauthenticated").account.map((link) => link.label), ["Einloggen"]);
   assert.doesNotMatch(guest, /href="\/firma"|href="\/admin"/);

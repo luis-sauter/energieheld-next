@@ -108,7 +108,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
         <Link href={signup ? "/login" : "/angebot-anfragen"}>
           {signup
             ? "Bereits registriert? Einloggen"
-            : "Unternehmen präsentieren? Unverbindlich anfragen"}
+            : "Unternehmen präsentieren? Angebot anfragen"}
         </Link>
       </div>
     </form>

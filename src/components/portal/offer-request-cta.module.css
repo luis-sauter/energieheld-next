@@ -1,0 +1,6 @@
+.root { display:flex; align-items:center; justify-content:space-between; gap:24px; margin:40px auto; padding:28px; max-width:1280px; border:1px solid #dce9ef; border-radius:16px; background:#f4faff; color:#174761; }
+.root h2 { margin:4px 0 8px; font-size:1.4rem; }
+.root p { margin:0; max-width:640px; }
+.eyebrow { font-size:.75rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+.root a { flex-shrink:0; }
+@media(max-width:700px){.root{align-items:flex-start;flex-direction:column;gap:16px;margin:28px 16px;padding:22px;}.root a{max-width:100%;}}
