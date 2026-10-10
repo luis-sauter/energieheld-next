@@ -1,11 +1,10 @@
 "use client";
 
 import { createContext, useContext, useRef, useState, type ReactNode } from "react";
-import dynamic from "next/dynamic.js";
+import { MediaLibraryBrowser as Browser } from "./media-library-browser";
 import { useRouter } from "next/navigation";
 import type { MediaLibraryTarget } from "@/lib/media-library";
 
-const Browser = dynamic(() => import("./media-library-browser").then(m => m.MediaLibraryBrowser), { loading: () => <p role="status">Mediathek wird geladen …</p> });
 type OpenTarget = Omit<MediaLibraryTarget, "profileId"> & {
   onApplied?: () => void | Promise<void>;
   onCancel?: () => void | Promise<void>;

@@ -16,7 +16,7 @@ registerHooks({resolve(s,c,next){
  if(s==='next/navigation')return {url:'data:text/javascript,export function useRouter(){return {refresh(){}}}',shortCircuit:true};
     if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
  if(s.endsWith('.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
- if(s.endsWith('/admin/actions'))return {url:'data:text/javascript,export async function approveTravelProfile(...a){globalThis.__hostDecisions.push(["approved",...a]);return {success:"Published"}};export async function rejectTravelProfile(...a){globalThis.__hostDecisions.push(["rejected",...a]);return {success:"Feedback saved"}}',shortCircuit:true};
+ if(s.endsWith('/admin/actions'))return {url:'data:text/javascript,export async function setProfilePublication(id,publish,revision,proposals){globalThis.__hostDecisions.push([publish?"approved":"withdrawn",id,revision,proposals]);return {success:"Published"}};export async function rejectTravelProfile(...a){globalThis.__hostDecisions.push(["rejected",...a]);return {success:"Feedback saved"}}',shortCircuit:true};
  if(s.endsWith('/gestalten/actions'))return {url:'data:text/javascript,export async function submitFirstPublication(){return globalThis.__hostSubmission}',shortCircuit:true};
  if(s.startsWith('@/')||s.startsWith('.')){const b=s.startsWith('@/')?new URL('../src/'+s.slice(2),import.meta.url):new URL(s,c.parentURL);for(const ext of ['.ts','.tsx'])if(existsSync(new URL(b.href+ext)))return next(b.href+ext,c)}return next(s,c);
 },load(u,c,next){if(/\.tsx?$/.test(u))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(u),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX,target:ScriptTarget.ES2022}}).outputText};return next(u,c)}});
@@ -122,4 +122,14 @@ test('compact selection has no filters and stays open when toggles return to the
  tree.props.onToggle({currentTarget:{open:true}});tree=refresh();assert.equal(tree.props.open,true);
  context.toggle('feature:pool');refresh();context.toggle('feature:pool');tree=refresh();assert.equal(context.dirty,false);assert.equal(tree.props.open,true);
  tree.props.onToggle({currentTarget:{open:false}});assert.equal(refresh().props.open,false);
+});
+
+test('ownerless editorial drafts offer publication; published shows public link and withdrawal, not repeated approval',()=>{
+ reset();context={revision:3,dirty:false,busy:false,proposedKeys:[]};
+ assert.ok(button(render('draft',ReviewActions,{profileId:'profile',status:'draft',canReview:true,canPublishDraft:true}),'Profil veröffentlichen'));
+ assert.equal(button(render('owner-draft',ReviewActions,{profileId:'profile',status:'draft',canReview:true}),'Profil veröffentlichen'),undefined);
+ const published=render('published',ReviewActions,{profileId:'profile',status:'approved',listed:true,slug:'real-profile',canReview:true});
+ assert.equal(button(published,'Profil veröffentlichen'),undefined);assert.ok(button(published,'Veröffentlichung zurücknehmen'));
+ assert.equal(nodes(published,n=>n.type==='a')[0].props.href,'/unterkuenfte/real-profile');
+ assert.ok(button(render('withdrawn',ReviewActions,{profileId:'profile',status:'approved',listed:false,canReview:true}),'Profil veröffentlichen'));
 });
