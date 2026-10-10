@@ -12,6 +12,7 @@ globalThis.__profileSaveHooks={
 registerHooks({resolve(s,c,next){
  const stub=code=>({url:'data:text/javascript,'+encodeURIComponent(code),shortCircuit:true});
  if(s==='react'&&c.parentURL?.endsWith('/inline-profile-editor.tsx'))return stub('export const useState=v=>globalThis.__profileSaveHooks.state(v),useRef=v=>globalThis.__profileSaveHooks.ref(v);');
+ if(s.endsWith('/travel-review-context'))return stub('export function useTravelReview(){return globalThis.__profileTravel??null};export function TravelReviewProvider(){return null};');
  if(s.endsWith('/contact-image-editor'))return stub('export function ContactImageEditor(){return null}');
  if(s==='next/link')return stub('export default "a"');
  if(s==='next/navigation')return stub('export const useRouter=()=>({refresh:()=>globalThis.__profileSaveHooks.refresh()});');
@@ -54,4 +55,15 @@ test('contact uploads block both save intentions until completion and allow Save
  assert.equal(f.button('Speichern').props.disabled,true);assert.equal(f.button('Speichern und schließen').props.disabled,true);
  await f.submit('close');assert.equal(saves,0);assert.equal(f.editing(),true);
  contact.props.onBusyChange(false);await f.submit('close');assert.equal(saves,1);assert.equal(f.editing(),false);
+});
+
+
+test('unsaved travel selection prevents Save and close; cancel respects confirmation and resets only travel choices', async()=>{
+ let saves=0,resets=0;const f=fixture(async()=>{saves++;return {success:'Saved'}});
+ const originalWindow=globalThis.window;globalThis.__profileTravel={dirty:true,busy:false,reset(){resets++}};
+ try{
+  await f.submit('close');assert.equal(saves,0);assert.equal(f.editing(),true);assert.match(text(f.render()),/zuerst die Reisezuordnungen/);
+  globalThis.window={confirm:()=>false};f.button('Abbrechen').props.onClick();assert.equal(f.editing(),true);assert.equal(resets,0);
+  globalThis.window={confirm:()=>true};f.button('Abbrechen').props.onClick();assert.equal(f.editing(),false);assert.equal(resets,1);assert.equal(saves,0);
+ }finally{globalThis.__profileTravel=null;globalThis.window=originalWindow;}
 });

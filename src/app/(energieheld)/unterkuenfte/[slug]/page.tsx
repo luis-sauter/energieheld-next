@@ -1,3 +1,5 @@
+import { loadAdminTravelTaxonomy, type TravelReviewSnapshot } from "@/lib/admin-travel-taxonomy";
+import { saveTravelTerms } from "@/app/(energieheld)/admin/firmen/[id]/travel-actions";
 import { loadAdminProfileFreshness } from '@/lib/profile-freshness';
 import type { ContentFreshness } from '@/lib/content-freshness';
 import Link from "next/link";
@@ -71,7 +73,7 @@ export default async function AccommodationDetail({
     ? await loadPublicProfileContent(createPublicClient(), listing.id)
     : { blocks: [], available: false, imagesAvailable: false };
   const presentedContent = splitProfileContent(content.blocks, listing.name);
-  let editorData: { values: ProfileValues; media: SignedMedia; rows: MediaRow[]; freshness: ContentFreshness | null; canReview: boolean } | null = null;
+  let editorData: { values: ProfileValues; media: SignedMedia; rows: MediaRow[]; freshness: ContentFreshness | null; canReview: boolean; travel?: TravelReviewSnapshot; travelError?: string } | null = null;
   let editorContent = content;
   if (storedProfile) {
     try {
@@ -86,7 +88,8 @@ export default async function AccommodationDetail({
           const values = Object.fromEntries(
             profileFields.map((field) => [field, profile[field] ?? ""]),
           ) as ProfileValues;
-          editorData = { values, media, rows: profile.company_profile_images, freshness, canReview: await canReviewProfiles(client) };
+          const travel = await loadAdminTravelTaxonomy(client, listing.id);
+          editorData = { values, media, rows: profile.company_profile_images, freshness, canReview: await canReviewProfiles(client), travel: "error" in travel ? undefined : travel, travelError: "error" in travel ? travel.error : undefined };
         }
       }
     } catch {
@@ -98,6 +101,8 @@ export default async function AccommodationDetail({
       <JsonLd data={indexableProfile(listing) ? jsonLdGraph([breadcrumbSchema(breadcrumbs), ...profileSchema(listing, result.terms)]) : null} />
       <Breadcrumbs items={breadcrumbs} />
       {editorData ? <InlineProfileEditor
+        travelError={editorData.travelError}
+        travelReview={editorData.travel ? { snapshot: editorData.travel, saveAction: saveTravelTerms.bind(null, listing.id) } : undefined}
         freshness={editorData.freshness}
         reviewFreshness={editorData.canReview ? reviewInlineProfile.bind(null, listing.id, slug) : undefined}
         withdrawFreshness={editorData.canReview ? withdrawInlineProfileReview.bind(null, listing.id, slug) : undefined}

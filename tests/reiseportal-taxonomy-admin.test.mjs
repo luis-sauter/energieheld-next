@@ -7,6 +7,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 registerHooks({
  resolve(s,c,next){
+  if(s==='next/navigation')return {url:'data:text/javascript,export function useRouter(){return {refresh(){}}}',shortCircuit:true};
   if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
   if(s.endsWith('.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
   if(s.endsWith('/admin-review'))return {url:'data:text/javascript,export async function checkAdmin(c){return c.access};export function isProfileId(v){return /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v)}',shortCircuit:true};

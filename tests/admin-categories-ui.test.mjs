@@ -10,6 +10,7 @@ import "./helpers/load-ts.mjs";
 // Render the real client component locally; Server Actions aren't executed here.
 registerHooks({
   resolve(specifier, context, nextResolve) {
+    if (specifier === "next/navigation") return {url:"data:text/javascript,export function useRouter(){return {refresh(){}}}",shortCircuit:true};
     if (specifier.endsWith("/admin/actions"))
       return {
         url: "data:text/javascript,export async function approveTravelProfile(){};export async function rejectTravelProfile(){}",

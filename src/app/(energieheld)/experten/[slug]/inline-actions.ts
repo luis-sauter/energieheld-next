@@ -72,6 +72,9 @@ export async function reviewInlineProfile(profileId: string, slug: string, revis
       : "Die Prüfung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut." };
     revalidatePath(`/experten/${slug}`);
     revalidatePath(`/unterkuenfte/${slug}`);
+    revalidatePath("/unterkuenfte-a-z");
+    revalidatePath("/admin/inhalte");
+    revalidatePath(`/admin/firmen/${profileId}/vorschau`);
     return { success: "Der aktuelle Profilinhalt wurde als geprüft markiert." };
   } catch { return { error: "Die Prüfung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut." }; }
 }
@@ -94,6 +97,8 @@ export async function withdrawInlineProfileReview(profileId: string, slug: strin
     revalidatePath(`/experten/${slug}`);
     revalidatePath(`/unterkuenfte/${slug}`);
     revalidatePath("/unterkuenfte-a-z");
+    revalidatePath("/admin/inhalte");
+    revalidatePath(`/admin/firmen/${profileId}/vorschau`);
     return { success: "Die Prüfung wurde zurückgezogen." };
   } catch { return { error: "Die Prüfung konnte nicht zurückgezogen werden. Bitte versuchen Sie es erneut." }; }
 }

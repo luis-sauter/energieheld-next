@@ -13,7 +13,8 @@ globalThis.__hostHooks={
 globalThis.__hostDecisions=[];globalThis.__hostSubmission={};
 registerHooks({resolve(s,c,next){
  if(s==='react'&&c.parentURL?.includes('/src/components/'))return {url:'data:text/javascript,export function createContext(){return {}};export const useState=(...a)=>globalThis.__hostHooks.useState(...a);export const useTransition=(...a)=>globalThis.__hostHooks.useTransition(...a);export const useContext=(...a)=>globalThis.__hostHooks.useContext(...a);export const useActionState=(...a)=>globalThis.__hostHooks.useActionState(...a)',shortCircuit:true};
- if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
+ if(s==='next/navigation')return {url:'data:text/javascript,export function useRouter(){return {refresh(){}}}',shortCircuit:true};
+    if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
  if(s.endsWith('.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
  if(s.endsWith('/admin/actions'))return {url:'data:text/javascript,export async function approveTravelProfile(...a){globalThis.__hostDecisions.push(["approved",...a]);return {success:"Published"}};export async function rejectTravelProfile(...a){globalThis.__hostDecisions.push(["rejected",...a]);return {success:"Feedback saved"}}',shortCircuit:true};
  if(s.endsWith('/gestalten/actions'))return {url:'data:text/javascript,export async function submitFirstPublication(){return globalThis.__hostSubmission}',shortCircuit:true};
@@ -86,4 +87,31 @@ test('first editorial selection of Peter-like proposals is dirty; explicit save/
  assert.equal(context.dirty,false);assert.deepEqual(context.selected,current.assignedKeys);assert.equal(button(tree,'Reisezuordnungen speichern').props.disabled,true);
  assert.equal(nodes(tree,e=>e.type==='input'&&e.props.type==='checkbox'&&e.props.checked).length,3);
  assert.equal(globalThis.__hostDecisions.length,0);
+});
+
+test('compact profile picker uses confirmed terms and explicit save; cancel restores the saved selection', () => {
+  const snapshot = { terms: [{term_key:'theme:radwandern',dimension:'theme',label:'Radwandern'},{term_key:'audience:familie',dimension:'audience',label:'Familie'}], assignedKeys:['theme:radwandern'], proposedKeys:['audience:familie'], revision:4 };
+  const props = { snapshot, saveAction:async()=>({}), children:null };
+  context = render('compact-context',TravelReviewProvider,props).props.value;
+  const initial = render('compact-picker',TravelTaxonomyEditor,{compact:true,published:true});
+  assert.equal(initial.type,'details');
+  const inputs = nodes(initial,n=>n.type==='input'&&n.props.type==='checkbox');
+  assert.equal(inputs.length,2); assert.equal(inputs.filter(n=>n.props.checked).length,1);
+  context.toggle('audience:familie'); context = render('compact-context',TravelReviewProvider,props).props.value; assert.equal(context.dirty,true);
+  context.reset(); context = render('compact-context',TravelReviewProvider,props).props.value; assert.equal(context.dirty,false); assert.deepEqual(context.selected,['theme:radwandern']);
+});
+
+
+test('fresh server revision updates clean picker while preserving dirty changes and their conflict snapshot', () => {
+  reset();
+  const props = {snapshot,saveAction:async()=>({}),children:null};
+  const refresh = p => { context=render('sync-context',TravelReviewProvider,p).props.value; return context; };
+  refresh(props);
+  const newer={...snapshot,revision:8,assignedKeys:['accommodation:hotel']};
+  refresh({...props,snapshot:newer});refresh({...props,snapshot:newer});
+  assert.equal(context.revision,8); assert.deepEqual(context.selected,newer.assignedKeys);
+  context.toggle('feature:pool');refresh({...props,snapshot:newer});
+  const concurrent={...newer,revision:9,assignedKeys:['theme:wanderurlaub']};
+  refresh({...props,snapshot:concurrent});refresh({...props,snapshot:concurrent});
+  assert.equal(context.revision,8);assert.deepEqual(context.selected,['accommodation:hotel','feature:pool']);assert.equal(context.dirty,true);
 });

@@ -58,7 +58,7 @@ test('public/provider directory has no status UI or filter; admin gets text and 
  for(const row of nodes(tree,n=>n.type===ListingRow)){
   assert.equal(row.props.adminStatus.props.status,statusMap[row.props.listing.id]);
   const html=renderToStaticMarkup(createElement(FreshnessStatus,row.props.adminStatus.props));
-  assert.match(html,/aria-hidden="true"/); assert.ok(html.includes(statusMap[row.props.listing.id]));
+  assert.match(html,/aria-hidden="true"/); assert.ok(html.includes(statusMap[row.props.listing.id] === "Aktuell geprüft" ? "Bereits geprüft" : "Prüfung erforderlich"));
  }
 });
 for(const status of statuses)test(`admin filter renders only ${status}, preserving actual profile including Demo preview`,()=>{
