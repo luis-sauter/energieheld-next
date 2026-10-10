@@ -145,3 +145,20 @@ test("square upload accepts non-square photos and keeps logo alpha with contain 
     assert.ok(draws[1][3] > SQUARE_MEDIA_SIZE, "photograph covers and crops the square");
   } finally { globalThis.createImageBitmap = oldBitmap; globalThis.document = oldDocument; }
 });
+
+
+test("contact preview/export use identical cover, focus and zoom without changing the source file", async () => {
+  const { squareMediaFile } = await import("../src/lib/square-media.ts");
+  const oldBitmap = globalThis.createImageBitmap, oldDocument = globalThis.document;
+  let drawn, closed = false;
+  globalThis.createImageBitmap = async () => ({ width: 800, height: 600, close() { closed = true; } });
+  globalThis.document = { createElement: () => ({ getContext: () => ({ fillRect() {}, drawImage(...args) { drawn = args.slice(1); } }), toBlob(done, type) { done(new Blob([new Uint8Array(2000)], { type })); } }) };
+  try {
+    const source = new File([new Uint8Array(1000)], "original.png", {type:"image/png"});
+    const output = await squareMediaFile(source, "gallery", {focus_x:25,focus_y:75,zoom:1.5});
+    assert.deepEqual(drawn, [-100, -150, 800, 600]);
+    assert.equal(output.type, "image/jpeg");
+    assert.equal(source.name, "original.png"); assert.equal(source.size, 1000); assert.equal(source.type, "image/png");
+    assert.ok(closed);
+  } finally { globalThis.createImageBitmap = oldBitmap; globalThis.document = oldDocument; }
+});

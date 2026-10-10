@@ -2,9 +2,9 @@
 import { useRef, type PointerEvent, type ReactNode, type Dispatch, type SetStateAction } from "react";
 import { centerImageCrop, DEFAULT_IMAGE_CROP, nudgeImageCrop, panImageCrop, zoomImageCrop, type ImageCrop } from "@/lib/image-crop";
 import styles from "./inline-profile.module.css";
-export function ImageCropControls({ crop, setCrop, ratio, alt, disabled = false, renderImage, children }: {
+export function ImageCropControls({ crop, setCrop, ratio, alt, disabled = false, shape = "square", renderImage, children }: {
  crop: ImageCrop; setCrop: Dispatch<SetStateAction<ImageCrop>>; ratio: number; alt?: string | null; disabled?: boolean;
- renderImage: (crop: ImageCrop) => ReactNode; children?: ReactNode;
+ shape?: "square" | "circle"; renderImage: (crop: ImageCrop) => ReactNode; children?: ReactNode;
 }) {
   const drag = useRef<{ id: number; x: number; y: number; width: number; height: number; crop: ImageCrop } | null>(null);
 
@@ -36,7 +36,7 @@ export function ImageCropControls({ crop, setCrop, ratio, alt, disabled = false,
   return <div className={styles.cropEditor} aria-label="Bildausschnitt bearbeiten">
     <h3>Ausschnitt bearbeiten</h3>
     <p>Bild im Rahmen ziehen oder mit den Pfeilen verschieben.</p>
-    <div className={styles.cropFrame} style={{ aspectRatio: ratio }} role="img"
+    <div className={styles.cropFrame} style={{ aspectRatio: ratio, borderRadius: shape === "circle" ? "50%" : undefined }} role="img"
       aria-label={`Vorschau: ${alt || "Bild"}`}
       onPointerDown={start} onPointerMove={move} onPointerUp={finish} onPointerCancel={finish}>
       {renderImage(crop)}
