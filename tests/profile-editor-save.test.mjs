@@ -28,7 +28,7 @@ registerHooks({resolve(s,c,next){
 const {InlineProfileEditor}=await import('../src/components/admin/inline-profile-editor.tsx');
 const nodes=n=>Array.isArray(n)?n.flatMap(nodes):n&&typeof n==='object'?[n,...nodes(n.props?.children)]:[];
 const text=n=>Array.isArray(n)?n.map(text).join(''):n&&typeof n==='object'?text(n.props?.children):n??'';
-function fixture(saveProfile){state=[];cursor=0;refreshes=0;clears=0;const props={listing:{name:'Profil',location:{}},categories:[],values:{display_name:'Profil'},media:{},rows:[],saveProfile,saveMedia:async()=>({}),contentBlocks:[],contentAvailable:false,imagesAvailable:false,saveContent:async()=>({}),saveBlockImage:async()=>({}),initialEditing:true,freshness:{}};
+function fixture(saveProfile,extra={}){state=[];cursor=0;refreshes=0;clears=0;const props={listing:{name:'Profil',location:{}},categories:[],values:{display_name:'Profil'},media:{},rows:[],saveProfile,saveMedia:async()=>({}),contentBlocks:[],contentAvailable:false,imagesAvailable:false,saveContent:async()=>({}),saveBlockImage:async()=>({}),initialEditing:true,freshness:{},...extra};
  const render=()=>{cursor=0;const wrapped=InlineProfileEditor(props);return wrapped.props.children.type(wrapped.props.children.props)};
  const form=()=>nodes(render()).find(n=>n.type==='form');
  const button=name=>nodes(render()).find(n=>n.type==='button'&&text(n)===name);
@@ -44,7 +44,7 @@ test('Save and close only closes after success, disables all actions and rejects
  let calls=0,resolve;const f=fixture(()=>{calls++;return new Promise(r=>resolve=r)});f.dirty();const pending=f.submit('close');assert.equal(f.editing(),true);for(const name of ['Speichern und schließen','Abbrechen'])assert.equal(f.button(name).props.disabled,true);assert.match(text(f.render()),/Änderungen werden gespeichert/);await f.submit('close');assert.equal(calls,1);resolve({success:'Gespeichert'});await pending;assert.equal(f.editing(),false);assert.equal(refreshes,1);assert.equal(clears,1);assert.match(text(f.render()),/Gespeichert/);
 });
 test('validation/server errors and rejected saves keep editor, inputs, dirty and error feedback',async()=>{
- for(const save of [async()=>({error:'Validierung fehlgeschlagen'}),async()=>{throw new Error('network')},async()=>({success:'ambiguous',error:'Nicht gespeichert'})]){const f=fixture(save);f.dirty();const input=f.listing().props.inlineFields.display_name;await f.submit('close');assert.equal(f.editing(),true);assert.equal(refreshes,0);assert.equal(clears,0);assert.equal(f.listing().props.inlineFields.display_name.key,input.key);assert.ok(nodes(f.render()).some(n=>n.props?.role==='alert'));assert.equal(nodes(f.render()).find(n=>n.props?.state).props.disabled,true);assert.equal(f.button('Speichern und schließen').props.disabled,false);}
+ for(const save of [async()=>({error:'Validierung fehlgeschlagen'}),async()=>{throw new Error('network')},async()=>({success:'ambiguous',error:'Nicht gespeichert'})]){const f=fixture(save);f.dirty();const input=f.listing().props.inlineFields.display_name;await f.submit('close');assert.equal(f.editing(),true);assert.equal(refreshes,0);assert.equal(clears,0);assert.equal(f.listing().props.inlineFields.display_name.key,input.key);assert.ok(nodes(f.render()).some(n=>n.props?.role==='alert'));assert.equal(nodes(f.render()).find(n=>n.props?.state).props.disabled,false);assert.equal(f.button('Speichern und schließen').props.disabled,false);}
 });
 test('Cancel closes without invoking Save and retains its history-clearing semantics',()=>{let calls=0;const f=fixture(async()=>{calls++;return{}});f.dirty();f.button('Abbrechen').props.onClick();assert.equal(f.editing(),false);assert.equal(calls,0);assert.equal(refreshes,0);assert.equal(clears,1)});
 
@@ -58,12 +58,19 @@ test('contact uploads block both save intentions until completion and allow Save
 });
 
 
-test('unsaved travel selection prevents Save and close; cancel respects confirmation and resets only travel choices', async()=>{
- let saves=0,resets=0;const f=fixture(async()=>{saves++;return {success:'Saved'}});
- const originalWindow=globalThis.window;globalThis.__profileTravel={dirty:true,busy:false,reset(){resets++}};
- try{
-  await f.submit('close');assert.equal(saves,0);assert.equal(f.editing(),true);assert.match(text(f.render()),/zuerst die Reisezuordnungen/);
-  globalThis.window={confirm:()=>false};f.button('Abbrechen').props.onClick();assert.equal(f.editing(),true);assert.equal(resets,0);
-  globalThis.window={confirm:()=>true};f.button('Abbrechen').props.onClick();assert.equal(f.editing(),false);assert.equal(resets,1);assert.equal(saves,0);
- }finally{globalThis.__profileTravel=null;globalThis.window=originalWindow;}
+test('normal save persists travel and then review using the resulting exact revision; no separate confirmation', async()=>{
+ const fresh={content_revision:7,reviewed_revision:null,reviewed_at:null,content_updated_at:null,content_update_source:'admin'};
+ const calls=[];const f=fixture(async data=>{calls.push(['profile',data.get('editor_revision')]);return {success:'Saved',freshness:{...fresh,content_revision:8}}},{freshness:fresh,reviewFreshness:async rev=>{calls.push(['review',rev]);return {success:'Reviewed'}}});
+ globalThis.__profileTravel={dirty:true,busy:false,persist:async revision=>{calls.push(['travel',revision]);return {success:'Saved',assignedKeys:['theme:radwandern'],revision:10}}};
+ try { const control=nodes(f.render()).find(n=>n.props?.onReviewChange);control.props.onReviewChange(true);await f.submit('close');assert.deepEqual(calls,[['profile','7'],['travel',8],['review',10]]);assert.equal(f.editing(),false); } finally {globalThis.__profileTravel=null;}
+});
+test('required status saves through original withdrawal without confirmation; failure stays editable and never reports overall success',async()=>{
+ const fresh={content_revision:7,reviewed_revision:7,reviewed_at:'2026-10-10T10:00:00Z',content_updated_at:null,content_update_source:'admin'};
+ let args;const f=fixture(async()=>({success:'Saved',freshness:fresh}),{freshness:fresh,withdrawFreshness:async(...a)=>{args=a;return {error:'Conflict'}}});
+ nodes(f.render()).find(n=>n.props?.onReviewChange).props.onReviewChange(false);await f.submit('close');assert.deepEqual(args,[7,fresh.reviewed_at]);assert.equal(f.editing(),true);assert.match(text(f.render()),/Conflict/);assert.doesNotMatch(text(f.render()),/Rücknahme bestätigen|Prüfstatus speichern/);
+});
+test('travel error after profile save stops review and close; cancel still respects unsaved choice confirmation',async()=>{
+ let reviews=0,resets=0;const f=fixture(async()=>({success:'Saved',freshness:{content_revision:4,reviewed_at:null}}),{reviewFreshness:async()=>{reviews++;return {success:'Reviewed'}}});
+ const originalWindow=globalThis.window;globalThis.__profileTravel={dirty:true,busy:false,persist:async()=>({error:'Travel conflict'}),reset(){resets++}};
+ try {nodes(f.render()).find(n=>n.props?.onReviewChange).props.onReviewChange(true);await f.submit('close');assert.equal(reviews,0);assert.equal(f.editing(),true);assert.match(text(f.render()),/Profilangaben gespeichert.*Travel conflict/);globalThis.window={confirm:()=>false};f.button('Abbrechen').props.onClick();assert.equal(f.editing(),true);globalThis.window={confirm:()=>true};f.button('Abbrechen').props.onClick();assert.equal(f.editing(),false);assert.equal(resets,1);}finally{globalThis.__profileTravel=null;globalThis.window=originalWindow;}
 });

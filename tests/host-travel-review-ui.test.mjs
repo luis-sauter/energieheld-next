@@ -115,3 +115,11 @@ test('fresh server revision updates clean picker while preserving dirty changes 
   refresh({...props,snapshot:concurrent});refresh({...props,snapshot:concurrent});
   assert.equal(context.revision,8);assert.deepEqual(context.selected,['accommodation:hotel','feature:pool']);assert.equal(context.dirty,true);
 });
+
+test('compact selection has no filters and stays open when toggles return to the saved selection',()=>{
+ reset();const props={snapshot,saveAction:async()=>({}),children:null};const refresh=()=>{context=render('sticky-provider',TravelReviewProvider,props).props.value;return render('sticky-picker',TravelTaxonomyEditor,{compact:true})};
+ let tree=refresh();assert.equal(nodes(tree,e=>e.type==='select'||e.props?.type==='search').length,0);assert.equal(tree.props.open,false);
+ tree.props.onToggle({currentTarget:{open:true}});tree=refresh();assert.equal(tree.props.open,true);
+ context.toggle('feature:pool');refresh();context.toggle('feature:pool');tree=refresh();assert.equal(context.dirty,false);assert.equal(tree.props.open,true);
+ tree.props.onToggle({currentTarget:{open:false}});assert.equal(refresh().props.open,false);
+});

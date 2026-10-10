@@ -8,10 +8,11 @@ import { useTravelReview } from "./travel-review-context";
 import styles from "./admin.module.css";
 
 const groups = [["theme", "Mottoreisen"], ["audience", "Zielgruppen"], ["accommodation", "Unterkunftsarten"], ["feature", "Interne Merkmale"]] as const;
-export function TravelTaxonomyEditor({ published = false, compact = false }: { published?: boolean; compact?: boolean }) {
+export function TravelTaxonomyEditor({ published = false, compact = false, disabled = false }: { published?: boolean; compact?: boolean; disabled?: boolean }) {
   const review = useTravelReview();
   const [query, setQuery] = useState("");
   const [dimension, setDimension] = useState("all");
+  const [open, setOpen] = useState(false);
   if (!review) return <p role="alert">Die Reisezuordnungen konnten nicht geladen werden.</p>;
   const { terms, proposedKeys, assignedKeys, selected, busy, dirty, saving, message, revision } = review;
   const proposed = terms.filter(term => proposedKeys.includes(term.term_key));
@@ -28,14 +29,14 @@ export function TravelTaxonomyEditor({ published = false, compact = false }: { p
     </section>
     }
     {!compact && <h3>Redaktionelle Entscheidung</h3>}
-    <p>{compact ? "Wählen Sie die passenden vorhandenen Reisebereiche. Änderungen werden erst mit Reisezuordnungen speichern bestätigt." : "Wählen Sie nur belegte Reisebereiche. Vorschläge übernehmen Sie bewusst über die Auswahl; weitere vorhandene Begriffe können Sie ergänzen. Abgewählte Vorschläge bleiben unbestätigt."}</p>
-    <div className={styles.travelFilters}>
+    <p>{compact ? "Wählen Sie die passenden vorhandenen Reisebereiche. Änderungen werden mit „Speichern“ oder „Reisezuordnungen speichern“ übernommen." : "Wählen Sie nur belegte Reisebereiche. Vorschläge übernehmen Sie bewusst über die Auswahl; weitere vorhandene Begriffe können Sie ergänzen. Abgewählte Vorschläge bleiben unbestätigt."}</p>
+    {!compact && <div className={styles.travelFilters}>
       <label>Reisebegriff suchen<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Begriff eingeben" /></label>
       <label>Gruppe<select value={dimension} onChange={event => setDimension(event.target.value)}><option value="all">Alle Gruppen</option>{groups.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
-    </div>
-    {groups.filter(([key]) => dimension === "all" || key === dimension).map(([key, label]) => {
-      const options = terms.filter(term => term.dimension === key && publicTravelLabel(term.term_key, term.label).toLocaleLowerCase("de").includes(query.toLocaleLowerCase("de")));
-      return <fieldset key={key} className={styles.travelGroup} disabled={busy}><legend>{label}</legend>
+    </div>}
+    {groups.filter(([key]) => compact || dimension === "all" || key === dimension).map(([key, label]) => {
+      const options = terms.filter(term => term.dimension === key && (compact || publicTravelLabel(term.term_key, term.label).toLocaleLowerCase("de").includes(query.toLocaleLowerCase("de"))));
+      return <fieldset key={key} className={styles.travelGroup} disabled={busy || disabled}><legend>{label}</legend>
         {!options.length && <p>{query ? "Keine passenden Reisebegriffe." : "Keine belegten Optionen vorhanden."}</p>}
         <div className={styles.travelChoices}>{options.map(term => <label key={term.term_key} className={styles.travelChoice} data-assigned={selected.includes(term.term_key)}>
           <input type="checkbox" checked={selected.includes(term.term_key)} onChange={() => review.toggle(term.term_key)} />
@@ -51,14 +52,14 @@ export function TravelTaxonomyEditor({ published = false, compact = false }: { p
       <p>Nicht übernommene Gastgebervorschläge schränken keine öffentlichen Suchfilter ein.</p>
     </section>
     }
-    <div className={styles.actions}><button type="button" className="button button-primary" disabled={busy || !dirty || revision === undefined} onClick={review.save}>{saving ? "Speichert …" : "Reisezuordnungen speichern"}</button></div>
+    <div className={styles.actions}><button type="button" className="button button-primary" disabled={busy || disabled || !dirty || revision === undefined} onClick={review.save}>{saving ? "Speichert …" : "Reisezuordnungen speichern"}</button></div>
     {revision === undefined && <p role="alert">Der aktuelle Profilstand fehlt. Bitte laden Sie die Profilprüfung neu.</p>}
     {!dirty && !busy && revision !== undefined && <p role="status">{assignedKeys.length ? "Alle ausgewählten Zuordnungen sind bereits gespeichert." : "Wählen Sie die Reisebereiche aus, die Sie redaktionell bestätigen möchten."}</p>}
     {dirty && <p role="status">Ungespeicherte Reiseauswahl. Bitte vor der Veröffentlichung speichern.</p>}
     {message.error && <p role="alert">{message.error} <a href="#reisezuordnungen" onClick={() => window.location.reload()}>Profilprüfung neu laden</a></p>}
     {message.success && !dirty && <p role="status">{message.success}</p>}
   </section>;
-  return compact ? <details className={styles.inlineTravel} open={dirty || undefined}>
+  return compact ? <details className={styles.inlineTravel} open={open} onToggle={event => setOpen(event.currentTarget.open)}>
     <summary><strong>Reisebereiche bearbeiten</strong><span>{selected.length} ausgewählt</span></summary>
     <ul className={styles.inlineTravelSelected} aria-label="Bestätigte Reisebereiche">{terms.filter(term => selected.includes(term.term_key)).map(term => <li key={term.term_key}>{publicTravelLabel(term.term_key, term.label)}</li>)}</ul>
     {editor}

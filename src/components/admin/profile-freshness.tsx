@@ -5,13 +5,15 @@ import { freshnessStatus, freshnessStates, freshnessContextDate, freshnessDate, 
 import { FreshnessStatus } from "./freshness-status";
 
 type Feedback = { error?: string; success?: string };
-export function ProfileFreshness({ state, review, withdraw, disabled, compact = false, editableStatus = false }: {
+export function ProfileFreshness({ state, review, withdraw, disabled, compact = false, editableStatus = false, selectedReview, onReviewChange }: {
   state: ContentFreshness;
   review?: (revision: number) => Promise<Feedback>;
   withdraw?: (revision: number, reviewedAt: string) => Promise<Feedback>;
   disabled: boolean;
   compact?: boolean;
   editableStatus?: boolean;
+  selectedReview?: boolean | null;
+  onReviewChange?: (reviewed: boolean) => void;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -33,6 +35,15 @@ export function ProfileFreshness({ state, review, withdraw, disabled, compact = 
     catch { setFeedback({ error: "Die Prüfaktion konnte nicht gespeichert werden. Bitte versuchen Sie es erneut." }); }
     finally { setBusy(false); setConfirming(false); router.refresh(); }
   }
+  if (editableStatus) return <section className="profile-freshness-editor" aria-label="Datenqualität">
+    <FreshnessStatus status={status} compact={false} />
+    {review && onReviewChange ? <fieldset className="profile-review-choice" disabled={disabled}>
+      <legend>Prüfstatus</legend>
+      <label><input type="radio" name="profile-review-status" checked={!(selectedReview ?? !freshnessStates[status].needsReview)} onChange={() => onReviewChange(false)} />Prüfung erforderlich</label>
+      <label><input type="radio" name="profile-review-status" checked={selectedReview ?? !freshnessStates[status].needsReview} onChange={() => onReviewChange(true)} />Bereits geprüft</label>
+      <small>Wird mit „Speichern“ übernommen.</small>
+    </fieldset> : <small>Sie können das Profil bearbeiten; die Prüfentscheidung benötigt die gesonderte redaktionelle Prüfberechtigung.</small>}
+  </section>;
   return <section className={compact ? "profile-freshness-compact" : "profile-freshness-editor"} aria-label="Datenqualität">
     <FreshnessStatus status={status} compact={false} />
     {compact ? contextDate && <span className="profile-freshness-date">{contextDate.label}: {freshnessDate(contextDate.date)}</span> : <div className="profile-freshness-metadata">
@@ -54,23 +65,8 @@ export function ProfileFreshness({ state, review, withdraw, disabled, compact = 
       <button type="button" className="button" disabled={disabled || busy} onClick={() => perform(() => withdraw!(state.content_revision, state.reviewed_at!))}>{busy ? "Prüfaktion wird gespeichert …" : "Rücknahme bestätigen"}</button>
       <button type="button" className="button" disabled={busy} onClick={() => setConfirming(false)}>Rücknahme abbrechen</button>
     </div>}
-    {editableStatus && review && <ReviewStatusControl key={`${state.content_revision}:${state.reviewed_at}:${state.review_invalidated_at}`}
-      reviewed={!freshnessStates[status].needsReview} disabled={disabled || busy} canWithdraw={canWithdraw}
-      save={(reviewed) => { if (reviewed) void perform(() => review(state.content_revision)); else setConfirming(true); }} /> }
-    {editableStatus && !review && <small>Sie können das Profil bearbeiten; die Prüfentscheidung benötigt die gesonderte redaktionelle Prüfberechtigung.</small>}
-    {editableStatus && disabled && <small>Speichern Sie zuerst offene Profil- oder Reiseänderungen, bevor Sie den Prüfstatus bestätigen.</small>}
     {!compact && action && <small>Speichern bestätigt keine Prüfung.</small>}
     {feedback.error && <p role="alert">{feedback.error}</p>}
     {feedback.success && <p role="status">{feedback.success}</p>}
   </section>;
-}
-
-function ReviewStatusControl({ reviewed, disabled, canWithdraw, save }: { reviewed: boolean; disabled: boolean; canWithdraw: boolean; save: (reviewed: boolean) => void }) {
-  const [selected, setSelected] = useState(reviewed);
-  return <fieldset className="profile-review-choice" disabled={disabled}>
-    <legend>Prüfstatus ändern</legend>
-    <label><input type="radio" name="profile-review-status" checked={!selected} onChange={() => setSelected(false)} />Prüfung erforderlich</label>
-    <label><input type="radio" name="profile-review-status" checked={selected} onChange={() => setSelected(true)} />Bereits geprüft</label>
-    <button type="button" className="button button-primary" disabled={selected === reviewed || (!selected && !canWithdraw)} onClick={() => save(selected)}>Prüfstatus speichern</button>
-  </fieldset>;
 }

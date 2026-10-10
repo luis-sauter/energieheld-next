@@ -23,3 +23,10 @@ test('empty travel data renders nothing; feature facts do not invent a removed f
  const html=renderToStaticMarkup(createElement(TravelRelations,{title:'Reiseinformationen',links:[],facts:[{term_key:'feature:barrierefrei',dimension:'feature',slug:'barrierefrei',label:'Barrierefrei'}]}));
  assert.match(html,/Barrierefrei/);assert.doesNotMatch(html,/href=|besonderheit=/);
 });
+
+test('profile closing section combines inspiration with real links; rubric layout remains separate',()=>{
+ const props={title:'Reiseinformationen und passende Rubriken',links:[{name:'Radwandern',path:'/mottoreisen/radwandern'},{name:'Italien',path:'/reiseziele/suedtirol-italien'}],facts:[]};
+ const html=renderToStaticMarkup(createElement(TravelRelations,{...props,presentation:'profile'}));
+ assert.match(html,/profile-discover/);assert.match(html,/Hier beginnt Ihre nächste Reiseidee/);assert.equal((html.match(/<h2/g)||[]).length,1);assert.match(html,/href="\/mottoreisen\/radwandern"/);assert.match(html,/href="\/reiseziele\/suedtirol-italien"/);assert.doesNotMatch(html,/Deutschland|loading=|<img/);
+ const rubric=renderToStaticMarkup(createElement(TravelRelations,props));assert.match(rubric,/travel-relations-grid/);assert.doesNotMatch(rubric,/profile-discover/);
+});

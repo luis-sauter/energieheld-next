@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdminAccess } from "@/lib/admin";
 import { canReviewProfiles } from "@/lib/admin-review";
 import { checkInlineProfileTarget } from "@/lib/inline-admin-profile";
-import { updateAdminCompanyProfile } from "@/lib/admin-profile";
+import { saveInlineProfileFields } from "@/lib/inline-profile-save";
+import type { ContentFreshness } from "@/lib/content-freshness";
 import { changeAdminCompanyMedia } from "@/lib/admin-company-media";
 import type { ProfileFormState } from "@/lib/company-profile";
 import type { MediaState } from "@/lib/company-media";
@@ -14,13 +15,13 @@ export async function saveInlineProfile(
   profileId: string,
   slug: string,
   form: FormData,
-): Promise<ProfileFormState> {
+): Promise<ProfileFormState & { freshness?: ContentFreshness }> {
   let target, result;
   try {
     const client = await createClient();
     target = await checkInlineProfileTarget(client, profileId, slug);
     if (target.access === "admin" && !target.error)
-      result = await updateAdminCompanyProfile(client, profileId, form);
+      result = await saveInlineProfileFields(client, profileId, form);
   } catch {
     return { error: "Speichern ist gerade nicht möglich. Bitte versuchen Sie es erneut." };
   }
@@ -31,7 +32,7 @@ export async function saveInlineProfile(
     revalidatePath(`/experten/${slug}`);
     revalidatePath(`/unterkuenfte/${slug}`);
   }
-  return { error: result!.error, success: result!.success };
+  return { error: result!.error, success: result!.success, freshness: result!.freshness };
 }
 
 export async function saveInlineMedia(

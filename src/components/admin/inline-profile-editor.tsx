@@ -5,7 +5,7 @@ import { TravelReviewProvider, useTravelReview } from "./travel-review-context";
 import { TravelTaxonomyEditor } from "./travel-taxonomy-editor";
 import type { TravelReviewSnapshot, TravelSaveResult } from "@/lib/admin-travel-taxonomy";
 import { ProfileFreshness } from './profile-freshness';
-import type { ContentFreshness } from '@/lib/content-freshness';
+import { freshnessStatus, freshnessStates, type ContentFreshness } from '@/lib/content-freshness';
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ListingDetail, type InlineProfileFields } from "@/components/portal/listing-detail";
@@ -38,7 +38,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
   media: SignedMedia;
   rows: MediaRow[];
   contactAction?: React.ReactNode;
-  saveProfile: (form: FormData) => Promise<ProfileFormState>;
+  saveProfile: (form: FormData) => Promise<ProfileFormState & { freshness?: ContentFreshness }>;
   saveMedia: (form: FormData) => Promise<MediaState>;
   contentBlocks: ProfileContentBlock[];
   publicContentBlocks?: ProfileContentBlock[];
@@ -64,6 +64,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
   const [busy, setBusy] = useState(false);
   const [contactBusy, setContactBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<boolean | null>(null);
   const [feedback, setFeedback] = useState<ProfileFormState>({});
   const [mapLocation, setMapLocation] = useState(listing.location);
   const history = useInlineEditorHistoryController(saveContent, saveBlockImage, editing);
@@ -120,15 +121,40 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
     event.preventDefault();
     if (busyRef.current || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)) return;
     const closeAfterSuccess = (event.nativeEvent.submitter as HTMLButtonElement | null)?.value === "close";
-    if (closeAfterSuccess && travel?.dirty) { setFeedback({ error: "Bitte speichern Sie zuerst die Reisezuordnungen oder verwerfen Sie die Reiseauswahl." }); return; }
+
     busyRef.current = true;
     setBusy(true);
     setFeedback({});
     try {
-      const result = await saveProfile(new FormData(event.currentTarget));
-      setFeedback(result);
+      const form = new FormData(event.currentTarget);
+      const revision = freshness?.content_revision ?? travel?.revision;
+      if (revision !== undefined) form.set("editor_revision", String(revision));
+      const result = await saveProfile(form);
+      if (!result.success || result.error) setFeedback(result);
       if (result.success && !result.error) {
         setDirty(false);
+        let savedState = result.freshness;
+        if (travel?.dirty) {
+          const savedTravel = await travel.persist(savedState?.content_revision, false);
+          if (savedTravel.error || savedTravel.revision === undefined) {
+            setFeedback({ error: "Profilangaben gespeichert. " + (savedTravel.error ?? "Reisezuordnungen konnten nicht gespeichert werden.") }); router.refresh(); return;
+          }
+          if (savedState) savedState = { ...savedState, content_revision: savedTravel.revision };
+        }
+        if (selectedReview !== null && !savedState) { setFeedback({ error: "Profilangaben gespeichert. Der Prüfstand konnte nicht geladen werden; bitte laden Sie neu." }); router.refresh(); return; }
+        if (selectedReview !== null && savedState) {
+          const reviewed = !freshnessStates[freshnessStatus(savedState)].needsReview;
+          if (selectedReview !== reviewed) {
+            const decision = selectedReview
+              ? await reviewFreshness?.(savedState.content_revision)
+              : savedState.reviewed_at ? await withdrawFreshness?.(savedState.content_revision, savedState.reviewed_at) : undefined;
+            if (!decision?.success || decision.error) {
+              setFeedback({ error: "Profilangaben gespeichert. " + (decision?.error ?? "Die Prüfentscheidung konnte nicht gespeichert werden.") }); router.refresh(); return;
+            }
+          }
+          setSelectedReview(null);
+        }
+        setFeedback(result);
         if (closeAfterSuccess) { setEditing(false); history.clear(); }
         router.refresh();
       }
@@ -144,7 +170,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
     {!editing && returnHref && <p><Link className="button" href={returnHref}>Zur Profilprüfung</Link></p>}
     {editing && <div className={styles.toolbar}>
       {returnHref && <Link className="button" href={returnHref} onNavigate={(event) => {
-        if (busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || ((dirty || travel?.dirty) && !window.confirm("Ungespeicherte Profilangaben verwerfen und zur Profilprüfung zurückkehren?"))) event.preventDefault();
+        if (busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || ((dirty || travel?.dirty || selectedReview !== null) && !window.confirm("Ungespeicherte Profilangaben verwerfen und zur Profilprüfung zurückkehren?"))) event.preventDefault();
       }}>Zur Profilprüfung</Link>}
       <strong>Bearbeitungsmodus aktiv</strong>
       <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || !history.state.past.length}
@@ -154,7 +180,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
       <form id={formId} onSubmit={submit}>
         <button type="submit" value="stay" className="button button-primary" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
         <button type="submit" value="close" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)}>Speichern und schließen</button>
-        <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)} onClick={() => { if (travel?.dirty && !window.confirm("Ungespeicherte Reiseauswahl verwerfen?")) return; travel?.reset(); setEditing(false); setDirty(false); setFeedback({}); history.clear(); }}>Abbrechen</button>
+        <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)} onClick={() => { if (travel?.dirty && !window.confirm("Ungespeicherte Reiseauswahl verwerfen?")) return; travel?.reset(); setEditing(false); setDirty(false); setSelectedReview(null); setFeedback({}); history.clear(); }}>Abbrechen</button>
       </form>
       {busy && <span role="status">Änderungen werden gespeichert …</span>}
       {history.busy && <span role="status">Änderung wird wiederhergestellt …</span>}
@@ -167,8 +193,8 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
     </div>}
     {!editing && feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
     {editing && travelError && <p role="alert">{travelError}</p>}
-    {editing && travel && <TravelTaxonomyEditor compact /> }
-    {editing && freshness && <ProfileFreshness editableStatus state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || dirty || Boolean(travel?.dirty || travel?.busy)} />}
+    {editing && travel && <TravelTaxonomyEditor compact disabled={busy || contactBusy || mediaEditor.busy || history.busy} /> }
+    {editing && freshness && <ProfileFreshness editableStatus state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} selectedReview={selectedReview} onReviewChange={setSelectedReview} disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)} />}
     <ListingDetail
       listing={listing}
       showVerification={showVerification}
