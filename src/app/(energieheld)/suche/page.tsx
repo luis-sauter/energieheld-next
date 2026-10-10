@@ -37,7 +37,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       : <section aria-labelledby="search-results"><h2 id="search-results">{result.total} {result.total === 1 ? 'Ergebnis' : 'Ergebnisse'} für „{result.query}“</h2>
         {!result.total && <p className="empty-state">Keine passenden Inhalte gefunden. Versuchen Sie einen anderen Suchbegriff.</p>}
         <ol className={styles.results}>{result.hits.map(hit => <li key={`${hit.type}:${hit.id}`}>
-          <article><p className="eyebrow">{hit.type === "ad" ? "Gesponserter Treffer · Anzeige" : searchTypes[hit.type]}</p><h3>
+          <article>{hit.type !== "ad" && <p className="eyebrow">{searchTypes[hit.type]}</p>}<h3>
             {hit.external ? <a href={hit.url} target="_blank" rel="sponsored noopener noreferrer">{hit.title} ↗</a> : <Link href={hit.url}>{hit.title} →</Link>}
           </h3>{hit.type === "accommodation" && <TravelSignals termKeys={finder.listings.find(listing => listing.id === hit.id)?.travelTermKeys} />}<p>{hit.excerpt}</p></article>
         </li>)}</ol>
