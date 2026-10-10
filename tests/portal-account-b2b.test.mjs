@@ -12,7 +12,7 @@ registerHooks({
     if (specifier.endsWith(".module.css")) return { url: "data:text/javascript,export default {}", shortCircuit: true };
     if (specifier === "next/cache") return { url:"data:text/javascript,export function revalidatePath(){}",shortCircuit:true };
     if (specifier === "next/headers") return { url: "data:text/javascript,export async function headers(){return new Map()}", shortCircuit: true };
-    if (specifier === "next/navigation") return { url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)}', shortCircuit: true };
+    if (specifier === "next/navigation") return { url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")};export function useRouter(){return {refresh(){}}}', shortCircuit: true };
     if (specifier.endsWith("/supabase/server")) return { url: 'data:text/javascript,export async function createClient(){return globalThis.__accountClient}', shortCircuit: true };
     if (specifier === "next/link" || specifier === "next/image") return { url: `data:text/javascript,export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`, shortCircuit: true };
     if (specifier.startsWith("@/") || specifier.startsWith(".")) {
@@ -82,8 +82,8 @@ test('B2B pages share accessible layout and honest CTAs; auth preserves required
  globalThis.__accountClient=client({signedIn:false});
  const providers=renderToStaticMarkup(Providers()),ad=renderToStaticMarkup(await Advertising());
  assert.match(providers,/Ihre Unterkunft auf DAS Reiseportal/);assert.match(providers,/href="\/angebot-anfragen"/);assert.doesNotMatch(providers,/zukünftiges Profil|Wir gestalten gerade|Ihr Können/);
- assert.match(ad,/href="\/angebot-anfragen"/);assert.match(ad,/Unverbindlich anfragen/);assert.doesNotMatch(ad,/Werbekampagne planen/);
- const loginHtml=renderToStaticMarkup(await Login({searchParams:Promise.resolve({next:'/firma/werbung'})}));assert.match(loginHtml,/name="next" value="\/firma\/werbung"/);assert.match(loginHtml,/Unverbindlich anfragen/);
+ assert.match(ad,/href="\/angebot-anfragen"/);assert.match(ad,/Angebot anfragen/);assert.doesNotMatch(ad,/Werbekampagne planen/);
+ const loginHtml=renderToStaticMarkup(await Login({searchParams:Promise.resolve({next:'/firma/werbung'})}));assert.match(loginHtml,/name="next" value="\/firma\/werbung"/);assert.match(loginHtml,/Angebot anfragen/);
  assert.throws(()=>Register(),/REDIRECT:\/angebot-anfragen/);
  await assert.rejects(Account(),/REDIRECT:\/angebot-anfragen/);
  globalThis.__accountClient=client({admin:true});await assert.rejects(Account(),/REDIRECT:\/admin/);
@@ -100,12 +100,27 @@ test('editorial badge is admin-only, hides zero, announces real counts and caps 
 const {default:OfferPage}=await import('../src/app/(energieheld)/angebot-anfragen/page.tsx');
 const {OfferRequestDetail}=await import('../src/components/advertising/offer-request-form.tsx');
 const {default:ArchivedOwner}=await import('../src/app/(energieheld)/firma/layout.tsx');
-test('public request renders accessible real fields without registration, banner selection or password',()=>{
- const html=renderToStaticMarkup(OfferPage());for(const name of ['company_name','contact_name','contact_email','contact_phone','website','message','consent','request_key'])assert.ok(html.includes('name="'+name+'"'));
- assert.match(html,/Unverbindlich Angebot anfragen/);assert.match(html,/Anfrage senden/);assert.match(html,/https:\/\/das-reiseportal.com\/datenschutz/);assert.doesNotMatch(html,/name="(?:password|targets|placement)"/);
+test('public request reuses original field groups, required contacts/URL, optional placement/dates and no registration',()=>{
+ const html=renderToStaticMarkup(OfferPage());for(const name of ['company_name','contact_name','contact_email','contact_phone','internal_name','target_url','body_text','requested_start_date','requested_end_date','consent','request_key'])assert.ok(html.includes('name="'+name+'"'));
+ for(const legend of ['Ansprechpartner','Angaben zur Anzeige','Zeitraum (optional)','Wo möchten Sie werben? (optional)','Haben Sie bereits ein Bannerbild?'])assert.ok(html.includes(legend));
+ for(const name of ['contact_name','contact_email','contact_phone','internal_name','target_url'])assert.match(html,new RegExp('<input(?=[^>]*name="'+name+'")(?=[^>]*required)[^>]*>'));
+ for(const name of ['requested_start_date','requested_end_date'])assert.doesNotMatch(html,new RegExp('name="'+name+'"[^>]*required'));
+ assert.match(html,/Angebot anfragen/);assert.match(html,/https:\/\/das-reiseportal.com\/datenschutz/);assert.doesNotMatch(html,/name="(?:password)"/);
  assert.throws(()=>ArchivedOwner(),/REDIRECT:\/angebot-anfragen/);
 });
 test('general admin detail contains contact/status without booking editor, creative or approval',()=>{
  const html=renderToStaticMarkup(createElement(OfferRequestDetail,{campaign:{id:'id',request_status:'new',request_company_name:'QA Company',contact_name:'Contact',contact_email:'qa@example.test',created_at:'2026-10-10T10:00:00Z',request_message:'<private>'}}));
  for(const text of ['QA Company','Contact','qa@example.test','Neu','In Bearbeitung','Erledigt','Status speichern'])assert.ok(html.includes(text));assert.match(html,/&lt;private&gt;/);assert.doesNotMatch(html,/Freigabe|name="targets"|type="file"/);
+});
+
+const {sendOfferRequest,prepareOfferImage}=await import('../src/app/(energieheld)/angebot-anfragen/actions.ts');
+test('public image submission checks actual stored bytes before invoking submission; wrong bytes or foreign path denied',async()=>{
+ const key=crypto.randomUUID(),path='campaigns/'+key+'/creative/'+crypto.randomUUID()+'.png';let calls=0,downloads=0;
+ const form=()=>{const f=new FormData();for(const [k,v] of Object.entries({request_key:key,company_name:'QA',contact_name:'QA Contact',contact_email:'qa@example.test',contact_phone:'123',internal_name:'QA Anfrage',target_url:'https://example.test',consent:'on'}))f.set(k,v);f.set('uploaded_path',path);return f;};
+ let bytes=new Uint8Array([137,80,78,71,13,10,26,10]);
+ globalThis.__accountClient={storage:{from(){return {async download(){downloads++;return {data:new Blob([bytes],{type:'image/png'})}}}}},async rpc(){calls++;return {data:null,error:null}}};
+ assert.ok((await sendOfferRequest({},form())).success);assert.equal(calls,1);
+ bytes=new Uint8Array([1,2,3]);assert.ok((await sendOfferRequest({},form())).error);assert.equal(calls,1);
+ const foreign=form();foreign.set('uploaded_path','campaigns/foreign/creative/foreign.png');assert.ok((await sendOfferRequest({},foreign)).error);assert.equal(downloads,2);
+ const large=form();assert.ok((await prepareOfferImage(large,'image/png',5242881)).error);assert.equal(calls,1);
 });

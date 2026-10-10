@@ -1,4 +1,6 @@
 "use client";
+import { OfferRequestCta } from "@/components/portal/offer-request-cta";
+
 
 import { useEffect, useMemo, useState } from "react";
 import { FreshnessStatus } from "@/components/admin/freshness-status";
@@ -139,5 +141,6 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
         </section>
       </AdvertisingLayout>
     </div>} />
+    <OfferRequestCta />
   </main></InlineBannerProvider>;
 }

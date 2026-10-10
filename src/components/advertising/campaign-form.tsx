@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { sendOfferRequest, prepareOfferImage } from "@/app/(energieheld)/angebot-anfragen/actions";
 import { BannerMediaPicker } from "./banner-media-picker";
 import { useActionState, useEffect, useRef, useState } from "react";
 import {
@@ -61,12 +62,14 @@ export function slotAvailabilityText(status: "Belegt" | "Angefragt" | undefined,
 }
 export function CampaignForm({
   campaign,
+  publicRequestKey,
   categoryIds,
   admin = false,
   bannerMetadata, profileName,
   bannerTerms = [], bannerAdvertisers = [],
 }: {
   campaign: AdCampaign;
+  publicRequestKey?: string;
   categoryIds: string[];
   admin?: boolean;
   bannerMetadata?: BannerSearchMetadata;
@@ -79,6 +82,18 @@ export function CampaignForm({
   useEffect(() => { if (selectedPreview) return () => URL.revokeObjectURL(selectedPreview); }, [selectedPreview]);
   const [state, action, busy] = useActionState<AdFormState, FormData>(
     async (_previous, form) => {
+      if (publicRequestKey) {
+        form.set("request_key", publicRequestKey);
+        const file=form.get("image");form.delete("image");
+        if(file instanceof File && file.name){
+          const prepared=await prepareOfferImage(form,file.type,file.size);
+          if(!prepared.uploadPath)return prepared;
+          const uploaded=await createClient().storage.from("ad-media").upload(prepared.uploadPath,await file.arrayBuffer(),{contentType:file.type,upsert:false});
+          if(uploaded.error && uploaded.error.message!=="The resource already exists")return {error:"Ihre Angaben sind gesichert. Das Bild konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut."};
+          form.set("uploaded_path",prepared.uploadPath);
+        }
+        return sendOfferRequest({},form);
+      }
       const file = admin ? selectedImage : form.get("image");
       // Keep large multipart bodies off Netlify; finalize by validating stored bytes server-side.
       form.delete("image");
@@ -153,7 +168,7 @@ export function CampaignForm({
   const hasBookedSelection = values.targets.some((target) =>
     availability[adTargetAvailabilityKey({ ...target, placement: target.placement ?? campaign.placement })] === "Belegt");
   useEffect(() => {
-    if (!values.requested_start_date || !values.requested_end_date) return;
+    if (publicRequestKey || !values.requested_start_date || !values.requested_end_date) return;
     let current = true;
     (admin ? adminCampaignAvailability : campaignAvailability)(values.requested_start_date, values.requested_end_date, campaign.id).then((result) => {
       if (!current) return;
@@ -162,7 +177,7 @@ export function CampaignForm({
       if (current) setAvailabilityResult({ key: availabilityKey, slots: {}, error: "Die Verfügbarkeit konnte nicht geprüft werden." });
     });
     return () => { current = false; };
-  }, [values.requested_start_date, values.requested_end_date, campaign.id, admin, availabilityKey]);
+  }, [values.requested_start_date, values.requested_end_date, campaign.id, admin, availabilityKey, publicRequestKey]);
   const set = (name: string, value: string) =>
     setValues((v) => ({ ...v, [name]: value }));
   const setTarget = (target: AdTarget, checked: boolean) =>
@@ -182,28 +197,31 @@ export function CampaignForm({
       const target: AdTarget = { ...base, placement: slot as AdPlacementId };
       const key = adTargetAvailabilityKey(target);
       const checked = values.targets.some((item) => adTargetAvailabilityKey({ ...item, placement: item.placement ?? campaign.placement }) === key);
-      const slotStatus = slotAvailabilityText(availability[key], checked, availabilityLoading, availabilityError);
+      const slotStatus = publicRequestKey ? "Platzwunsch · wird persönlich geprüft" : slotAvailabilityText(availability[key], checked, availabilityLoading, availabilityError);
       return <label className={styles.placement} key={key}>
         <input type="checkbox" name="targets" value={adTargetFormValue(target)} checked={checked}
-          disabled={availabilityLoading || !!availabilityError || (availability[key] === "Belegt" && !checked)}
+          disabled={!publicRequestKey && (availabilityLoading || !!availabilityError || (availability[key] === "Belegt" && !checked))}
           onChange={(event) => setTarget(target, event.target.checked)} />
         <span className={styles.placementName}>{label}</span>
         <small className={availability[key] === "Belegt" ? styles.slotBooked : styles.slotAvailability}>{slotStatus}</small>
       </label>;
     })}
   </div>;
+  if (publicRequestKey && state.success) return <div className={styles.success} role="status">{state.success}</div>;
   return (
     <><form action={action} className={`${styles.form} ${styles.requestForm}`}>
       <input type="hidden" name="campaign_id" value={campaign.id} />
+      {publicRequestKey && <input type="hidden" name="request_key" value={publicRequestKey} />}
       <input type="hidden" name="placement" value={values.targets[0]?.placement ?? campaign.placement} />
       {!admin && <input type="hidden" name="headline" value={values.headline || values.internal_name.slice(0, 100)} />}
       <fieldset className={styles.formSection}>
         <legend>Ansprechpartner</legend>
         <p className={styles.sectionHint}>So können wir Ihre Anfrage zuordnen und Sie bei Rückfragen erreichen.</p>
+        {publicRequestKey && <label>Unternehmensname (optional)<input name="company_name" maxLength={120} /></label>}
         <div className={styles.contactGrid}>
-          <label>Name<input name="contact_name" maxLength={120} value={values.contact_name ?? ""} onChange={(e) => set("contact_name", e.target.value)} /></label>
-          <label>E-Mail-Adresse<input name="contact_email" type="email" maxLength={254} value={values.contact_email ?? ""} onChange={(e) => set("contact_email", e.target.value)} /></label>
-          <label>Telefonnummer<input name="contact_phone" type="tel" maxLength={60} value={values.contact_phone ?? ""} onChange={(e) => set("contact_phone", e.target.value)} /></label>
+          <label>Name<input name="contact_name" required={Boolean(publicRequestKey)} maxLength={120} value={values.contact_name ?? ""} onChange={(e) => set("contact_name", e.target.value)} /></label>
+          <label>E-Mail-Adresse<input name="contact_email" type="email" required={Boolean(publicRequestKey)} maxLength={254} value={values.contact_email ?? ""} onChange={(e) => set("contact_email", e.target.value)} /></label>
+          <label>Telefonnummer<input name="contact_phone" type="tel" required={Boolean(publicRequestKey)} maxLength={60} value={values.contact_phone ?? ""} onChange={(e) => set("contact_phone", e.target.value)} /></label>
         </div>
       </fieldset>
       <fieldset className={styles.formSection}>
@@ -218,20 +236,20 @@ export function CampaignForm({
         </div>
       </fieldset>
       <fieldset className={styles.formSection}>
-        <legend>Zeitraum</legend>
+        <legend>Zeitraum{publicRequestKey ? " (optional)" : ""}</legend>
         <div className={styles.dateGrid}>
           {([
             ["requested_start_date", admin && ["approved", "paused"].includes(campaign.status) ? "Ausspielung ab" : "Gewünschter Start"],
             ["requested_end_date", admin && ["approved", "paused"].includes(campaign.status) ? "Ausspielung bis" : "Gewünschtes Ende"],
           ] as const).map(([field, label]) => (
             <label key={field}>{label}
-              <input type="date" name={field} required value={values[field]} onChange={(e) => set(field, e.target.value)} />
+              <input type="date" name={field} required={!publicRequestKey} value={values[field]} onChange={(e) => set(field, e.target.value)} />
             </label>
           ))}
         </div>
       </fieldset>
       <fieldset className={styles.formSection}>
-        <legend>Wo möchten Sie werben?</legend>
+        <legend>Wo möchten Sie werben?{publicRequestKey ? " (optional)" : ""}</legend>
         <p className={styles.sectionHint}>Wählen Sie zunächst einen Bereich und danach die passenden Bannerplätze. Weitere Bereiche können Sie jederzeit ergänzen.</p>
         {shownScopes.map((scopeId) => {
           const scope = requestAdScopes.find((item) => item.id === scopeId)!;
@@ -297,7 +315,7 @@ export function CampaignForm({
           </div>}
         </div>}
         {availabilityError && <p role="alert">{availabilityError}</p>}
-        {hasBookedSelection &&
+        {!publicRequestKey && hasBookedSelection &&
           <p role="alert">Ein ausgewählter Platz ist im gewünschten Zeitraum belegt. Bitte ändern Sie die Auswahl.</p>}
         {admin && values.targets.filter((target) => target.target_type === "trade").map((target) => (
           <input key={`${target.category_id}|${target.placement}`} type="hidden" name="targets"
@@ -355,8 +373,9 @@ export function CampaignForm({
         </label>
       </fieldset>
       <p>
-        {admin ? "Redaktionelle Änderungen an einer freigegebenen Kampagne werden sofort wirksam. Entwürfe werden erst nach Freigabe ausgespielt." : "Mit dem Einreichen wird Ihre Angebotsanfrage zur Prüfung gesendet. Die Anzeige wird erst nach Freigabe im bestätigten Zeitraum ausgespielt."}
+        {publicRequestKey ? "Ihre Anfrage ist unverbindlich. Es entsteht keine Buchung oder Veröffentlichung. Werbeplätze und Zeitraum können offen bleiben." : admin ? "Redaktionelle Änderungen an einer freigegebenen Kampagne werden sofort wirksam. Entwürfe werden erst nach Freigabe ausgespielt." : "Mit dem Einreichen wird Ihre Angebotsanfrage zur Prüfung gesendet. Die Anzeige wird erst nach Freigabe im bestätigten Zeitraum ausgespielt."}
       </p>
+      {publicRequestKey && <><div hidden aria-hidden="true"><label>Fax<input name="fax" tabIndex={-1} autoComplete="off" /></label></div><label><input name="consent" type="checkbox" required /> Ich stimme der Verarbeitung meiner Angaben zur Bearbeitung der Anfrage zu. <a href="https://das-reiseportal.com/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutzerklärung</a></label></>}
       <div className={styles.actions}>
         {admin && <button className="button" name="intent" value="save" disabled={busy || (campaign.status === "approved" && (availabilityLoading || !!availabilityError || hasBookedSelection))}>
           Banner speichern
@@ -365,7 +384,7 @@ export function CampaignForm({
           className="button button-primary"
           name="intent"
           value="submit"
-          disabled={busy || availabilityLoading || !!availabilityError || hasBookedSelection}
+          disabled={busy || (!publicRequestKey && (availabilityLoading || !!availabilityError || hasBookedSelection))}
         >
           {admin ? "Zur Freigabe vormerken" : "Angebot anfragen"}
         </button>}

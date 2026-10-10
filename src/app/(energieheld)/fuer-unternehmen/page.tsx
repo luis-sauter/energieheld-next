@@ -2,10 +2,10 @@ import Link from "next/link";
 import { B2BPage } from "@/components/portal/b2b-page";
 import styles from "@/components/portal/b2b.module.css";
 import { pageMetadata } from "@/lib/seo";
-export const metadata = pageMetadata({ title: "Für Gastgeber und Reiseanbieter", description: "Ihre Unterkunft auf DAS Reiseportal: Unverbindlich anfragen und persönlich zu Profil und Werbung beraten lassen. Informationen für Gastgeber und Reiseanbieter.", path: "/fuer-unternehmen" });
+export const metadata = pageMetadata({ title: "Für Gastgeber und Reiseanbieter", description: "Ihre Unterkunft auf DAS Reiseportal: Angebot anfragen und persönlich zu Profil und Werbung beraten lassen. Informationen für Gastgeber und Reiseanbieter.", path: "/fuer-unternehmen" });
 export default function ProvidersPage() {
   return <B2BPage eyebrow="Für Gastgeber und Reiseanbieter" title="Ihre Unterkunft auf DAS Reiseportal" description="Zeigen Sie Reisenden, was Ihre Unterkunft besonders macht – mit einem eigenen Profil, passenden Reiseinteressen und direkten Kontaktmöglichkeiten.">
-    <div className={styles.actions}><Link className="button button-primary" href="/angebot-anfragen">Unverbindlich anfragen</Link></div>
+    <div className={styles.actions}><Link className="button button-primary" href="/angebot-anfragen">Angebot anfragen</Link></div>
     <section className={styles.section}><h2>Ein klarer Auftritt für Ihr Angebot</h2><p>Für Hotels, Pensionen, Ferienwohnungen, Campingplätze und weitere passende Reiseanbieter.</p><div className={styles.grid}>
       <article className={styles.card}><h3>Ihre Unterkunft vorstellen</h3><p>Beschreibung, Bilder und Galerie vermitteln einen Eindruck. Hinterlegen Sie Kontakt- und Standortdaten und halten Sie diese aktuell.</p></article>
       <article className={styles.card}><h3>Passend entdeckt werden</h3><p>Reiseziele, Mottoreisen und belegte Zielgruppen wie Mit Hund, Mit Kindern oder Zu zweit helfen bei der Suche nach passenden Angeboten.</p></article>

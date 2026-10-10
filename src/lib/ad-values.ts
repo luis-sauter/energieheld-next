@@ -47,6 +47,7 @@ export type AdValues = {
   contact_email: string | null;
 };
 export type AdCampaign = AdValues & {
+  request_details?: { internal_name: string; target_url: string; requested_start_date: string; requested_end_date: string; targets: AdTarget[]; upload_path?: string; image_type?: string; image_size?: number } | null;
   request_status?: "new" | "in_progress" | "done" | null;
   request_company_name?: string | null;
   request_message?: string | null;

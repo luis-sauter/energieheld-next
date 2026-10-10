@@ -9,7 +9,7 @@ registerHooks({
   resolve(s,c,next) {
     if(s==='react' && c.parentURL?.startsWith('data:')) return next(s,{...c,parentURL:import.meta.url});
     if(s==='next/link'||s==='next/image') return {url:`data:text/javascript,export default ${JSON.stringify(s==='next/link'?'a':'img')}`,shortCircuit:true};
-    if(s.endsWith('/campaign-view')) return {url:'data:text/javascript,import{createElement}from"react";export function CampaignSlot({placement,ad}){return createElement("section",{"data-slot":placement,"data-campaign":ad?.id})}',shortCircuit:true};
+    if(s.endsWith('/campaign-view')) return {url:'data:text/javascript,import{createElement}from"react";export function CampaignSlot({placement,ad,showLabel=true}){return createElement("section",{"data-slot":placement,"data-campaign":ad?.id,"data-show-label":showLabel})}',shortCircuit:true};
     if(s.endsWith('/inline-banner-context')) return {url:'data:text/javascript,export function useInlineBanners(){return undefined}',shortCircuit:true};
     if(s.endsWith('/directory-edit-mode')) return {url:'data:text/javascript,export function DirectoryEditModeProvider({children}){return children}',shortCircuit:true};
     if(s.startsWith('@/')||s.startsWith('.')) {
@@ -30,6 +30,8 @@ test('A–Z places actual Premium inside the existing rail, before fixed A–L, 
   assert.ok(html.indexOf('data-slot="top_banner"')<html.indexOf('data-slot="sidebar_top"'));
   assert.equal((html.match(/data-campaign="premium"/g)||[]).length,1);
   assert.match(html,/data-campaign="normal"/);
+  assert.match(html,/<section[^>]*data-slot="top_banner"[^>]*data-show-label="false"/);
+  assert.equal(html.split('>Anzeige<').length-1,1);
   assert.deepEqual(ads.map(ad=>ad.placement),['top_banner','sidebar_top']);
 });
 test('missing or suppressed Premium stays absent publicly; admin can still manage that slot',()=>{
@@ -40,6 +42,6 @@ test('missing or suppressed Premium stays absent publicly; admin can still manag
   }
 });
 test('other advertising pages keep their previous above-content Premium layout',()=>{
-  const html=render();assert.ok(html.indexOf('data-slot="top_banner"')<html.indexOf('aria-label="Reisefinder"'));
+  const html=render();assert.match(html,/<section[^>]*data-slot="top_banner"[^>]*data-show-label="true"/);assert.ok(html.indexOf('data-slot="top_banner"')<html.indexOf('aria-label="Reisefinder"'));
   assert.ok(html.indexOf('data-slot="top_banner"')<html.indexOf('<aside'));
 });
