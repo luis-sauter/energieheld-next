@@ -9,7 +9,7 @@ export function emptyOfferCampaign(id: string): AdCampaign {
 export function validateOfferRequest(form: FormData) {
  const get=(key:string)=>typeof form.get(key)==="string"?String(form.get(key)).trim():"";
  const company_name=get("company_name"),contact_name=get("contact_name"),contact_email=get("contact_email").toLowerCase(),contact_phone=get("contact_phone"),internal_name=get("internal_name"),target_url=adTargetUrl(get("target_url")),message=get("body_text"),fax=get("fax"),consent=form.get("consent")==="on";
- if(company_name.length>120||!contact_name||contact_name.length>120||!contact_phone||contact_phone.length>60||!internal_name||internal_name.length>120) return {error:"Bitte geben Sie Ansprechpartner, Telefonnummer und Bezeichnung an (Name/Bezeichnung maximal 120, Telefon maximal 60 Zeichen)."};
+ if(!company_name||company_name.length>120||!contact_name||contact_name.length>120||!contact_phone||contact_phone.length>60||!internal_name||internal_name.length>120) return {error:"Bitte geben Sie Unternehmensname, Ansprechpartner, Telefonnummer und Bezeichnung an (Name/Bezeichnung maximal 120, Telefon maximal 60 Zeichen)."};
  if(contact_email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact_email)) return {error:"Bitte geben Sie eine gültige E-Mail-Adresse an."};
  if(!target_url) return {error:"Bitte geben Sie eine gültige http://- oder https://-Zieladresse ohne Zugangsdaten ein."};
  if(message.length>400) return {error:"Bitte geben Sie höchstens 400 Zeichen Hinweise ein."};

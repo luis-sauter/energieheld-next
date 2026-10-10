@@ -1,5 +1,7 @@
 "use client";
 
+import { BannerCta } from "./banner-cta";
+
 import { imageCropStyle } from "@/lib/image-crop";
 import { bannerCropRatio } from "@/lib/banner-presentation";
 import Link from "next/link";
@@ -115,6 +117,7 @@ export function CampaignSlot({
             target="_blank"
           >
             {content}
+            {!promo && !reordering && destination && displayAd.imageUrl && <BannerCta />}
             {promo && <div className={styles.promoCopy}>
               <span className={styles.promoLabel}>Reiseinspiration</span>
               <strong>{displayAd.headline}</strong>
