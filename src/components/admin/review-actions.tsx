@@ -1,11 +1,11 @@
 "use client";
 import { useState, useTransition } from "react";
-import { approveTravelProfile, rejectTravelProfile } from "@/app/(energieheld)/admin/actions";
+import { setProfilePublication, rejectTravelProfile } from "@/app/(energieheld)/admin/actions";
 import { canReviewProfile, reviewStatusMessage } from "@/lib/admin-review-state";
 import { useTravelReview } from "./travel-review-context";
 import styles from "./admin.module.css";
 
-export function ReviewActions({ profileId, status, canReview = false, expectedRevision }: { profileId: string; status: string; canReview?: boolean; expectedRevision?: number }) {
+export function ReviewActions({ profileId, status, canReview = false, expectedRevision, listed = true, slug, canPublishDraft = false }: { profileId: string; status: string; canReview?: boolean; expectedRevision?: number; listed?: boolean; slug?: string | null; canPublishDraft?: boolean }) {
   const review = useTravelReview();
   const revision = review?.revision ?? expectedRevision;
   const [pending, startTransition] = useTransition();
@@ -24,14 +24,14 @@ export function ReviewActions({ profileId, status, canReview = false, expectedRe
     });
   }
   return <div aria-label="Profilentscheidung" aria-busy={pending}>
-    {!canReviewProfile(status) && <p>{reviewStatusMessage(status)}</p>}
-    {canReviewProfile(status) && <>
+    {!(status === 'approved' || status === 'draft' && canPublishDraft) && !canReviewProfile(status) && <p>{reviewStatusMessage(status)}</p>}
+    {(canReviewProfile(status) || status === 'draft' && canPublishDraft || status === 'approved') && <>
       <p>Prüfen Sie Angaben, Hinweise, Profilgestaltung und gespeicherte Reisezuordnungen. Veröffentlichen Sie das Profil erst, wenn die Vorbereitung abgeschlossen ist.</p>
       {unavailable && <p role="status">{unavailable}</p>}
       {revision === undefined && <button type="button" className="button" onClick={() => window.location.reload()}>Profilprüfung neu laden</button>}
       <div className={styles.actions}>
-        <button type="button" className="button button-primary" disabled={disabled} onClick={() => run(() => approveTravelProfile(profileId, revision!, review?.proposedKeys))}>Profil veröffentlichen</button>
-        <button type="button" className="button" disabled={disabled} onClick={() => setRequestFeedback(true)}>Rückfrage an Gastgeber</button>
+        {status === 'approved' && listed ? <><span>Veröffentlicht</span>{slug && <a className="button" href={`/unterkuenfte/${slug}`}>Öffentliches Profil öffnen</a>}<button type="button" className="button" disabled={disabled} onClick={() => run(() => setProfilePublication(profileId, false, revision!, review?.proposedKeys))}>Veröffentlichung zurücknehmen</button></> : <button type="button" className="button button-primary" disabled={disabled} onClick={() => run(() => setProfilePublication(profileId, true, revision!, review?.proposedKeys))}>Profil veröffentlichen</button>}
+        {canReviewProfile(status) && <button type="button" className="button" disabled={disabled} onClick={() => setRequestFeedback(true)}>Rückfrage an Gastgeber</button>}
       </div>
       {requestFeedback && <form className={styles.reviewFeedback} onSubmit={event => { event.preventDefault(); if (feedback.trim() && feedback.trim().length <= 4000) run(() => rejectTravelProfile(profileId, revision!, feedback, review?.proposedKeys)); }}>
         <label htmlFor="review-feedback">Was soll der Gastgeber ergänzen oder ändern?</label>

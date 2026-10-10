@@ -14,6 +14,7 @@ registerHooks({resolve(s,c,next){
  if(s==='react'&&c.parentURL?.endsWith('/inline-profile-editor.tsx'))return stub('export const useState=v=>globalThis.__profileSaveHooks.state(v),useRef=v=>globalThis.__profileSaveHooks.ref(v);');
  if(s.endsWith('/travel-review-context'))return stub('export function useTravelReview(){return globalThis.__profileTravel??null};export function TravelReviewProvider(){return null};');
  if(s.endsWith('/contact-image-editor'))return stub('export function ContactImageEditor(){return null}');
+ if(s.endsWith('/media-library-browser'))return stub('export function MediaLibraryBrowser(){return null}');
  if(s==='next/link')return stub('export default "a"');
  if(s==='next/navigation')return stub('export const useRouter=()=>({refresh:()=>globalThis.__profileSaveHooks.refresh()});');
  if(s.endsWith('/inline-editor-history'))return stub('export const InlineEditorHistoryContext={Provider:()=>null};export const useInlineEditorHistoryController=()=>({busy:false,state:{past:[],future:[]},feedback:{},clear:()=>globalThis.__profileSaveHooks.clear()});');

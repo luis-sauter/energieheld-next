@@ -12,6 +12,7 @@ globalThis.__dialogHooks={
 };
 registerHooks({resolve(s,c,n){const stub=source=>({url:'data:text/javascript,'+encodeURIComponent(source),shortCircuit:true});
  if(s==='react'&&/(media-company-create|media-library-context|banner-media-picker)\.tsx$/.test(c.parentURL??''))return stub('export const useState=v=>globalThis.__dialogHooks.state(v),useRef=v=>globalThis.__dialogHooks.ref(v),useEffect=()=>{},createContext=()=>({Provider:"context"}),useContext=()=>null;');
+ if(s==='./media-library-browser')return stub('export const MediaLibraryBrowser="library-browser";');
  if(s==='next/dynamic.js')return stub('export default ()=>"library-browser";');
  if(s==='next/navigation')return stub('export const useRouter=()=>({refresh(){}});');
  if(s.endsWith('/admin/mediathek/actions'))return stub('export const createLibraryCompany=()=>globalThis.__dialogHooks.create();');

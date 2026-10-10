@@ -19,6 +19,9 @@ before(async()=>{
  const seedIds=[...migration.matchAll(/\('([0-9a-f-]{36})'::uuid,'https:/g)].map(m=>m[1]);
  for(const id of seedIds) await db.query("insert into company_profiles(id,company_id,display_name) values($1,$2,$3) on conflict do nothing",[id,owner,'Joomla fixture']);
  await db.exec(migration);
+ const optimized=await readFile(new URL('../supabase/migrations/20261010215919_company_publication_and_catalog_page.sql',import.meta.url),'utf8');
+ await db.exec(optimized.slice(optimized.indexOf('CREATE OR REPLACE FUNCTION public.media_library_page')));
+
  await db.exec("create policy qa_video_read on storage.objects for select to authenticated using(bucket_id='company-profile-videos' and exists(select 1 from portal_admins where user_id=auth.uid()));");
  await db.exec("grant select on company_ad_campaigns to authenticated;grant select,insert,update,delete on profile_content_blocks,profile_content_block_images to authenticated");
  await db.query("insert into storage.objects(bucket_id,name,metadata) values('company-profile-videos',$1,$2)",[path,{size:1000,mimetype:'video/mp4'}]);
@@ -103,4 +106,20 @@ test('public approved video use is readable; foreign writes and broad deletes re
  await actor('99999999-9999-4999-8999-999999999999');assert.equal((await db.query('delete from profile_video_uses where block_id=$1 returning id',[block])).rows.length,0);await denied('select media_library_use_video($1,$2,$3)',[profile,a,block]);
  await actor(admin);assert.equal((await db.query('delete from storage.objects where name=$1 returning name',[path])).rows.length,0);
  await db.query('delete from profile_video_uses where block_id=$1',[block]);assert.equal((await db.query('delete from storage.objects where name=$1 returning name',[path])).rows.length,0,'unlinked catalog original is retained too');
+});
+
+test('catalog pages include all company originals once, bounded to 24, preserve usage and search, exclude missing files',async()=>{
+ await db.exec('reset role');
+ for(let n=0;n<30;n++){
+ const id='aaaaaaaa-aaaa-4aaa-9aaa-'+String(n).padStart(12,'0'),p='profiles/'+profile+'/gallery/'+id+'.jpg';
+ await db.query("insert into storage.objects(bucket_id,name) values('company-media',$1)",[p]);
+ await db.query("insert into media_library_assets(id,profile_id,bucket_id,storage_path,kind,name) values($1,$2,'company-media',$3,'gallery',$4)",[id,profile,p,'Original '+String(n).padStart(2,'0')]);
+ await db.query("insert into media_library_files(asset_id,bucket_id,storage_path,profile_id,context_key) values($1,'company-media',$2,$3,'original')",[id,p,profile]);
+ }
+ await actor(admin);
+ const pages=[];for(const page of [1,2])pages.push((await db.query("select media_library_page($1,'images','Original',$2,false) p",[profile,page])).rows[0].p);
+ assert.equal(pages[0].count,30);assert.equal(pages[0].items.length,24);assert.equal(pages[1].items.length,6);
+ assert.equal(new Set(pages.flatMap(p=>p.items.map(i=>i.id))).size,30);
+ assert.ok(pages.flatMap(p=>p.items).every(i=>i.preview_file?.bucket==='company-media'&&Array.isArray(i.usages)));
+ assert.equal((await db.query("select media_library_page($1,'images','Original 29',1,false) p",[profile])).rows[0].p.count,1);
 });

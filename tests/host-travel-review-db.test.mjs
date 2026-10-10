@@ -43,6 +43,10 @@ before(async()=>{
  assert.deepEqual((await db.query('SELECT * FROM company_profile_travel_terms ORDER BY profile_id,term_key')).rows,terms);
  assert.deepEqual((await db.query('SELECT * FROM profile_content_freshness ORDER BY profile_id')).rows,freshness);
  assert.equal((await db.query('SELECT count(*) n FROM company_profile_travel_proposals')).rows[0].n,0);
+ await db.exec((await readFile(new URL('../supabase/migrations/20261009173154_company_profile_public_visibility.sql',import.meta.url),'utf8')).split('-- Preserve every existing document')[0]);
+ await apply('20261010200813_company_profile_import_provenance.sql');
+ await apply('20261010215919_company_publication_and_catalog_page.sql');
+
 });
 after(async()=>{await db?.close()});beforeEach(async()=>{await db.exec('RESET ROLE; BEGIN')});afterEach(async()=>{await db.exec('ROLLBACK; RESET ROLE')});
 async function actor(user,role='authenticated'){await db.exec('RESET ROLE');await db.query("SELECT set_config('request.jwt.claim.sub',$1,true)",[user]);await db.exec('SET LOCAL ROLE '+role);}
@@ -175,4 +179,36 @@ test('Peter correction fails closed for changed revision, terms, proposals, stat
   assert.equal((await db.query("SELECT to_regclass('private.peter_travel_proposal_correction') t")).rows[0].t,null);
   await db.exec('ROLLBACK TO SAVEPOINT variation; RELEASE SAVEPOINT variation');
  }
+});
+
+const publication = (s,publish=true,id=own)=>db.query('SELECT set_travel_profile_publication($1,$2,$3,$4) s',[id,publish,s.revision,s.proposedKeys]);
+test('publication and withdrawal preserve approval, terms and import lineage; retries are idempotent and open-import filter excludes withdrawn',async()=>{
+ await db.exec('RESET ROLE');await db.query('insert into company_profile_imports(profile_id,source_url) values($1,$2)',[own,'https://example.org/official']);
+ await actor(editor);let s=await snapshot();
+ await db.query('update company_profile_public_visibility set is_listed=false where profile_id=$1',[own]);
+ assert.equal((await db.query("select editorial_company_page(NULL,'Own',1,'name','new_imports') p")).rows[0].p.count,1);
+ await publication(s);await publication(s);
+ assert.equal((await db.query('select status from company_profiles where id=$1',[own])).rows[0].status,'approved');
+ assert.equal((await db.query("select editorial_company_page(NULL,'Own',1,'name','new_imports') p")).rows[0].p.count,0);
+ s=await snapshot();const terms=s.assignedKeys;
+ await publication(s,false);await publication(s,false);
+ assert.deepEqual((await snapshot()).assignedKeys,terms);
+ assert.equal((await db.query('select status from company_profiles where id=$1',[own])).rows[0].status,'approved');
+ assert.equal((await db.query("select editorial_company_page(NULL,'Own',1,'name','new_imports') p")).rows[0].p.count,0);
+ const withdrawn=(await db.query("select editorial_company_page(NULL,'Own',1,'name','withdrawn') p")).rows[0].p;
+ assert.equal(withdrawn.count,1);assert.equal(withdrawn.profiles[0].is_listed,false);
+ await publication(s);assert.equal((await db.query("select editorial_company_page(NULL,'Own',1,'name','published') p")).rows[0].p.count,1);
+});
+test('ownerless travel drafts publish atomically; owner drafts, stale revisions, guest and foreign owner denied',async()=>{
+ await db.exec('RESET ROLE; alter table companies alter column owner_user_id drop not null');
+ await db.query("insert into companies values('dddddddd-dddd-4ddd-8ddd-dddddddddddd',null,'Import')");await db.query("insert into company_profiles(id,company_id,display_name,status,approval_context) values($1,'dddddddd-dddd-4ddd-8ddd-dddddddddddd','Import','draft','reiseportal')",['dddddddd-dddd-4ddd-8ddd-dddddddddddd']);
+ await actor(editor);const id='dddddddd-dddd-4ddd-8ddd-dddddddddddd',s=await snapshot(id);
+ const publish=(state)=>publication(state,true,id);
+ await denied(()=>publish({...s,revision:s.revision-1}));
+ await denied(()=>publish({...s,proposedKeys:['theme:natur-pur']}));
+ assert.equal((await db.query('select status from company_profiles where id=$1',[id])).rows[0].status,'draft');
+ await actor(other);await denied(()=>publish(s));await actor('','anon');await denied(()=>publish(s));
+ await actor(editor);await publish(s);
+ assert.equal((await db.query('select status from company_profiles where id=$1',[id])).rows[0].status,'approved');
+ assert.equal((await db.query('select count(*)::int n from company_profile_categories where profile_id=$1',[id])).rows[0].n,0);
 });

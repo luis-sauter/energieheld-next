@@ -1,12 +1,11 @@
 import { loadProfileImports } from '@/lib/profile-import';
 import { ProfileImportNotice } from '@/components/admin/profile-import-notice';
-import { ProfilePublicVisibility } from "@/components/admin/profile-public-visibility";
+import { publicationStatus } from "@/lib/profile-publication";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadReviewProfile } from "@/lib/admin-review";
 import { requireAdminAccess, formatSubmission, legalName } from "@/lib/admin";
-import { profileStatus } from "@/lib/auth";
 import { signCompanyMedia } from "@/lib/company-media";
 import { CompanyImage } from "@/components/portal/company-image";
 import { ReviewActions } from "@/components/admin/review-actions";
@@ -51,12 +50,11 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       <dl className={styles.details}>
         <div><dt>Firmenname</dt><dd>{legalName(profile.companies)}</dd></div>
         <div><dt>Öffentlicher Profilname</dt><dd>{profile.display_name}</dd></div>
-        <div><dt>Aktueller Status</dt><dd>{profileStatus(profile.status)}</dd></div>
+        <div><dt>Aktueller Status</dt><dd>{publicationStatus(profile.status, visibility.data?.is_listed !== false)}</dd></div>
       </dl>
       {editorLink}
     </header>
     <ProfileImportNotice entry={importEntry} status={profile.status}/>
-    <ProfilePublicVisibility profileId={id} listed={visibility.data?.is_listed !== false} />
     <TravelReviewProvider key={JSON.stringify(travelTaxonomy)} snapshot={"error" in travelTaxonomy ? { terms: [], assignedKeys: [], proposedKeys: [] } : travelTaxonomy} saveAction={saveTravelTerms.bind(null, profile.id)}>
     <div className={styles.card}>
       <section id="angaben" className={styles.reviewSection} aria-labelledby="review-details-title">
@@ -86,10 +84,10 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       </section>
       <section id="pruefung" className={styles.reviewSection} aria-labelledby="review-finish-title">
         <h2 id="review-finish-title">Redaktionelle Entscheidung</h2>
-        <ReviewActions key={profile.id} profileId={profile.id} status={profile.status} canReview={result.access === "admin"} />
+        <ReviewActions key={`${profile.id}:${profile.status}:${visibility.data?.is_listed !== false}`} profileId={profile.id} status={profile.status} listed={visibility.data?.is_listed !== false} slug={profile.slug} canPublishDraft={profile.approval_context === "reiseportal" && (Array.isArray(profile.companies) ? profile.companies[0] : profile.companies)?.owner_user_id === null} canReview={result.access === "admin"} />
       </section>
     </div>
     </TravelReviewProvider>
-    <nav className={styles.reviewSticky} aria-label="Redaktionelle Profilaktion"><span>{profile.display_name} · {profileStatus(profile.status)}</span>{editorLink}</nav>
+    <nav className={styles.reviewSticky} aria-label="Redaktionelle Profilaktion"><span>{profile.display_name} · {publicationStatus(profile.status, visibility.data?.is_listed !== false)}</span>{editorLink}</nav>
   </main>;
 }

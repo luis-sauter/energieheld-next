@@ -13,7 +13,7 @@ registerHooks({
     if (specifier === "next/navigation") return {url:"data:text/javascript,export function useRouter(){return {refresh(){}}}",shortCircuit:true};
     if (specifier.endsWith("/admin/actions"))
       return {
-        url: "data:text/javascript,export async function approveTravelProfile(){};export async function rejectTravelProfile(){}",
+        url: "data:text/javascript,export async function setProfilePublication(){};export async function rejectTravelProfile(){}",
         shortCircuit: true,
       };
     if (specifier.endsWith(".module.css"))
