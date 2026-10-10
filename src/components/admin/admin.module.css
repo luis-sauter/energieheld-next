@@ -224,3 +224,5 @@
 .inlineTravel .travelGroup { margin-block: 12px; padding: 12px; }
 .inlineTravelSelected { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .inlineTravelSelected li { padding: 5px 10px; border-radius: 20px; color: var(--brand-primary); background: color-mix(in srgb, var(--brand-primary) 7%, white); font-size: .8rem; overflow-wrap: anywhere; }
+
+.importBadge { display: inline-block; margin-left: .6rem; padding: .2rem .5rem; border-radius: 1rem; background: #e7f4fa; color: #075676; font-size: .8rem; font-weight: 600; }

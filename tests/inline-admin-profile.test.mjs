@@ -72,7 +72,7 @@ const publicProfile = {
   company_quality_requests: null, companies: { legal_name: "Redaktionelle Firma GmbH" },
 };
 
-function client({ authenticated = true, admin = true, profile = publicProfile, slug = profile.slug, contentRows = [] } = {}) {
+function client({ authenticated = true, admin = true, profile = publicProfile, slug = profile.slug, contentRows = [], importRows = [] } = {}) {
   const calls = [];
   return {
     calls,
@@ -84,8 +84,9 @@ function client({ authenticated = true, admin = true, profile = publicProfile, s
         select(columns) { call.columns = columns; return this; },
         update(payload) { call.payload = payload; return this; },
         eq(key, value) { call.filters.push([key, value]); return this; },
+        in(key, values) { call.filters.push([key, values]); return this; },
         order() { return this; },
-        then(resolve) { return resolve({ data: table === "profile_content_blocks" ? contentRows : [], error: null }); },
+        then(resolve) { return resolve({ data: table === "profile_content_blocks" ? contentRows : table === "company_profile_imports" ? importRows : [], error: null }); },
         async maybeSingle() {
           if (table === "portal_admins") return { data: admin ? { user_id: "verified-user" } : null, error: null };
           if (call.payload) return { data: { id: profile.id }, error: null };
@@ -814,3 +815,10 @@ test("review page follows editorial order with three same editor links and one f
  assert.equal((html.match(/aria-label="Profilentscheidung"/g)||[]).length,1);assert.equal((html.match(/Profil veröffentlichen/g)||[]).length,1);assert.equal((html.match(/vorschau[?]bearbeiten=1/g)||[]).length,3);assert.match(html,/Privates Briefing/);assert.doesNotMatch(html,/Öffentliche Gewerke|Trockenbau/);
  assert.match(html,/aria-label="Redaktionelle Profilaktion"/);
 });
+
+ test("admin import preview exposes private origin and rights briefing without changing draft editing", async()=>{
+ const profile={...publicProfile,status:'draft'};
+ globalThis.__inlineAdminClient=client({profile,importRows:[{profile_id:profile.id,source_url:'https://example.org/press/',imported_at:'2026-10-10T12:00:00Z',review_note:'Publication rights pending'}]});
+ const html=renderToStaticMarkup(await AdminProfilePreview({params:Promise.resolve({id:profile.id}),searchParams:Promise.resolve({bearbeiten:'1'})}));
+ assert.match(html,/Neu importiert/);assert.match(html,/Publication rights pending/);assert.match(html,/https:\/\/example.org\/press\//);assert.match(html,/Bearbeitungsmodus aktiv/);
+ });

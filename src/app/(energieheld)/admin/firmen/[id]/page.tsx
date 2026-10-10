@@ -1,3 +1,5 @@
+import { loadProfileImports } from '@/lib/profile-import';
+import { ProfileImportNotice } from '@/components/admin/profile-import-notice';
 import { ProfilePublicVisibility } from "@/components/admin/profile-public-visibility";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -28,6 +30,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
   if (!result.error && !result.profile) notFound();
   if (result.error || !result.profile) return <main id="hauptinhalt" className={`container ${styles.page}`}><p role="alert">{result.error}</p></main>;
   const profile = result.profile;
+  const importEntry = (await loadProfileImports(client, [id])).get(id);
   const editorHref = `/admin/firmen/${profile.id}/vorschau?bearbeiten=1`;
   const [editorialNote, travelTaxonomy, media, feedback] = await Promise.all([
     loadEditorialNote(client, profile.id), loadAdminTravelTaxonomy(client, profile.id),
@@ -52,6 +55,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       </dl>
       {editorLink}
     </header>
+    <ProfileImportNotice entry={importEntry} status={profile.status}/>
     <ProfilePublicVisibility profileId={id} listed={visibility.data?.is_listed !== false} />
     <TravelReviewProvider key={JSON.stringify(travelTaxonomy)} snapshot={"error" in travelTaxonomy ? { terms: [], assignedKeys: [], proposedKeys: [] } : travelTaxonomy} saveAction={saveTravelTerms.bind(null, profile.id)}>
     <div className={styles.card}>

@@ -1,3 +1,5 @@
+import { loadProfileImports } from '@/lib/profile-import';
+import { ProfileImportNotice } from '@/components/admin/profile-import-notice';
 import { loadAdminTravelTaxonomy } from "@/lib/admin-travel-taxonomy";
 import { saveTravelTerms } from "@/app/(energieheld)/admin/firmen/[id]/travel-actions";
 import { notFound, redirect } from "next/navigation";
@@ -31,6 +33,7 @@ export default async function AdminProfilePreview({ params, searchParams }: { pa
   if (!result.profile && !result.error) notFound();
   if (result.error || !result.profile) return <main id="hauptinhalt" className="container detail-page"><p role="alert">{result.error}</p></main>;
   const profile = result.profile;
+  const importEntry = (await loadProfileImports(client, [id])).get(id);
   const slug = publicSlugForStoredProfile(profile);
   if (profile.status === "approved" && !editing) {
     const publicResult = await loadReiseportalListingBySlug(slug);
@@ -49,6 +52,7 @@ export default async function AdminProfilePreview({ params, searchParams }: { pa
   return <main id="hauptinhalt" className="container detail-page">
     <nav className="breadcrumbs" aria-label="Brotkrumennavigation"><span>Adminbereich</span><span>/</span><span>Interne Profilvorschau</span></nav>
     <header><h1>{editing ? "Profil redaktionell bearbeiten" : "Interne Profilvorschau"}</h1><p>{profile.status === "approved" ? (editing ? "Interner Redaktionsbereich eines freigegebenen Profils." : "Dieses Profil ist nicht im Reiseportal-Verzeichnis sichtbar.") : "Dieses Profil ist noch nicht öffentlich sichtbar."}</p></header>
+    <ProfileImportNotice entry={importEntry} status={profile.status}/>
     <section className={styles.categories} aria-labelledby="preview-note-title">
       <h2 id="preview-note-title">Hinweise des Unternehmens</h2>
       {"error" in note ? <p role="alert">{note.error}</p> : <p className={styles.reviewNote}>{note.note || "Keine Hinweise hinterlegt."}</p>}
