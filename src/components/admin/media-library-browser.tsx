@@ -51,8 +51,7 @@ export function MediaLibraryBrowser({ initialProfileId, initialProfileName, init
         const timer = setTimeout(() => { startTransition(() => { void loadLibrary(profile || null, kind, query, page, archived).then(r => { if (alive) {
             setResult(r);
             setLoading(false);
-            if (r.error)
-                setError(r.error);
+            setError(r.error ?? "");
         } }).catch(() => { if (alive) {
             setError('Bilder konnten nicht geladen werden.');
             setLoading(false);
@@ -116,8 +115,8 @@ export function MediaLibraryBrowser({ initialProfileId, initialProfileName, init
  <div className={styles.options}><label><input type="checkbox" checked={archived} disabled={busy} onChange={e => { reset(); setArchived(e.target.checked); }}/> Archivierte Medien</label><span>JPG, PNG, WebP · maximal 5 MB nach Optimierung</span></div>
  {uploadOpen && <MediaLibraryUpload searchCache={companyCache} onBusy={active=>{setBusy(active);onBusy?.(active);}} profileId={profile} profileName={currentName} initialKind={target?.kind === 'video_block' ? 'video' : target?.kind ?? kind} onClose={()=>setUploadOpen(false)} onDone={(company,nextKind)=>{setProfile(company.id);setProfiles(current=>[company,...current.filter(p=>p.id!==company.id)]);setKind(nextKind);setSelected([]);setPage(1);reload();}}/>}
  {!profile && !onUpload && <p className={styles.hint}>Zum Hochladen ein Unternehmen auswählen. Unternehmen können Sie direkt in der Auswahl suchen.</p>}
- {error && <p role="alert" className={styles.error}>{error}</p>}{status && <p role="status">{status}</p>}
- {loading ? <p role="status" className={styles.empty}>Bilder werden geladen …</p> : !result.items.length ? <p className={styles.empty}>Keine Bilder gefunden.{profile && !archived ? ' Sie können Bilder direkt hier hochladen.' : ''}</p> : <div className={styles.grid}>
+ {error && <div role="alert" className={styles.error}>{error} <button type="button" className="button" disabled={busy || loading} onClick={()=>{setLoading(true);reload();}}>Erneut laden</button></div>}{status && <p role="status">{status}</p>}
+ {loading ? <p role="status" className={styles.empty}>Bilder werden geladen …</p> : !result.items.length ? <p className={styles.empty}>{error ? 'Der Medienabruf ist fehlgeschlagen.' : 'Keine Bilder gefunden.'}{profile && !archived ? ' Sie können Bilder direkt hier hochladen.' : ''}</p> : <div className={styles.grid}>
  {result.items.map(a => <article key={a.id} className={styles.card} data-selected={selected.some(s => s.id === a.id)}>
  <button className={styles.select} type="button" disabled={busy || archived || limit === 0 || (a.kind === 'video' ? Boolean(onSelected || target && target.kind !== 'video' && target.kind !== 'video_block') : target?.kind === 'video' || target?.kind === 'video_block')} aria-pressed={selected.some(s => s.id === a.id)} aria-label={a.name + ' auswählen'} onClick={() => toggle(a)}>
  <span className={styles.picture}>{a.kind === 'video' ? <span aria-label="Video">▶ Video</span> : a.src ? <Image src={a.src} alt={a.alt_text || a.name} fill sizes="(max-width: 600px) 45vw, (max-width: 1000px) 30vw, 220px" unoptimized={a.bucket_id !== 'project-media'} loading="lazy"/> : <span>Vorschau nicht verfügbar</span>}</span>

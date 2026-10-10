@@ -9,30 +9,31 @@ import { VIDEO_BUCKET, VIDEO_MAX_BYTES, videoExtension, isProfileVideoPath, vali
 import { changeAdminCompanyMedia } from './admin-company-media';
 import { changeAdminBlockImages } from './admin-block-images';
 import { canReuseMediaPath, mediaTargetPrefix, type MediaLibraryTarget, type MediaAsset, type MediaLibraryPage } from './media-library';
+import { retryMediaRead } from './media-read-retry';
 const failure = 'Die Mediathek ist gerade nicht verfügbar. Bitte versuchen Sie es erneut.';
 export async function mediaLibraryPage(client: SupabaseClient, profileId: string | null, kind: string, query: string, page: number, archived = false): Promise<MediaLibraryPage> {
     if (await checkAdmin(client) !== 'admin')
         return { items: [], count: 0, error: 'Keine Berechtigung.' };
     if (profileId !== null && !isProfileId(profileId))
         return { items: [], count: 0, error: 'Ungültiges Unternehmen.' };
-    const { data, error } = await client.rpc('media_library_page', { p_profile: profileId, p_kind: kind, p_query: query.trim().slice(0, 200), p_page: page, p_archived: archived });
+    const { data, error } = await retryMediaRead(() => client.rpc('media_library_page', { p_profile: profileId, p_kind: kind, p_query: query.trim().slice(0, 200), p_page: page, p_archived: archived }));
     if (error || !data || !Array.isArray(data.items))
         return { items: [], count: 0, error: failure };
     const items = data.items as MediaAsset[];
     // Batch signing: never create permanent public URLs, never sign noncatalog paths supplied by a client.
     const urls = new Map<string, string>();
+    let previewUnavailable = false;
     for (const bucket of ['company-media', 'ad-media', VIDEO_BUCKET] as const) {
         const paths = items.filter(a => (a.preview_file?.bucket ?? a.bucket_id) === bucket).map(a => a.preview_file?.path ?? a.storage_path);
         if (!paths.length)
             continue;
-        const signed = await client.storage.from(bucket).createSignedUrls(paths, 600);
-        if (signed.error)
-            return { items: [], count: 0, error: failure };
+        const signed = await retryMediaRead(() => client.storage.from(bucket).createSignedUrls(paths, 600));
+        if (signed.error) { previewUnavailable = true; continue; }
         for (const value of signed.data ?? [])
             if (value.path && value.signedUrl)
                 urls.set(bucket + ':' + value.path, value.signedUrl);
     }
-    return { count: data.count, items: items.map(a => ({ ...a, src: a.bucket_id === 'external-video' ? a.storage_path : a.bucket_id === 'project-media' && projectAssets.some(p => p.path === a.storage_path) ? a.storage_path : urls.get((a.preview_file?.bucket ?? a.bucket_id) + ':' + (a.preview_file?.path ?? a.storage_path)) ?? '' })) };
+    return { count: data.count, ...(previewUnavailable ? {error:'Einige Bildvorschauen konnten nicht geladen werden. Ihre Medien bleiben erhalten.'} : {}), items: items.map(a => ({ ...a, src: a.bucket_id === 'external-video' ? a.storage_path : a.bucket_id === 'project-media' && projectAssets.some(p => p.path === a.storage_path) ? a.storage_path : urls.get((a.preview_file?.bucket ?? a.bucket_id) + ':' + (a.preview_file?.path ?? a.storage_path)) ?? '' })) };
 }
 export async function mediaLibraryUpload(client: SupabaseClient, profileId: string, form: FormData): Promise<MediaState> {
     if (await checkAdmin(client) !== 'admin' || !isProfileId(profileId))

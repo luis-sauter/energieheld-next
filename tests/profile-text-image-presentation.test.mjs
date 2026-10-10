@@ -130,3 +130,18 @@ for (const flow of ['standard','beside','around','columns']) for (const side of 
  for(const word of ['HeadlineUnique','FirstUnique','SecondUnique','LastUnique']) assert.equal(html.split(word).length-1,1,word);
  assert.match(html,/src="\/real-image.webp"/);assert.match(html,/Blick ins Tal/);
 });
+
+test('flow selection immediately updates paired preview and pressed state, failure rolls back without losing text',async()=>{
+ for(const special of [false,true]){
+ hookState=[];let resolveSave;
+ const img=block('image','image_grid',50,50);
+ const text=block('text','text',50,0,'Preserved content');
+ const item={key:'section:about',kind:'about',heading:'Heading',layout:{width_percent:50,offset_percent:0},imageBlock:img,pairLayout:{width_percent:100,offset_percent:0,text_flow:'standard'}};
+ const props={blocks:special?[img]:[text,img],items:special?[item]:[text,img].map(block=>({kind:'block',key:block.id,block})),listing:{id:'profile',description:'Preserved content'},renderSpecial:()=>createElement('p',null,'Preserved content'),editing:true,available:true,imagesAvailable:true,saveAction:()=>new Promise(r=>resolveSave=r),saveImage:async()=>({})};
+ const render=()=>{hookCursor=0;return InlineContentEditor(props)};
+ let tree=render();const layout=nodes(tree).find(n=>n.props?.editorialPair||n.props?.block?.id?.startsWith('pair:'));
+ const pending=layout.props.save('layout',layout.props.block.id,{text_flow:'beside'});
+ tree=render();assert.match(renderToStaticMarkup(tree),/data-flow="beside"/);assert.equal(nodes(tree).find(n=>n.props?.editorialPair||n.props?.block?.id?.startsWith('pair:')).props.block.config.text_flow,'beside');
+ resolveSave({error:'Save failed'});assert.equal(await pending,false);tree=render();assert.match(renderToStaticMarkup(tree),/data-flow="standard"/);assert.match(renderToStaticMarkup(tree),/Preserved content/);
+ }
+});

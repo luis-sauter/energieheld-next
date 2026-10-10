@@ -11,6 +11,8 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
   save: (intent: string, blockId: string, values?: Record<string, string>) => Promise<boolean>;
   children: ReactNode; sectionHidden?: boolean; sectionLabel?: string; pairedPart?: boolean; editorialPair?: boolean; pairToolbar?: ReactNode;
 }) {
+  const menu = useRef<HTMLDetailsElement>(null);
+  function closeMenu() { if (menu.current) { menu.current.open = false; menu.current.querySelector("summary")?.focus(); } }
   const special = block.id.startsWith("section:");
   const pair = block.id.startsWith("pair:");
   const layout = normalizeBlockLayout(block.config);
@@ -115,6 +117,7 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
   ];
   const toolbar = <>
     <div className={styles.blockToolbar} aria-label="Block bearbeiten">
+      {(pair || editorialPair) && <button type="button" className={styles.sectionClose} aria-label="Abschnittmenü schließen" onClick={closeMenu}>×</button>}
       <strong className={styles.blockType}>Blocktyp: {pair ? "Text + Bild" : special ? sectionLabel ?? "Redaktioneller Abschnitt" : block.type === "heading" ? "Überschrift" : block.type === "text" ? "Text" : block.type === "video" ? "Video" : "Bild"}</strong>
       {pairedPart ? <>
         <div className={styles.controlGroup} role="group" aria-label="Textausrichtung">
@@ -164,7 +167,7 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
           ["columns", "Variante C", "Oberhalb beginnen, daneben fortsetzen"],
         ] as const).map(([value, label, description]) => <button key={value} type="button"
           aria-pressed={(normalizeTextBlockLayout(block.config).text_flow ?? "standard") === value}
-          title={description} disabled={busy || !persisted} onClick={() => void setLayout({text_flow: value as TextImageFlow})}>
+          title={description} disabled={busy || !persisted} onClick={() => { void setLayout({text_flow: value as TextImageFlow}); closeMenu(); }}>
           <span className={styles.flowPreview} data-flow={value} aria-hidden="true"><i/><b/><b/><b/></span>
           <span>{label}</span><small>{description}</small>
         </button>)}
@@ -202,7 +205,7 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
   return <div className={styles.layoutBlock} data-pair={pair || undefined} data-editorial-pair={pair || editorialPair || undefined}>
     {pair || editorialPair ? <div className={styles.pairBar}>
       {pairToolbar}
-      <details className={styles.sectionMenu}>
+      <details ref={menu} className={styles.sectionMenu} onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeMenu(); } }}>
         <summary aria-label="Abschnitt bearbeiten">⋯ Abschnitt</summary>
         {toolbar}
       </details>
