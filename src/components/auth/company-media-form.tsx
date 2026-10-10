@@ -1,4 +1,5 @@
 "use client";
+import { GALLERY_LIMIT } from "@/lib/gallery-limit";
 import { ContactImageEditor } from "./contact-image-editor";
 import { ProfileVideoEditor } from "./profile-video-editor";
 import { createClient } from "@/lib/supabase/client";
@@ -125,16 +126,16 @@ export function CompanyProfileDesigner({
     <button
       type="button"
       className="gallery-add-tile"
-      disabled={pending || videoBusy || media.images.length >= 8}
+      disabled={pending || videoBusy || media.images.length >= GALLERY_LIMIT}
       aria-label={
-        media.images.length >= 8
-          ? "Alle 8 Bildplätze sind belegt"
+        media.images.length >= GALLERY_LIMIT
+          ? `Alle ${GALLERY_LIMIT} Bildplätze sind belegt`
           : "Bild hinzufügen"
       }
       onClick={() => openUpload("gallery-upload")}
     >
       <span aria-hidden="true">＋</span>
-      {media.images.length >= 8 ? "8 von 8 Bildern" : "Bild hinzufügen"}
+      {media.images.length >= GALLERY_LIMIT ? `${GALLERY_LIMIT} von ${GALLERY_LIMIT} Bildern` : "Bild hinzufügen"}
     </button>
   );
   const galleryEditor = (
@@ -244,7 +245,7 @@ export function CompanyProfileDesigner({
           </div>
           <p id="upload-file-help">
             JPG, PNG oder WebP · Original bis 30 MB · wird vor dem Upload optimiert
-            {uploadKind === "gallery-upload" ? " · bis zu 8 Bilder" : ""}
+            {uploadKind === "gallery-upload" ? ` · bis zu ${GALLERY_LIMIT} Bilder` : ""}
           </p>
           <input type="hidden" name="intent" value={uploadKind} />
           <label className="upload-field">

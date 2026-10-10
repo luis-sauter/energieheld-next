@@ -72,7 +72,7 @@ export function withLegacyImages(listing: Listing): Listing {
     directoryImage: listing.logo ?? listing.images[0] ?? listing.directoryImage ??
       historicImage,
     logo: listing.logo ?? verified?.logo ?? imported?.logo ?? source?.logo ?? historicImage,
-    images: listing.images.length ? listing.images : verified?.images.length ? verified.images :
+    images: listing.galleryInitialized || listing.images.length ? listing.images : verified?.images.length ? verified.images :
       imported?.images.length ? imported.images : source?.images.length ? source.images :
       historicImage ? [historicImage] : [] };
   return result.video ? { ...result, video: { ...result.video, poster: result.images[0]?.src } } : result;

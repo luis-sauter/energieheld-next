@@ -6,7 +6,8 @@ import type { PortalImage } from "@/types/portal";
 
 export const MEDIA_BUCKET = "company-media";
 export const MEDIA_MAX_BYTES = 5242880;
-export const GALLERY_LIMIT = 8;
+import { GALLERY_LIMIT } from "./gallery-limit";
+export { GALLERY_LIMIT } from "./gallery-limit";
 export type MediaRow = {
   id: string;
   storage_path: string;
@@ -174,14 +175,14 @@ export async function changeOwnCompanyMedia(
     )
       return { error: "Bitte wählen Sie JPG, PNG oder WebP mit maximal 5 MB." };
     if (intent === "prepare-gallery" && rows.length >= GALLERY_LIMIT)
-      return { error: "Es sind maximal 8 Unternehmensbilder möglich." };
+      return { error: `Es sind maximal ${GALLERY_LIMIT} Unternehmensbilder möglich.` };
     return {
       uploadPath: `profiles/${profile.id}/${intent === "prepare-logo" ? "logo" : "gallery"}/${crypto.randomUUID()}.${extension}`,
     };
   }
   if (intent === "logo-upload" || intent === "gallery-upload") {
     if (intent === "gallery-upload" && rows.length >= GALLERY_LIMIT)
-      return { error: "Es sind maximal 8 Unternehmensbilder möglich." };
+      return { error: `Es sind maximal ${GALLERY_LIMIT} Unternehmensbilder möglich.` };
     const uploadedPath = form.get("uploaded_path");
     let uploadedFile: File | null = null;
     if (typeof uploadedPath === "string") {

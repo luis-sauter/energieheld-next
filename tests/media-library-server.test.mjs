@@ -27,10 +27,10 @@ test('only server-verified admins can load, prepare or select catalog assets',as
  const c=mock({admin:false});assert.ok((await mediaLibraryPage(c,null,'','',1)).error);assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'gallery'},false)).error);
  const f=new FormData();f.set('intent','prepare-library');assert.ok((await mediaLibraryUpload(c,profile,f)).error);assert.equal(c.calls.some(v=>v.upload||v.download||v.signed),false);
 });
-test('same gallery original reuses path with no physical upload; duplicates and ninth slot rejected',async()=>{
+test('same gallery original reuses path with no physical upload; duplicates and forty-first slot rejected',async()=>{
  const c=mock();assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'gallery'},false)).success);assert.equal(c.calls.filter(v=>v.upload).length,0);assert.equal(c.images[0].storage_path,'profiles/'+profile+'/gallery/'+assetId+'.png');
  assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'gallery'},false)).error);
- const full=mock({rows:Array.from({length:8},(_,i)=>({id:String(i),storage_path:'x',sort_order:i}))});assert.ok((await attachMediaLibraryAsset(full,assetId,{profileId:profile,kind:'gallery'},false)).error);assert.equal(full.calls.some(v=>v.download||v.upload),false);
+ const full=mock({rows:Array.from({length:40},(_,i)=>({id:String(i),storage_path:'x',sort_order:i}))});assert.ok((await attachMediaLibraryAsset(full,assetId,{profileId:profile,kind:'gallery'},false)).error);assert.equal(full.calls.some(v=>v.download||v.upload),false);
 });
 test('verified admins may select internal cross-company and banner assets without permission paperwork',async()=>{
  const c=mock({sourceProfile:other,sourcePath:'profiles/'+other+'/gallery/'+assetId+'.png'});
@@ -47,8 +47,8 @@ test('same asset in two contexts uses separate safe paths; repeat context reuses
  assert.equal(c.calls.filter(v=>v.upload).length,1);assert.ok(c.calls.find(v=>v.upload).upload.startsWith('profiles/'+profile+'/blocks/'+block+'/'));
  assert.equal(c.calls.some(v=>v.remove?.includes('profiles/'+profile+'/gallery/'+assetId+'.png')),false);
 });
-test('upload catalog capacity is independent of eight gallery slots; prepare enforces actual 5 MiB/type boundary',async()=>{
- const c=mock({rows:Array.from({length:8},(_,i)=>({id:String(i)}))});const f=new FormData();f.set('intent','prepare-library');f.set('file_type','image/png');f.set('file_size','5242880');assert.ok((await mediaLibraryUpload(c,profile,f)).uploadPath);f.set('file_size','5242881');assert.ok((await mediaLibraryUpload(c,profile,f)).error);f.set('file_size','12');f.set('file_type','image/svg+xml');assert.ok((await mediaLibraryUpload(c,profile,f)).error);
+test('upload catalog capacity is independent of forty gallery slots; prepare enforces actual 5 MiB/type boundary',async()=>{
+ const c=mock({rows:Array.from({length:40},(_,i)=>({id:String(i)}))});const f=new FormData();f.set('intent','prepare-library');f.set('file_type','image/png');f.set('file_size','5242880');assert.ok((await mediaLibraryUpload(c,profile,f)).uploadPath);f.set('file_size','5242881');assert.ok((await mediaLibraryUpload(c,profile,f)).error);f.set('file_size','12');f.set('file_type','image/svg+xml');assert.ok((await mediaLibraryUpload(c,profile,f)).error);
 });
 test('invalid bytes and foreign replacement identifiers are rejected before attachment',async()=>{
  const c=mock({sourceProfile:other,invalid:true,rights:recordMediaPermission('', '',profile,'Written permission')});assert.ok((await attachMediaLibraryAsset(c,assetId,{profileId:profile,kind:'logo'},true)).error);assert.equal(c.calls.some(v=>v.upload),false);

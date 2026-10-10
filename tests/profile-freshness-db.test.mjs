@@ -15,7 +15,8 @@ before(async()=>{
   '20260924202803_profile_image_grid_blocks.sql','20260924210916_profile_image_grid_resizing.sql',
   '20260924214027_universal_content_block_layout.sql','20260924220748_image_crop_focus_zoom.sql',
   '20260925083617_profile_block_image_captions.sql','20260929120000_share_profile_block_images.sql',
-  '20260926160000_reiseportal_travel_taxonomy.sql','20261004100000_company_profile_video.sql'])
+  '20260926160000_reiseportal_travel_taxonomy.sql','20261004100000_company_profile_video.sql',
+  '20261010160000_profile_gallery_legacy_management.sql'])
   await db.exec(await readFile(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));
  // Match the existing live content column grants omitted by the minimal media fixture.
  await db.exec(`alter table company_profiles add column if not exists street text;

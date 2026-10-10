@@ -4,7 +4,7 @@ import projectAssets from '../data/media-library-project-assets.json' with { typ
 import { createHash } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { checkAdmin, isProfileId } from './admin-review';
-import { validateMediaFile, MEDIA_BUCKET, MEDIA_MAX_BYTES, type MediaState } from './company-media';
+import { validateMediaFile, GALLERY_LIMIT, MEDIA_BUCKET, MEDIA_MAX_BYTES, type MediaState } from './company-media';
 import { VIDEO_BUCKET, VIDEO_MAX_BYTES, videoExtension, isProfileVideoPath, validateVideoFile } from './profile-video';
 import { changeAdminCompanyMedia } from './admin-company-media';
 import { changeAdminBlockImages } from './admin-block-images';
@@ -117,8 +117,8 @@ export async function attachMediaLibraryAsset(client: SupabaseClient, assetId: s
         const rows = profile.data.company_profile_images;
         if (target.replacementId && !rows.some(r => r.id === target.replacementId))
             return { error: 'Das Bild gehört nicht zu diesem Profil.' };
-        if (!target.replacementId && rows.length >= 8)
-            return { error: 'Es sind maximal 8 Bilder möglich.' };
+        if (!target.replacementId && rows.length >= GALLERY_LIMIT)
+            return { error: `Es sind maximal ${GALLERY_LIMIT} Bilder möglich.` };
     }
     if (target.kind === 'block') {
         const block = await client.from('profile_content_blocks').select('id,type,config,profile_content_block_images(id)').eq('id', target.blockId!).eq('profile_id', target.profileId).is('slot', null).maybeSingle();
@@ -128,6 +128,28 @@ export async function attachMediaLibraryAsset(client: SupabaseClient, assetId: s
         if (target.replacementId ? !images.some(r => r.id === target.replacementId) : images.length >= Math.min(4, Number(block.data.config?.columns)))
             return { error: 'Für dieses Layout ist kein weiterer Bildplatz frei.' };
     }
+    const prepared = await prepareLibraryImageCopy(client, asset, target);
+    if (!prepared.path) return { error: prepared.error ?? failure };
+    const path = prepared.path;
+    const form = new FormData();
+    form.set('uploaded_path', path);
+    form.set('alt_text', asset.alt_text);
+    if (target.replacementId)
+        form.set('image_id', target.replacementId);
+    if (target.kind === 'block') {
+        form.set('block_id', target.blockId!);
+        form.set('intent', 'upload');
+        return changeAdminBlockImages(client, target.profileId, profile.data.slug, form);
+    }
+    if (target.kind === 'contact' && profile.data.contact_image_path === path || target.kind === 'logo' && profile.data.logo_path === path)
+        return { success: 'Dieses Bild wird bereits verwendet.' };
+    if (target.kind === 'gallery' && !target.replacementId && profile.data.company_profile_images.some(r => r.storage_path === path))
+        return { error: 'Dieses Bild ist bereits in der Galerie.' };
+    form.set('intent', target.kind + '-upload');
+    return changeAdminCompanyMedia(client, target.profileId, form);
+}
+// Shared, validated private-copy pipeline; callers verify admin and target first.
+export async function prepareLibraryImageCopy(client: SupabaseClient, asset: MediaAsset, target: MediaLibraryTarget): Promise<{ path?: string; error?: string }> {
     let path = asset.storage_path;
     const context = target.profileId + ':' + target.kind + (target.blockId ? ':' + target.blockId : '');
     if (!canReuseMediaPath(asset, target)) {
@@ -159,22 +181,7 @@ export async function attachMediaLibraryAsset(client: SupabaseClient, assetId: s
             }
         }
     }
-    const form = new FormData();
-    form.set('uploaded_path', path);
-    form.set('alt_text', asset.alt_text);
-    if (target.replacementId)
-        form.set('image_id', target.replacementId);
-    if (target.kind === 'block') {
-        form.set('block_id', target.blockId!);
-        form.set('intent', 'upload');
-        return changeAdminBlockImages(client, target.profileId, profile.data.slug, form);
-    }
-    if (target.kind === 'contact' && profile.data.contact_image_path === path || target.kind === 'logo' && profile.data.logo_path === path)
-        return { success: 'Dieses Bild wird bereits verwendet.' };
-    if (target.kind === 'gallery' && !target.replacementId && profile.data.company_profile_images.some(r => r.storage_path === path))
-        return { error: 'Dieses Bild ist bereits in der Galerie.' };
-    form.set('intent', target.kind + '-upload');
-    return changeAdminCompanyMedia(client, target.profileId, form);
+    return { path };
 }
 async function readProjectOriginal(path: string): Promise<{
     data: Blob | null;

@@ -230,11 +230,10 @@ test("logo removal detaches first and tolerates storage cleanup failure", async 
   assert.equal(db.events.at(-1).action, "remove");
 });
 test("gallery upload checks limit and stores only object path, original alt text and sort position", async () => {
-  const full = client({ rows: Array.from({ length: 8 }, (_, i) => row(i)) });
+  const full = client({ rows: Array.from({ length: 40 }, (_, i) => row(i)) });
   assert.match(
     (await changeOwnCompanyMedia(full, form({ intent: "gallery-upload" })))
-      .error,
-    /8/,
+      .error, /40/,
   );
   assert.ok(!full.events.some((e) => e.action === "upload"));
   const db = client({ rows: [row(3)] });

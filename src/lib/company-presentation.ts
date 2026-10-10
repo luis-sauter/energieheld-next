@@ -3,6 +3,7 @@ import type { SignedMedia } from "./company-media";
 import { readVerification } from "./company-verification";
 
 export type CompanyPresentation = {
+  gallery_initialized?: boolean;
   id: string;
   slug: string;
   display_name: string;
@@ -59,6 +60,7 @@ export function companyProfileListing(
     },
     ...(media.video ? { video: { ...media.video, poster: media.images[0]?.src } } : {}),
     images: media.images,
+    galleryInitialized: profile.gallery_initialized === true,
     logo: media.logo,
     services: [],
     isDemo: false,

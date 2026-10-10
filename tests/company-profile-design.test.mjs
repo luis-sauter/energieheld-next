@@ -393,7 +393,7 @@ test("editor toolbar reflects all publication states without exposing draft publ
 
 test("full gallery disables the add tile and keeps all sorting controls in the gallery", () => {
   const media = {
-    images: Array.from({ length: 8 }, (_, i) => ({
+    images: Array.from({ length: 40 }, (_, i) => ({
       id: String(i),
       src: `/images/test-${i}.jpg`,
       alt: `Bild ${i + 1}`,
@@ -407,9 +407,10 @@ test("full gallery disables the add tile and keeps all sorting controls in the g
   );
   assert.match(
     html,
-    /class="gallery-add-tile" disabled="" aria-label="Alle 8 Bildplätze sind belegt"/,
+    /class="gallery-add-tile" disabled="" aria-label="Alle 40 Bildplätze sind belegt"/,
   );
-  assert.equal((html.match(/class="thumbnail-edit-actions"/g) ?? []).length, 8);
+  assert.equal((html.match(/class="thumbnail-edit-actions"/g) ?? []).length, 40);
+  assert.match(html, /40 von 40 Bildern/);
   assert.match(html, /Firmenlogo hinzufügen/);
 });
 test("public Reiseportal header uses the original logo without a false global demo claim", () => {

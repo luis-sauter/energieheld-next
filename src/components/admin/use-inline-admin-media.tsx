@@ -1,5 +1,5 @@
 "use client";
-import {removeLibraryVideo} from '@/app/(energieheld)/admin/mediathek/actions';
+import { initializeLibraryGallery, removeLibraryVideo } from '@/app/(energieheld)/admin/mediathek/actions';
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -16,13 +16,14 @@ import { DEFAULT_IMAGE_CROP, panImageCrop, type ImageCrop } from "@/lib/image-cr
 import { useMediaLibrary } from "./media-library-context";
 import { moveImageId } from "@/lib/media-order";
 
-export function useInlineAdminMedia({ saveAction, media, rows, profileName, initials, profileId }: {
+export function useInlineAdminMedia({ saveAction, media, rows, profileName, initials, profileId, legacyImages = [] }: {
   saveAction: (form: FormData) => Promise<MediaState>;
   media: SignedMedia;
   rows: MediaRow[];
   profileName: string;
   initials: string;
   profileId: string;
+  legacyImages?: import("@/types/portal").PortalImage[];
 }) {
   const router = useRouter();
   const library = useMediaLibrary();
@@ -194,9 +195,24 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
       end();
     }
   }
+  async function adoptLegacyGallery() {
+    if (!begin("Bestehende Galerie wird übernommen …")) return;
+    try {
+      const result = await initializeLibraryGallery(profileId);
+      setFeedback(result);
+      if (result.success) router.refresh();
+    } catch { setFeedback({ error: "Die Galerie konnte nicht übernommen werden. Die bestehenden Bilder bleiben erhalten." }); }
+    finally { end(); }
+  }
   const galleryEditor = (
     <section className={`${inline.galleryEditor} gallery-editor`} aria-label="Bildergalerie bearbeiten">
-      {galleryImages.length ? (
+      {!galleryImages.length && legacyImages.length ? (
+        <>
+          <ImageGallery images={legacyImages} isDemo={false} autoplay={false} />
+          <p>Ihre bestehenden Bilder sind vollständig erhalten. Übernehmen Sie die Galerie einmalig, um Bilder zu bearbeiten oder weitere hinzuzufügen.</p>
+          <button type="button" className="button" disabled={Boolean(busy)} onClick={() => void adoptLegacyGallery()}>Bestehende Galerie übernehmen und bearbeiten</button>
+        </>
+      ) : galleryImages.length ? (
         <ImageGallery
           images={galleryImages}
           isDemo={false}
@@ -281,5 +297,5 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
       </form>
     </dialog>
   );
-  return { logoEditor, galleryEditor, videoEditor: <ProfileVideoEditor video={media.video ? { ...media.video, poster: media.images[0]?.src } : undefined} name={profileName} gallery={galleryEditor} openLibrary={() => library?.open({kind:"video"})} save={form=>form.get("intent")==="video-remove" ? removeLibraryVideo(profileId) : saveAction(form)} disabled={Boolean(busy)} onBusyChange={active => { if (active) begin("Video wird gespeichert …"); else end(); }} />, status, uploadDialog, busy: Boolean(busy) };
+  return { logoEditor, galleryEditor, videoEditor: <ProfileVideoEditor video={media.video ? { ...media.video, poster: media.images[0]?.src ?? legacyImages[0]?.src } : undefined} name={profileName} gallery={galleryEditor} openLibrary={() => library?.open({kind:"video"})} save={form=>form.get("intent")==="video-remove" ? removeLibraryVideo(profileId) : saveAction(form)} disabled={Boolean(busy)} onBusyChange={active => { if (active) begin("Video wird gespeichert …"); else end(); }} />, status, uploadDialog, busy: Boolean(busy) };
 }

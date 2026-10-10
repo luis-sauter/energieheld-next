@@ -13,9 +13,7 @@ export function SearchAdCard({ banner, geometry, onGeometry, onEdit, loading = f
   const format = searchAdFormat(dimensions);
   return <article className={grid.card} data-search-banner={banner.banner_key} data-advertiser={banner.advertiser_key}
     data-format={format.wide ? 'wide' : 'other'} data-panoramic={format.panoramic || undefined}>
-    <div className={grid.header}><span className={grid.label}>Anzeige</span>
-      {onEdit && <button type="button" className={grid.edit} disabled={loading} aria-label={`Banner bearbeiten: ${banner.ad.headline}`} onClick={onEdit}>{loading ? 'Öffnet …' : 'Banner bearbeiten'}</button>}
-    </div>
+    {onEdit && <div className={grid.header}><button type="button" className={grid.edit} disabled={loading} aria-label={`Banner bearbeiten: ${banner.ad.headline}`} onClick={onEdit}>{loading ? 'Öffnet …' : 'Banner bearbeiten'}</button></div>}
     <a className={`${grid.creative} ${styles.interactiveCreative}`} href={banner.ad.target_url} target="_blank" rel="sponsored noopener noreferrer" aria-label={banner.ad.headline}>
       {/* Original creative is contained, never stretched or cropped by slot geometry. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -23,6 +21,8 @@ export function SearchAdCard({ banner, geometry, onGeometry, onEdit, loading = f
         loading={dimensions.width && dimensions.height ? 'lazy' : 'eager'} decoding="async"
         onLoad={event => onGeometry?.({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} />
     </a>
-    {banner.ad.imageUrl && <BannerCta placement={banner.ad.placement} />}
+    <div className={grid.footer}><span className={grid.label}>Gesponserter Treffer · Anzeige</span>
+      {banner.ad.imageUrl && <BannerCta placement={banner.ad.placement} />}
+    </div>
   </article>;
 }
