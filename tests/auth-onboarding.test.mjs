@@ -15,7 +15,7 @@ registerHooks({
  },
  load(u,c,n){if(/\.tsx?$/.test(u))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(u),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX}}).outputText};return n(u,c)}
 });
-const {register,login,requestPasswordReset,resetPassword}=await import('../src/app/(energieheld)/auth-actions.ts');
+const {register,requestPasswordReset,resetPassword}=await import('../src/app/(energieheld)/auth-actions.ts');
 const {authCallbackOrigin,authRedirectUrl,hasRecentRecovery,recoveryRequestMessage,validateNewPassword}=await import('../src/lib/auth-recovery.ts');
 const {GET:confirm}=await import('../src/app/auth/confirm/route.ts');
 const {GET:recovery}=await import('../src/app/auth/recovery/route.ts');
@@ -31,10 +31,9 @@ function client({method='recovery',error=null,session=null,revoked=false}={}){
 }
 function setup(options){globalThis.__origin=origin;return globalThis.__authTestClient=client(options)}
 function request(query){const url=new URL('https://feature-portal-frontend--startling-choux-aaa598.netlify.app/auth/callback'+query);return {url:url.href,nextUrl:url,headers:new Headers({host:url.host})}}
-test('signup sends exact safe confirmation redirect; no session yields confirmation state without immediate login claim',async()=>{
- const c=setup();const state=await register({},form());assert.equal(state.confirmationEmail,'test@example.test');assert.match(state.success,/Bestätigungslink/);assert.doesNotMatch(state.success,/jetzt anmelden/);assert.equal(c.calls[0][1].options.emailRedirectTo,origin+'/auth/confirm');
- setup({session:{}});assert.ok((await register({},form())).error);assert.deepEqual(globalThis.__authTestClient.calls.at(-1),['out',{scope:'local'}]);
- setup();assert.match((await login({},form())).error,/zuerst Ihre E-Mail/);
+test('archived registration never calls Auth signup or creates a session',async()=>{
+ const c=setup();const state=await register({},form());assert.match(state.error,/Registrierung ist geschlossen/);assert.deepEqual(c.calls,[]);
+ setup({session:{}});assert.match((await register({},form())).error,/geschlossen/);assert.deepEqual(globalThis.__authTestClient.calls,[]);
 });
 test('safe redirects reject external origins, userinfo, query, path, non-https and forged next values',()=>{
  for(const bad of [null,'https://evil.example','https://das-reiseportal.com@evil.example','https://das-reiseportal.com/a','https://das-reiseportal.com?next=evil','https://startling-choux-aaa598.netlify.app.evil.example'])assert.throws(()=>authRedirectUrl(bad,'/auth/recovery'));

@@ -16,35 +16,8 @@ export async function register(
   _state: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
-  const { error, email, password, full_name, company_name } =
-    validateCredentials(formData, true);
-  if (error) return { error };
-  try {
-    const supabase = await createClient();
-    const origin = (await headers()).get("origin");
-    const { data, error: signupError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name, company_name },
-        emailRedirectTo: authRedirectUrl(origin, "/auth/confirm"),
-      },
-    });
-    if (signupError) return { error: authErrorMessage(signupError.code) };
-    if (data.session) {
-      await supabase.auth.signOut({ scope: "local" });
-      return { error: "Die E-Mail-Bestätigung ist gerade nicht verfügbar. Bitte wenden Sie sich an den Support." };
-    }
-    return {
-      success: "Öffnen Sie den Bestätigungslink in Ihrer E-Mail, um Ihr Firmenkonto zu aktivieren.",
-      confirmationEmail: email,
-    };
-  } catch {
-    return {
-      error:
-        "Die Registrierung ist gerade nicht erreichbar. Bitte versuchen Sie es erneut.",
-    };
-  }
+  void _state; void formData;
+  return { error: "Die öffentliche Registrierung ist geschlossen. Bitte stellen Sie eine unverbindliche Angebotsanfrage." };
 }
 
 export async function login(

@@ -120,7 +120,7 @@ export async function loadAdCampaigns(
     );
   if (profileId) query = query.eq("profile_id", profileId);
   if (!admin && !id) query = query.or(customerAdListFilter);
-  if (admin && pendingOnly) query = query.eq('status', 'pending').is('archived_at', null).eq('is_editorial', false);
+  if (admin && pendingOnly) query = query.or('status.eq.pending,request_status.in.(new,in_progress)').is('archived_at', null).eq('is_editorial', false);
   if (admin && archivedOnly) query = query.not('archived_at', 'is', null);
   if (id) {
     if (!isProfileId(id)) return { campaigns: [] as AdCampaign[], count: 0 };
@@ -150,7 +150,7 @@ export async function loadAdCampaigns(
     targets: (row.targets ?? []).map((target: {target_type: string; category_id: string | null; target_key: string | null; placement: string | null}) => ({
       ...target, placement: target.placement ?? row.placement,
     })),
-    companyName: (Array.isArray(row.company_profiles)
+    companyName: row.request_company_name ?? (Array.isArray(row.company_profiles)
       ? row.company_profiles[0]
       : row.company_profiles
     )?.display_name,

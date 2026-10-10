@@ -114,8 +114,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <section className={`${styles.provider} container`} aria-labelledby="provider-title">
       <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Deine Unterkunft auf DAS Reiseportal</h2>
-        <p>Stelle deine Unterkunft vor und hinterlege Kontaktinformationen für interessierte Reisende.</p></div>
-      <Link className="button button-primary" href="/registrieren">Unterkunft eintragen →</Link>
+        <p>Lass dich persönlich beraten, wie deine Unterkunft im Reiseportal sichtbar wird – unverbindlich und ohne Registrierung.</p></div>
+      <Link className="button button-primary" href="/angebot-anfragen">Unverbindlich anfragen →</Link>
     </section>
   </main></InlineBannerProvider>;
 }

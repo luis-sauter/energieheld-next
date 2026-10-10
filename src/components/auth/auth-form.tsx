@@ -105,10 +105,10 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
         </div>
       )}
       <div className={styles.links}>
-        <Link href={signup ? "/login" : "/fuer-unternehmen"}>
+        <Link href={signup ? "/login" : "/angebot-anfragen"}>
           {signup
             ? "Bereits registriert? Einloggen"
-            : "Noch kein Firmenkonto? Unterkunft eintragen"}
+            : "Unternehmen präsentieren? Unverbindlich anfragen"}
         </Link>
       </div>
     </form>

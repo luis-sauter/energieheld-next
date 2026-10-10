@@ -25,6 +25,7 @@
   font-weight: 600;
 }
 .field input,
+.field select,
 .field textarea {
   width: 100%;
   min-width: 0;

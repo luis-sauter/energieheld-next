@@ -125,8 +125,8 @@ test("header dropdowns derive only existing theme and destination routes from th
   assert.ok(existsSync(new URL("../src/app/(energieheld)/reiseziele/[slug]/page.tsx", import.meta.url)));
   const html = renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal }));
   assert.equal((html.match(/aria-haspopup="menu"/g) ?? []).length, 2);
-  assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 5); // Four navigation triggers and the account menu.
-  assert.match(html, /href="\/fuer-unternehmen"[^>]*>Unterkunft eintragen<\/a>/);
+  assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 4); // Public header has only the four navigation triggers.
+  assert.match(html, /href="\/angebot-anfragen"[^>]*>Unverbindlich anfragen<\/a>/);
   assert.match(html, /src="\/brand\/das-reiseportal-logo\.png"/);
 });
 
@@ -134,17 +134,17 @@ test("account button and dropdown groups use server-provided access without perm
   const header = (access) => renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal, access }));
   const footer = (access) => renderToStaticMarkup(createElement(PortalFooter, { brand: reiseportal, access }));
   const guest = header("unauthenticated");
-  assert.match(guest, /aria-label="Kontomenü öffnen"/);
+  assert.doesNotMatch(guest, /aria-label="Kontomenü öffnen"/);
   assert.match(guest, /aria-label="Mobile Hauptnavigation"/);
-  assert.equal((guest.match(/href="\/fuer-unternehmen"/g) ?? []).length, 2);
-  assert.match(guest, /Unterkunft eintragen/);
+  assert.equal((guest.match(/href="\/angebot-anfragen"/g) ?? []).length, 2);
+  assert.match(guest, /Unverbindlich anfragen/);
   assert.doesNotMatch(guest, /href="\/login"|href="\/firma"|href="\/admin"/);
   assert.deepEqual(accountMenuGroups("unauthenticated").account.map((link) => link.label), ["Einloggen"]);
   assert.doesNotMatch(guest, /href="\/firma"|href="\/admin"/);
 
   const member = header("forbidden");
   assert.doesNotMatch(member, /href="\/firma"|href="\/admin"|href="\/login"/);
-  assert.deepEqual(accountMenuGroups("forbidden", true).account.map((link) => link.label), ["Firmenbereich", "Profil bearbeiten", "Anfragen", "Angebotsanfragen", "Statistiken"]);
+  assert.deepEqual(accountMenuGroups("forbidden", true).account.map((link) => link.label), []);
   assert.deepEqual(accountMenuGroups("forbidden").administration, []);
   const admin = header("admin");
   assert.match(admin, /href="\/admin"/);
@@ -152,8 +152,8 @@ test("account button and dropdown groups use server-provided access without perm
   assert.deepEqual(accountMenuGroups("admin").administration.map((link) => link.label), ["Redaktion"]);
 
   assert.match(footer("unauthenticated"), /DAS Reiseportal.*Neue Lieblingsorte entdecken/s);
-  assert.doesNotMatch(footer("unauthenticated"), /<a\b|<nav\b/);
-  assert.doesNotMatch(footer("forbidden"), /<a\b|<nav\b/);
+  assert.match(footer("unauthenticated"), /Redaktion \/ Login/);
+  assert.match(footer("forbidden"), /href="\/angebot-anfragen"/);
 });
 
 test("homepage uses the supplied MP4 as the hero background with search above it", () => {

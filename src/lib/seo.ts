@@ -102,7 +102,7 @@ export function profileMetadata(listing: Listing, config: SiteSeo = siteSeo()) {
 
 export function sitemapEntries(profiles: Pick<Listing, "id" | "slug" | "isDemo" | "isPreview">[], config: SiteSeo = siteSeo()): MetadataRoute.Sitemap {
   if (!config.indexable) return [];
-  const paths = ["/", "/reiseziele", "/mottoreisen", "/unterkuenfte-a-z", "/werbung", "/fuer-unternehmen",
+  const paths = ["/", "/reiseziele", "/mottoreisen", "/unterkuenfte-a-z", "/werbung", "/fuer-unternehmen", "/angebot-anfragen",
     ...destinations.map(entry => `/reiseziele/${entry.slug}`), ...travelThemes.map(entry => `/mottoreisen/${entry.slug}`),
     ...profiles.filter(indexableProfile).map(profile => `/unterkuenfte/${profile.slug}`)];
   return [...new Set(paths)].flatMap(path => { const url = siteUrl(path, config); return url ? [{ url }] : []; });
