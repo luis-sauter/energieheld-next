@@ -1,7 +1,6 @@
 .card { min-width: 0; padding: 10px; border: 1px solid #dce7ec; border-radius: 14px; background: #fff; box-shadow: 0 3px 12px rgb(26 39 49 / 4%); }
 .header { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-bottom: 8px; }
-.footer { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; }
-.label { display: block; font-size: .75rem; line-height: 1.5; color: #536775; }
+.footer { display: flex; align-items: baseline; justify-content: flex-end; margin-top: 4px; }
 .edit { border: 1px solid #dce7ec; border-radius: 7px; padding: 7px 10px; color: var(--brand-primary); background: #f7fafb; font: inherit; font-size: .8rem; cursor: pointer; }
 .edit:disabled { cursor: wait; opacity: .7; }
 .creative { display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; background: #f7fafb; }
