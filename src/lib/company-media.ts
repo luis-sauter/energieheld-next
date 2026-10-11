@@ -94,7 +94,8 @@ export async function signCompanyMedia(
     .createSignedUrls(paths, 3600);
   if (error || !data || data.some((item) => item.error || !item.signedUrl))
     throw new Error("Media unavailable");
-  const urls = new Map(data.map((item) => [item.path, item.signedUrl]));
+  const urls = new Map<string, string>();
+  for (const item of data) if (item.path && item.signedUrl) urls.set(item.path, item.signedUrl);
   return {
     ...signedImages(profile, rows, urls, includeVideo),
     ...(video ? { video } : {}),
