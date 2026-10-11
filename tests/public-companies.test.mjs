@@ -158,6 +158,12 @@ function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((i
     const url = new URL(input),
       headers = new Headers(init?.headers);
     requests.push({ url, headers });
+    if (url.pathname === "/rest/v1/rpc/public_company_import_markers") {
+      assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
+      assert.equal(headers.get("cookie"), null);
+      assert.ok(Array.isArray(JSON.parse(init.body).p_profile_ids));
+      return new Response("[]", { headers: { "content-type": "application/json" } });
+    }
     if (url.pathname === "/rest/v1/ad_slot_presentations") {
       assert.equal(headers.get("authorization"), "Bearer sb_publishable_test");
       assert.equal(headers.get("cookie"), null);

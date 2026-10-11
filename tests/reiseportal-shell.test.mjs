@@ -33,7 +33,7 @@ registerHooks({
       shortCircuit: true,
     };
     if (specifier.endsWith("/supabase/public")) return {
-      url: 'data:text/javascript,export function createPublicClient(){return {from(){return {select(){return this},order(){return this},async range(){return {data:globalThis.__travelPackages ?? [],error:null}}}}}}',
+      url: 'data:text/javascript,export function createPublicClient(){return {async rpc(name){if(name!=="public_company_import_markers")throw Error("Unexpected public RPC");return {data:[],error:null}},from(){return {select(){return this},order(){return this},async range(){return {data:globalThis.__travelPackages ?? [],error:null}}}}}}',
       shortCircuit: true,
     };
     if (specifier.startsWith("@/") || specifier.startsWith(".")) {
