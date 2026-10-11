@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "./navigation-link";
 import type { DiscoveryEntry } from "@/data/reiseportal-discovery";
 import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
 import type { DiscoveryAdvertisingData } from "@/lib/discovery-advertising";

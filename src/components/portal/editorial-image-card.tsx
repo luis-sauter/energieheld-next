@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "./navigation-link";
 import styles from "./editorial-image-card.module.css";
 import type { ReactNode } from "react";
 

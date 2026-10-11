@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "./navigation-link";
 import type { HeaderNavigationItem } from "./navigation-data";
 
 export function DesktopNavigation({ items }: { items: HeaderNavigationItem[] }) {

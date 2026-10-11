@@ -1,5 +1,5 @@
 import { TravelSignals } from "./travel-signals";
-import Link from "next/link";
+import Link from "./navigation-link";
 import type { Listing, Category } from "@/types/portal";
 import { CompanyImage } from "./company-image";
 import { QualitySeal } from "@/components/quality/quality-seal";

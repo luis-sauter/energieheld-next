@@ -1,6 +1,6 @@
 import { accountCta } from "@/lib/portal-account";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "./navigation-link";
 import type { EditorialCounts } from "@/lib/editorial-queue";
 import type { BrandConfig } from "@/types/portal";
 import type { AdminAccess } from "@/lib/admin-review";
