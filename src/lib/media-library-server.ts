@@ -11,17 +11,24 @@ import { changeAdminBlockImages } from './admin-block-images';
 import { canReuseMediaPath, mediaTargetPrefix, type MediaLibraryTarget, type MediaAsset, type MediaLibraryPage } from './media-library';
 import { retryMediaRead } from './media-read-retry';
 const failure = 'Die Mediathek ist gerade nicht verfügbar. Bitte versuchen Sie es erneut.';
-export async function mediaLibraryPage(client: SupabaseClient, profileId: string | null, kind: string, query: string, page: number, archived = false, signal?: AbortSignal): Promise<MediaLibraryPage> {
+export type MediaLibraryTimings = { access?: number; catalog_rpc?: number; signing?: number; read_retries?: number };
+export async function mediaLibraryPage(client: SupabaseClient, profileId: string | null, kind: string, query: string, page: number, archived = false, signal?: AbortSignal, timings?: MediaLibraryTimings): Promise<MediaLibraryPage> {
+    const accessStart = performance.now();
     if (await checkAdmin(client) !== 'admin')
         return { items: [], count: 0, error: 'Keine Berechtigung.' };
+    if (timings) timings.access = performance.now() - accessStart;
     if (profileId !== null && !isProfileId(profileId))
         return { items: [], count: 0, error: 'Ungültiges Unternehmen.' };
     signal?.throwIfAborted();
+    const catalogStart = performance.now();
+    let catalogAttempts = 0, signingAttempts = 0, signingBatches = 0;
     const { data, error } = await retryMediaRead(() => {
         signal?.throwIfAborted();
+        catalogAttempts++;
         const request = client.rpc('media_library_page', { p_profile: profileId, p_kind: kind, p_query: query.trim().slice(0, 200), p_page: page, p_archived: archived });
         return signal ? request.abortSignal(signal) : request;
     });
+    if (timings) timings.catalog_rpc = performance.now() - catalogStart;
     signal?.throwIfAborted();
     if (error || !data || !Array.isArray(data.items))
         return { items: [], count: 0, error: failure };
@@ -29,17 +36,23 @@ export async function mediaLibraryPage(client: SupabaseClient, profileId: string
     // Batch signing: never create permanent public URLs, never sign noncatalog paths supplied by a client.
     const urls = new Map<string, string>();
     let previewUnavailable = false;
+    const signingStart = performance.now();
     for (const bucket of ['company-media', 'ad-media', VIDEO_BUCKET] as const) {
         const paths = [...new Set(items.filter(a => (a.preview_file?.bucket ?? a.bucket_id) === bucket).map(a => a.preview_file?.path ?? a.storage_path))];
         if (!paths.length)
             continue;
+        signingBatches++;
         signal?.throwIfAborted();
-        const signed = await retryMediaRead(() => { signal?.throwIfAborted(); return client.storage.from(bucket).createSignedUrls(paths, 600); });
+        const signed = await retryMediaRead(() => { signal?.throwIfAborted(); signingAttempts++; return client.storage.from(bucket).createSignedUrls(paths, 600); });
         signal?.throwIfAborted();
         if (signed.error) { previewUnavailable = true; continue; }
         for (const value of signed.data ?? [])
             if (value.path && value.signedUrl)
                 urls.set(bucket + ':' + value.path, value.signedUrl);
+    }
+    if (timings) {
+        timings.signing = performance.now() - signingStart;
+        timings.read_retries = catalogAttempts - 1 + signingAttempts - signingBatches;
     }
     return { count: data.count, ...(previewUnavailable ? {error:'Einige Bildvorschauen konnten nicht geladen werden. Ihre Medien bleiben erhalten.'} : {}), items: items.map(a => ({ ...a, src: a.bucket_id === 'external-video' ? a.storage_path : a.bucket_id === 'project-media' && projectAssets.some(p => p.path === a.storage_path) ? a.storage_path : urls.get((a.preview_file?.bucket ?? a.bucket_id) + ':' + (a.preview_file?.path ?? a.storage_path)) ?? '' })) };
 }
