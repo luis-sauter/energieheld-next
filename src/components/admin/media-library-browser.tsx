@@ -1,7 +1,8 @@
 "use client";
 import { startTransition, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { searchLibraryProfiles, applyLibraryAsset, archiveLibraryAsset, deleteLibraryAsset, libraryProfiles, loadLibrary, updateLibraryAsset, uploadLibrary } from '@/app/(energieheld)/admin/mediathek/actions';
+import { searchLibraryProfiles, applyLibraryAsset, archiveLibraryAsset, deleteLibraryAsset, libraryProfiles, updateLibraryAsset, uploadLibrary } from '@/app/(energieheld)/admin/mediathek/actions';
+import { fetchMediaLibraryPage } from '@/lib/media-library-read';
 import { uploadPreparedAdminMedia } from '@/lib/admin-media-upload';
 import { readMediaRights, mediaSelectionLimit, MEDIA_LIBRARY_PAGE_SIZE, type MediaAsset, type MediaLibraryPage, type MediaLibraryTarget } from '@/lib/media-library';
 import styles from './media-library.module.css';
@@ -48,15 +49,16 @@ export function MediaLibraryBrowser({ initialProfileId, initialProfileName, init
         setError('Unternehmen konnten nicht geladen werden.'); }); }); return () => { alive = false; }; }, [initialProfileId, initialProfileName]);
     useEffect(() => {
         let alive = true;
-        const timer = setTimeout(() => { startTransition(() => { void loadLibrary(profile || null, kind, query, page, archived).then(r => { if (alive) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => { void fetchMediaLibraryPage(profile || null, kind, query, page, archived, controller.signal).then(r => { if (alive) {
             setResult(r);
             setLoading(false);
             setError(r.error ?? "");
         } }).catch(() => { if (alive) {
             setError('Bilder konnten nicht geladen werden.');
             setLoading(false);
-        } }); }); }, query ? 250 : 0);
-        return () => { alive = false; clearTimeout(timer); };
+        } }); }, query ? 250 : 0);
+        return () => { alive = false; clearTimeout(timer); controller.abort(); };
     }, [profile, kind, query, page, archived, revision]);
     function reset() { setLoading(true); setPage(1); setSelected([]); setDetails(null); setError(''); }
     function reload() { setLoading(true); setRevision(r => r + 1); }

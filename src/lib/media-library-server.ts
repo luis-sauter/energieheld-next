@@ -11,12 +11,18 @@ import { changeAdminBlockImages } from './admin-block-images';
 import { canReuseMediaPath, mediaTargetPrefix, type MediaLibraryTarget, type MediaAsset, type MediaLibraryPage } from './media-library';
 import { retryMediaRead } from './media-read-retry';
 const failure = 'Die Mediathek ist gerade nicht verfügbar. Bitte versuchen Sie es erneut.';
-export async function mediaLibraryPage(client: SupabaseClient, profileId: string | null, kind: string, query: string, page: number, archived = false): Promise<MediaLibraryPage> {
+export async function mediaLibraryPage(client: SupabaseClient, profileId: string | null, kind: string, query: string, page: number, archived = false, signal?: AbortSignal): Promise<MediaLibraryPage> {
     if (await checkAdmin(client) !== 'admin')
         return { items: [], count: 0, error: 'Keine Berechtigung.' };
     if (profileId !== null && !isProfileId(profileId))
         return { items: [], count: 0, error: 'Ungültiges Unternehmen.' };
-    const { data, error } = await retryMediaRead(() => client.rpc('media_library_page', { p_profile: profileId, p_kind: kind, p_query: query.trim().slice(0, 200), p_page: page, p_archived: archived }));
+    signal?.throwIfAborted();
+    const { data, error } = await retryMediaRead(() => {
+        signal?.throwIfAborted();
+        const request = client.rpc('media_library_page', { p_profile: profileId, p_kind: kind, p_query: query.trim().slice(0, 200), p_page: page, p_archived: archived });
+        return signal ? request.abortSignal(signal) : request;
+    });
+    signal?.throwIfAborted();
     if (error || !data || !Array.isArray(data.items))
         return { items: [], count: 0, error: failure };
     const items = data.items as MediaAsset[];
@@ -24,10 +30,12 @@ export async function mediaLibraryPage(client: SupabaseClient, profileId: string
     const urls = new Map<string, string>();
     let previewUnavailable = false;
     for (const bucket of ['company-media', 'ad-media', VIDEO_BUCKET] as const) {
-        const paths = items.filter(a => (a.preview_file?.bucket ?? a.bucket_id) === bucket).map(a => a.preview_file?.path ?? a.storage_path);
+        const paths = [...new Set(items.filter(a => (a.preview_file?.bucket ?? a.bucket_id) === bucket).map(a => a.preview_file?.path ?? a.storage_path))];
         if (!paths.length)
             continue;
-        const signed = await retryMediaRead(() => client.storage.from(bucket).createSignedUrls(paths, 600));
+        signal?.throwIfAborted();
+        const signed = await retryMediaRead(() => { signal?.throwIfAborted(); return client.storage.from(bucket).createSignedUrls(paths, 600); });
+        signal?.throwIfAborted();
         if (signed.error) { previewUnavailable = true; continue; }
         for (const value of signed.data ?? [])
             if (value.path && value.signedUrl)

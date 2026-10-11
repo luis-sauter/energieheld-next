@@ -58,6 +58,15 @@ async function campaign(shared=true) {
   return id;
 }
 
+test('public banner projection remains stable with 2,000 historical campaigns and targets',async()=>{
+ const id=await campaign();await actor('authenticated',admin);await save(id,null);await actor();const expected=await projection();
+ await actor('postgres');
+ await db.query("insert into company_ad_campaigns(id,profile_id,internal_name,headline,body_text,target_url,status,approved_start_date,approved_end_date) select gen_random_uuid(),$1,'Private historical fixture '||n,'Historical','Old','https://example.org/','draft',$2,$2 from generate_series(1,2000) n",[ids[0],today]);
+ await db.exec("insert into company_ad_campaign_targets(campaign_id,target_type,placement) select id,'homepage','sidebar_top' from company_ad_campaigns where internal_name like 'Private historical fixture %'");
+ await actor();const start=performance.now();for(let n=0;n<3;n++)assert.deepEqual(await projection(),expected);
+ console.log(JSON.stringify({fixture:'2000 historical campaigns/targets',reads:3,ms:Math.round(performance.now()-start)}));
+});
+
 test('read projection grants only execution, fixed search path and no existing data/policies changes',async()=>{
   assert.deepEqual(afterMigration.profiles,baseline.profiles);
   assert.deepEqual(afterMigration.ads,baseline.ads);

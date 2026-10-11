@@ -16,6 +16,7 @@ globalThis.__mediaUX={
  async apply(id,target){calls.push(['apply',id,target]);return {success:'Saved'};}
 };
 registerHooks({resolve(s,c,n){const stub=x=>({url:'data:text/javascript,'+encodeURIComponent(x),shortCircuit:true});
+ if(s==='@/lib/media-library-read')return stub('export const fetchMediaLibraryPage=(...a)=>{globalThis.__mediaUX.signals=(globalThis.__mediaUX.signals??[]);globalThis.__mediaUX.signals.push(a[5]);return globalThis.__mediaUX.load(...a);}');
  if(s==='react'&&/(?:media-library-(?:browser|company-picker|upload)|media-company-create|portal-video)\.tsx$/.test(c.parentURL??''))return stub('export const useState=v=>globalThis.__mediaUX.state(v),useRef=v=>globalThis.__mediaUX.ref(v),useEffect=(f,d)=>globalThis.__mediaUX.effect(f,d),useId=()=>"picker",startTransition=f=>f();');
  if(s.endsWith('/admin/mediathek/actions'))return stub('export const searchLibraryProfiles=(...a)=>globalThis.__mediaUX.search(...a),libraryProfiles=()=>globalThis.__mediaUX.profiles(),loadLibrary=(...a)=>globalThis.__mediaUX.load(...a),applyLibraryAsset=(...a)=>globalThis.__mediaUX.apply(...a),updateLibraryAsset=async()=>({success:"Saved"}),archiveLibraryAsset=async()=>({}),deleteLibraryAsset=async()=>({}),uploadLibrary=async(id)=>{globalThis.__mediaUX.savedCompany=id;return {success:"Saved"}},createLibraryCompany=async()=>{globalThis.__mediaUX.creates=(globalThis.__mediaUX.creates??0)+1;return {}},removeLibraryVideo=async()=>({});');
  if(s==='@/lib/profile-video-upload'&&c.parentURL?.endsWith('media-library-upload.tsx'))return stub('export const uploadProfileVideo=async(save,file,progress)=>{globalThis.__mediaUX.uploads.push(file.name);progress("Video wird geprüft …");if(file.name==="bad.mp4")return {error:"Ungültige Datei"};await save(new FormData());return {success:"Video verfügbar"};}');
@@ -54,6 +55,15 @@ test('current profile loads automatically; image search and company switch retai
  f.all().find(n=>n.props?.['aria-label']==='Eigenes Bild auswählen').props.onClick();assert.equal(f.button('Ausgewählte Bilder verwenden').props.disabled,false);
  f.all().find(n=>n.type===MediaLibraryCompanyPicker).props.onChange({id:other,display_name:'Andere Firma'});await f.settle();assert.equal(f.button('Ausgewählte Bilder verwenden').props.disabled,true);assert.ok(calls.some(c=>c[0]==='load'&&c[1]===other));
  f.all().find(n=>n.type==='input'&&n.props.type==='search').props.onChange({target:{value:'Berg'}});await f.settle(280);assert.ok(calls.some(c=>c[0]==='load'&&c[3]==='Berg'));
+});
+
+test('changing catalog filters aborts obsolete reads; latest selection stays usable',async()=>{
+ globalThis.__mediaUX.signals=[];
+ const f=fixture(MediaLibraryBrowser,{initialProfileId:current,initialProfileName:'Sonnenhof'});f.render();await f.settle();
+ const first=globalThis.__mediaUX.signals.at(-1);assert.equal(first.aborted,false);
+ f.all().find(n=>n.type==='input'&&n.props.type==='search').props.onChange({target:{value:'new'}});f.render();assert.equal(first.aborted,true);
+ await f.settle(280);assert.equal(globalThis.__mediaUX.signals.at(-1).aborted,false);
+ assert.ok(calls.some(c=>c[0]==='load'&&c[3]==='new'));
 });
 test('details focus/scroll locally, close restores grid/selection, repeated opening works and apply delegates once',async()=>{
  let applied=0;const f=fixture(MediaLibraryBrowser,{initialProfileId:current,target:{profileId:current,kind:'gallery',capacity:1},onApplied(){applied++;}});f.render();await f.settle();

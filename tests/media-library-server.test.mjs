@@ -57,6 +57,15 @@ test('invalid bytes and foreign replacement identifiers are rejected before atta
 test('signed private thumbnails are batched and bounded; no permanent public URL',async()=>{
  const c=mock();const page=await mediaLibraryPage(c,profile,'','',1);assert.equal(page.count,1);assert.equal(c.calls.filter(v=>v.signed).length,1);assert.equal(c.calls.find(v=>v.signed).expires,600);assert.match(page.items[0].src,/private.invalid/);
 });
+
+test('aborted catalog reads stop before RPC/signing and propagate cancellation to RPC',async()=>{
+ const c=mock(), stopped=new AbortController();stopped.abort();
+ await assert.rejects(mediaLibraryPage(c,null,'','',1,false,stopped.signal),e=>e.name==='AbortError');
+ assert.equal(c.calls.some(v=>v.rpc||v.signed),false);
+ const running=new AbortController();let received;
+ c.rpc=()=>({abortSignal(signal){received=signal;running.abort();return Promise.resolve({data:{items:[],count:0},error:null});}});
+ await assert.rejects(mediaLibraryPage(c,null,'','',1,false,running.signal),e=>e.name==='AbortError');assert.equal(received,running.signal);assert.equal(c.calls.some(v=>v.signed),false);
+});
 test('selection limits and profile path checks prevent cross-profile reuse',()=>{
  assert.equal(mediaSelectionLimit({kind:'gallery',capacity:7}),7);assert.equal(mediaSelectionLimit({kind:'gallery',capacity:0}),0);assert.equal(mediaSelectionLimit({kind:'gallery',capacity:7,replacementId:'x'}),1);assert.equal(mediaSelectionLimit({kind:'block',capacity:4}),1);
  assert.equal(canReuseMediaPath({bucket_id:'company-media',storage_path:'profiles/'+other+'/gallery/'+assetId+'.png'},{profileId:profile,kind:'gallery'}),false);
