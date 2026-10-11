@@ -21,6 +21,11 @@ before(async()=>{
  await db.exec(migration);
  const optimized=await readFile(new URL('../supabase/migrations/20261010215919_company_publication_and_catalog_page.sql',import.meta.url),'utf8');
  await db.exec(optimized.slice(optimized.indexOf('CREATE OR REPLACE FUNCTION public.media_library_page')));
+ await db.exec(optimized.slice(optimized.indexOf('CREATE OR REPLACE FUNCTION public.media_library_page')).replace('public.media_library_page(', 'public.media_library_page_baseline('));
+ const policies = (await db.query('select * from pg_policies order by schemaname,tablename,policyname')).rows;
+ await db.exec(await readFile(new URL('../supabase/migrations/20261011125924_20261011125501_media_catalog_single_storage_read.sql',import.meta.url),'utf8'));
+ assert.deepEqual((await db.query('select * from pg_policies order by schemaname,tablename,policyname')).rows, policies);
+ assert.equal((await db.query("select prosecdef from pg_proc where oid='public.media_library_page(uuid,text,text,integer,boolean)'::regprocedure")).rows[0].prosecdef,false);
 
  await db.exec("create policy qa_video_read on storage.objects for select to authenticated using(bucket_id='company-profile-videos' and exists(select 1 from portal_admins where user_id=auth.uid()));");
  await db.exec("grant select on company_ad_campaigns to authenticated;grant select,insert,update,delete on profile_content_blocks,profile_content_block_images to authenticated");
@@ -29,6 +34,34 @@ before(async()=>{
 after(async()=>db?.close());beforeEach(async()=>db.exec('begin'));afterEach(async()=>db.exec('rollback'));
 async function actor(id,role='authenticated'){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,true)",[id]);await db.exec('set local role '+role);}
 async function denied(sql,args=[]){await db.exec('savepoint deny');await assert.rejects(db.query(sql,args));await db.exec('rollback to savepoint deny;release savepoint deny');}
+test('catalog optimization preserves exact results, inaccessible originals, context copies and permissions', async()=>{
+ await db.query("insert into media_library_assets(profile_id,bucket_id,storage_path,kind,name) values($1,'company-media','missing.png','gallery','Unavailable'),($1,'project-media','/existing.png','gallery','Project'),($1,'external-video','https://vimeo.com/123456789','video','Video')",[profile]);
+ await actor(admin);
+ for (const args of [[null,'','',1,false],[profile,'images','',1,false],[profile,'video','',1,false],[null,'unused','',1,false],[null,'','Project',1,false],[null,'','',2,false],[null,'','',1,true]]) {
+  const old=(await db.query('select media_library_page_baseline($1,$2,$3,$4,$5) v',args)).rows[0].v;
+  assert.deepEqual((await db.query('select media_library_page($1,$2,$3,$4,$5) v',args)).rows[0].v,old);
+  assert.ok(!old.items.some(a=>a.storage_path==='missing.png'));
+ }
+ await actor(owner);await denied('select media_library_page()');
+ await actor('','anon');await denied('select media_library_page()');
+});
+
+test('large catalog remains paginated and stable across repeated global, profile and filtered reads',async()=>{
+ // Synthetic local data only: 5,000 assets with real catalog/file/profile relationships.
+ await db.query("insert into media_library_assets(id,profile_id,bucket_id,storage_path,kind,name) select gen_random_uuid(),$1,'project-media','/fixture-'||n||'.png','gallery','Load fixture '||n from generate_series(1,5000) n",[profile]);
+ await db.exec("insert into media_library_files(asset_id,profile_id,bucket_id,storage_path,context_key) select id,profile_id,bucket_id,storage_path,'original' from media_library_assets where name like 'Load fixture %'");
+ await actor(admin);let first;
+ const started=performance.now();
+ for(let repeat=0;repeat<3;repeat++) {
+  const a=(await db.query('select media_library_page($1,\'images\',\'Load fixture\',1) v',[profile])).rows[0].v;
+  const b=(await db.query('select media_library_page(NULL,\'images\',\'Load fixture\',2) v')).rows[0].v;
+  assert.equal(a.count,5000);assert.equal(b.count,5000);assert.equal(a.items.length,24);assert.equal(b.items.length,24);
+  assert.ok(!a.items.some(x=>b.items.some(y=>y.id===x.id)));if(first)assert.deepEqual(a,first);first=a;
+ }
+ assert.equal((await db.query('select media_library_page($1,\'images\',\'Load fixture\',209) v',[profile])).rows[0].v.items.length,8);
+ console.log(JSON.stringify({fixture:'5000 linked catalog assets',reads:7,ms:Math.round(performance.now()-started)}));
+});
+
 test('company creation is atomic, ownerless Reiseportal draft and deliberate duplicate override',async()=>{
  await actor(admin);const a=(await db.query("select media_library_create_company('Neue Pension','Berlin','Deutschland','https://example.org') v")).rows[0].v;
  const p=(await db.query('select * from company_profiles where id=$1',[a.id])).rows[0];assert.equal(p.status,'draft');assert.equal(p.approval_context,'reiseportal');assert.equal(p.city,'Berlin');
