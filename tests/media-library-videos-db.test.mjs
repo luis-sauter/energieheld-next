@@ -47,9 +47,13 @@ test('catalog optimization preserves exact results, inaccessible originals, cont
 });
 
 test('large catalog remains paginated and stable across repeated global, profile and filtered reads',async()=>{
- // Synthetic local data only: 5,000 assets with real catalog/file/profile relationships.
- await db.query("insert into media_library_assets(id,profile_id,bucket_id,storage_path,kind,name) select gen_random_uuid(),$1,'project-media','/fixture-'||n||'.png','gallery','Load fixture '||n from generate_series(1,5000) n",[profile]);
+ // Synthetic local data only: private originals, file links and a larger profile stock.
+ await db.query("insert into media_library_assets(id,profile_id,bucket_id,storage_path,kind,name) select gen_random_uuid(),$1::uuid,'company-media','profiles/'||($1::uuid)::text||'/gallery/'||gen_random_uuid()||'.png','gallery','Load fixture '||n from generate_series(1,5000) n",[profile]);
+ await db.exec("insert into storage.objects(bucket_id,name,metadata) select bucket_id,storage_path,'{\"size\":1000,\"mimetype\":\"image/png\"}'::jsonb from media_library_assets where name like 'Load fixture %'");
  await db.exec("insert into media_library_files(asset_id,profile_id,bucket_id,storage_path,context_key) select id,profile_id,bucket_id,storage_path,'original' from media_library_assets where name like 'Load fixture %'");
+ await db.query("insert into company_profiles(id,company_id,display_name,status) select gen_random_uuid(),$1,'Company fixture '||n,'pending' from generate_series(1,1000) n",[owner]);
+ // PGlite has no background auto-analyze; represent a populated planner, not empty-table estimates.
+ await db.exec('ANALYZE public.company_profiles; ANALYZE public.media_library_assets; ANALYZE public.media_library_files; ANALYZE storage.objects; ANALYZE public.portal_admins;');
  await actor(admin);let first;
  const started=performance.now();
  for(let repeat=0;repeat<3;repeat++) {
@@ -59,7 +63,8 @@ test('large catalog remains paginated and stable across repeated global, profile
   assert.ok(!a.items.some(x=>b.items.some(y=>y.id===x.id)));if(first)assert.deepEqual(a,first);first=a;
  }
  assert.equal((await db.query('select media_library_page($1,\'images\',\'Load fixture\',209) v',[profile])).rows[0].v.items.length,8);
- console.log(JSON.stringify({fixture:'5000 linked catalog assets',reads:7,ms:Math.round(performance.now()-started)}));
+ assert.deepEqual((await db.query('select media_library_page_baseline($1,\'images\',\'Load fixture\',1) v',[profile])).rows[0].v,first);
+ console.log(JSON.stringify({fixture:'5000 private Storage originals/files, 1000 profiles; minimal RLS',reads:8,ms:Math.round(performance.now()-started)}));
 });
 
 test('company creation is atomic, ownerless Reiseportal draft and deliberate duplicate override',async()=>{
