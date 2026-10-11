@@ -14,6 +14,8 @@ export type CompanyVerification = {
 };
 
 export type Listing = {
+  /** Safe public import marker projection; never private sources or review notes. */
+  importedAt?: string;
   galleryInitialized?: boolean;
   id: string;
   slug: string;

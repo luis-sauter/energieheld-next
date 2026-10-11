@@ -34,6 +34,16 @@ const source=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const listing=(id,premium=false,image=true)=>({id,slug:id,name:id,initials:'AB',tagline:'Originaler Teaser',description:'Originaltext',directoryPackage:premium?'premium':'basic',directoryImage:image?{src:'/reiseportal/original.jpg',alt:'Originales Anbieterbild'}:undefined,images:[],services:[],categoryIds:[],travelTermKeys:['theme:natur-pur','feature:unknown'],location:{city:'Berlin',country:'Deutschland',postalCode:'10115',region:''},contact:{phone:'+49 123',email:'public@example.com',website:'https://example.com'},isDemo:false});
 const terms=[{term_key:'theme:natur-pur',dimension:'theme',slug:'natur-pur',label:'Natur'}];
 const directory=(items,values={})=>renderToStaticMarkup(createElement(TravelDirectory,{initialValues:readTravelFilterValues(values),database:items,preview:[],terms,error:null,ads:[],sidebarOrder:[],canReorder:false,hiddenOrderKeys:[]}));
+test('public A–Z import marker and sort persist for published rows and disappear centrally at launch',async()=>{
+ const {publicImportPresentation}=await import('../src/config/import-presentation.ts');
+ const imported={...listing('imported',true),importedAt:'2026-10-11T00:00:00Z'};
+ assert.match(directory([imported]),/Neu importiert/);
+ assert.match(directory([imported]),/Neu importiert zuerst/);
+ try{publicImportPresentation.enabled=false;assert.doesNotMatch(directory([imported]),/Neu importiert/);}
+ finally{publicImportPresentation.enabled=true;}
+ const admin=renderToStaticMarkup(createElement(TravelDirectory,{initialValues:readTravelFilterValues({}),database:[imported],preview:[],terms,error:null,ads:[],sidebarOrder:[],canReorder:false,hiddenOrderKeys:[],importedProfileIds:['imported']}));
+ assert.equal((admin.match(/class="profile-import-badge"/g)??[]).length,1);
+});
 
 test('search formats render wide before other and every admin card offers existing editor',()=>{
  const banners=[['square',350,350],['wide',350,120],['portrait',200,600]].map(([id,width,height])=>({banner_key:id,advertiser_key:id,ad:{id,headline:id,imageUrl:'/image.png',image_width:width,image_height:height,target_url:'https://example.org/',placement:'sidebar_top'}}));

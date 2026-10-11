@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { loadProfileImports } from "@/lib/profile-import";
+import { withPublicImportMarkers } from "@/lib/public-profile-imports";
 import { loadAdminFreshnessStatuses } from "@/lib/profile-freshness";
 import Image from "next/image";
 import Link from "next/link";
@@ -39,7 +40,7 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
   const params = await searchParams;
   if (mode === "travel") {
     const [loaded, terms, ads, sidebarOrder, bannerOptions, searchBanners] = await Promise.all([
-      loadReiseportalDirectory(), loadPublicTravelTerms(), loadPublicAds(undefined), loadPublicSidebarOrder(),
+      loadReiseportalDirectory().then(async loaded => ({ ...loaded, database: await withPublicImportMarkers(loaded.database) })), loadPublicTravelTerms(), loadPublicAds(undefined), loadPublicSidebarOrder(),
       loadInlineBannerOptions("/unterkuenfte-a-z"), loadTravelSearchBanners(),
     ]);
     const freshnessStatuses = adminClient ? await loadAdminFreshnessStatuses(adminClient,

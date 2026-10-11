@@ -21,6 +21,7 @@ registerHooks({
    '@/lib/reiseportal-directory':'loadReiseportalDirectory', '@/lib/public-travel-taxonomy':'loadPublicTravelTerms',
    '@/lib/public-ads':'loadPublicAds', '@/lib/public-sidebar-order':'loadPublicSidebarOrder', '@/lib/inline-advertising-loader':'loadInlineBannerOptions',
   };
+  if(s==='@/lib/public-profile-imports')return {url:'data:text/javascript,export async function withPublicImportMarkers(rows){return rows.map(row=>({...row,importedAt:"2026-10-11T00:00:00Z"}))}',shortCircuit:true};
   if(loaders[s])return {url:`data:text/javascript,export async function ${loaders[s]}(){return globalThis.directoryFixture[${JSON.stringify(loaders[s])}]}`,shortCircuit:true};
   if(s.startsWith('@/')||s.startsWith('.')){const b=s.startsWith('@/')?new URL('../src/'+s.slice(2),import.meta.url):new URL(s,c.parentURL);for(const e of ['.ts','.tsx'])if(existsSync(new URL(b.href+e)))return next(b.href+e,c);}
   return next(s,c);

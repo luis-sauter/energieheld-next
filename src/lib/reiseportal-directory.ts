@@ -1,5 +1,6 @@
 import "server-only";
 import { withSavedCardImages } from "./profile-card-images";
+import { withPublicImportMarkers } from "./public-profile-imports";
 import { reiseportalPreview } from "@/data/reiseportal-preview";
 import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
 import legacyDirectoryMedia from "../data/reiseportal-legacy-directory-media.json" with { type: "json" };
@@ -145,12 +146,12 @@ export async function loadReiseportalFeatured(slugs: readonly string[]) {
 
 export async function loadReiseportalTheme(theme: string) {
   const directory = await loadReiseportalDirectory();
-  return directory.database.filter((listing) => filterTravelDiscovery([listing], "", theme).length > 0);
+  return withPublicImportMarkers(directory.database.filter((listing) => filterTravelDiscovery([listing], "", theme).length > 0));
 }
 
 export async function loadReiseportalDestination(destination: string) {
   const directory = await loadReiseportalDirectory();
-  return filterTravelDiscovery(directory.database, destination, "");
+  return withPublicImportMarkers(filterTravelDiscovery(directory.database, destination, ""));
 }
 
 export async function loadReiseportalListingBySlug(slug: string) {

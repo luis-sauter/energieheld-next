@@ -47,6 +47,14 @@ const {travelThemes,destinations}=await import('../src/data/reiseportal-discover
 const {discoveryAudienceShortcuts}=await import('../src/lib/discovery-shortcuts.ts');
 const {filterTravelListings}=await import('../src/lib/reiseportal-facets.ts');
 const {readTravelFilterValues}=await import('../src/lib/reiseportal-filter-options.ts');
+test('public shared import badge is opt-in for discovery cards; protected homepage stays unchanged',async()=>{
+ const {publicImportPresentation}=await import('../src/config/import-presentation.ts');
+ const listing={...profiles[0],importedAt:'2026-10-11T00:00:00Z'};
+ assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing})),/Neu importiert/);
+ assert.match(renderToStaticMarkup(createElement(AccommodationCard,{listing,showImportMarker:true,cardEditing:true})),/Neu importiert/);
+ try{publicImportPresentation.enabled=false;assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing,showImportMarker:true})),/Neu importiert/);}
+ finally{publicImportPresentation.enabled=true;}
+});
 test('homepage composes existing search, all central themes, four destinations and real featured profiles as server HTML',async()=>{
  globalThis.homeFixture.calls=[];
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({q:'Nordic Walking',ziel:'schweiz'})}));
