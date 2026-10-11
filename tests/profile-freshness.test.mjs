@@ -146,7 +146,7 @@ test('compact profile header reuses review UI while leaving full details only in
  assert.match(html,/Bereits geprüft/); assert.match(html,/Zuletzt geprüft: 4. Oktober 2026/); assert.doesNotMatch(html,/Als geprüft markieren/);
  assert.doesNotMatch(html,/Nächste Prüfung|Speichern allein|Quelle/);
  const editor=readFileSync(new URL('../src/components/admin/inline-profile-editor.tsx',import.meta.url),'utf8');
- assert.match(editor,/adminAction=\{editing \? undefined/); assert.match(editor,/editing && freshness && <ProfileFreshness/); assert.match(editor,/<ProfileFreshness state=\{freshness\} disabled=\{false\} compact/);
+ assert.match(editor,/adminAction=\{editing \? undefined/); assert.match(editor,/editing && freshness && <ProfileFreshness/); assert.match(editor,/<ProfileFreshness imported=\{imported\} state=\{freshness\} disabled=\{false\} compact/);
 });
 
 test('edit-mode review selector has precisely the two editorial choices and preserves capability/dirty guards', () => {

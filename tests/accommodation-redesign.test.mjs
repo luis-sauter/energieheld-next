@@ -13,7 +13,7 @@ registerHooks({
     if (specifier === 'next/navigation') return {url:'data:text/javascript,export const useRouter=()=>({refresh(){}})',shortCircuit:true};
     if (specifier.endsWith('inline-banner-actions')) return {url:'data:text/javascript,export async function loadSearchBannerEditor(){return {error:"fixture"}}',shortCircuit:true};
     if (specifier.endsWith('/trades') && context.parentURL.includes('/components/')) return {url:'data:text/javascript,export function AdvertisingLayout({children}){return children}',shortCircuit:true};
-    if (specifier.includes('/admin/') && !specifier.endsWith('/freshness-status')) return {url:'data:text/javascript,export function DirectoryOrderEditor(){return null};export function SidebarOrderEditor(){return null}',shortCircuit:true};
+    if (specifier.includes('/admin/') && !specifier.endsWith('/freshness-status') && !specifier.endsWith('/profile-import-badge')) return {url:'data:text/javascript,export function DirectoryOrderEditor(){return null};export function SidebarOrderEditor(){return null}',shortCircuit:true};
     if (specifier.startsWith('@/') || specifier.startsWith('.')) {
       const base = specifier.startsWith('@/') ? new URL('../src/'+specifier.slice(2), import.meta.url) : new URL(specifier,context.parentURL);
       for(const ext of ['.ts','.tsx']) if(existsSync(new URL(base.href+ext))) return next(base.href+ext,context);

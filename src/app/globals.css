@@ -3510,3 +3510,6 @@ h6 {
 .profile-discover a:hover, .profile-discover a:focus-visible { border-color: #8cafc1; box-shadow: 0 5px 18px #1747610c; }
 @media (max-width: 600px) { .profile-discover { border-radius: 18px; } .profile-discover-ideas { grid-template-columns: minmax(0, 1fr); gap: 24px; } .profile-discover-ideas a { padding: 13px; } }
 @media (prefers-reduced-motion: reduce) { .profile-discover a { transition: none; } }
+
+.profile-review-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.profile-import-badge { display: inline-flex; align-items: center; border: 1px solid #cfe1eb; border-radius: 999px; padding: 4px 9px; color: #185976; background: #eef7fc; font-size: .75rem; font-weight: 600; white-space: nowrap; }

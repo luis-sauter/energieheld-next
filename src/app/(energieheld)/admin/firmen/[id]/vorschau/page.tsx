@@ -52,12 +52,12 @@ export default async function AdminProfilePreview({ params, searchParams }: { pa
   return <main id="hauptinhalt" className="container detail-page">
     <nav className="breadcrumbs" aria-label="Brotkrumennavigation"><span>Adminbereich</span><span>/</span><span>Interne Profilvorschau</span></nav>
     <header><h1>{editing ? "Profil redaktionell bearbeiten" : "Interne Profilvorschau"}</h1><p>{profile.status === "approved" ? (editing ? "Interner Redaktionsbereich eines freigegebenen Profils." : "Dieses Profil ist nicht im Reiseportal-Verzeichnis sichtbar.") : "Dieses Profil ist noch nicht öffentlich sichtbar."}</p></header>
-    <ProfileImportNotice entry={importEntry} status={profile.status}/>
+    <ProfileImportNotice entry={importEntry}/>
     <section className={styles.categories} aria-labelledby="preview-note-title">
       <h2 id="preview-note-title">Hinweise des Unternehmens</h2>
       {"error" in note ? <p role="alert">{note.error}</p> : <p className={styles.reviewNote}>{note.note || "Keine Hinweise hinterlegt."}</p>}
     </section>
-    <InlineProfileEditor initialEditing={editing} returnHref={`/admin/firmen/${id}#reisezuordnungen`} freshness={freshness}
+    <InlineProfileEditor imported={Boolean(importEntry)} initialEditing={editing} returnHref={`/admin/firmen/${id}#reisezuordnungen`} freshness={freshness}
       travelError={"error" in travel ? travel.error : undefined}
       travelReview={"error" in travel ? undefined : { snapshot: travel, saveAction: saveTravelTerms.bind(null, id) }}
       reviewFreshness={canReview ? reviewInlineProfile.bind(null, id, slug) : undefined}

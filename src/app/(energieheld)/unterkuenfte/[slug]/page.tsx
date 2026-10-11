@@ -1,3 +1,4 @@
+import { loadProfileImports } from "@/lib/profile-import";
 import { loadAdminTravelTaxonomy, type TravelReviewSnapshot } from "@/lib/admin-travel-taxonomy";
 import { saveTravelTerms } from "@/app/(energieheld)/admin/firmen/[id]/travel-actions";
 import { loadAdminProfileFreshness } from '@/lib/profile-freshness';
@@ -73,7 +74,7 @@ export default async function AccommodationDetail({
     ? await loadPublicProfileContent(createPublicClient(), listing.id)
     : { blocks: [], available: false, imagesAvailable: false };
   const presentedContent = splitProfileContent(content.blocks, listing.name);
-  let editorData: { values: ProfileValues; media: SignedMedia; rows: MediaRow[]; freshness: ContentFreshness | null; canReview: boolean; travel?: TravelReviewSnapshot; travelError?: string } | null = null;
+  let editorData: { imported: boolean; values: ProfileValues; media: SignedMedia; rows: MediaRow[]; freshness: ContentFreshness | null; canReview: boolean; travel?: TravelReviewSnapshot; travelError?: string } | null = null;
   let editorContent = content;
   if (storedProfile) {
     try {
@@ -89,7 +90,7 @@ export default async function AccommodationDetail({
             profileFields.map((field) => [field, profile[field] ?? ""]),
           ) as ProfileValues;
           const travel = await loadAdminTravelTaxonomy(client, listing.id);
-          editorData = { values, media, rows: profile.company_profile_images, freshness, canReview: await canReviewProfiles(client), travel: "error" in travel ? undefined : travel, travelError: "error" in travel ? travel.error : undefined };
+          editorData = { imported: (await loadProfileImports(client, [listing.id])).has(listing.id), values, media, rows: profile.company_profile_images, freshness, canReview: await canReviewProfiles(client), travel: "error" in travel ? undefined : travel, travelError: "error" in travel ? travel.error : undefined };
         }
       }
     } catch {
@@ -101,6 +102,7 @@ export default async function AccommodationDetail({
       <JsonLd data={indexableProfile(listing) ? jsonLdGraph([breadcrumbSchema(breadcrumbs), ...profileSchema(listing, result.terms)]) : null} />
       <Breadcrumbs items={breadcrumbs} />
       {editorData ? <InlineProfileEditor
+        imported={editorData.imported}
         travelError={editorData.travelError}
         travelReview={editorData.travel ? { snapshot: editorData.travel, saveAction: saveTravelTerms.bind(null, listing.id) } : undefined}
         freshness={editorData.freshness}

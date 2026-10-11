@@ -31,8 +31,9 @@ export function InlineProfileEditor(props: React.ComponentProps<typeof ProfileEd
 
 const formId = "inline-admin-profile-form";
 
-function ProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness, travelError }: {
+function ProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness, travelError, imported }: {
   listing: Listing;
+  imported?: boolean;
   categories: Category[];
   values: ProfileValues;
   media: SignedMedia;
@@ -194,7 +195,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
     {!editing && feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
     {editing && travelError && <p role="alert">{travelError}</p>}
     {editing && travel && <TravelTaxonomyEditor compact disabled={busy || contactBusy || mediaEditor.busy || history.busy} /> }
-    {editing && freshness && <ProfileFreshness editableStatus state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} selectedReview={selectedReview} onReviewChange={setSelectedReview} disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)} />}
+    {editing && freshness && <ProfileFreshness imported={imported} editableStatus state={freshness} review={reviewFreshness} withdraw={withdrawFreshness} selectedReview={selectedReview} onReviewChange={setSelectedReview} disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)} />}
     <ListingDetail
       listing={listing}
       showVerification={showVerification}
@@ -207,7 +208,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
       contactAction={editing ? undefined : contactAction}
       adminAction={editing ? undefined : <div className="profile-admin-actions">
         <button type="button" className={`button ${styles.editButton}`} onClick={() => { setFeedback({}); setEditing(true); }}>Profil bearbeiten</button>
-        {freshness && <ProfileFreshness state={freshness} disabled={false} compact />}
+        {freshness && <ProfileFreshness imported={imported} state={freshness} disabled={false} compact />}
       </div>}
       inlineFields={editing ? inlineFields : undefined}
       aboutHeading={content.aboutHeading}

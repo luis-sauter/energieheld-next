@@ -3,6 +3,7 @@ import { OfferRequestCta } from "@/components/portal/offer-request-cta";
 
 
 import { useEffect, useMemo, useState } from "react";
+import { ProfileImportBadge } from "@/components/admin/profile-import-badge";
 import { FreshnessStatus } from "@/components/admin/freshness-status";
 import { freshnessMatches, freshnessCounts } from "@/lib/content-freshness";
 import type { AdminFreshnessStatuses } from "@/lib/profile-freshness";
@@ -23,7 +24,7 @@ import { InlineBannerProvider } from "@/components/advertising/inline-banner-edi
 import type { InlineBannerOptions } from "@/lib/inline-ad-context";
 
 export function TravelDirectory({ initialValues, database, preview, terms, error, ads, sidebarOrder,
-  canReorder, freshnessStatuses, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions, banners = [], bannerError }: {
+  canReorder, freshnessStatuses, importedProfileIds, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions, banners = [], bannerError }: {
   initialValues: TravelFilterValues;
   database: Listing[];
   preview: Listing[];
@@ -35,6 +36,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   sidebarOrder: SidebarSlot[];
   canReorder: boolean;
   freshnessStatuses?: AdminFreshnessStatuses | null;
+  importedProfileIds?: string[];
   bannerOptions?: InlineBannerOptions;
   hiddenOrderKeys: string[];
   saveOrder?: (ids: string[]) => Promise<{ success?: string; error?: string }>;
@@ -62,7 +64,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     const basic = grouped.filter(row => row.directoryPackage !== "premium");
     const render = (rows: Listing[]) => <div className="listing-rows">{rows.map(listing =>
       <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels}
-        adminStatus={freshnessStatuses?.[listing.id] ? <FreshnessStatus status={freshnessStatuses[listing.id]} /> : undefined} />)}</div>;
+        adminStatus={freshnessStatuses?.[listing.id] || importedProfileIds?.includes(listing.id) ? <span className="profile-review-badges">{freshnessStatuses?.[listing.id] && <FreshnessStatus status={freshnessStatuses[listing.id]} />}<ProfileImportBadge imported={importedProfileIds?.includes(listing.id)} /></span> : undefined} />)}</div>;
     return <>
       {premium.length > 0 && <section className="travel-package-group" aria-labelledby="premium-title">
         <header className="travel-package-heading"><h2 id="premium-title">Premium-Unterkünfte</h2><p>Unterkünfte mit erweitertem Profil im Reiseportal.</p></header>{render(premium)}
