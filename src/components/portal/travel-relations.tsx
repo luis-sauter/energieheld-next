@@ -1,5 +1,5 @@
 import { publicTravelLabel } from "@/lib/travel-presentation";
-import Link from "next/link";
+import Link from "./navigation-link";
 import { TravelThemeIcon } from "./travel-theme-icon";
 import type { BreadcrumbItem } from "@/lib/breadcrumbs";
 import type { PublicTravelTerm } from "@/lib/reiseportal-filter-options";

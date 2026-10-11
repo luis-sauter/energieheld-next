@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/portal/navigation-link";
 import Image from "next/image";
 import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
 import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";

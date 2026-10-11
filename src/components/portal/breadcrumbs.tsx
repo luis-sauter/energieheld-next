@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "./navigation-link";
 import type { BreadcrumbItem } from "@/lib/breadcrumbs";
 
 export function Breadcrumbs({ items, className = "breadcrumbs" }: { items: BreadcrumbItem[]; className?: string }) {

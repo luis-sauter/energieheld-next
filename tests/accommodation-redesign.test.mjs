@@ -27,6 +27,17 @@ registerHooks({
 });
 const {TravelDirectory} = await import('../src/components/portal/travel-directory.tsx');
 const {ListingRow} = await import('../src/components/portal/listing-row.tsx');
+const {default:NavigationLink,loadsPortalData}=await import('../src/components/portal/navigation-link.tsx');
+test('data-heavy portal links never prefetch; actual href, click and ref are retained',()=>{
+ const onClick=()=>{};const ref={current:null};
+ for(const href of ['/', '/reiseziele','/reiseziele/deutschland','/mottoreisen/natur-pur','/unterkuenfte-a-z?q=Hund','/unterkuenfte/sonnenhof','/suche?q=Nordic',{pathname:'/unterkuenfte-a-z',query:{ziel:'italien'}}]){
+  assert.equal(loadsPortalData(href),true);const link=NavigationLink({href,onClick,ref,prefetch:true,children:'Weiter'});
+  assert.equal(link.props.prefetch,false);assert.equal(link.props.href,href);assert.equal(link.props.onClick,onClick);assert.equal(link.props.ref,ref);
+ }
+ for(const href of ['/angebot-anfragen','/login','/admin/mediathek','/datenschutz','/reiseziele-fremd','https://example.org/unterkuenfte']){
+  assert.equal(loadsPortalData(href),false);assert.equal(NavigationLink({href,prefetch:undefined}).props.prefetch,undefined);assert.equal(NavigationLink({href,prefetch:false}).props.prefetch,false);
+ }
+});
 const {CompanyImage} = await import('../src/components/portal/company-image.tsx');
 const {SearchAdResults} = await import('../src/components/advertising/search-ad-results.tsx');
 const {readTravelFilterValues} = await import('../src/lib/reiseportal-filter-options.ts');
