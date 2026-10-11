@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { loadProfileImports } from "@/lib/profile-import";
 import { loadAdminFreshnessStatuses } from "@/lib/profile-freshness";
 import Image from "next/image";
 import Link from "next/link";
@@ -43,6 +44,7 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
     ]);
     const freshnessStatuses = adminClient ? await loadAdminFreshnessStatuses(adminClient,
       [...loaded.database, ...loaded.preview].map(listing => listing.id)) : undefined;
+    const importedProfileIds = adminClient ? [...(await loadProfileImports(adminClient, loaded.database.map(listing => listing.id))).keys()] : undefined;
     const initialValues = readTravelFilterValues(params);
     const shown = filterTravelListings(loaded.database, { ...initialValues, query: "" }).filter(indexableProfile);
     return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Unterkünfte A–Z", "/unterkuenfte-a-z")),
@@ -50,7 +52,7 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
         items: shown.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <TravelDirectory initialValues={initialValues} database={loaded.database}
       preview={loaded.preview} terms={mergePublicTravelTerms(terms,searchBanners.terms)} banners={searchBanners.banners} bannerError={searchBanners.error} error={loaded.error} ads={ads} sidebarOrder={sidebarOrder}
-      canReorder={canReorder} freshnessStatuses={freshnessStatuses} hiddenOrderKeys={loaded.hiddenOrderKeys}
+      canReorder={canReorder} freshnessStatuses={freshnessStatuses} importedProfileIds={importedProfileIds} hiddenOrderKeys={loaded.hiddenOrderKeys}
       saveOrder={saveOrder} saveSidebarOrder={saveSidebarOrder} bannerOptions={bannerOptions} /></>;
   }
 

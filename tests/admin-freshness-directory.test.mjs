@@ -16,6 +16,7 @@ registerHooks({
   if(s.endsWith('.module.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
   if(s==='next/navigation')return {url:'data:text/javascript,export function useRouter(){return {refresh(){}}}',shortCircuit:true};
   if(s==='next/link'||s==='next/image')return {url:`data:text/javascript,export default ${JSON.stringify(s==='next/link'?'a':'img')}`,shortCircuit:true};
+  if(s==='@/lib/admin-review'||(s==='./admin-review'&&c.parentURL?.endsWith('/profile-import.ts')))return {url:'data:text/javascript,export async function checkAdmin(client){return client.verifiedAdmin ? "admin" : "denied"}',shortCircuit:true};
   const loaders={
    '@/lib/reiseportal-directory':'loadReiseportalDirectory', '@/lib/public-travel-taxonomy':'loadPublicTravelTerms',
    '@/lib/public-ads':'loadPublicAds', '@/lib/public-sidebar-order':'loadPublicSidebarOrder', '@/lib/inline-advertising-loader':'loadInlineBannerOptions',
@@ -56,8 +57,7 @@ test('public/provider directory has no status UI or filter; admin gets text and 
  const tree=directoryTree({freshnessStatuses:statusMap});
  assert.equal(nodes(tree,n=>n.props?.className==='admin-freshness-filter').length,1);
  for(const row of nodes(tree,n=>n.type===ListingRow)){
-  assert.equal(row.props.adminStatus.props.status,statusMap[row.props.listing.id]);
-  const html=renderToStaticMarkup(createElement(FreshnessStatus,row.props.adminStatus.props));
+  const status=nodes(row.props.adminStatus,n=>n.type===FreshnessStatus)[0];assert.equal(status.props.status,statusMap[row.props.listing.id]);const html=renderToStaticMarkup(row.props.adminStatus);
   assert.match(html,/aria-hidden="true"/); assert.ok(html.includes(statusMap[row.props.listing.id] === "Aktuell geprüft" ? "Bereits geprüft" : "Prüfung erforderlich"));
  }
 });
@@ -115,15 +115,20 @@ test('server directory performs batch only for verified admin client; public out
  globalThis.directoryFixture={loadReiseportalDirectory:{database:listings.slice(0,3),preview:[listings[3]],hiddenOrderKeys:[],error:null},loadPublicTravelTerms:[],loadPublicAds:[],loadPublicSidebarOrder:[],loadInlineBannerOptions:undefined};
  const publicPage=await DirectoryPage({mode:'travel',searchParams:Promise.resolve({})});
  const publicDirectory=nodes(publicPage,n=>n.type===TravelDirectory)[0];
- assert.equal(publicDirectory.props.freshnessStatuses,undefined);
+ assert.equal(publicDirectory.props.freshnessStatuses,undefined);assert.equal(publicDirectory.props.importedProfileIds,undefined);
  let queries=0;
- const adminClient={from(t){assert.equal(t,'profile_content_freshness');queries++;return {select(){return this},in(k,ids){assert.deepEqual(ids,listings.map(l=>l.id));return Promise.resolve({data:[],error:null})}}}};
+ const adminClient={verifiedAdmin:true,from(t){assert.ok(['profile_content_freshness','company_profile_imports'].includes(t));queries++;return {select(){return this},in(k,ids){assert.deepEqual(ids,(t==='profile_content_freshness'?listings:listings.slice(0,3)).map(l=>l.id));return Promise.resolve({data:t==='company_profile_imports'?[{profile_id:listings[0].id,source_url:'https://operator.example',review_note:'Private import note'}]:[],error:null})}}}};
  const adminPage=await DirectoryPage({mode:'travel',adminClient,searchParams:Promise.resolve({ziel:'deutschland'})});
- assert.equal(queries,1);assert.deepEqual(nodes(adminPage,n=>n.type===TravelDirectory)[0].props.freshnessStatuses,{});
+ assert.equal(queries,2);const projected=nodes(adminPage,n=>n.type===TravelDirectory)[0].props;assert.deepEqual(projected.freshnessStatuses,{});assert.deepEqual(projected.importedProfileIds,[listings[0].id]);assert.doesNotMatch(JSON.stringify(projected),/Private import note|operator.example/);
 });
 test('admin freshness failure is explicit, never fabricated as unreviewed',()=>{
  globalThis.reviewFilter='';const tree=directoryTree({freshnessStatuses:null});
  assert.equal(nodes(tree,n=>n.props?.role==='alert').length,1);
  assert.equal(nodes(tree,n=>n.type==='select' && n.props.value==='').length,1); // existing sort only
  assert.ok(nodes(tree,n=>n.type===ListingRow).every(n=>n.props.adminStatus===undefined));
+});
+
+test('import provenance is beside review status and does not alter freshness filtering',()=>{
+ globalThis.reviewFilter='';const rows=nodes(directoryTree({freshnessStatuses:statusMap,importedProfileIds:[listings[0].id]}),n=>n.type===ListingRow);
+ assert.equal(rows.length,4);for(const row of rows){const html=renderToStaticMarkup(row.props.adminStatus);assert.equal(html.includes('Neu importiert'),row.props.listing.id===listings[0].id);assert.match(html,/Prüfung erforderlich|Bereits geprüft/);}
 });

@@ -54,7 +54,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       </dl>
       {editorLink}
     </header>
-    <ProfileImportNotice entry={importEntry} status={profile.status}/>
+    <ProfileImportNotice entry={importEntry}/>
     <TravelReviewProvider key={JSON.stringify(travelTaxonomy)} snapshot={"error" in travelTaxonomy ? { terms: [], assignedKeys: [], proposedKeys: [] } : travelTaxonomy} saveAction={saveTravelTerms.bind(null, profile.id)}>
     <div className={styles.card}>
       <section id="angaben" className={styles.reviewSection} aria-labelledby="review-details-title">

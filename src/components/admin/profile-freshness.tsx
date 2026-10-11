@@ -2,11 +2,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { freshnessStatus, freshnessStates, freshnessContextDate, freshnessDate, freshnessDueDate, type ContentFreshness } from "@/lib/content-freshness";
+import { ProfileImportBadge } from "./profile-import-badge";
 import { FreshnessStatus } from "./freshness-status";
 
 type Feedback = { error?: string; success?: string };
-export function ProfileFreshness({ state, review, withdraw, disabled, compact = false, editableStatus = false, selectedReview, onReviewChange }: {
+export function ProfileFreshness({ state, review, withdraw, disabled, compact = false, editableStatus = false, selectedReview, onReviewChange, imported }: {
   state: ContentFreshness;
+  imported?: boolean;
   review?: (revision: number) => Promise<Feedback>;
   withdraw?: (revision: number, reviewedAt: string) => Promise<Feedback>;
   disabled: boolean;
@@ -36,7 +38,7 @@ export function ProfileFreshness({ state, review, withdraw, disabled, compact = 
     finally { setBusy(false); setConfirming(false); router.refresh(); }
   }
   if (editableStatus) return <section className="profile-freshness-editor" aria-label="Datenqualität">
-    <FreshnessStatus status={status} compact={false} />
+    <div className="profile-review-badges"><FreshnessStatus status={status} compact={false} /><ProfileImportBadge imported={imported} /></div>
     {review && onReviewChange ? <fieldset className="profile-review-choice" disabled={disabled}>
       <legend>Prüfstatus</legend>
       <label><input type="radio" name="profile-review-status" checked={!(selectedReview ?? !freshnessStates[status].needsReview)} onChange={() => onReviewChange(false)} />Prüfung erforderlich</label>
@@ -45,7 +47,7 @@ export function ProfileFreshness({ state, review, withdraw, disabled, compact = 
     </fieldset> : <small>Sie können das Profil bearbeiten; die Prüfentscheidung benötigt die gesonderte redaktionelle Prüfberechtigung.</small>}
   </section>;
   return <section className={compact ? "profile-freshness-compact" : "profile-freshness-editor"} aria-label="Datenqualität">
-    <FreshnessStatus status={status} compact={false} />
+    <div className="profile-review-badges"><FreshnessStatus status={status} compact={false} /><ProfileImportBadge imported={imported} /></div>
     {compact ? contextDate && <span className="profile-freshness-date">{contextDate.label}: {freshnessDate(contextDate.date)}</span> : <div className="profile-freshness-metadata">
       {state.reviewed_at && <span>Zuletzt geprüft: {freshnessDate(state.reviewed_at)}</span>}
       {state.review_invalidated_at && <span>Zurückgezogen: {freshnessDate(state.review_invalidated_at)}</span>}

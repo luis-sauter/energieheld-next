@@ -58,6 +58,21 @@ const { saveInlineContent } = await import("../src/app/(energieheld)/experten/[s
 const { saveInlineBlockImage } = await import("../src/app/(energieheld)/experten/[slug]/block-image-actions.ts");
 const { demoProfileId, demoPublicSlug, demoSourceSlug, publicSlugForStoredProfile } = await import("../src/lib/reiseportal-demo.ts");
 const profileId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+// Remove the complete admin-only container, including nested status/badge divs.
+function withoutAdminChrome(html) {
+  html = html.replace(/<dialog class="media-library-dialog"[^>]*><\/dialog>/, "");
+  const start = html.indexOf('<div class="profile-admin-actions">');
+  if (start < 0) return html;
+  const tags = /<\/?div\b[^>]*>/g;
+  tags.lastIndex = start;
+  let depth = 0;
+  for (let tag; (tag = tags.exec(html));) {
+    depth += tag[0].startsWith("</") ? -1 : 1;
+    if (depth === 0) return html.slice(0, start) + html.slice(tags.lastIndex);
+  }
+  throw new Error("Unclosed admin actions container");
+}
 function renderGrid(props) {
   return renderToStaticMarkup(createElement(InlineEditorHistoryContext.Provider, {
     value: { state: { past: [], future: [] }, busy: false, feedback: {}, record() {}, clear() {}, undo: async () => {}, redo: async () => {} },
@@ -164,7 +179,7 @@ test("published heading and text blocks render publicly without editorial contro
   }
   const visitor = await renderPage({ authenticated: false }, contentRows);
   const admin = await renderPage({ authenticated: true, admin: true }, contentRows);
-  assert.equal(admin.replace(/<dialog class="media-library-dialog"[^>]*><\/dialog>/, "").replace(/<div class="profile-admin-actions">[\s\S]*?<\/div>/, ""), visitor);
+  assert.equal(withoutAdminChrome(admin), visitor);
 });
 
 test("inline save ignores forged form IDs and updates only the displayed profile", async () => {
@@ -210,7 +225,7 @@ test("verified portal admin gets the entry point while the public view stays unc
   assert.match(admin, /Profil bearbeiten/);
   assert.match(admin, /profile-freshness-compact/);
   assert.doesNotMatch(admin, /Bearbeitungsmodus aktiv|Logo ändern|Alt-Text speichern|inline-admin-profile-form/);
-  assert.equal(admin.replace(/<dialog class="media-library-dialog"[^>]*><\/dialog>/, "").replace(/<div class="profile-admin-actions">[\s\S]*?<\/div>/, ""), visitor);
+  assert.equal(withoutAdminChrome(admin), visitor);
 });
 
 test("Demo uses its real Supabase media and blocks for the admin editor while public views stay neutral", async () => {
@@ -225,7 +240,7 @@ test("Demo uses its real Supabase media and blocks for the admin editor while pu
   }
   const { element, html, adminClient } = await renderDemoPage({ authenticated: true, admin: true });
   assert.match(html, /Profil bearbeiten/);
-  assert.equal(html.replace(/<dialog class="media-library-dialog"[^>]*><\/dialog>/, "").replace(/<div class="profile-admin-actions">[\s\S]*?<\/div>/, ""), visitor.html);
+  assert.equal(withoutAdminChrome(html), visitor.html);
   assert.doesNotMatch(html, /Energieheld|Photovoltaik|Elektrotechnik|Energiesysteme|Gebäudetechnik|Bearbeitungsmodus aktiv/);
   const editor = element.props.children.find((child) => child?.type === InlineProfileEditor);
   assert.ok(editor);
