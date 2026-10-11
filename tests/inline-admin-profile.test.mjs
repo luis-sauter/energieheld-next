@@ -810,6 +810,13 @@ test('shared contact editor exposes clear preview/add/replace/remove actions and
  const disabled=renderToStaticMarkup(createElement(ContactImageEditor,{contact,save:async()=>({}),disabled:true}));assert.match(disabled,/disabled=""/);
 });
 
+test('Storage failure in admin preview does not crash or open a destructive empty-gallery editor',async()=>{
+ const profile={...publicProfile,logo_path:`profiles/${profileId}/logo/test.png`};const c=client({profile});
+ c.storage.from=()=>({createSignedUrls:async()=>({data:null,error:{status:544}})});globalThis.__inlineAdminClient=c;
+ const page=await AdminProfilePreview({params:Promise.resolve({id:profileId}),searchParams:Promise.resolve({bearbeiten:'1'})});
+ const html=renderToStaticMarkup(page);assert.match(html,/role="alert"/);assert.match(html,/Bilder und Zuordnungen bleiben erhalten/);assert.match(html,/Erneut laden/);assert.match(html,/vorschau\?bearbeiten=1/);assert.doesNotMatch(html,/Bearbeitungsmodus aktiv|Speichern und schließen/);assert.equal(c.calls.some(x=>x.payload),false);
+});
+
 test("explicit editorial entry starts existing editor for all statuses including approved; notes internal and return anchor protected",async()=>{
  for(const status of ['draft','pending','rejected','approved']){
   const profile={...publicProfile,status};globalThis.__inlineAdminClient=client({profile});

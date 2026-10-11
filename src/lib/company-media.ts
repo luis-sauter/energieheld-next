@@ -37,47 +37,67 @@ export type MediaState = {
 const errorMessage =
   "Die Medien konnten nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.";
 
-export async function signCompanyMedia(
-  client: SupabaseClient,
-  profile: MediaProfile,
-  includeVideo = false,
-): Promise<SignedMedia> {
-  const rows = [...(profile.company_profile_images ?? [])].sort(
+function imageRows(profile: MediaProfile) {
+  return [...(profile.company_profile_images ?? [])].sort(
     (a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id),
   );
-  const paths = [
-    profile.logo_path,
-    ...(includeVideo ? [profile.contact_image_path] : []),
-    ...rows.map((row) => row.storage_path),
-  ].filter((path): path is string => Boolean(path));
-  const video = includeVideo ? await signProfileVideo(client, profile) : undefined;
-  if (!paths.length) return video ? { images: [], video } : { images: [] };
-  if (paths.some((path) => !path.startsWith(`profiles/${profile.id}/`)))
+}
+
+function imagePaths(profile: MediaProfile, rows: MediaRow[], includeContact = false) {
+  const paths = [profile.logo_path, ...(includeContact ? [profile.contact_image_path] : []),
+    ...rows.map(row => row.storage_path)].filter((path): path is string => Boolean(path));
+  if (paths.some(path => !path.startsWith(`profiles/${profile.id}/`)))
     throw new Error("Invalid media reference");
-  const { data, error } = await client.storage
-    .from(MEDIA_BUCKET)
-    .createSignedUrls(paths, 3600);
-  if (error || !data || data.some((item) => item.error || !item.signedUrl))
-    throw new Error("Media unavailable");
-  const urls = new Map(data.map((item) => [item.path, item.signedUrl]));
+  return paths;
+}
+
+function signedImages(profile: MediaProfile, rows: MediaRow[], urls: Map<string, string>, includeContact = false): SignedMedia {
   const src = (path: string) => {
     const value = urls.get(path);
     if (!value) throw new Error("Media unavailable");
     return value;
   };
   return {
-    ...(video ? { video } : {}),
-    logo: profile.logo_path
-      ? { src: src(profile.logo_path), alt: `Logo von ${profile.display_name}` }
-      : undefined,
-    contactImage: includeVideo && profile.contact_image_path
+    logo: profile.logo_path ? { src: src(profile.logo_path), alt: `Logo von ${profile.display_name}` } : undefined,
+    contactImage: includeContact && profile.contact_image_path
       ? { src: src(profile.contact_image_path), alt: `Ansprechpartner von ${profile.display_name}` } : undefined,
-    images: rows.map((row) => ({
-      id: row.id,
-      src: src(row.storage_path),
-      alt:
-        row.alt_text?.trim() || `Unternehmensbild von ${profile.display_name}`,
-    })),
+    images: rows.map(row => ({ id: row.id, src: src(row.storage_path),
+      alt: row.alt_text?.trim() || `Unternehmensbild von ${profile.display_name}` })),
+  };
+}
+
+// One request at a time per directory load, rather than one simultaneous request
+// per profile. No shared URL cache: the caller's existing Storage/RLS still applies.
+export async function signCompanyDirectoryMedia(client: SupabaseClient, profiles: MediaProfile[]): Promise<Map<string, SignedMedia>> {
+  const prepared = profiles.map(profile => ({ profile, rows: imageRows(profile) }));
+  const paths = [...new Set(prepared.flatMap(({ profile, rows }) => imagePaths(profile, rows)))];
+  const urls = new Map<string, string>();
+  for (let offset = 0; offset < paths.length; offset += 100) {
+    const { data, error } = await client.storage.from(MEDIA_BUCKET).createSignedUrls(paths.slice(offset, offset + 100), 3600);
+    if (error || !data || data.some(item => item.error || !item.signedUrl)) throw new Error("Media unavailable");
+    for (const item of data) if (item.path && item.signedUrl) urls.set(item.path, item.signedUrl);
+  }
+  return new Map(prepared.map(({ profile, rows }) => [profile.id, signedImages(profile, rows, urls)]));
+}
+
+export async function signCompanyMedia(
+  client: SupabaseClient,
+  profile: MediaProfile,
+  includeVideo = false,
+): Promise<SignedMedia> {
+  const rows = imageRows(profile);
+  const paths = imagePaths(profile, rows, includeVideo);
+  const video = includeVideo ? await signProfileVideo(client, profile) : undefined;
+  if (!paths.length) return video ? { images: [], video } : { images: [] };
+  const { data, error } = await client.storage
+    .from(MEDIA_BUCKET)
+    .createSignedUrls(paths, 3600);
+  if (error || !data || data.some((item) => item.error || !item.signedUrl))
+    throw new Error("Media unavailable");
+  const urls = new Map(data.map((item) => [item.path, item.signedUrl]));
+  return {
+    ...signedImages(profile, rows, urls, includeVideo),
+    ...(video ? { video } : {}),
   };
 }
 

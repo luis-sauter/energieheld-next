@@ -60,6 +60,11 @@ process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
 const { loadPublicCompanies, loadPublicCompanyBySlug, PUBLIC_COMPANIES_ERROR } =
   await import("../src/lib/public-companies.ts");
 const { createPublicClient } = await import("../src/lib/supabase/public.ts");
+test('anonymous PostgREST timeout performs one request, not hidden SDK overload retries',async()=>{
+ const previous=globalThis.fetch;let calls=0;
+ globalThis.fetch=async()=>{calls++;return new Response(JSON.stringify({code:'57014',message:'statement timeout'}),{status:500,headers:{'Content-Type':'application/json'}});};
+ try{const result=await createPublicClient().from('company_profiles').select('id');assert.equal(result.error.code,'57014');assert.equal(calls,1);}finally{globalThis.fetch=previous;}
+});
 const { filterListings } = await import("../src/lib/listings.ts");
 const { ListingDetail } =
   await import("../src/components/portal/listing-detail.tsx");

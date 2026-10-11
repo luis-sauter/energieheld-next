@@ -9,6 +9,8 @@ export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient(url, publishableKey, {
+    // Explicit read helpers own the bounded recovery policy; no hidden retry wave.
+    db: { retry: false },
     cookies: {
       getAll() {
         return cookieStore.getAll();
