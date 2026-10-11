@@ -3,6 +3,7 @@ import { ProfileImportNotice } from '@/components/admin/profile-import-notice';
 import { loadAdminTravelTaxonomy } from "@/lib/admin-travel-taxonomy";
 import { saveTravelTerms } from "@/app/(energieheld)/admin/firmen/[id]/travel-actions";
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { loadReviewProfile, canReviewProfiles } from "@/lib/admin-review";
 import { requireAdminAccess } from "@/lib/admin";
@@ -40,13 +41,21 @@ export default async function AdminProfilePreview({ params, searchParams }: { pa
     if (publicResult.data?.id === id) redirect(`/unterkuenfte/${slug}`);
   }
   const [media, content, note, freshness, canReview, travel] = await Promise.all([
-    signCompanyMedia(client, profile, true),
+    signCompanyMedia(client, profile, true).catch(() => null),
     loadPublicProfileContent(client, profile.id),
     loadEditorialNote(client, profile.id),
     loadAdminProfileFreshness(client, profile.id),
     canReviewProfiles(client),
     loadAdminTravelTaxonomy(client, profile.id),
   ]);
+  // Never initialize the editor with an empty replacement gallery after a failed
+  // Storage read. Keep the existing data intact and expose a recoverable read error.
+  if (!media) return <main id="hauptinhalt" className="container detail-page">
+    <h1>{profile.display_name}</h1>
+    <p role="alert">Die Profilmedien konnten gerade nicht geladen werden. Ihre Bilder und Zuordnungen bleiben erhalten. Der Editor wird erst nach vollständigem Laden geöffnet.</p>
+    <Link className="button" href={`/admin/firmen/${id}/vorschau${editing ? "?bearbeiten=1" : ""}`}>Erneut laden</Link>
+    <Link className="button" href={`/admin/firmen/${id}`}>Zur Profilprüfung</Link>
+  </main>;
   const listing = withLegacyImages(companyProfileListing(profile, media));
   const values = Object.fromEntries(profileFields.map((field) => [field, profile[field] ?? ""])) as ProfileValues;
   return <main id="hauptinhalt" className="container detail-page">

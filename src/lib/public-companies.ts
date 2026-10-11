@@ -1,7 +1,7 @@
 import "server-only";
 import { isPubliclyListed } from "./profile-public-visibility";
 import { companyProfileListing } from "./company-presentation";
-import { signCompanyMedia, type MediaRow } from "./company-media";
+import { signCompanyMedia, signCompanyDirectoryMedia, type MediaRow } from "./company-media";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Listing, CompanyVerification } from "@/types/portal";
 import { createPublicClient } from "./supabase/public";
@@ -122,11 +122,11 @@ export async function loadPublicCompanyDirectory(): Promise<Result<{ listings: L
       orderRows.push(...rows);
       if (rows.length < pageSize) break;
     }
+    const ordered = sortByDirectoryOrder(profiles, orderRows);
+    const media = await signCompanyDirectoryMedia(client, ordered);
     return {
       data: {
-        listings: await Promise.all(
-          sortByDirectoryOrder(profiles, orderRows).map((row) => toListing(client, row)),
-        ),
+        listings: ordered.map(row => companyProfileListing(row, media.get(row.id)!)),
         orderRows,
       },
       error: null,

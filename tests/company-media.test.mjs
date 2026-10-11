@@ -5,6 +5,7 @@ const {
   changeOwnCompanyMedia,
   validateMediaFile,
   signCompanyMedia,
+  signCompanyDirectoryMedia,
   MEDIA_MAX_BYTES,
 } = await import("../src/lib/company-media.ts");
 const png = new File(
@@ -12,6 +13,23 @@ const png = new File(
   "untrusted/evil.svg",
   { type: "image/png" },
 );
+
+test('large directory signing uses bounded sequential batches, keeps every profile image and never mixes paths',async()=>{
+ const profiles=Array.from({length:250},(_,i)=>({id:`p${i}`,display_name:`Hotel ${i}`,logo_path:`profiles/p${i}/logo/logo.png`,
+  company_profile_images:[2,0,1,3].map(n=>({id:`${i}-${n}`,storage_path:`profiles/p${i}/gallery/${n}.png`,sort_order:n,alt_text:`Photo ${n}`}))}));
+ let active=0,peak=0;const calls=[];
+ const c={storage:{from(bucket){assert.equal(bucket,'company-media');return{async createSignedUrls(paths,ttl){calls.push([...paths]);assert.equal(ttl,3600);assert.ok(paths.length<=100);active++;peak=Math.max(peak,active);await new Promise(r=>setImmediate(r));active--;return{data:paths.map(path=>({path,signedUrl:`https://private.test/${path}`})),error:null};}}}}};
+ const media=await signCompanyDirectoryMedia(c,profiles);
+ assert.equal(calls.length,13);assert.equal(peak,1);assert.equal(media.size,250);assert.equal(new Set(calls.flat()).size,1250);
+ for(const p of profiles){const m=media.get(p.id);assert.deepEqual(m.images.map(x=>x.id),[0,1,2,3].map(n=>`${p.id.slice(1)}-${n}`));assert.ok(m.images.every(x=>x.src.includes(`/profiles/${p.id}/`)));assert.ok(m.logo.src.includes(`/profiles/${p.id}/logo/`));assert.equal(m.contactImage,undefined);}
+});
+
+test('directory validates every profile path before signing and fails closed on unavailable objects',async()=>{
+ let calls=0;const c={storage:{from(){return{async createSignedUrls(paths){calls++;return{data:paths.map(path=>({path,error:'denied'})),error:null};}}}}};
+ await assert.rejects(signCompanyDirectoryMedia(c,[{id:'own',display_name:'Own',logo_path:'profiles/foreign/logo/x.png'}]),/Invalid media reference/);assert.equal(calls,0);
+ await assert.rejects(signCompanyDirectoryMedia(c,[{id:'own',display_name:'Own',logo_path:'profiles/own/logo/x.png'}]),/Media unavailable/);assert.equal(calls,1);
+ assert.deepEqual([...await signCompanyDirectoryMedia(c,[])],[]);assert.equal(calls,1);
+});
 const row = (i = 0) => ({
   id: `image-${i}`,
   storage_path: `profiles/own-profile/gallery/file-${i}.png`,

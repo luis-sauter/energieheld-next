@@ -6,6 +6,8 @@ import { getSupabaseEnv } from "./env";
 export function createPublicClient() {
   const { url, publishableKey } = getSupabaseEnv();
   return createClient(url, publishableKey, {
+    // Avoid the SDK's automatic GET retries amplifying a database timeout series.
+    db: { retry: false },
     auth: {
       persistSession: false,
       autoRefreshToken: false,
