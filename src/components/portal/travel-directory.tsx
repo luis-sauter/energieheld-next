@@ -4,6 +4,7 @@ import { OfferRequestCta } from "@/components/portal/offer-request-cta";
 
 import { useEffect, useMemo, useState } from "react";
 import { ProfileImportBadge } from "@/components/admin/profile-import-badge";
+import { publicImportPresentation } from "@/config/import-presentation";
 import { FreshnessStatus } from "@/components/admin/freshness-status";
 import { freshnessMatches, freshnessCounts } from "@/lib/content-freshness";
 import type { AdminFreshnessStatuses } from "@/lib/profile-freshness";
@@ -64,7 +65,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     const basic = grouped.filter(row => row.directoryPackage !== "premium");
     const render = (rows: Listing[]) => <div className="listing-rows">{rows.map(listing =>
       <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels}
-        adminStatus={freshnessStatuses?.[listing.id] || importedProfileIds?.includes(listing.id) ? <span className="profile-review-badges">{freshnessStatuses?.[listing.id] && <FreshnessStatus status={freshnessStatuses[listing.id]} />}<ProfileImportBadge imported={importedProfileIds?.includes(listing.id)} /></span> : undefined} />)}</div>;
+        adminStatus={freshnessStatuses?.[listing.id] || importedProfileIds?.includes(listing.id) || (publicImportPresentation.enabled && listing.importedAt) ? <span className="profile-review-badges">{freshnessStatuses?.[listing.id] && <FreshnessStatus status={freshnessStatuses[listing.id]} />}<ProfileImportBadge imported={importedProfileIds?.includes(listing.id) || (publicImportPresentation.enabled && Boolean(listing.importedAt))} /></span> : undefined} />)}</div>;
     return <>
       {premium.length > 0 && <section className="travel-package-group" aria-labelledby="premium-title">
         <header className="travel-package-heading"><h2 id="premium-title">Premium-Unterkünfte</h2><p>Unterkünfte mit erweitertem Profil im Reiseportal.</p></header>{render(premium)}
@@ -108,6 +109,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
                   <option value="">Standard</option>
                   <option value="name">Name A–Z</option>
                   <option value="city">Standort A–Z</option>
+                  {publicImportPresentation.enabled && <option value="imported">Neu importiert zuerst</option>}
                 </select>
               </label>
               <button type="button" className="reise-finder-reset" onClick={() => setValues(readTravelFilterValues({}))}>

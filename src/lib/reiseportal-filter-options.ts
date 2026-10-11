@@ -1,4 +1,5 @@
 import { publicTravelLabel } from "./travel-presentation";
+import { publicImportPresentation } from "../config/import-presentation";
 import { destinations, travelThemes } from "@/data/reiseportal-discovery";
 import type { Listing } from "@/types/portal";
 import { filterTravelDiscovery } from "./reiseportal-search";
@@ -45,7 +46,7 @@ export function readTravelFilterValues(params: Record<string, string | string[] 
     destination: read("ziel"), theme: read("thema"), audience: read("zielgruppe"),
     // Retired public filter: legacy URLs must not restrict results invisibly.
     accommodation: read("unterkunftstyp"), feature: "",
-    query: read("q"), location: read("ort"), sort: read("sort"),
+    query: read("q"), location: read("ort"), sort: read("sort") === "imported" && !publicImportPresentation.enabled ? "" : read("sort"),
   };
 }
 
@@ -64,6 +65,6 @@ export function activeTravelFilterLabels(
   if (values.query) active.push(`Suche: ${values.query}`);
   if (values.location) active.push(`Ort/PLZ: ${values.location}`);
   if (values.sort) active.push(`Sortierung: ${values.sort === "name" ? "Name A–Z"
-    : values.sort === "city" ? "Standort A–Z" : "Standard"}`);
+    : values.sort === "city" ? "Standort A–Z" : values.sort === "imported" ? "Neu importiert zuerst" : "Standard"}`);
   return active;
 }

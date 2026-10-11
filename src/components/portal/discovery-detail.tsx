@@ -17,8 +17,10 @@ import { providerCardImage } from '@/lib/provider-card-media';
 import { CardImageEditor } from "./card-image-editor";
 import { imageCropStyle } from "@/lib/image-crop";
 import cardStyles from './accommodation-card.module.css';
+import { ProfileImportBadge } from "@/components/admin/profile-import-badge";
+import { publicImportPresentation } from "@/config/import-presentation";
 
-export function AccommodationCard({ listing, rotating = false, sizes, cardEditing = false }: { listing: Listing; rotating?: boolean; sizes?: string; cardEditing?: boolean }) {
+export function AccommodationCard({ listing, rotating = false, sizes, cardEditing = false, showImportMarker = false }: { listing: Listing; rotating?: boolean; sizes?: string; cardEditing?: boolean; showImportMarker?: boolean }) {
   const image = providerCardImage(listing, 'travel');
   return <article className="accommodation-card">
     <Link href={`/unterkuenfte/${listing.slug}`} className={cardStyles.card}
@@ -31,6 +33,7 @@ export function AccommodationCard({ listing, rotating = false, sizes, cardEditin
             : "(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 25vw")} /></div>
           : <span className={cardStyles.fallback} aria-hidden="true">{listing.initials}</span>}
       </div>
+      {showImportMarker && publicImportPresentation.enabled && listing.importedAt && <span className={cardStyles.importMarker}><ProfileImportBadge imported /></span>}
       <div className={`accommodation-card-copy ${cardStyles.copy}`}>
         <p className={cardStyles.location}>{[listing.location.city, listing.location.region, listing.location.country].filter(Boolean).filter((value, index, all) => all.indexOf(value) === index).join(" · ")}</p>
         <h3>{listing.name}</h3>
@@ -75,9 +78,9 @@ export function DiscoveryDetail({ entry, title, basePath, listings, advertising,
           <ProfileRotation key={selected.map((listing) => listing.id).join(",")} count={selected.length}
             groups={profileGroups(selected).map((group, index) =>
               <div className="accommodation-grid" key={index}>{group.map((listing) =>
-                <AccommodationCard listing={listing} rotating cardEditing={cardEditing} key={listing.id} />)}</div>)} />
+                <AccommodationCard listing={listing} rotating showImportMarker cardEditing={cardEditing} key={listing.id} />)}</div>)} />
           <Link className="text-link" href={`/unterkuenfte-a-z?${basePath === "/reiseziele" ? "ziel" : "thema"}=${entry.slug}`}>Alle passenden Unterkünfte ansehen →</Link>
-        </> : <div className="accommodation-grid">{listings.map((listing) => <AccommodationCard listing={listing} cardEditing={cardEditing} key={listing.id} />)}</div>}
+        </> : <div className="accommodation-grid">{listings.map((listing) => <AccommodationCard listing={listing} showImportMarker cardEditing={cardEditing} key={listing.id} />)}</div>}
       </> : <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}
       </div></DiscoveryAdvertising>
     </section>
