@@ -6,7 +6,7 @@ import vm from 'node:vm';
 import * as jsx from 'react/jsx-runtime';
 import * as crop from '../src/lib/image-crop.ts';
 const source=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
-function load(p,stubs){const loaded={exports:{}};vm.runInNewContext(transpileModule(source(p),{compilerOptions:{module:ModuleKind.CommonJS,target:ScriptTarget.ES2022,jsx:JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,{module:loaded,exports:loaded.exports,require:name=>{if(name in stubs)return stubs[name];throw Error('Unexpected '+name);},console});return loaded.exports;}
+function load(p,stubs){const loaded={exports:{}};vm.runInNewContext(transpileModule(source(p),{compilerOptions:{module:ModuleKind.CommonJS,target:ScriptTarget.ES2022,jsx:JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,{module:loaded,exports:loaded.exports,require:name=>{if(name in stubs)return stubs[name];throw Error('Unexpected '+name);},console,CustomEvent:class {constructor(type,options){this.type=type;this.options=options;}}});return loaded.exports;}
 const profile='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',asset='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 test('save validates verified admin, IDs and crop, writes only separate card reference, refreshes only on success',async()=>{
  let access='forbidden',writes=[],refreshes=[];
@@ -15,7 +15,7 @@ test('save validates verified admin, IDs and crop, writes only separate card ref
  assert.ok((await saveCardImage(profile,asset,crop.DEFAULT_IMAGE_CROP)).error);assert.equal(writes.length,0);
  access='admin';assert.ok((await saveCardImage('bad',asset,crop.DEFAULT_IMAGE_CROP)).error);assert.ok((await saveCardImage(profile,asset,{focus_x:101,focus_y:50,zoom:1})).error);assert.equal(writes.length,0);
  assert.ok((await saveCardImage(profile,asset,{focus_x:25,focus_y:75,zoom:1.2})).success);
- assert.equal(writes.length,1);assert.equal(writes[0].asset_id,asset);assert.equal(writes[0].profile_id,profile);assert.equal(refreshes.length,1);
+ assert.equal(writes.length,1);assert.equal(writes[0].asset_id,asset);assert.equal(writes[0].profile_id,profile);assert.equal(refreshes.length,0);
  assert.doesNotMatch(source('src/app/(energieheld)/card-image-actions.ts'),/company_profile_images|\.storage|service_role/);
 });
 function harness(){
@@ -25,7 +25,7 @@ function harness(){
  const {CardImageEditor}=load('src/components/portal/card-image-editor.tsx',{'react':react,'react/jsx-runtime':jsx,'next/dynamic.js':()=> 'LazyTool','next/navigation':{useRouter:()=>({refresh(){refreshes++;}})},'@/app/(energieheld)/card-image-actions':{saveCardImage:async()=>{saves++;return {success:'saved'};}},'@/lib/image-crop':crop,'./accommodation-card.module.css':{default:{edit:'edit'}}});
  const all=n=>Array.isArray(n)?n.flatMap(all):n&&typeof n==='object'?[n,...all(n.props?.children)]:[];
  function render(){cursor=0;refcursor=0;effects.length=0;const tree=CardImageEditor({profileId:profile,profileName:'Real provider'});current=all(tree).find(n=>n.type==='dialog');if(current)current.props.ref.current=dialog;for(const effect of effects)effect();return all(tree);}
- function open(){const button=render().find(n=>n.type==='button');button.props.onClick({currentTarget:{focus(){focused++;}}});return render();}
+ function open(){const button=render().find(n=>n.type==='button');button.props.onClick({currentTarget:{focus(){focused++;},dispatchEvent(){}}});return render();}
  return {render,open,dialog,counts:()=>({saves,refreshes,focused,modal})};
 }
 test('actual card edit/cancel closes native dialog and ignores descendant close/cancel events; reopen works',()=>{
@@ -42,7 +42,7 @@ test('library selection and crop are preview-only until explicit save; unrelated
  const image={id:asset,profile_id:profile,kind:'gallery',bucket_id:'company-media',src:'/real.png',alt_text:'Real',archived_at:null};
  assert.throws(()=>browser.props.onSelected({...image,profile_id:'foreign'}));assert.throws(()=>browser.props.onSelected({...image,bucket_id:'ad-media'}));
  browser.props.onSelected(image);let nodes=h.render();assert.equal(h.counts().saves,0);assert.equal(nodes.find(n=>n.type==='LazyTool').props.ratio,35/32);
- const save=nodes.find(n=>n.type==='button'&&n.props.children==='Vorschaubild speichern');await save.props.onClick();assert.equal(h.counts().saves,1);assert.equal(h.counts().refreshes,1);assert.equal(h.counts().modal,false);assert.equal(h.render().filter(n=>n.type==='dialog').length,0);
+ const save=nodes.find(n=>n.type==='button'&&n.props.children==='Vorschaubild speichern');await save.props.onClick();assert.equal(h.counts().saves,1);assert.equal(h.counts().refreshes,0);assert.equal(h.counts().modal,false);assert.equal(h.render().filter(n=>n.type==='dialog').length,0);
 });
 
 test('saved images load once in a signed batch and override only travel cards, with safe pre-migration fallback',async()=>{

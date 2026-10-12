@@ -1,3 +1,4 @@
+import { CardImageSurface, CardImagePhoto, CardImageEditButton } from "./card-image-surface";
 import { TravelSignals } from "./travel-signals";
 import Image from "next/image";
 import Link from "./navigation-link";
@@ -14,7 +15,6 @@ import { jsonLdGraph, breadcrumbSchema, collectionSchema } from "@/lib/seo-schem
 import { relatedTravelPages } from "@/lib/travel-relations";
 import { TravelRelations } from "./travel-relations";
 import { providerCardImage } from '@/lib/provider-card-media';
-import { CardImageEditor } from "./card-image-editor";
 import { imageCropStyle } from "@/lib/image-crop";
 import cardStyles from './accommodation-card.module.css';
 import { ProfileImportBadge } from "@/components/admin/profile-import-badge";
@@ -22,15 +22,15 @@ import { publicImportPresentation } from "@/config/import-presentation";
 
 export function AccommodationCard({ listing, rotating = false, sizes, cardEditing = false, showImportMarker = false, motto = false }: { listing: Listing; rotating?: boolean; sizes?: string; cardEditing?: boolean; showImportMarker?: boolean; motto?: boolean }) {
   const image = providerCardImage(listing, 'travel');
-  return <article className="accommodation-card">
+  const content = <>
     <Link href={`/unterkuenfte/${listing.slug}`} className={`${cardStyles.card}${motto ? ` ${cardStyles.motto}` : ''}`}
       aria-label={`${listing.name} – Details ansehen`}>
       <div className={`accommodation-card-image ${cardStyles.image}${image ? "" : " accommodation-card-image--empty"}`}>
-        {image ? <div className={cardStyles.photo}><Image src={image.src} alt={image.alt} fill loading="lazy"
+        {image || cardEditing ? <div className={cardStyles.photo}>{cardEditing ? <CardImagePhoto image={image} initials={listing.initials} crop={listing.cardImageCrop} sizes={sizes} /> : image && <Image src={image.src} alt={image.alt} fill loading="lazy"
           style={listing.cardImageCrop ? imageCropStyle(listing.cardImageCrop) : undefined}
           unoptimized={/^https?:\/\//.test(image.src)} sizes={sizes ?? (rotating
             ? "(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 430px"
-            : "(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 25vw")} /></div>
+            : "(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 25vw")} />}</div>
           : <span className={cardStyles.fallback} aria-hidden="true">{listing.initials}</span>}
       </div>
       {showImportMarker && publicImportPresentation.enabled && listing.importedAt && <span className={cardStyles.importMarker}><ProfileImportBadge imported /></span>}
@@ -41,8 +41,9 @@ export function AccommodationCard({ listing, rotating = false, sizes, cardEditin
         <span className={cardStyles.details}>Details ansehen <span aria-hidden="true">→</span></span>
       </div>
     </Link>
-    {cardEditing && <CardImageEditor profileId={listing.id} profileName={listing.name} crop={listing.cardImageCrop} image={image} assetId={listing.cardImageAssetId} />}
-  </article>;
+    {cardEditing && <CardImageEditButton profileId={listing.id} profileName={listing.name} crop={listing.cardImageCrop} image={image} assetId={listing.cardImageAssetId} />}
+  </>;
+  return cardEditing ? <CardImageSurface>{content}</CardImageSurface> : <article className="accommodation-card">{content}</article>;
 }
 
 export function DiscoveryDetail({ entry, title, basePath, listings, advertising, rotateProfiles = false, cardEditing = false }: {

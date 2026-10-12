@@ -8,3 +8,6 @@
 .card[data-format="wide"] .creative img { height: auto; }
 .card[data-panoramic] { grid-column: 1 / -1; }
 .creative:focus-visible, .edit:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 3px; }
+.card[data-format="directory"] { padding: 0; border: 0; box-shadow: none; background: transparent; }
+.card[data-format="directory"] .creative { aspect-ratio: 350 / 120; background: #fff; }
+.card[data-format="directory"] .creative img { height: 100%; object-fit: contain; }

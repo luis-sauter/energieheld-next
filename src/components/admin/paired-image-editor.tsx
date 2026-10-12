@@ -15,8 +15,10 @@ export function PairedImageEditor({ block, saveImage, busy, onRemove }: {
   const library = useMediaLibrary();
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
+  const returnFocus = useRef<HTMLButtonElement | null>(null);
   const saving = useRef(false);
   const [opened, setOpened] = useState(false);
+  const [secondImage, setSecondImage] = useState(false);
   const [pending, setPending] = useState(false);
   function onBusyChange(value: boolean) {
     saving.current = value; setPending(value);
@@ -25,10 +27,15 @@ export function PairedImageEditor({ block, saveImage, busy, onRemove }: {
   return <div className={styles.pairedImageEditor}>
     {block.images?.length ? <BlockImageGrid block={block} editorial /> : <p>Bild auswählen und hochladen.</p>}
     <div className={styles.imageTileActions}>
-      <button ref={trigger} type="button" className="button" disabled={busy} onClick={() => {
+      <button ref={trigger} type="button" className="button" disabled={busy} onClick={event => {
+        returnFocus.current = event.currentTarget;
         if (library && !block.images?.length) { library.open({kind:"block",blockId:block.id}); return; }
-        setOpened(true); dialog.current?.showModal();
+        setSecondImage(false); setOpened(true); dialog.current?.showModal();
       }}>{block.images?.length ? "Bild bearbeiten" : "Bild hinzufügen"}</button>
+      {Boolean(block.images?.length) && <button type="button" className="button" disabled={busy} onClick={event => {
+        returnFocus.current = event.currentTarget;
+        setSecondImage(true); setOpened(true); dialog.current?.showModal();
+      }}>{(block.images?.length ?? 0) > 1 ? "Zweites Bild bearbeiten" : "Zweites Bild hinzufügen"}</button>}
       <details className={styles.imageMenu}><summary aria-label="Weitere Bildaktionen">⋯</summary>
       <button type="button" className="button" disabled={busy} onClick={() => {
         if (window.confirm("Bild neben diesem Abschnitt wirklich entfernen?")) void onRemove("delete", block.id);
@@ -36,13 +43,13 @@ export function PairedImageEditor({ block, saveImage, busy, onRemove }: {
       </details>
     </div>
     <dialog ref={dialog} className={styles.imageDialog} aria-labelledby={`image-tools-${block.id}`}
-      onCancel={(event) => { if (saving.current) event.preventDefault(); }}
-      onClose={() => { setOpened(false); trigger.current?.focus(); }}>
+      onCancel={(event) => { if (event.target !== event.currentTarget) return; if (saving.current) event.preventDefault(); }}
+      onClose={event => { if (event.target !== event.currentTarget) return; setOpened(false); (returnFocus.current ?? trigger.current)?.focus(); }}>
       <header className={styles.imageDialogHeader}>
         <h2 id={`image-tools-${block.id}`}>Bild bearbeiten</h2>
         <button type="button" className="button" disabled={pending} onClick={close} autoFocus>Schließen</button>
       </header>
-      {opened && <InlineImageGridEditor block={block} saveAction={saveImage} onBusyChange={onBusyChange} editorial />}
+      {opened && <InlineImageGridEditor block={block} saveAction={saveImage} onBusyChange={onBusyChange} editorial secondImage={secondImage} />}
     </dialog>
   </div>;
 }

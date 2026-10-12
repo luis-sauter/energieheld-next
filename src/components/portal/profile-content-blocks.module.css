@@ -26,6 +26,12 @@
 .editorialText :global(.profile-content-block) { padding: 0 !important; border: 0 !important; background: transparent; box-shadow: none !important; margin: 0 !important; width: 100% !important; margin-left: 0 !important; }
 .editorialText h2 { margin: 0 0 12px; font-size: clamp(22px, 2.2vw, 28px); line-height: 1.25; color: var(--brand-primary); }
 .editorialText p { margin: 0; font-size: 16px; line-height: 1.7; white-space: pre-wrap; }
+.editorialPair[data-flow="standard"] .editorialText p { margin-block-start: 0; }
+/* Align the first visible text edge, rather than the font's invisible half-leading.
+   No image offset or stored content change; unsupported browsers keep the grid fallback. */
+@supports (text-box-trim: trim-start) {
+  .editorialPair[data-flow="standard"] .editorialText p:first-child { text-box-trim: trim-start; text-box-edge: cap alphabetic; }
+}
 .editorialImage .tile { border-radius: 12px; }
 @media (max-width: 640px) {
   .editorialPair { grid-template-columns: minmax(0, 1fr) !important; gap: 20px; padding: 16px; }
@@ -45,6 +51,9 @@
   .editorialPair:is([data-flow="beside"], [data-flow="around"]) .editorialImage { float: right; width: calc(var(--image-share) - 12px); margin: 0 0 16px 24px; }
   .editorialPair:is([data-flow="beside"], [data-flow="around"])[data-image-side="left"] .editorialImage { float: left; margin: 0 24px 16px 0; }
   .editorialPair:is([data-flow="beside"], [data-flow="around"]) .editorialText { display: block; width: auto; max-width: none; }
+  /* A fixed-width inner section establishes a full-width box beside the float.
+     Let its line boxes share the float's containing block instead. */
+  .editorialPair:is([data-flow="beside"], [data-flow="around"]) .editorialText > :global(.profile-content-block) { width: auto !important; }
   .editorialPair[data-flow="around"] .flowIntro { margin-bottom: 16px; }
 }
 @media (max-width: 640px) {

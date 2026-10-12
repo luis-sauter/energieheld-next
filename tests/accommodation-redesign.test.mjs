@@ -12,7 +12,7 @@ registerHooks({
     if (specifier.endsWith('inline-banner-editor')) return {url:'data:text/javascript,export function InlineBannerProvider({children}){return children};export function InlineBannerDialog(){return null}',shortCircuit:true};
     if (specifier === 'next/navigation') return {url:'data:text/javascript,export const useRouter=()=>({refresh(){}})',shortCircuit:true};
     if (specifier.endsWith('inline-banner-actions')) return {url:'data:text/javascript,export async function loadSearchBannerEditor(){return {error:"fixture"}}',shortCircuit:true};
-    if (specifier.endsWith('/trades') && context.parentURL.includes('/components/')) return {url:'data:text/javascript,export function AdvertisingLayout({children,sidebarContinuation}){return [children,sidebarContinuation]}',shortCircuit:true};
+    if (specifier.endsWith('/trades') && context.parentURL.includes('/components/')) return {url:'data:text/javascript,export function AdvertisingLayout({children,sidebarContent}){return [children,sidebarContent]}',shortCircuit:true};
     if (specifier.includes('/admin/') && !specifier.endsWith('/freshness-status') && !specifier.endsWith('/profile-import-badge')) return {url:'data:text/javascript,export function DirectoryOrderEditor(){return null};export function SidebarOrderEditor(){return null}',shortCircuit:true};
     if (specifier.startsWith('@/') || specifier.startsWith('.')) {
       const base = specifier.startsWith('@/') ? new URL('../src/'+specifier.slice(2), import.meta.url) : new URL(specifier,context.parentURL);
@@ -129,9 +129,9 @@ test('advertiser results move to the sidebar after all listings, retain packages
  const banner={banner_key:'campaign:campaign',profile_id:'premium',term_keys:['theme:wellnessangebote'],city:'Bannerstadt',postal_code:'99999',ad};
  const render=(database,values=readTravelFilterValues({}))=>renderToStaticMarkup(createElement(TravelDirectory,{database,preview:[],terms:[],error:null,ads:[],sidebarOrder:[],canReorder:false,hiddenOrderKeys:[],initialValues:values,banners:[banner]}));
  const html=render([listing('premium',true),listing('basic')]);
- assert.match(html,/3 Ergebnisse anzeigen/);assert.equal((html.match(/data-search-banner=/g)||[]).length,1);
+ assert.match(html,/3 Ergebnisse anzeigen/);assert.equal((html.match(/data-search-banner=/g)||[]).length,2);
  assert.ok(html.indexOf('href="/unterkuenfte/premium"')<html.indexOf('data-search-banner='));
- assert.ok(html.indexOf('data-search-banner=')>html.indexOf('href="/unterkuenfte/basic"')); assert.match(source('src/components/advertising/search-ad-results.module.css'),/repeat\(2, minmax\(0, 1fr\)\)/); assert.equal((html.match(/id="search-ads-title"/g)||[]).length,1);
+ assert.ok(html.lastIndexOf('data-search-banner=')>html.indexOf('href="/unterkuenfte/basic"')); assert.match(source('src/components/advertising/search-ad-results.module.css'),/repeat\(2, minmax\(0, 1fr\)\)/); assert.equal((html.match(/id="search-ads-title"/g)||[]).length,0);
  assert.match(html,/Anzeige/);assert.match(html,/sponsored noopener noreferrer/);
  const only=render([listing('premium',true)],readTravelFilterValues({ort:'99999'}));
  assert.match(only,/1 Ergebnis anzeigen/);assert.match(only,/data-search-banner=/);assert.doesNotMatch(only,/aktuell keine passende Unterkunft/);

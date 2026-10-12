@@ -17,11 +17,12 @@ import { useMediaLibrary } from "./media-library-context";
 import gridStyles from "@/components/portal/profile-content-blocks.module.css";
 import styles from "./inline-profile.module.css";
 
-export function InlineImageGridEditor({ block, saveAction, onBusyChange, editorial = false }: {
+export function InlineImageGridEditor({ block, saveAction, onBusyChange, editorial = false, secondImage = false }: {
   block: ProfileContentBlock;
   saveAction: (form: FormData) => Promise<MediaState>;
   onBusyChange?: (busy: boolean) => void;
   editorial?: boolean;
+  secondImage?: boolean;
 }) {
   const router = useRouter();
   const library = useMediaLibrary();
@@ -50,6 +51,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange, editori
   const columns = config.columns;
   const [columnOverride, setColumnOverride] = useState<{ base: number; value: number } | null>(null);
   const previewColumns = columnOverride?.base === columns ? columnOverride.value : columns;
+  const shownColumns = secondImage ? Math.max(2, previewColumns) : previewColumns;
   const resizeAvailable = hasPersistedImageGridSize(block.config);
   const [size, setSize] = useState(() => ({ width: config.width_percent, ratio: config.aspect_ratio }));
   const displayRatio = editorial ? editorialImageAspectRatio({ ...config, aspect_ratio: size.ratio }) : size.ratio;
@@ -234,7 +236,7 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange, editori
     </div>
     <div ref={frameRef} className={`${gridStyles.frame} ${styles.resizableImageFrame}`}>
     <div ref={gridRef} className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={editorial ? 1 : previewColumns}>
-      {imageGridSlots(previewColumns, visibleImages).map((image, index) => image ? <figure key={image.id} className={styles.imageTile}
+      {imageGridSlots(shownColumns, visibleImages).map((image, index) => image ? <figure key={image.id} className={styles.imageTile}
         data-block-image-id={image.id}>
         <div className={gridStyles.tile} style={{ aspectRatio: displayRatio }}><ProfileBlockImage image={image} /></div>
         {imageCaptionPresentation(image).caption && <figcaption className={gridStyles.caption}>{imageCaptionPresentation(image).caption}</figcaption>}
@@ -280,7 +282,13 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange, editori
           if (activeCropId === image.id) setActiveCropId(null);
           const data = form("remove"); data.set("image_id", image.id); void run(data);
         }}>Bild löschen</button>
-      </figure> : library ? <button key={`empty-${index}`} type="button" className={styles.emptyImageTile} style={{ aspectRatio: displayRatio }} disabled={busy || history.busy} onClick={() => library.open({kind:"block",blockId:block.id,onApplied:()=>history.clear()})}>+ Bild hinzufügen</button> : <label key={`empty-${index}`} className={styles.emptyImageTile} style={{ aspectRatio: displayRatio }}>
+      </figure> : library ? <button key={`empty-${index}`} type="button" className={styles.emptyImageTile} style={{ aspectRatio: displayRatio }} disabled={busy || history.busy} onClick={async () => {
+        // The extra slot is only a local preview until media selection is requested.
+        const enlarged = shownColumns > columns;
+        if (enlarged) { const data = form("layout"); data.set("columns", String(shownColumns)); if (!await run(data)) return; }
+        library.open({kind:"block",blockId:block.id,onApplied:()=>history.clear(),
+          onCancel: enlarged ? async () => { const data = form("layout"); data.set("columns", String(columns)); if (!await run(data)) throw Error("Bildplatz konnte nicht zurückgesetzt werden."); } : undefined});
+      }}>{secondImage && index === 1 ? "+ Zweites Bild auswählen" : "+ Bild hinzufügen"}</button> : <label key={`empty-${index}`} className={styles.emptyImageTile} style={{ aspectRatio: displayRatio }}>
         <span>+ Bild hinzufügen</span>
         <input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || history.busy}
           onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} />

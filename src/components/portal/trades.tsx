@@ -46,6 +46,7 @@ export function AdvertisingLayout({
   showEmptySlots = false,
   premiumInSidebar = false,
   sidebarContinuation,
+  sidebarContent,
 }: {
   children: ReactNode;
   ads?: ActiveAd[];
@@ -56,6 +57,7 @@ export function AdvertisingLayout({
   showEmptySlots?: boolean;
   premiumInSidebar?: boolean;
   sidebarContinuation?: ReactNode;
+  sidebarContent?: ReactNode;
 }) {
   const hasRail = showEmptySlots || !collapseEmpty || ads.some((ad) => (premiumInSidebar || ad.placement !== "top_banner") && !ad.suppressed && ad.imageUrl);
   const top = ads.find((ad) => ad.placement === "top_banner");
@@ -66,7 +68,7 @@ export function AdvertisingLayout({
       {!premiumInSidebar && premiumSlot}
       <div className={`commercial-columns${hasRail ? "" : " commercial-columns--no-rail"}`}>
         <div className="commercial-content">{children}</div>
-        {hasRail && <AdvertisingRail slots={sidebarOrder} ads={ads} editor={sidebarEditor} premium={premiumInSidebar ? premiumSlot : undefined} continuation={sidebarContinuation} />}
+        {sidebarContent ?? (hasRail && <AdvertisingRail slots={sidebarOrder} ads={ads} editor={sidebarEditor} premium={premiumInSidebar ? premiumSlot : undefined} continuation={sidebarContinuation} />)}
       </div>
     </div>
   );

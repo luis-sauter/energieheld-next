@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic.js";
-import { useRouter } from "next/navigation";
 import { saveCardImage } from "@/app/(energieheld)/card-image-actions";
 import { DEFAULT_IMAGE_CROP, imageCropStyle, type ImageCrop } from "@/lib/image-crop";
 import type { MediaAsset } from "@/lib/media-library";
@@ -9,10 +8,11 @@ import type { PortalImage } from "@/types/portal";
 import styles from "./accommodation-card.module.css";
 const Browser = dynamic(() => import("../admin/media-library-browser").then(module => module.MediaLibraryBrowser));
 const CropControls = dynamic(() => import("../admin/image-crop-controls").then(module => module.ImageCropControls));
-export function CardImageEditor({ profileId, profileName, crop: savedCrop, image, assetId }: {
+export function CardImageEditor({ profileId, profileName, crop: savedCrop, image, assetId, onSaved }: {
   profileId: string; profileName: string; crop?: ImageCrop; image?: PortalImage; assetId?: string;
+  onSaved?: (value: { image: PortalImage; assetId: string; crop: ImageCrop }) => void;
 }) {
-  const router = useRouter(), dialog = useRef<HTMLDialogElement>(null), returnFocus = useRef<HTMLElement | null>(null);
+  const dialog = useRef<HTMLDialogElement>(null), returnFocus = useRef<HTMLElement | null>(null);
   const [open, setOpen] = useState(false), [selected, setSelected] = useState<{ id: string; src: string; alt: string } | null>(null);
   const [crop, setCrop] = useState<ImageCrop>(savedCrop ?? DEFAULT_IMAGE_CROP);
   const [busy, setBusy] = useState(false), [error, setError] = useState("");
@@ -31,7 +31,9 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
     try {
       const result = await saveCardImage(profileId, selected.id, crop);
       if (result.error) { setError(result.error); return; }
-      dialog.current?.close(); router.refresh();
+      onSaved?.({ image: { src: selected.src, alt: selected.alt }, assetId: selected.id, crop });
+      returnFocus.current?.dispatchEvent(new CustomEvent("portal-card-saved", { bubbles: true }));
+      dialog.current?.close();
     } catch { setError("Speichern ist gerade nicht möglich. Bitte erneut versuchen."); }
     finally { setBusy(false); }
   }

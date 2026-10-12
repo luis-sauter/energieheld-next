@@ -14,6 +14,15 @@ export function useRotationMotion(count: number, advance: () => void, resetKey: 
   const [visible, setVisible] = useState(false);
   const [tabHidden, setTabHidden] = useState(true);
   const [interaction, setInteraction] = useState(0);
+  const [editingCard, setEditingCard] = useState(false);
+  useEffect(() => {
+    const element = root.current;
+    if (!element) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const saved = () => { setEditingCard(true); clearTimeout(timer); timer = setTimeout(() => setEditingCard(false), 10000); };
+    element.addEventListener("portal-card-saved", saved);
+    return () => { element.removeEventListener("portal-card-saved", saved); clearTimeout(timer); };
+  }, []);
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const syncMotion = () => setReducedMotion(preference.matches);
@@ -29,7 +38,7 @@ export function useRotationMotion(count: number, advance: () => void, resetKey: 
       observer.disconnect();
     };
   }, []);
-  const canPlay = rotationCanPlay(count, hovered, focused, touching, paused, reducedMotion, !visible, tabHidden);
+  const canPlay = !editingCard && rotationCanPlay(count, hovered, focused, touching, paused, reducedMotion, !visible, tabHidden);
   useEffect(() => {
     if (!canPlay || !timed) return;
     return scheduleProfileAdvance(advance, delay);

@@ -30,7 +30,7 @@ test("content image grid previews pointer moves and restores order on save failu
   assert.match(reorder, /if \(!await run\([\s\S]*?setOrderOverride\(\{ base: baseOrder, ids: before \}\)/);
   assert.match(code, /onPointerMove=\{moveOrderDrag\}/);
   assert.match(code, /onPointerCancel=\{\(event\) => finishOrderDrag\(event, true\)\}/);
-  assert.match(code, /imageGridSlots\(previewColumns, visibleImages\)/);
+  assert.match(code, /imageGridSlots\(shownColumns, visibleImages\)/);
 });
 
 test("media grips use immediate mouse and touch pointer reordering with rollback", () => {

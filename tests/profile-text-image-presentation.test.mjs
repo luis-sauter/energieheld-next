@@ -47,7 +47,7 @@ test('editor uses the same surface, compact inline input and modal instead of ex
  assert.equal((source.match(/<TextImageSection/g)||[]).length,2);assert.doesNotMatch(source,/pairedImageTools|rowStyles/);
  assert.match(source,/setPairPreview\(\{ textId, imageId, side, share \}\)/);assert.match(source,/history\.record\(\{ kind: "text"/);
  const modal=readFileSync(new URL('../src/components/admin/paired-image-editor.tsx',import.meta.url),'utf8');
- assert.match(modal,/<BlockImageGrid block=\{block\}/);assert.match(modal,/<dialog/);assert.match(modal,/showModal\(\)/);assert.match(modal,/onCancel/);assert.match(modal,/trigger\.current\?\.focus/);assert.match(modal,/InlineImageGridEditor block=\{block\} saveAction=\{saveImage\} onBusyChange=\{onBusyChange\}/);
+ assert.match(modal,/<BlockImageGrid block=\{block\}/);assert.match(modal,/<dialog/);assert.match(modal,/showModal\(\)/);assert.match(modal,/onCancel/);assert.match(modal,/returnFocus\.current \?\? trigger\.current/);assert.match(modal,/InlineImageGridEditor block=\{block\} saveAction=\{saveImage\} onBusyChange=\{onBusyChange\}/);
  const css=readFileSync(new URL('../src/components/portal/profile-content-blocks.module.css',import.meta.url),'utf8');assert.match(css,/editorialPair \{ display: grid; align-items: start; gap: clamp/);assert.match(css,/@media \(max-width: 640px\) \{\s*\.editorialPair \{ grid-template-columns: minmax\(0, 1fr\) !important/);
 });
 const {InlineContentEditor}=await import('../src/components/admin/inline-content-editor.tsx');
