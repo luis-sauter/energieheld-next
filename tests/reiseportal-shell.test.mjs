@@ -207,7 +207,7 @@ test("destination redesign keeps eight real server-rendered links, one H1 and ni
   const html = renderToStaticMarkup(await DestinationOverview());
   assert.deepEqual(globalThis.__discoveryAdPaths, ["/reiseziele"]);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  assert.match(html, /Reiseziele entdecken/);
+  assert.match(html, /Reiseziele, die neugierig machen/);
   assert.equal((html.match(/<h3\b/g) ?? []).length, 8);
   for (const destination of destinations) assert.ok(html.includes(`href="/reiseziele/${destination.slug}"`));
   for (const region of ["Sächsische Schweiz", "Hochkönig", "Blausee", "Gitschberg Jochtal"])
@@ -230,13 +230,26 @@ test("destination redesign keeps eight real server-rendered links, one H1 and ni
   assert.match(cardCss, /prefers-reduced-motion: reduce/);
 });
 
+test('four destination pages use individual editorial intros and headings without changing their identity or image',()=>{
+ assert.equal(new Set(destinations.map(entry=>entry.intro)).size,4);
+ assert.equal(new Set(destinations.map(entry=>entry.stayHeading)).size,4);
+ for(const entry of destinations){
+  const html=renderToStaticMarkup(createElement(DiscoveryDetail,{entry,title:'Reiseziele',basePath:'/reiseziele',listings:[]}));
+  assert.equal((html.match(/<h1\b/g)||[]).length,1);
+  assert.ok(html.includes(`<h1>${entry.title}</h1>`));
+  assert.ok(html.includes(entry.intro));assert.ok(html.includes(entry.stayHeading));
+  assert.ok(html.includes(entry.image));assert.match(html,/href="\/reiseziele"/);
+  assert.ok(entry.seoDescription.length<=170);assert.ok(entry.seoTitle.includes(entry.title));
+ }
+});
+
 test("destination redesign retains real shared banner delivery and admin provider between editorial sections", async () => {
   const data = { ads: [{ id: 'existing', placement: 'sidebar_top', imageUrl: '/known-banner.jpg', headline: 'Existing banner', target_url: 'https://example.org/', banner_size: 'small' }], sidebarOrder: [] };
   globalThis.__discoveryAdvertising = data;
   try {
     const html = renderToStaticMarkup(await DestinationOverview());
     assert.ok(html.indexOf('href="/reiseziele/suedtirol-italien"') < html.indexOf('data-placement="sidebar_top"'));
-    assert.ok(html.indexOf('data-placement="sidebar_top"') < html.indexOf('Beliebte Orte &amp; Regionen'));
+    assert.ok(html.indexOf('data-placement="sidebar_top"') < html.indexOf('Orte für den nächsten Reiseplan'));
     assert.match(html, /src="\/known-banner.jpg"/);
     assert.match(html, /rel="sponsored noopener noreferrer"/);
     assert.match(html, /target="_blank"/);

@@ -8,16 +8,17 @@ export type DiscoveryEntry = {
   image: string | null;
   alt: string;
   intro: string;
+  stayHeading?: string;
+  seoTitle?: string;
+  seoDescription?: string;
   previewSlugs: readonly string[];
 };
 
-const destinationIntro = "Der deutschsprachige Raum bietet eine Vielzahl von faszinierenden Reisezielen, die sich hervorragend für Ihren Urlaub eignen.";
-
 export const destinations: readonly DiscoveryEntry[] = [
-  { title: "Deutschland", slug: "deutschland", image: "/reiseportal/destinations/deutschland.jpg", alt: "Familie auf einer Radtour im Bayerischen Wald", intro: "Deutschland bietet eine breite Palette an Unterkunftsmöglichkeiten für verschiedene Bedürfnisse und Budgets.", previewSlugs: ["bayerischer-wald"] },
-  { title: "Österreich", slug: "oesterreich", image: "/reiseportal/destinations/oesterreich.jpg", alt: "Bergsee bei Maria Alm in Österreich", intro: destinationIntro, previewSlugs: ["hoeflehner", "schafhuber"] },
-  { title: "Schweiz", slug: "schweiz", image: "/reiseportal/destinations/schweiz.jpg", alt: "Blausee in der Schweiz", intro: destinationIntro, previewSlugs: [] },
-  { title: "Südtirol/Italien", slug: "suedtirol-italien", image: "/reiseportal/destinations/suedtirol-italien.jpg", alt: "Landschaft bei der Pension Sonnenhof in Südtirol", intro: destinationIntro, previewSlugs: ["pension-sonnenhof", "villner-hof"] },
+  { title: "Deutschland", slug: "deutschland", image: "/reiseportal/destinations/deutschland.jpg", alt: "Familie auf einer Radtour im Bayerischen Wald", intro: "Wind an der Küste, ein Radweg am Fluss, Waldpfade vor den Alpen: Deutschland lässt sich aus vielen Blickwinkeln entdecken. Zwischen kleinen Orten und lebendigen Städten liegen Reiseziele für ein freies Wochenende genauso wie für längere Urlaubstage. Lernen Sie Gastgeber kennen und finden Sie Ihren Ausgangspunkt für die Region, die Sie neugierig macht.", stayHeading: "Gastgeber zwischen Küste und Alpen", seoTitle: "Deutschland – Urlaub zwischen Küste und Alpen", seoDescription: "Reiseziele in Deutschland: Entdecken Sie Küsten, Flusstäler und Bergregionen sowie passende Unterkünfte für Ihre nächste Auszeit.", previewSlugs: ["bayerischer-wald"] },
+  { title: "Österreich", slug: "oesterreich", image: "/reiseportal/destinations/oesterreich.jpg", alt: "Bergsee bei Maria Alm in Österreich", intro: "In Österreich führen die Wege vom Seeufer hinauf auf die Alm und manchmal direkt in die nächste Kaffeehauspause. Das Salzkammergut, die Alpentäler und die Städte geben einer Reise ganz unterschiedliche Rhythmen. Wählen Sie einen Gastgeber als Ausgangspunkt für Tage draußen, kulturelle Entdeckungen oder eine ruhige Auszeit.", stayHeading: "Gastgeber für Berg- und Seetage", seoTitle: "Österreich – Urlaub zwischen Bergen und Seen", seoDescription: "Österreich entdecken: Alpentäler, Seenlandschaften und Städte kennenlernen. Finden Sie passende Gastgeber für Ihre Urlaubspläne.", previewSlugs: ["hoeflehner", "schafhuber"] },
+  { title: "Schweiz", slug: "schweiz", image: "/reiseportal/destinations/schweiz.jpg", alt: "Blausee in der Schweiz", intro: "Ein See unter steilen Berghängen, ein Weg durch ein Bergdorf, eine Pause auf einer Tessiner Piazza: Die Schweiz eröffnet auf kleinem Raum sehr unterschiedliche Perspektiven. Zwischen Alpen und Seeufern lohnt es sich, einem Ort mehr Zeit zu geben. Entdecken Sie Gastgeber und vergleichen Sie ihre Lage mit den Wegen und Ausflügen, die Sie planen.", stayHeading: "Ihre Auszeit in der Schweiz", seoTitle: "Schweiz – Reiseziele an Seen und in den Alpen", seoDescription: "Reiseziele in der Schweiz: Alpenlandschaften, Seeufer und das Tessin entdecken. Lernen Sie passende Unterkünfte und Gastgeber kennen.", previewSlugs: [] },
+  { title: "Südtirol/Italien", slug: "suedtirol-italien", image: "/reiseportal/destinations/suedtirol-italien.jpg", alt: "Landschaft bei der Pension Sonnenhof in Südtirol", intro: "In Südtirol liegen alpine Wege und südliches Lebensgefühl nah beieinander. Dolomitengipfel, Weinberge und die Orte entlang der Täler laden zu unterschiedlichen Entdeckungen ein; weiter südlich öffnen die Seen Norditaliens neue Reisewege. Finden Sie einen Gastgeber für Ihre Pläne und verbinden Sie Tage in der Landschaft mit Zeit für die Region.", stayHeading: "Gastgeber zwischen Alpen und Süden", seoTitle: "Südtirol/Italien – Dolomiten und südliche Reiseideen", seoDescription: "Südtirol und Italien entdecken: Dolomiten, Weinberge und Seen Norditaliens. Finden Sie passende Unterkünfte für Ihre Reise.", previewSlugs: ["pension-sonnenhof", "villner-hof"] },
 ];
 
 // Preview matches are published Joomla tags from raw/articles.json.

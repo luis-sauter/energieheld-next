@@ -20,13 +20,11 @@ import styles from "./home.module.css";
 import { mottoPresentation } from "@/lib/motto-presentation";
 import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
 import { pageMetadata, type SearchParameters } from "@/lib/seo";
-import { siteSeo } from "@/lib/site-seo";
 import { jsonLdGraph, websiteSchema } from "@/lib/seo-schema";
 import { JsonLd } from "@/components/portal/json-ld";
 
-const site = siteSeo();
 export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParameters> }) {
-  return pageMetadata({ title: site.defaultTitle, description: site.defaultDescription, path: "/", home: true,
+  return pageMetadata({ title: "DAS Reiseportal – Reiseideen seit 2010", description: "Reiseideen seit 2010: Entdecken Sie Reiseziele, Mottoreisen und Unterkünfte für Ihre nächste Auszeit. Lernen Sie Gastgeber und ihre Angebote kennen.", path: "/", home: true,
     noindex: Object.values(await searchParams).some(Boolean) });
 }
 
@@ -78,7 +76,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <section className="section container" aria-labelledby="inspiration-title">
       <ThemeScroller count={travelThemes.length} label="Inspiration & Themenwelten" edgeNavigation
-        heading={<div><p className="eyebrow">Entdecken</p><h2 id="inspiration-title">Inspiration & Themenwelten</h2></div>}
+        heading={<div><p className="eyebrow">Was macht Ihre Reise aus?</p><h2 id="inspiration-title">Inspiration & Themenwelten</h2></div>}
         moreLink={<Link className="text-link" href="/mottoreisen">Alle Mottoreisen →</Link>}>
         {travelThemes.map((entry) => <DiscoveryCard key={entry.slug}
           entry={{ ...entry, image: `/reiseportal/redesign/mottoreisen/${entry.slug}.webp`, alt: mottoPresentation[entry.slug].alt }}
@@ -90,7 +88,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige" />
 
     <section className={styles.destinations} aria-labelledby="destinations-title"><div className="section container">
-      <div className="section-heading"><div><p className="eyebrow">Unterwegs</p><h2 id="destinations-title">Reiseziele</h2></div>
+      <div className="section-heading"><div><p className="eyebrow">Landschaften kennenlernen</p><h2 id="destinations-title">Reiseziele für Ihre nächste Auszeit</h2></div>
         <Link className="text-link" href="/reiseziele">Alle Reiseziele →</Link></div>
       <div className="discovery-grid">
         {destinations.map((entry) => <DiscoveryCard key={entry.slug}
@@ -103,7 +101,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06"]} label="Anzeigen nach den Reisezielen" />
 
     <section className={`section container ${styles.stays}`} aria-labelledby="stays-title">
-      <div className="section-heading"><div><p className="eyebrow">Aus dem Reiseportal</p><h2 id="stays-title">Ausgewählte Unterkünfte</h2></div>
+      <div className="section-heading"><div><p className="eyebrow">Ein guter Ort zum Ankommen</p><h2 id="stays-title">Ausgewählte Unterkünfte</h2></div>
         <Link className="text-link" href="/unterkuenfte-a-z">Alle Unterkünfte →</Link></div>
       <div className={styles.showcase}>
         {featured.map((listing) => <AccommodationCard key={listing.id} listing={listing} cardEditing={Boolean(bannerOptions)}
@@ -113,8 +111,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
 
     <section className={`${styles.provider} container`} aria-labelledby="provider-title">
-      <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Deine Unterkunft auf DAS Reiseportal</h2>
-        <p>Lass dich persönlich beraten, wie deine Unterkunft im Reiseportal sichtbar wird – unverbindlich und ohne Registrierung.</p></div>
+      <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Ihre Unterkunft auf DAS Reiseportal</h2>
+        <p>Machen Sie Ihre Unterkunft dort sichtbar, wo neue Reisepläne entstehen. Wir beraten Sie persönlich – unverbindlich und ohne Registrierung.</p></div>
       <Link className="button button-primary" href="/angebot-anfragen">Angebot anfragen →</Link>
     </section>
   </main></InlineBannerProvider>;

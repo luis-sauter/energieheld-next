@@ -71,7 +71,7 @@ export function DiscoveryDetail({ entry, title, basePath, listings, advertising,
     </header>
     <p className="discovery-intro">{entry.intro}</p>
     <section className="discovery-stays" aria-labelledby="related-stays">
-        <div className="section-heading"><div><p className="eyebrow">Aus dem Reiseportal</p><h2 id="related-stays">Passende Unterkünfte</h2></div></div>
+        <div className="section-heading"><div><p className="eyebrow">Aus dem Reiseportal</p><h2 id="related-stays">{basePath === "/reiseziele" ? entry.stayHeading ?? "Passende Unterkünfte" : "Passende Unterkünfte"}</h2></div></div>
       <DiscoveryAdvertising data={advertising}><div className="discovery-detail-content">
       {listings.length > 0 ? <>
         {rotateProfiles ? <>
@@ -84,8 +84,9 @@ export function DiscoveryDetail({ entry, title, basePath, listings, advertising,
       </> : <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}
       </div></DiscoveryAdvertising>
     </section>
-    <TravelRelations title={basePath === "/reiseziele" ? "Reisethemen mit passenden Gastgebern" : "Reiseziele mit passenden Gastgebern"}
+    <TravelRelations title={basePath === "/reiseziele" ? "Reiseideen für Ihren Aufenthalt" : "Reiseziele mit passenden Gastgebern"}
+      intro={basePath === "/reiseziele" ? "Entdecken Sie Reisethemen, die zu Ihren Plänen für diese Region passen." : undefined}
       links={basePath === "/reiseziele" ? relations.themes : relations.destinations} />
-    <Link className="text-link discovery-back-link" href={basePath}>← Alle {title} ansehen</Link>
+    <Link className="text-link discovery-back-link" href={basePath}>{basePath === "/reiseziele" ? "← Weitere Reiseziele entdecken" : `← Alle ${title} ansehen`}</Link>
   </main>;
 }

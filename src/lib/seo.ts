@@ -56,16 +56,16 @@ export function rootMetadata(config: SiteSeo = siteSeo()): Metadata {
 }
 
 export const hubDescriptions = {
-  destinations: "Entdecken Sie Deutschland, Österreich, die Schweiz und Südtirol/Italien. Reiseziele, Regionen und reale Gastgeber im DAS Reiseportal kennenlernen.",
+  destinations: "Deutschland, Österreich, die Schweiz und Südtirol/Italien entdecken: Reiseziele zwischen Küsten, Seen und Alpen sowie passende Gastgeber kennenlernen.",
   themes: "Reisen nach Ihrem Motto: Natur, Wandern, Wellness, Familie und weitere Reisethemen. Entdecken Sie elf Mottoreisen und passend zugeordnete Anbieter.",
   directory: "Hotels, Pensionen, Ferienwohnungen und weitere Reiseanbieter entdecken. Filtern Sie nach Reiseziel und Reisethema und finden Sie Standort, Bilder und Kontakt.",
 };
 
 export function discoveryMetadata(entry: DiscoveryEntry, kind: "destination" | "theme", config: SiteSeo = siteSeo()) {
   const description = kind === "destination"
-    ? `${entry.title} im DAS Reiseportal: Entdecken Sie passende Unterkünfte mit Standort, Kontakt und zugeordneten Reisethemen.`
+    ? entry.seoDescription ?? `${entry.title} im DAS Reiseportal: Entdecken Sie passende Unterkünfte mit Standort, Kontakt und zugeordneten Reisethemen.`
     : `${entry.title}: ${plainSeoText(entry.intro)}`;
-  return pageMetadata({ title: `${entry.title} – ${kind === "destination" ? "Reiseziele und Unterkünfte" : "Reisethema und passende Anbieter"}`,
+  return pageMetadata({ title: kind === "destination" && entry.seoTitle ? entry.seoTitle : `${entry.title} – ${kind === "destination" ? "Reiseziele und Unterkünfte" : "Reisethema und passende Anbieter"}`,
     description, path: `/${kind === "destination" ? "reiseziele" : "mottoreisen"}/${entry.slug}`, image: entry.image ?? undefined }, config);
 }
 

@@ -40,13 +40,25 @@ registerHooks({
  },
  load(url,context,next){if(/\.tsx?$/.test(url))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(url),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX}}).outputText};return next(url,context);}
 });
-const {default:Home}=await import('../src/app/(energieheld)/page.tsx');
+const {default:Home,generateMetadata:homeMetadata}=await import('../src/app/(energieheld)/page.tsx');
 const {DiscoveryCard}=await import('../src/components/portal/reise-overview.tsx');
 const {AccommodationCard}=await import('../src/components/portal/discovery-detail.tsx');
 const {travelThemes,destinations}=await import('../src/data/reiseportal-discovery.ts');
 const {discoveryAudienceShortcuts}=await import('../src/lib/discovery-shortcuts.ts');
 const {filterTravelListings}=await import('../src/lib/reiseportal-facets.ts');
 const {readTravelFilterValues}=await import('../src/lib/reiseportal-filter-options.ts');
+
+test('homepage brand history is visible before the headline and finder, with matching home-only metadata',async()=>{
+ const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
+ assert.match(html,/<p class="eyebrow">DAS Reiseportal · Reiseideen seit 2010<\/p>/);
+ assert.ok(html.indexOf('Reiseideen seit 2010')<html.indexOf('<h1'));
+ assert.equal((html.match(/<h1\b/g)||[]).length,1);
+ assert.match(html,/Reisen beginnt mit einer guten Idee/);
+ assert.doesNotMatch(html,/Deine Unterkunft|Lass dich|Sag uns/);
+ const meta=await homeMetadata({searchParams:Promise.resolve({})});
+ assert.deepEqual(meta.title,{absolute:'DAS Reiseportal – Reiseideen seit 2010'});
+ assert.match(meta.description,/seit 2010/);assert.equal(meta.openGraph.description,meta.description);
+});
 test('public shared import badge is opt-in for discovery cards; protected homepage stays unchanged',async()=>{
  const {publicImportPresentation}=await import('../src/config/import-presentation.ts');
  const listing={...profiles[0],importedAt:'2026-10-11T00:00:00Z'};
