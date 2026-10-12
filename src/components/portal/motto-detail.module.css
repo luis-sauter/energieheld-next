@@ -10,7 +10,7 @@
 .count { margin-bottom: 22px; color: #345d72; font-size: .9rem; }
 .pair { margin-bottom: 22px; }
 .row { position: relative; min-width: 0; }
-.track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 36px) / 3); gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; padding: 5px 2px 10px; }
+.track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 36px) / 3); gap: 18px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; overflow-anchor: none; padding: 5px 2px 10px; }
 .track::-webkit-scrollbar { display: none; }
 .track > * { min-width: 0; scroll-snap-align: start; }
 .track:focus-visible { outline: 2px solid #217caf; outline-offset: 4px; }

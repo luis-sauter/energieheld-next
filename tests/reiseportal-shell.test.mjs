@@ -317,7 +317,7 @@ test("four destinations and eleven active themes have sourced images, links and 
   await assert.rejects(destinationRoute.default({ params: Promise.resolve({ slug: "unbekannt" }) }), /NOT_FOUND/);
 });
 
-test('motto detail keeps every matching profile and campaign once with alternating manual rows and editorial', async()=>{
+test('motto detail keeps every matching profile and campaign once in exactly five alternating rows', async()=>{
  const {MottoDetail}=await import('../src/components/portal/motto-detail.tsx');
  const listings=Array.from({length:47},(_,i)=>({...reiseportalPreview[0],id:'profile-'+i,slug:'profile-'+i,name:'Unterkunft '+i}));
  const ads=Array.from({length:9},(_,i)=>({id:'ad-'+i,placement: i===0?'top_banner':'sidebar_'+String(i+3).padStart(2,'0'),headline:'Banner '+i,imageUrl:'/existing-'+i+'.jpg',target_url:'https://example.org/'+i}));
@@ -325,7 +325,11 @@ test('motto detail keeps every matching profile and campaign once with alternati
  assert.equal((html.match(/class="accommodation-card"/g)||[]).length,47);
  assert.equal((html.match(/data-placement=/g)||[]).length,9);assert.equal((html.match(/<h1\b/g)||[]).length,1);
  for(let i=0;i<47;i++)assert.equal((html.match(new RegExp('href="/unterkuenfte/profile-'+i+'"','g'))||[]).length,1);
- assert.match(html,/motto-editorial-v2\/natur-pur.webp/);assert.match(html,/Wo die Landschaft den Takt vorgibt/);
+ assert.match(html,/motto-editorial-v2\/natur-pur.webp/);assert.match(html,/Natururlaub lebt von den kleinen Entdeckungen/);
+ assert.equal((html.match(/role="region"/g)||[]).length,5);
+ const rowNames=[...html.matchAll(/role="region" aria-label="([^"]+)"/g)].map(match=>match[1]);
+ assert.deepEqual(rowNames,['Unterkünfte, Reihe 1','Banner, Reihe 1','Unterkünfte, Reihe 2','Banner, Reihe 2','Unterkünfte, Reihe 3']);
+ assert.doesNotMatch(html,/motto-editorial"|Reiseziele mit passenden Gastgebern|Wo die Landschaft den Takt vorgibt/);
  assert.ok(html.indexOf('aria-label="Unterkünfte, Reihe 1"')<html.indexOf('aria-label="Banner, Reihe 1"'));
  assert.ok(html.indexOf('aria-label="Banner, Reihe 1"')<html.indexOf('aria-label="Unterkünfte, Reihe 2"'));
  assert.doesNotMatch(html,/Angebot anfragen|Automatischen Wechsel pausieren|Freier Werbeplatz/);
