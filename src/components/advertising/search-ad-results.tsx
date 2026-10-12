@@ -10,7 +10,7 @@ import { InlineBannerDialog } from './inline-banner-editor';
 import { SearchAdCard } from './search-ad-card';
 import styles from './search-ad-results.module.css';
 
-export function SearchAdResults({ banners, filtered, canEdit = false, compact = false }: { banners: TravelSearchBanner[]; filtered: boolean; canEdit?: boolean; compact?: boolean }) {
+export function SearchAdResults({ banners, filtered, canEdit = false, compact = false, directory = false, onCreativeLoaded }: { banners: TravelSearchBanner[]; filtered: boolean; canEdit?: boolean; compact?: boolean; directory?: boolean; onCreativeLoaded?: (ad: TravelSearchBanner["ad"], image: HTMLImageElement) => void }) {
   const router = useRouter();
   const [measured, setMeasured] = useState<Record<string, CreativeGeometry>>({});
   const [editor, setEditor] = useState<{ options: InlineBannerOptions; banner: InlineBanner } | null>(null);
@@ -19,7 +19,7 @@ export function SearchAdResults({ banners, filtered, canEdit = false, compact = 
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const opening = useRef(false);
-  const groups = groupSearchAdvertisements(banners, measured);
+  const groups = directory ? { wide: banners, other: [] } : groupSearchAdvertisements(banners, measured);
   function recordGeometry(banner: TravelSearchBanner, geometry: CreativeGeometry) {
     const key = searchCreativeKey(banner);
     const known = measured[key] ?? { width: banner.ad.image_width ?? 0, height: banner.ad.image_height ?? 0 };
@@ -47,7 +47,7 @@ export function SearchAdResults({ banners, filtered, canEdit = false, compact = 
     {pending && <p role="status">Bannereditor wird geladen …</p>}
     {(['wide', 'other'] as const).map(group => groups[group].length > 0 && <section key={group} className={styles.group} aria-labelledby={compact ? undefined : `search-ads-${group}`} data-ad-format-group={group}>
       {!compact && <h3 id={`search-ads-${group}`} className={styles.heading}>{group === 'wide' ? 'Breite Banner' : 'Weitere Anzeigen'}</h3>}
-      <div className={styles.grid}>{groups[group].map(banner => <SearchAdCard key={banner.advertiser_key} banner={banner}
+      <div className={styles.grid}>{groups[group].map(banner => <SearchAdCard key={directory ? banner.ad.id : banner.advertiser_key} banner={banner} directory={directory} onCreativeLoaded={onCreativeLoaded}
         geometry={measured[searchCreativeKey(banner)]} onGeometry={geometry => recordGeometry(banner, geometry)}
         onEdit={canEdit ? () => open(banner) : undefined} loading={pending && loadingKey === banner.banner_key} />)}</div>
     </section>)}

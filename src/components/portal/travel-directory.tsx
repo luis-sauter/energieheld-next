@@ -9,9 +9,7 @@ import { FreshnessStatus } from "@/components/admin/freshness-status";
 import { freshnessMatches, freshnessCounts } from "@/lib/content-freshness";
 import type { AdminFreshnessStatuses } from "@/lib/profile-freshness";
 import styles from "./travel-directory.module.css";
-import { directoryBannerPool, directoryBannerSequence } from "@/lib/directory-banner-layout";
-import { DirectoryBannerContinuation } from "@/components/advertising/directory-banner-continuation";
-import { CampaignSlot } from "@/components/advertising/campaign-view";
+import { directoryBannerPool, directoryImageKey, sampleDirectoryCreative, type CreativeSamples } from "@/lib/directory-banner-layout";
 import type { ActiveAd } from "@/lib/ad-values";
 import type { SidebarSlot } from "@/lib/sidebar-order";
 import type { Listing } from "@/types/portal";
@@ -62,38 +60,41 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   const editingAvailable = canReorder && Boolean(saveOrder && saveSidebarOrder) &&
     !reviewFilter && Object.values(values).every((value) => !value);
 
-  const bannerPool = useMemo(() => directoryBannerPool([...ads, ...matched.advertisers.map(banner => banner.ad)]), [ads, matched.advertisers]);
-  const mobileBanners = directoryBannerSequence(bannerPool, Math.max(1, Math.ceil(results.length / 6) + 1));
-  function mobileBanner(ad: ActiveAd) {
-    if (!bannerOptions) return <CampaignSlot ad={ad} placement={ad.placement} searchResult />;
-    const banner = matched.advertisers.find(banner => banner.ad.id === ad.id) ?? {
-      banner_key: ad.id, profile_id: null, postal_code: "", city: "", term_keys: [], source_path: "/unterkuenfte-a-z", ad,
+  const [samples, setSamples] = useState<CreativeSamples>({});
+  const bannerPool = useMemo(() => directoryBannerPool([...ads, ...matched.advertisers.map(banner => banner.ad)], samples), [ads, matched.advertisers, samples]);
+  function recordCreative(ad: ActiveAd, image: HTMLImageElement) {
+    const key = directoryImageKey(ad), value = sampleDirectoryCreative(image);
+    if (value.length) setSamples(current => current[key] ? current : { ...current, [key]: value });
+  }
+  function asBanner(ad: ActiveAd): TravelSearchBanner {
+    return matched.advertisers.find(banner => banner.ad.id === ad.id) ?? {
+      banner_key: ad.id, advertiser_key: ad.id, profile_id: null, postal_code: "", city: "", term_keys: [], source_path: "/unterkuenfte-a-z", ad,
     };
-    return <SearchAdResults banners={[banner]} filtered={false} compact canEdit />;
+  }
+  function mobileBanner(ad: ActiveAd) {
+    return <SearchAdResults banners={[asBanner(ad)]} filtered={false} compact directory canEdit={Boolean(bannerOptions)} onCreativeLoaded={recordCreative} />;
   }
 
   function renderResults(ordered: Listing[]) {
     const grouped = [...ordered.filter(row => row.directoryPackage === "premium"), ...ordered.filter(row => row.directoryPackage !== "premium")];
     const premium = grouped.filter(row => row.directoryPackage === "premium");
     const basic = grouped.filter(row => row.directoryPackage !== "premium");
-    const render = (rows: Listing[], offset = 0) => <div className="listing-rows">{rows.map((listing,index) => <Fragment key={listing.id}>
+    let mobileIndex = 0;
+    const render = (rows: Listing[]) => <div className="listing-rows">{rows.map((listing,index) => <Fragment key={listing.id}>
       <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels}
         adminStatus={freshnessStatuses?.[listing.id] || importedProfileIds?.includes(listing.id) || (publicImportPresentation.enabled && listing.importedAt) ? <span className="profile-review-badges">{freshnessStatuses?.[listing.id] && <FreshnessStatus status={freshnessStatuses[listing.id]} />}<ProfileImportBadge imported={importedProfileIds?.includes(listing.id) || (publicImportPresentation.enabled && Boolean(listing.importedAt))} /></span> : undefined} />
-      {((index + 1) % 6 === 0 || index === rows.length - 1) && mobileBanners[Math.floor((offset + index) / 6)] && <div className="directory-mobile-banner">{mobileBanner(mobileBanners[Math.floor((offset + index) / 6)])}</div>}
+      {((index + 1) % 6 === 0 || index === rows.length - 1) && bannerPool[mobileIndex] && <div className="directory-mobile-banner">{mobileBanner(bannerPool[mobileIndex++])}</div>}
       </Fragment>)}</div>;
     return <>
       {premium.length > 0 && <section className="travel-package-group" aria-labelledby="premium-title">
         <header className="travel-package-heading"><h2 id="premium-title">Premium-Unterkünfte</h2><p>Unterkünfte mit erweitertem Profil im Reiseportal.</p></header>{render(premium)}
       </section>}
       {basic.length > 0 && <section className="travel-package-group" aria-labelledby="basic-title">
-        <header className="travel-package-heading"><h2 id="basic-title">Weitere Unterkünfte</h2><p>Weitere Gastgeber aus dem Reiseportal – kompakt und übersichtlich.</p></header>{render(basic,premium.length)}
+        <header className="travel-package-heading"><h2 id="basic-title">Weitere Unterkünfte</h2><p>Weitere Gastgeber aus dem Reiseportal – kompakt und übersichtlich.</p></header>{render(basic)}
       </section>}
     </>;
   }
-  const filtered = Boolean(values.destination || values.theme || values.audience || values.accommodation || values.location);
-  const extraAdvertisements = matched.advertisers.filter(banner => !ads.some(ad => ad.id === banner.ad.id && !ad.suppressed && ad.imageUrl));
-  const previousBanner = extraAdvertisements.at(-1)?.ad.id ?? ads.filter(ad => ad.imageUrl && !ad.suppressed).at(-1)?.id;
-  const advertisements = <SearchAdResults banners={extraAdvertisements} filtered={filtered} canEdit={Boolean(bannerOptions)} />;
+  const advertisements = <SearchAdResults banners={bannerPool.map(asBanner)} filtered={false} compact directory canEdit={Boolean(bannerOptions)} onCreativeLoaded={recordCreative} />;
 
   useEffect(() => {
     const nextUrl = travelFilterUrl(values);
@@ -110,7 +111,9 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     <TravelFinder mode="directory" banners={banners} listings={listings} options={options} values={values} onChange={setValues} error={error ?? bannerError} renderFinder={(finder) =>
     <div className="trade-page travel-directory-content">
       <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder} editorEnabled={editingAvailable} premiumInSidebar showEmptySlots={Boolean(bannerOptions)}
-        sidebarContinuation={<>{results.length > 0 && advertisements}<DirectoryBannerContinuation pool={bannerPool} previousId={previousBanner} /></>}
+        sidebarContent={<aside className="commercial-sidebar advertising-rail" aria-label="Werbeanzeigen"><p className="advertising-rail-label">Anzeige</p>{advertisements}
+          {editingAvailable && saveSidebarOrder && <details><summary>Banner-Reihenfolge bearbeiten</summary><SidebarOrderEditor ads={ads} slots={sidebarOrder} saveOrder={saveSidebarOrder} /></details>}
+        </aside>}
         sidebarEditor={editingAvailable && saveSidebarOrder
           ? <SidebarOrderEditor ads={ads} slots={sidebarOrder} saveOrder={saveSidebarOrder} /> : undefined}>
         {finder}

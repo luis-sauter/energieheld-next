@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { validateOfferPeriod } from "@/lib/offer-period";
 import { sendOfferRequest, prepareOfferImage } from "@/app/(energieheld)/angebot-anfragen/actions";
 import { BannerMediaPicker } from "./banner-media-picker";
 import { useActionState, useEffect, useRef, useState } from "react";
@@ -145,6 +146,14 @@ export function CampaignForm({
     return areas.filter((key, index) => areas.indexOf(key) === index);
   });
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
+  const [periodError, setPeriodError] = useState("");
+  function checkPeriod(form: HTMLFormElement | null) {
+    if (!publicRequestKey || !form) return "";
+    const start = form.elements.namedItem("requested_start_date") as HTMLInputElement;
+    const end = form.elements.namedItem("requested_end_date") as HTMLInputElement;
+    const message = validateOfferPeriod(start, end);
+    setPeriodError(message); return message;
+  }
   const scopeToFocus = useRef<RequestAdScope | null>(null);
   const areaPickers = useRef<Partial<Record<RequestAdScope, HTMLSelectElement | null>>>({});
   const areaToFocus = useRef<string | null>(null);
@@ -209,7 +218,9 @@ export function CampaignForm({
   </div>;
   if (publicRequestKey && state.success) return <div className={styles.success} role="status">{state.success}</div>;
   return (
-    <><form action={action} className={`${styles.form} ${styles.requestForm}`}>
+    <><form action={action} className={`${styles.form} ${styles.requestForm}`} onSubmit={event => {
+      if (checkPeriod(event.currentTarget)) { event.preventDefault(); event.currentTarget.reportValidity(); }
+    }}>
       <input type="hidden" name="campaign_id" value={campaign.id} />
       {publicRequestKey && <input type="hidden" name="request_key" value={publicRequestKey} />}
       <input type="hidden" name="placement" value={values.targets[0]?.placement ?? campaign.placement} />
@@ -237,16 +248,24 @@ export function CampaignForm({
       </fieldset>
       <fieldset className={styles.formSection}>
         <legend>Zeitraum{publicRequestKey ? " (optional)" : ""}</legend>
-        <div className={styles.dateGrid}>
+        <div className={styles.dateGrid} onInput={event => checkPeriod((event.target as HTMLInputElement).form)}
+          onKeyUp={event => checkPeriod((event.target as HTMLInputElement).form)}
+          onBlurCapture={event => checkPeriod((event.target as HTMLInputElement).form)}
+          onInvalidCapture={event => checkPeriod((event.target as HTMLInputElement).form)}>
           {([
             ["requested_start_date", admin && ["approved", "paused"].includes(campaign.status) ? "Ausspielung ab" : "Gewünschter Start"],
             ["requested_end_date", admin && ["approved", "paused"].includes(campaign.status) ? "Ausspielung bis" : "Gewünschtes Ende"],
           ] as const).map(([field, label]) => (
             <label key={field}>{label}
-              <input type="date" name={field} required={!publicRequestKey} value={values[field]} onChange={(e) => set(field, e.target.value)} />
+              <input type="date" name={field} required={!publicRequestKey} value={values[field]}
+                aria-invalid={periodError ? true : undefined} aria-describedby={publicRequestKey ? "offer-period-hint" : undefined}
+                onChange={(e) => set(field, e.target.value)} />
             </label>
           ))}
         </div>
+        {publicRequestKey && <p id="offer-period-hint" role={periodError ? "alert" : undefined} className={periodError ? styles.error : styles.sectionHint}>
+          {periodError || "Optional: Start und Ende angeben oder beide Felder leer lassen."}
+        </p>}
       </fieldset>
       <fieldset className={styles.formSection}>
         <legend>Wo möchten Sie werben?{publicRequestKey ? " (optional)" : ""}</legend>

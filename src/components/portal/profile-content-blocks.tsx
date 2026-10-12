@@ -84,7 +84,7 @@ export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[]
       data-spacing-top={layout.spacing_top} data-spacing-bottom={layout.spacing_bottom}
       style={{ width: paired ? "100%" : `${layout.width_percent}%`, marginLeft: paired ? 0 : `${layout.offset_percent}%`, textAlign: groupAlign ?? align }}>
       {block.type === "heading" ? <h2>{block.content.text}</h2>
-        : block.type === "text" ? <p>{block.content.text}</p> : block.type === "video" ? <>{block.content.title && <h3>{block.content.title}</h3>}{block.content.text && <p>{block.content.text}</p>}{block.video && <PortalVideo {...block.video} name={block.content.title || "Unternehmensvideo"}/>}</> : <BlockImageGrid block={block} />}
+        : block.type === "text" ? <p>{paired ? block.content.text.trimStart() : block.content.text}</p> : block.type === "video" ? <>{block.content.title && <h3>{block.content.title}</h3>}{block.content.text && <p>{block.content.text}</p>}{block.video && <PortalVideo {...block.video} name={block.content.title || "Unternehmensvideo"}/>}</> : <BlockImageGrid block={block} />}
     </section>;
   }
   return <>
@@ -130,7 +130,7 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
         marginLeft: item.imageBlock ? 0 : `${item.layout.offset_percent}%`, textAlign: item.layout.text_align }}>
       {!item.headingHidden && (!item.imageBlock?.images?.length || item.pairLayout?.text_flow && item.pairLayout.text_flow !== "standard") && <h2 style={{ textAlign: item.headingAlign }}>{item.heading}</h2>}
       {body && <p style={{ textAlign: item.bodyAlign,
-        ...(item.kind === "business" ? { whiteSpace: "pre-wrap" } : {}) }}>{body}</p>}
+        ...(item.kind === "business" ? { whiteSpace: "pre-wrap" } : {}) }}>{item.imageBlock ? body.trimStart() : body}</p>}
     </section>;
     if (!item.imageBlock?.images?.length) { sections.push(section); continue; }
     const image = item.imageBlock;

@@ -1,5 +1,4 @@
 "use server";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { checkAdmin, isProfileId } from "@/lib/admin-review";
 import { hasPersistedImageCrop, type ImageCrop } from "@/lib/image-crop";
@@ -12,6 +11,7 @@ export async function saveCardImage(profileId: string, assetId: string, crop: Im
   const result = await client.from("company_profile_card_images").upsert({ profile_id: profileId,
     asset_id: assetId, bucket_id: "company-media", storage_path: "", ...crop }, { onConflict: "profile_id" });
   if (result.error) return { error: "Das Kartenbild konnte nicht gespeichert werden. Bitte wählen Sie ein verfügbares Bild dieses Unternehmens." };
-  revalidatePath("/", "layout");
+  // Public card references are read fresh for each request (no persistent cache).
+  // A global layout revalidation reshuffles the currently edited carousel.
   return { success: "Kartenbild gespeichert." };
 }
