@@ -4,7 +4,7 @@ import { TravelThemeIcon } from "./travel-theme-icon";
 import type { BreadcrumbItem } from "@/lib/breadcrumbs";
 import type { PublicTravelTerm } from "@/lib/reiseportal-filter-options";
 
-export function TravelRelations({ title, links, facts = [], presentation }: { title: string; links: BreadcrumbItem[]; facts?: PublicTravelTerm[]; presentation?: "profile" }) {
+export function TravelRelations({ title, links, facts = [], presentation, intro }: { title: string; links: BreadcrumbItem[]; facts?: PublicTravelTerm[]; presentation?: "profile"; intro?: string }) {
   const uniqueLinks = [...new Map(links.map(link => [link.path, link])).values()];
   const uniqueFacts = [...new Map(facts.map(term => [term.term_key, term])).values()];
   const groups = [
@@ -30,7 +30,7 @@ export function TravelRelations({ title, links, facts = [], presentation }: { ti
     </section>)}</div>
   </section>;
   return <section className="travel-relations" aria-label={title}>
-    <header><span className="eyebrow">Ihre nächste Reise entdecken</span><h2>{title}</h2><p>Was diese Unterkunft ausmacht — und wohin es von hier aus weitergeht.</p></header>
+    <header><span className="eyebrow">Ihre nächste Reise entdecken</span><h2>{title}</h2><p>{intro ?? "Was diese Unterkunft ausmacht — und wohin es von hier aus weitergeht."}</p></header>
     <div className="travel-relations-grid">{groups.map(group => <section className="travel-relations-group" key={group.label} aria-label={group.label}>
       <h3>{group.label}</h3><p>{group.description}</p>
       <ul>{group.values.map(value => <li key={value.path || value.name}>{value.path ? <Link href={value.path}>{value.name}<span aria-hidden="true">↗</span></Link> : <span className="travel-relations-fact">{value.name}</span>}</li>)}</ul>
