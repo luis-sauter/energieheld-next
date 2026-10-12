@@ -96,8 +96,8 @@ export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[]
       return <div key={row.left[0].id} className="profile-content-block" data-spacing-top={frame.spacing_top} data-spacing-bottom={frame.spacing_bottom}
         style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
         <TextImageSection
-          heading={(frame.text_flow ?? "standard") === "standard" ? [...row.left, ...row.right].filter(block => block.type === "heading").map(block => renderBlock(block, true)) : undefined}
-          text={[...row.left, ...row.right].filter((block) => block.type !== "image_grid" && ((frame.text_flow ?? "standard") !== "standard" || block.type !== "heading")).map((block) => renderBlock(block, true))}
+          heading={["standard", "beside"].includes(frame.text_flow ?? "standard") ? [...row.left, ...row.right].filter(block => block.type === "heading").map(block => renderBlock(block, true)) : undefined}
+          text={[...row.left, ...row.right].filter((block) => block.type !== "image_grid" && (!["standard", "beside"].includes(frame.text_flow ?? "standard") || block.type !== "heading")).map((block) => renderBlock(block, true))}
           image={[...row.left, ...row.right].filter((block) => block.type === "image_grid").map((block) => <BlockImageGrid key={block.id} block={block} editorial />)}
           textWidth={normalizeBlockLayout(text?.config).width_percent}
           imageWidth={normalizeBlockLayout([...row.left, ...row.right].find((block) => block.type === "image_grid")?.config).width_percent}
@@ -128,7 +128,7 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
       data-spacing-top={item.layout.spacing_top} data-spacing-bottom={item.layout.spacing_bottom}
       style={{ width: item.imageBlock ? "100%" : `${item.layout.width_percent}%`,
         marginLeft: item.imageBlock ? 0 : `${item.layout.offset_percent}%`, textAlign: item.layout.text_align }}>
-      {!item.headingHidden && (!item.imageBlock?.images?.length || item.pairLayout?.text_flow && item.pairLayout.text_flow !== "standard") && <h2 style={{ textAlign: item.headingAlign }}>{item.heading}</h2>}
+      {!item.headingHidden && (!item.imageBlock?.images?.length || item.pairLayout?.text_flow && !["standard", "beside"].includes(item.pairLayout.text_flow)) && <h2 style={{ textAlign: item.headingAlign }}>{item.heading}</h2>}
       {body && <p style={{ textAlign: item.bodyAlign,
         ...(item.kind === "business" ? { whiteSpace: "pre-wrap" } : {}) }}>{item.imageBlock ? body.trimStart() : body}</p>}
     </section>;
@@ -138,7 +138,7 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
     sections.push(<div key={item.key} className="profile-content-block"
       data-spacing-top={frame.spacing_top} data-spacing-bottom={frame.spacing_bottom}
       style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
-      <TextImageSection heading={(frame.text_flow ?? "standard") === "standard" && !item.headingHidden ? <h2 style={{textAlign:item.headingAlign}}>{item.heading}</h2> : undefined} text={section} image={<BlockImageGrid block={image} editorial />}
+      <TextImageSection heading={["standard", "beside"].includes(frame.text_flow ?? "standard") && !item.headingHidden ? <h2 style={{textAlign:item.headingAlign}}>{item.heading}</h2> : undefined} text={section} image={<BlockImageGrid block={image} editorial />}
         textWidth={item.layout.width_percent} imageWidth={normalizeBlockLayout(image.config).width_percent}
         imageFirst={normalizeBlockLayout(image.config).offset_percent < item.layout.offset_percent} flow={frame.text_flow} />
     </div>);

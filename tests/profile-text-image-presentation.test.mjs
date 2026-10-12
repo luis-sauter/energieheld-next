@@ -145,3 +145,20 @@ test('flow selection immediately updates paired preview and pressed state, failu
  resolveSave({error:'Save failed'});assert.equal(await pending,false);tree=render();assert.match(renderToStaticMarkup(tree),/data-flow="standard"/);assert.match(renderToStaticMarkup(tree),/Preserved content/);
  }
 });
+
+for (const special of [false, true]) test(`A starts beside body, not heading (${special ? 'field-bound' : 'content blocks'})`, () => {
+ const heading = block('heading', 'heading', 50, 0, 'HeadlineUnique');
+ const text = block('text', 'text', 50, 0, 'FirstUnique. LastUnique');
+ text.pair_layout = { text_flow: 'beside' };
+ const img = block('image', 'image_grid', 50, 50);
+ const before = JSON.stringify([heading, text, img]);
+ const html = renderToStaticMarkup(special
+  ? createElement(ProfileEditorialContent, { items: [{ key: 'section:about', kind: 'about', heading: 'HeadlineUnique', headingHidden: false, layout: { width_percent: 50, offset_percent: 0 }, imageBlock: img, pairLayout: { text_flow: 'beside' } }], listing: { description: 'FirstUnique. LastUnique' } })
+  : createElement(ProfileContentBlocks, { blocks: [heading, text, img] }));
+ assert.match(html, /<div class="flowIntro">[\s\S]*HeadlineUnique[\s\S]*<\/div><div class="editorialImage"/);
+ const body = html.slice(html.indexOf('class="editorialText"'));
+ assert.ok(!body.includes('HeadlineUnique'), 'heading must not be inside the floated text');
+ assert.match(body, /FirstUnique\. LastUnique/);
+ assert.equal(html.split('HeadlineUnique').length - 1, 1);
+ assert.equal(JSON.stringify([heading, text, img]), before);
+});
