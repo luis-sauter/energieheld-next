@@ -77,7 +77,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <HomeBannerGroup ads={ads} placements={["sidebar_top", "sidebar_middle", "sidebar_bottom"]} label="Anzeigen vor den Themenwelten" />
 
     <section className="section container" aria-labelledby="inspiration-title">
-      <ThemeScroller count={travelThemes.length} label="Inspiration & Themenwelten"
+      <ThemeScroller count={travelThemes.length} label="Inspiration & Themenwelten" edgeNavigation
         heading={<div><p className="eyebrow">Entdecken</p><h2 id="inspiration-title">Inspiration & Themenwelten</h2></div>}
         moreLink={<Link className="text-link" href="/mottoreisen">Alle Mottoreisen →</Link>}>
         {travelThemes.map((entry) => <DiscoveryCard key={entry.slug}

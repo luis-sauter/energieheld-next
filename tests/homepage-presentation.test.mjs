@@ -140,17 +140,24 @@ test('only Premium and A–F ads appear publicly while stored G–J campaigns st
  } finally {globalThis.homeFixture.ads=original;}
 });
 
-test('homepage controls share the inspiration heading and compact shortcuts have no playback controls',async()=>{
+test('homepage inspiration uses image-edge arrows without header buttons; other scrollers retain their controls',async()=>{
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
  const compact=html.split('<nav')[1].split('</nav>')[0];
  assert.equal((compact.match(/data-theme-image="true"/g)||[]).length,travelThemes.length+3);
  assert.doesNotMatch(compact,/<button/);
  const inspiration=html.split('aria-labelledby="inspiration-title"')[1].split('</section>')[0];
- const header=inspiration.split('<div class="header">')[1].split('<div class="rail"')[0];
+ const header=inspiration.split('<div class="header">')[1].split('</div></div>')[0];
  assert.match(header,/id="inspiration-title"/);assert.match(header,/Alle Mottoreisen/);
- assert.match(header,/Inspiration &amp; Themenwelten: zurück/);assert.match(header,/Inspiration &amp; Themenwelten: weiter/);
+ assert.doesNotMatch(header,/<button/);
+ assert.match(inspiration,/data-edge-navigation="true"/);
+ assert.equal((inspiration.match(/Inspiration &amp; Themenwelten: zurück/g)||[]).length,1);
+ assert.equal((inspiration.match(/Inspiration &amp; Themenwelten: weiter/g)||[]).length,1);
  assert.equal((inspiration.match(/class="discovery-card"/g)||[]).length,travelThemes.length);
  assert.doesNotMatch(inspiration,/Automatischen Wechsel|aria-pressed/);
+ const {ThemeScroller}=await import('../src/components/portal/theme-scroller.tsx');
+ const standard=renderToStaticMarkup(createElement(ThemeScroller,{count:4,label:'Andere Seite'}));
+ assert.match(standard,/Andere Seite: zurück/);assert.match(standard,/Andere Seite: weiter/);
+ assert.doesNotMatch(standard,/data-edge-navigation/);
 });
 
 

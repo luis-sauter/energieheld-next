@@ -17,8 +17,8 @@ export function nextThemeScroll(left: number, step: number, max: number, directi
 }
 
 // Cards/links are server-rendered children; navigation never fetches more data.
-export function ThemeScroller({ children, count, label, compact = false, heading, moreLink }: {
-  children: ReactNode; count: number; label: string; compact?: boolean; heading?: ReactNode; moreLink?: ReactNode;
+export function ThemeScroller({ children, count, label, compact = false, heading, moreLink, edgeNavigation = false }: {
+  children: ReactNode; count: number; label: string; compact?: boolean; heading?: ReactNode; moreLink?: ReactNode; edgeNavigation?: boolean;
 }) {
   const rail = useRef<HTMLDivElement>(null);
   const [interaction, setInteraction] = useState(0);
@@ -68,13 +68,27 @@ export function ThemeScroller({ children, count, label, compact = false, heading
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
+  const cards = <div ref={attachRail} className={styles.rail} tabIndex={0} aria-label={`${label}: Karten`}
+    onWheel={() => { manualUntil.current = performance.now() + 1000; }}
+    onScroll={() => {
+      if (!compact) { interact(); return; }
+      if (rail.current && (autoLeft.current === null || Math.abs(rail.current.scrollLeft - autoLeft.current) > 1)) {
+        manualUntil.current = performance.now() + 1000;
+      }
+    }} onKeyDown={event => {
+      if (event.target !== event.currentTarget) return;
+      if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+        event.preventDefault(); move(event.key === "ArrowRight" ? 1 : -1, !reducedMotion);
+      }
+    }}>{children}</div>;
   return <div ref={root} className={styles.scroller} data-compact={compact || undefined}
+    data-edge-navigation={edgeNavigation || undefined}
     role="region" aria-label={label} {...handlers}>
     {!compact && <div className={styles.header}>
       {heading}
       <div className={styles.controls}>
         {moreLink}
-        {count > 1 && <>
+        {count > 1 && !edgeNavigation && <>
           <button type="button" disabled={!overflowing} aria-label={`${label}: zurück`} onClick={() => move(-1, !reducedMotion)}>←</button>
           <button type="button" disabled={!overflowing} aria-label={`${label}: weiter`} onClick={() => move(1, !reducedMotion)}>→</button>
         </>}
@@ -84,18 +98,12 @@ export function ThemeScroller({ children, count, label, compact = false, heading
       <button type="button" aria-label="Quicklinks zurück" onClick={() => move(-1, !reducedMotion)}>←</button>
       <button type="button" aria-label="Quicklinks weiter" onClick={() => move(1, !reducedMotion)}>→</button>
     </div>}
-    <div ref={attachRail} className={styles.rail} tabIndex={0} aria-label={`${label}: Karten`}
-      onWheel={() => { manualUntil.current = performance.now() + 1000; }}
-      onScroll={() => {
-        if (!compact) { interact(); return; }
-        if (rail.current && (autoLeft.current === null || Math.abs(rail.current.scrollLeft - autoLeft.current) > 1)) {
-          manualUntil.current = performance.now() + 1000;
-        }
-      }} onKeyDown={event => {
-        if (event.target !== event.currentTarget) return;
-        if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-          event.preventDefault(); move(event.key === "ArrowRight" ? 1 : -1, !reducedMotion);
-        }
-      }}>{children}</div>
+    {edgeNavigation ? <div className={styles.imageRail}>
+      {cards}
+      {count > 1 && <div className={styles.edgeControls}>
+        <button type="button" disabled={!overflowing} aria-label={`${label}: zurück`} onClick={() => move(-1, !reducedMotion)}>←</button>
+        <button type="button" disabled={!overflowing} aria-label={`${label}: weiter`} onClick={() => move(1, !reducedMotion)}>→</button>
+      </div>}
+    </div> : cards}
   </div>;
 }
