@@ -11,8 +11,6 @@ import { Breadcrumbs } from './breadcrumbs';
 import { portalBreadcrumbs } from '@/lib/breadcrumbs';
 import { JsonLd } from './json-ld';
 import { breadcrumbSchema, collectionSchema, jsonLdGraph } from '@/lib/seo-schema';
-import { relatedTravelPages } from '@/lib/travel-relations';
-import { TravelRelations } from './travel-relations';
 import { mottoEditorial } from '@/data/motto-editorial';
 import { mottoGroups, orderMottoItems, visibleMottoAds } from '@/lib/motto-rows';
 import { MottoRow } from './motto-row';
@@ -24,7 +22,7 @@ export function MottoDetail({ entry, listings, advertising, seed }: {
   const editorial = mottoEditorial[entry.slug];
   const companies = orderMottoItems(listings, listing => listing.id, seed + ':companies');
   const banners = orderMottoItems(visibleMottoAds(advertising?.ads ?? []), ad => ad.id, seed + ':banners');
-  const companyRows = mottoGroups(companies), bannerRows = mottoGroups(banners);
+  const companyRows = mottoGroups(companies, 3), bannerRows = mottoGroups(banners, 2);
   const breadcrumbs = portalBreadcrumbs(entry.title, `/mottoreisen/${entry.slug}`, { name: 'Mottoreisen', path: '/mottoreisen' });
   return <main id="hauptinhalt" className={styles.page} data-motto-detail={entry.slug}>
     <div className={styles.backdrop} aria-hidden="true"><Image src={editorial.image} alt="" fill sizes="100vw" preload /></div>
@@ -40,11 +38,11 @@ export function MottoDetail({ entry, listings, advertising, seed }: {
         <p className={styles.count}>{companies.length} passende {companies.length === 1 ? 'Unterkunft' : 'Unterkünfte'} · Entdecken Sie Ihre Gastgeber</p>
         <InlineBannerProvider options={advertising?.options}>
           {Array.from({ length: Math.max(companyRows.length, bannerRows.length) }, (_, i) => <div key={i} className={styles.pair}>
-            {companyRows[i] && <MottoRow label={`Unterkünfte, Reihe ${i + 1}`}>
+            {companyRows[i] && <MottoRow label={`Unterkünfte, Reihe ${i + 1}`} speed={[18, 20, 17][i]}>
               {companyRows[i].map(listing => <AccommodationCard key={listing.id} listing={listing} motto
                 cardEditing={Boolean(advertising?.options)} showImportMarker sizes="(max-width: 600px) 86vw, (max-width: 900px) 45vw, 360px" />)}
             </MottoRow>}
-            {bannerRows[i] && <div className={styles.bannerRow}><MottoRow label={`Banner, Reihe ${i + 1}`}>
+            {bannerRows[i] && <div className={styles.bannerRow}><MottoRow label={`Banner, Reihe ${i + 1}`} speed={[22, 24][i]}>
               {bannerRows[i].map(ad => <CampaignSlot key={ad.id} placement={ad.placement} ad={ad} />)}
             </MottoRow></div>}
           </div>)}
@@ -55,11 +53,6 @@ export function MottoDetail({ entry, listings, advertising, seed }: {
         </InlineBannerProvider>
         {!!companies.length && <Link className="text-link" href={`/unterkuenfte-a-z?thema=${entry.slug}`}>Alle passenden Unterkünfte ansehen →</Link>}
       </section>
-      <section className={styles.editorial} aria-labelledby="motto-editorial"><p className="eyebrow">Reiseideen & Orientierung</p>
-        <h2 id="motto-editorial">{editorial.heading}</h2><p className={styles.lead}>{editorial.lead}</p>
-        <div className={styles.editorialGrid}>{editorial.sections.map(section => <section key={section.title}><h3>{section.title}</h3><p>{section.text}</p></section>)}</div>
-      </section>
-      <TravelRelations title="Reiseziele mit passenden Gastgebern" links={relatedTravelPages(listings).destinations} />
       <Link className="text-link" href="/mottoreisen">← Alle Mottoreisen entdecken</Link>
     </div>
   </main>;

@@ -13,7 +13,9 @@ test('per-visit ordering is deterministic for hydration, different across seeds,
  assert.equal(a.length,83);assert.deepEqual(a,orderMottoItems(profiles,p=>p.id,'first-visit'));
  assert.notDeepEqual(a,orderMottoItems(profiles,p=>p.id,'second-visit'));
  assert.deepEqual(new Set(a.map(p=>p.id)),new Set(profiles.map(p=>p.id)));assert.deepEqual(profiles,original);
- assert.deepEqual(mottoGroups(a).flat(),a);assert.equal(mottoGroups(a).at(-1).length,5);
+ assert.deepEqual(mottoGroups(a).flat(),a);assert.deepEqual(mottoGroups(a).map(row=>row.length),[28,28,27]);
+ assert.deepEqual(mottoGroups(a,2).map(row=>row.length),[42,41]);
+ assert.deepEqual(mottoGroups(a.slice(0,2)).map(row=>row.length),[1,1]);
  assert.deepEqual(mottoGroups([]),[]);
 });
 test('only occupied valid banner creatives appear, campaign identity deduplicates without changing fixed slots',()=>{
@@ -27,7 +29,8 @@ test('all eleven active themes have individual optimized art and editorial; hist
  assert.equal(travelThemes.some(theme=>theme.slug==='tauchurlaub'),false);
  assert.deepEqual(Object.keys(mottoEditorial),travelThemes.map(theme=>theme.slug));
  for(const theme of travelThemes){const story=mottoEditorial[theme.slug];const bytes=readFileSync(new URL('../public'+story.image,import.meta.url));
- assert.equal(bytes.subarray(8,12).toString(),'WEBP');assert.ok(bytes.length<400000);assert.equal(story.sections.length,3);}
- const row=readFileSync(new URL('../src/components/portal/motto-row.tsx',import.meta.url),'utf8');assert.doesNotMatch(row,/setInterval|setTimeout|fetch\(|useRotationMotion/);
+ assert.equal(bytes.subarray(8,12).toString(),'WEBP');assert.ok(bytes.length<400000);
+ assert.equal(story.intro.match(/[.!?](?:\s|$)/g).length,3);assert.equal('sections' in story,false);}
+ const row=readFileSync(new URL('../src/components/portal/motto-row.tsx',import.meta.url),'utf8');assert.doesNotMatch(row,/setInterval|setTimeout|fetch\(/);assert.match(row,/useRotationMotion/);
  const route=readFileSync(new URL('../src/app/(energieheld)/mottoreisen/[slug]/page.tsx',import.meta.url),'utf8');assert.match(route,/seed=\{randomUUID\(\)\}/);assert.doesNotMatch(route,/ProfileRotation/);
 });

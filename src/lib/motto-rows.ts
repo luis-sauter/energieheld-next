@@ -14,8 +14,16 @@ export function orderMottoItems<T>(items: readonly T[], key: (item: T) => string
   return result;
 }
 
-export function mottoGroups<T>(items: readonly T[], size = 6): T[][] {
-  return Array.from({ length: Math.ceil(items.length / size) }, (_, i) => items.slice(i * size, (i + 1) * size));
+export function mottoGroups<T>(items: readonly T[], maximumRows = 3): T[][] {
+  if (!items.length) return [];
+  const count = Math.min(Math.max(1, maximumRows), items.length);
+  const size = Math.floor(items.length / count), extra = items.length % count;
+  let start = 0;
+  return Array.from({ length: count }, (_, i) => {
+    const row = items.slice(start, start + size + Number(i < extra));
+    start += row.length;
+    return row;
+  });
 }
 
 export function visibleMottoAds(ads: readonly ActiveAd[]): ActiveAd[] {
