@@ -43,7 +43,7 @@ export type TravelFilterValues = {
 export function readTravelFilterValues(params: Record<string, string | string[] | undefined>): TravelFilterValues {
   const read = (key: string) => typeof params[key] === "string" ? params[key] as string : "";
   return {
-    destination: read("ziel"), theme: read("thema"), audience: read("zielgruppe"),
+    destination: read("ziel"), theme: read("thema") === 'tauchurlaub' ? '' : read("thema"), audience: read("zielgruppe"),
     // Retired public filter: legacy URLs must not restrict results invisibly.
     accommodation: read("unterkunftstyp"), feature: "",
     query: read("q"), location: read("ort"), sort: read("sort") === "imported" && !publicImportPresentation.enabled ? "" : read("sort"),

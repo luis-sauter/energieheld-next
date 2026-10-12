@@ -36,6 +36,14 @@ const row = (i = 0) => ({
   sort_order: i,
   alt_text: null,
 });
+test('rubric cards sign only one ordered provider photo, no logo or full gallery, without modifying source rows',async()=>{
+ const profile={id:'own-profile',display_name:'Hotel',logo_path:'profiles/own-profile/logo/a.png',company_profile_images:[row(3),row(1),row(2)]};
+ const before=structuredClone(profile);const calls=[];
+ const client={storage:{from(){return{async createSignedUrls(paths){calls.push(paths);return{data:paths.map(path=>({path,signedUrl:'https://example.test/'+path})),error:null};}}}}};
+ const media=await signCompanyDirectoryMedia(client,[profile],true);
+ assert.deepEqual(calls,[[row(1).storage_path]]);assert.equal(media.get(profile.id).logo,undefined);
+ assert.deepEqual(media.get(profile.id).images.map(image=>image.id),['image-1']);assert.deepEqual(profile,before);
+});
 const form = (values = {}) => {
   const f = new FormData();
   for (const [k, v] of Object.entries({

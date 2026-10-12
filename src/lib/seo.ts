@@ -57,7 +57,7 @@ export function rootMetadata(config: SiteSeo = siteSeo()): Metadata {
 
 export const hubDescriptions = {
   destinations: "Entdecken Sie Deutschland, Österreich, die Schweiz und Südtirol/Italien. Reiseziele, Regionen und reale Gastgeber im DAS Reiseportal kennenlernen.",
-  themes: "Reisen nach Ihrem Motto: Natur, Wandern, Wellness, Familie und weitere Reisethemen. Entdecken Sie zwölf Mottoreisen und passend zugeordnete Anbieter.",
+  themes: "Reisen nach Ihrem Motto: Natur, Wandern, Wellness, Familie und weitere Reisethemen. Entdecken Sie elf Mottoreisen und passend zugeordnete Anbieter.",
   directory: "Hotels, Pensionen, Ferienwohnungen und weitere Reiseanbieter entdecken. Filtern Sie nach Reiseziel und Reisethema und finden Sie Standort, Bilder und Kontakt.",
 };
 

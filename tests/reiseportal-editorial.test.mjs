@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
-import { travelThemes } from "../src/data/reiseportal-discovery.ts";
+import { historicalTravelThemes as travelThemes } from "../src/data/reiseportal-discovery.ts";
 import { importedJoomlaMedia } from "../src/data/reiseportal-import-media.ts";
 
 const asset = (path) => new URL(`../public${path}`, import.meta.url);

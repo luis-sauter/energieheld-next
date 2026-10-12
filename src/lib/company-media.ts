@@ -68,8 +68,12 @@ function signedImages(profile: MediaProfile, rows: MediaRow[], urls: Map<string,
 
 // One request at a time per directory load, rather than one simultaneous request
 // per profile. No shared URL cache: the caller's existing Storage/RLS still applies.
-export async function signCompanyDirectoryMedia(client: SupabaseClient, profiles: MediaProfile[]): Promise<Map<string, SignedMedia>> {
-  const prepared = profiles.map(profile => ({ profile, rows: imageRows(profile) }));
+export async function signCompanyDirectoryMedia(client: SupabaseClient, profiles: MediaProfile[], cardOnly = false): Promise<Map<string, SignedMedia>> {
+  const prepared = profiles.map(original => {
+    const profile = cardOnly ? { ...original, logo_path: null } : original;
+    const rows = imageRows(original);
+    return { profile, rows: cardOnly ? rows.filter(row => row.storage_path !== original.logo_path).slice(0, 1) : rows };
+  });
   const paths = [...new Set(prepared.flatMap(({ profile, rows }) => imagePaths(profile, rows)))];
   const urls = new Map<string, string>();
   for (let offset = 0; offset < paths.length; offset += 100) {

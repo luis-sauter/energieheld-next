@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { travelThemes } from "@/data/reiseportal-discovery";
-import { DiscoveryDetail } from "@/components/portal/discovery-detail";
+import { MottoDetail } from "@/components/portal/motto-detail";
+import { randomUUID } from 'node:crypto';
+import { mottoEditorial } from '@/data/motto-editorial';
 import { loadReiseportalTheme } from "@/lib/reiseportal-directory";
 import { loadDiscoveryAdvertising } from "@/lib/discovery-advertising";
 import { discoveryMetadata } from "@/lib/seo";
@@ -15,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const entry = travelThemes.find((entry) => entry.slug === slug);
   if (!entry) notFound();
-  return discoveryMetadata(entry, "theme");
+  return discoveryMetadata({ ...entry, ...mottoEditorial[entry.slug] }, "theme");
 }
 
 export default async function ThemeDetail({ params }: { params: Promise<{ slug: string }> }) {
@@ -23,5 +25,5 @@ export default async function ThemeDetail({ params }: { params: Promise<{ slug: 
   const entry = travelThemes.find((item) => item.slug === slug);
   if (!entry) notFound();
   const [listings, advertising] = await Promise.all([loadReiseportalTheme(entry.slug), loadDiscoveryAdvertising(`/mottoreisen/${entry.slug}`)]);
-  return <DiscoveryDetail entry={entry} title="Mottoreisen" basePath="/mottoreisen" listings={listings} advertising={advertising} cardEditing={Boolean(advertising?.options)} rotateProfiles />;
+  return <MottoDetail entry={entry} listings={listings} advertising={advertising} seed={randomUUID()} />;
 }

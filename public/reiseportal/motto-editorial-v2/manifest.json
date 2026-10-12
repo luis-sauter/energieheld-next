@@ -1,0 +1,95 @@
+{
+  "generator": "Built-in image_gen",
+  "purpose": "Synthetic editorial background scenery only; never provider or campaign imagery",
+  "created": "2026-10-12",
+  "assets": [
+    {
+      "slug": "natur-pur",
+      "file": "natur-pur.webp",
+      "prompt": "Generate one photorealistic premium travel magazine background photograph for a German travel portal theme Natur pur. Landscape format 1536x1024 or wider. Unspoiled low mountain woodland and flower-rich meadow, a winding small river in a central European valley, late spring soft daylight, fresh greens, balanced natural colors. No accommodation buildings, no people, no dramatic sun rays, no text, no logo. Interesting scenery on right, calm pale sky and meadow on left for dark blue headings. Upper composition landscape, detailed but tranquil, graceful editorial photography, not an ad. Save as a usable project asset.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    },
+    {
+      "slug": "nordic-walking",
+      "file": "nordic-walking.webp",
+      "prompt": "One original photorealistic landscape travel-magazine photograph, 1536x1024 wide composition, high-quality natural photographic detail. Theme nordic-walking. Two mature walkers using Nordic walking poles along a sandy trail through open Baltic coastal pine forest, sea glimpsed in the distance, overcast bright light, generous open space. Palette bright natural blue, white and fresh colors; keep left side calm enough for dark blue editorial headings. No text, lettering, logos, buttons, watermark, fictional accommodation claims, artificial collage. Each asset a distinct composition. Image for an atmospheric full-width website background.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    },
+    {
+      "slug": "radwandern",
+      "file": "radwandern.webp",
+      "prompt": "One original photorealistic landscape travel-magazine photograph, 1536x1024 wide composition, high-quality natural photographic detail. Theme radwandern. A touring bicycle resting beside a rural riverside cycle path through vineyards along the Moselle, view along a gentle river bend, clear early autumn light, no Alps. Palette bright natural blue, white and fresh colors; keep left side calm enough for dark blue editorial headings. No text, lettering, logos, buttons, watermark, fictional accommodation claims, artificial collage. Each asset a distinct composition. Image for an atmospheric full-width website background.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    },
+    {
+      "slug": "wanderurlaub",
+      "file": "wanderurlaub.webp",
+      "prompt": "One original photorealistic landscape travel-magazine photograph, 1536x1024 wide composition, high-quality natural photographic detail. Theme wanderurlaub. Two small hikers on a footpath through heath and sandstone formations in Saxon Switzerland, broad layered countryside, crisp late afternoon light without theatrical sun rays. Palette bright natural blue, white and fresh colors; keep left side calm enough for dark blue editorial headings. No text, lettering, logos, buttons, watermark, fictional accommodation claims, artificial collage. Each asset a distinct composition. Image for an atmospheric full-width website background.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    },
+    {
+      "slug": "familienurlaub",
+      "file": "familienurlaub.webp",
+      "prompt": "One original photorealistic landscape travel-magazine photograph, 1536x1024 wide composition, high-quality natural photographic detail. Theme familienurlaub. A family with two children exploring a shallow lakeshore with reeds and a small wooden landing, central European lowland summer, candid people away from camera, spacious and playful but sophisticated. Palette bright natural blue, white and fresh colors; keep left side calm enough for dark blue editorial headings. No text, lettering, logos, buttons, watermark, fictional accommodation claims, artificial collage. Each asset a distinct composition. Image for an atmospheric full-width website background.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    },
+    {
+      "slug": "golfurlaub",
+      "file": "golfurlaub.webp",
+      "prompt": "One original photorealistic landscape travel-magazine photograph, 1536x1024 wide composition, high-quality natural photographic detail. Theme golfurlaub. A sweeping green golf fairway edged by mature deciduous trees, gentle hills, morning dew and bright diffused light, small golf flag, no buildings, tranquil uncluttered scene. Palette bright natural blue, white and fresh colors; keep left side calm enough for dark blue editorial headings. No text, lettering, logos, buttons, watermark, fictional accommodation claims, artificial collage. Each asset a distinct composition. Image for an atmospheric full-width website background.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    },
+    {
+      "slug": "urlaub-am-wasser",
+      "file": "urlaub-am-wasser.webp",
+      "prompt": "One original photorealistic landscape travel-magazine photograph, 1536x1024 wide composition, high-quality natural photographic detail. Theme urlaub-am-wasser. Clear turquoise lake seen from a quiet pebbled shore with a small wooden jetty and reeds, low wooded hills, soft blue midday sky, no high Alps or hotels. Palette bright natural blue, white and fresh colors; keep left side calm enough for dark blue editorial headings. No text, lettering, logos, buttons, watermark, fictional accommodation claims, artificial collage. Each asset a distinct composition. Image for an atmospheric full-width website background.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    },
+    {
+      "slug": "campingurlaub",
+      "file": "campingurlaub.webp",
+      "prompt": "One original photorealistic landscape travel-magazine photograph, 1536x1024 wide composition, high-quality natural photographic detail. Theme campingurlaub. A tasteful small tent set at the edge of a meadow beneath broadleaf trees, distant lake, bicycle resting nearby, relaxed late summer afternoon, no branded gear or luxury chalet. Palette bright natural blue, white and fresh colors; keep left side calm enough for dark blue editorial headings. No text, lettering, logos, buttons, watermark, fictional accommodation claims, artificial collage. Each asset a distinct composition. Image for an atmospheric full-width website background.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    },
+    {
+      "slug": "romantik-zu-zweit",
+      "file": "romantik-zu-zweit.webp",
+      "prompt": "One original photorealistic landscape travel-magazine photograph, 1536x1024 wide composition, high-quality natural photographic detail. Theme romantik-zu-zweit. Two adults walking side by side along a quiet orchard path beside a lake at blue hour, understated romantic mood, flowering branches, soft pastel colors, no wine ads or staged luxury terrace. Palette bright natural blue, white and fresh colors; keep left side calm enough for dark blue editorial headings. No text, lettering, logos, buttons, watermark, fictional accommodation claims, artificial collage. Each asset a distinct composition. Image for an atmospheric full-width website background.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    },
+    {
+      "slug": "wellnessangebote",
+      "file": "wellnessangebote.webp",
+      "prompt": "One original photorealistic landscape travel-magazine photograph, 1536x1024 wide composition, high-quality natural photographic detail. Theme wellnessangebote. A peaceful outdoor garden with natural stone, pale linen on a simple wooden lounge and grasses beside a small still reflecting pond, bright clouded daylight, no infinity pool, no identifiable hotel. Palette bright natural blue, white and fresh colors; keep left side calm enough for dark blue editorial headings. No text, lettering, logos, buttons, watermark, fictional accommodation claims, artificial collage. Each asset a distinct composition. Image for an atmospheric full-width website background.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    },
+    {
+      "slug": "geschaeftsreisen",
+      "file": "geschaeftsreisen.webp",
+      "prompt": "One original photorealistic landscape travel-magazine photograph, 1536x1024 wide composition, high-quality natural photographic detail. Theme geschaeftsreisen. Elegant European city riverfront on a bright weekday morning, modern unbranded architecture and a bridge, one discreet traveler with a carry-on in the right of frame, professional quiet mood. Palette bright natural blue, white and fresh colors; keep left side calm enough for dark blue editorial headings. No text, lettering, logos, buttons, watermark, fictional accommodation claims, artificial collage. Each asset a distinct composition. Image for an atmospheric full-width website background.",
+      "format": "WebP",
+      "maxWidth": 1600,
+      "quality": 79
+    }
+  ]
+}

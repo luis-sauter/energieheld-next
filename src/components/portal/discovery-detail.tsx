@@ -20,10 +20,10 @@ import cardStyles from './accommodation-card.module.css';
 import { ProfileImportBadge } from "@/components/admin/profile-import-badge";
 import { publicImportPresentation } from "@/config/import-presentation";
 
-export function AccommodationCard({ listing, rotating = false, sizes, cardEditing = false, showImportMarker = false }: { listing: Listing; rotating?: boolean; sizes?: string; cardEditing?: boolean; showImportMarker?: boolean }) {
+export function AccommodationCard({ listing, rotating = false, sizes, cardEditing = false, showImportMarker = false, motto = false }: { listing: Listing; rotating?: boolean; sizes?: string; cardEditing?: boolean; showImportMarker?: boolean; motto?: boolean }) {
   const image = providerCardImage(listing, 'travel');
   return <article className="accommodation-card">
-    <Link href={`/unterkuenfte/${listing.slug}`} className={cardStyles.card}
+    <Link href={`/unterkuenfte/${listing.slug}`} className={`${cardStyles.card}${motto ? ` ${cardStyles.motto}` : ''}`}
       aria-label={`${listing.name} – Details ansehen`}>
       <div className={`accommodation-card-image ${cardStyles.image}${image ? "" : " accommodation-card-image--empty"}`}>
         {image ? <div className={cardStyles.photo}><Image src={image.src} alt={image.alt} fill loading="lazy"

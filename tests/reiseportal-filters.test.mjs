@@ -29,6 +29,11 @@ registerHooks({
 const { availableTravelFilters, activeTravelFilterLabels, readTravelFilterValues } =
   await import("../src/lib/reiseportal-filter-options.ts");
 const { filterTravelDiscovery } = await import("../src/lib/reiseportal-search.ts");
+test('retired diving rubric is not a public finder option or invisible URL restriction',()=>{
+ const old={thema:'tauchurlaub',ziel:'deutschland',zielgruppe:'paar',q:'Hotel',ort:'Berlin',sort:'name'};
+ const values=readTravelFilterValues(old);assert.equal(values.theme,'');assert.equal(values.destination,'deutschland');assert.equal(values.query,'Hotel');assert.equal(values.sort,'name');
+ assert.deepEqual(availableTravelFilters([{travelTermKeys:['theme:tauchurlaub'],location:{country:'Deutschland'}}],[]).themes,[]);
+});
 const { filterListings } = await import("../src/lib/listings.ts");
 const { filterTravelListings, travelFacetCount, travelFilterUrl } =
   await import("../src/lib/reiseportal-facets.ts");
