@@ -13,7 +13,7 @@ const values = {
   internal_name: "Test",
   headline: "Regionale Fachleute",
   placement: "top_banner",
-  targets: ["experts_directory"],
+  targets: ["homepage"],
   requested_start_date: "2026-09-18",
   requested_end_date: "2026-10-01",
   body_text: "Qualität",
@@ -86,9 +86,10 @@ function client({
   foreign = false,
   rpcError = null,
   storedFile = png,
+  existingTargets = [],
 } = {}) {
   const calls = [];
-  const row = { id, status, image_path: null, profile_id: "own-profile" };
+  const row = { id, status, image_path: null, profile_id: "own-profile", targets: existingTargets };
   return {
     calls,
     auth: {
@@ -430,7 +431,7 @@ test("server action rejects a canonical but unassigned trade before media or RPC
   );
   assert.match(result.error, /zugeordneten Gewerken/);
   assert.ok(!db.calls.some((c) => c.rpc || c.upload || c.download));
-  const allowed = client();
+  const allowed = client({ status: "rejected", existingTargets: [{ target_type: "experts_directory", category_id: null, placement: "top_banner" }, { target_type: "trade", category_id: "solar", placement: "top_banner" }, { target_type: "trade", category_id: "elektro", placement: "top_banner" }] });
   assert.ok(
     (
       await saveOwnAd(
@@ -483,4 +484,10 @@ test('pending admin request list avoids unused signed previews; normal inventory
   c.storage.from=()=>({createSignedUrls:async paths=>{signed++;return {data:paths.map(path=>({path,signedUrl:'https://signed.example/preview'})),error:null}}});
   const r=await loadAdCampaigns(c,true,1,undefined,false,pending);assert.equal(r.count,1);assert.equal(signed,pending?0:1);assert.equal(Boolean(r.campaigns[0].imageUrl),!pending);
  }
+});
+
+test('server save rejects forged new directory slot before upload/RPC and accepts exact historical placement',async()=>{
+ const rejected=client();assert.ok((await saveOwnAd(rejected,form({targets:['experts_directory|top_banner'],image:png}))).error);assert.ok(!rejected.calls.some(c=>c.rpc||c.upload||c.download));
+ const historical=client({status:'rejected',existingTargets:[{target_type:'experts_directory',category_id:null,placement:'top_banner'}]});assert.ok((await saveOwnAd(historical,form({targets:['experts_directory|top_banner'],image:png}))).success);
+ const changed=client({status:'rejected',existingTargets:[{target_type:'experts_directory',category_id:null,placement:'top_banner'}]});assert.ok((await saveOwnAd(changed,form({targets:['experts_directory|sidebar_top'],image:png}))).error);assert.ok(!changed.calls.some(c=>c.rpc||c.upload));
 });

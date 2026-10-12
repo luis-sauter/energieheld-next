@@ -1,13 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { checkAdmin } from './admin-review';
-import { validateAdValues, adTargetFormValue, adTargetUrl, type AdCampaign } from './ad-values';
+import { validateAdValues, validateAdBooking, adTargetFormValue, adTargetUrl, type AdCampaign } from './ad-values';
 
 export type BannerSearchMetadata = { name: string; postal_code: string; city: string; term_keys: string[]; advertiser_key?: string; advertiser_name?: string; advertiser_profile_id?: string | null; commercial?: boolean; primary_creative?: boolean; destination_slugs?: string[]; region?: string };
 export type BannerAdvertiserOption = { key: string; name: string; profile_id?: string };
 export type BannerSearchTerm = { term_key: string; dimension: string; label: string };
 export function onlyBannerMetadataChanged(form: FormData, campaign: AdCampaign) {
   const data = validateAdValues(form).data;
-  if (!data || form.get('uploaded_path') || form.get('intent') === 'submit') return false;
+  if (!data || validateAdBooking(data.targets, campaign.targets.map(target => ({...target,placement:target.placement??campaign.placement}))) || form.get('uploaded_path') || form.get('intent') === 'submit') return false;
   const approved = ['approved', 'paused'].includes(campaign.status);
   const fields = ['internal_name', 'body_text', 'contact_name', 'contact_phone', 'contact_email'] as const;
   return fields.every(key => (data[key] ?? '') === (campaign[key] ?? '')) &&

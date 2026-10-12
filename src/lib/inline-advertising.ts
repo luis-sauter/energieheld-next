@@ -64,6 +64,7 @@ async function prepareInlineAdUploadAtSource(client: SupabaseClient, path: strin
   if (!form.get("campaign_id")) {
     const context = inlineAdContext(path, true);
     if (!context || await checkAdmin(client) !== "admin") return { error: "Keine Berechtigung." };
+    if (context.target_type === "experts_directory" && !form.get("legacy_id")) return { error: "Unterkünfte A–Z ist kein neu buchbarer Werbebereich." };
     const placement = form.get("placement"), type = form.get("file_type"), size = Number(form.get("file_size"));
     if (typeof placement !== "string" || !Object.hasOwn(adPlacements, placement) ||
       !adTargetUrl(String(form.get("target_url") ?? "").trim())) return { error: "Bitte prüfen Sie Bannerplatz und Ziel-URL." };
@@ -244,6 +245,7 @@ export const archiveInlineAd = (client: SupabaseClient, path: string, form: Form
 
 export const reuseInlineAd = (client: SupabaseClient, path: string, form: FormData) => atDisplaySource(client, path, form, async (client, path, input) => {
   const context = inlineAdContext(path, true), placement = input.get('placement');
+  if (context?.target_type === 'experts_directory') return { error: 'Unterkünfte A–Z ist kein neu buchbarer Werbebereich.' };
   const size = sizeValue(input), id = input.get('archived_id');
   if (!context || !size || !isProfileId(id) || typeof placement !== 'string' || !Object.hasOwn(adPlacements, placement) || input.get('confirmed') !== 'yes')
     return { error: 'Bitte wählen und bestätigen Sie einen archivierten Banner und einen freien Platz.' };

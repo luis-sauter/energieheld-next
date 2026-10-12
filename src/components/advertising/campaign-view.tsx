@@ -96,7 +96,7 @@ export function CampaignSlot({
       aria-label={`Anzeige – ${adPlacements[placement]}`}
     >
       {showLabel && <div className={styles.label}>Anzeige{preview ? " · Vorschau" : ""}</div>}
-      {inline && !preview && !reordering && <div className={styles.inlineControls}>
+      {inline && !preview && !reordering && (inline.canCreate !== false || ad?.imageUrl || inline.hasBanner?.(placement)) && <div className={styles.inlineControls}>
         <strong>{adPlacements[placement]}</strong>
         <button type="button" className="button" onClick={() => inline.open(placement, ad?.id)}>
           {ad?.imageUrl || inline.hasBanner?.(placement) ? "Banner bearbeiten" : "Banner hinzufügen"}

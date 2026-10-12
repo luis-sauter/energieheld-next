@@ -47,7 +47,7 @@ export async function loadInlineBannerOptions(path: string): Promise<InlineBanne
     const legacyKey = (id: string) => legacyBannerKey(legacyBannerPages[path].find(row => row.id === id)!.targetUrl);
     const metadata = await loadBannerMetadata(client, [...rows.map(row => `campaign:${row.id}`), ...legacy.map(row => legacyKey(row.id))]);
     for (const row of legacy) availability[row.placement] = "Belegt · Bestandsbanner";
-    return { label: context.label, archived: selectableArchivedBanners((loaded.data ?? []) as AdCampaign[]), banners: [...pageCampaigns.map((row) => ({ id: row.id,
+    return { label: context.label, canCreate: context.target_type !== "experts_directory", archived: selectableArchivedBanners((loaded.data ?? []) as AdCampaign[]), banners: [...pageCampaigns.map((row) => ({ id: row.id,
       placement: displayPlacement(row.placement, settings.rows),
       profileId: row.profile_id, profileName: metadata.advertisers?.find(a => a.profile_id === row.profile_id)?.name,
       status: row.status, requested_start_date: row.requested_start_date, requested_end_date: row.requested_end_date,

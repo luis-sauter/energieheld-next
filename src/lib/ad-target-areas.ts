@@ -23,11 +23,15 @@ export const portalAdSections = [
 export type PortalAdSectionId = (typeof portalAdSections)[number]["id"];
 export const requestAdScopes = [
   { id: "homepage", name: "Startseite" },
-  { id: "experts_directory", name: "Unterkünfte A–Z" },
   { id: "mottoreisen", name: "Mottoreisen" },
   { id: "reiseziele", name: "Reiseziele" },
 ] as const;
 export type RequestAdScope = (typeof requestAdScopes)[number]["id"];
+
+// Booking choices are narrower than historical delivery targets.
+export function isNewAdTarget(target: { target_type: string; target_key?: string | null }) {
+  return target.target_type === "homepage" || target.target_type === "portal_area" && Boolean(portalAdSection(target.target_key ?? ""));
+}
 
 export function portalAdSection(key: string): PortalAdSectionId | undefined {
   return portalAdSections.find((section) => section.areas.some((area) => area.key === key))?.id;

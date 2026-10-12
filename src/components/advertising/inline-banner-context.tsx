@@ -6,6 +6,7 @@ import type { InlineBanner, InlineBannerOptions } from "@/lib/inline-ad-context"
 
 export const InlineBannerContext = createContext<{
   overrides: Partial<Record<AdPlacementId, ActiveAd | null>>;
+  canCreate?: boolean;
   open: (placement: AdPlacementId, campaignId?: string) => void;
   hasBanner?: (placement: AdPlacementId) => boolean;
   bannerAt?: (placement: AdPlacementId) => InlineBanner | undefined;

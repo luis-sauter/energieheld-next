@@ -193,7 +193,7 @@ test("request starts compact, adds each area once, and removes only its placemen
     { target_type: "experts_directory", category_id: null, placement: "sidebar_top" },
     { target_type: "experts_directory", category_id: null, placement: "sidebar_middle" },
   ];
-  assert.deepEqual(requestScopeIds(targets), two);
+  assert.deepEqual(requestScopeIds(targets), one);
   assert.deepEqual(requestScopeIds(targets, true), []);
   assert.deepEqual(removeRequestScope(targets, "homepage"), targets.slice(1));
   assert.deepEqual(removeRequestScope(targets, "experts_directory"), targets.slice(0, 1));
@@ -235,7 +235,7 @@ test("portal picker derives real subpages and edits one nested target without af
   assert.doesNotMatch(facts, /portal_area:|mottoreisen\/wellnessangebote/);
 });
 test("outer picker keeps themes and destinations available until every concrete area is used", () => {
-  const scopes = ["homepage", "experts_directory", "mottoreisen", "reiseziele"];
+  const scopes = ["homepage", "mottoreisen", "reiseziele"];
   let areas = addPortalArea([], "mottoreisen/natur-pur");
   areas = addPortalArea(areas, "mottoreisen/wellnessangebote");
   areas = addPortalArea(areas, "mottoreisen/wanderurlaub");
@@ -316,10 +316,10 @@ test("campaign form loads saved page/slot pairs without a cross product", () => 
   });
   assert.match(html, /Wo möchten Sie werben/);
   const inputs = html.match(/<input[^>]*type="checkbox"[^>]*>/g);
-  assert.equal(inputs.length, 26);
-  for (const pair of ["homepage|top_banner", "experts_directory|sidebar_top", "experts_directory|sidebar_middle"])
+  assert.equal(inputs.length, 13);
+  for (const pair of ["homepage|top_banner"])
     assert.ok(inputs.some((input) => input.includes(`value="${pair}"`) && input.includes('checked=""')));
-  assert.equal(inputs.filter((input) => input.includes('checked=""')).length, 3);
+  assert.equal(inputs.filter((input) => input.includes('checked=""')).length, 1);
   assert.match(html, /Startseite/);
   assert.match(html, /Unterkünfte A–Z/);
   assert.match(html, /Startseite entfernen|Unterkünfte A–Z entfernen/);
@@ -338,9 +338,10 @@ test("campaign form loads saved page/slot pairs without a cross product", () => 
     campaign: { ...campaign, targets: [campaign.targets[0]] },
     categoryIds: [],
   });
-  assert.equal((noTrades.match(/type="checkbox"/g) || []).length, 13);
+  assert.equal((noTrades.match(/type="checkbox"/g) || []).length, 0);
+  assert.match(noTrades,/Historische Platzierung: Unterkünfte A–Z/);
   const removed = render(CampaignForm, { campaign, categoryIds: ["solar"] });
-  assert.doesNotMatch(removed, /value="trade:elektro"/);
+  assert.doesNotMatch(removed, /<input[^>]*type="checkbox"[^>]*value="trade:elektro/);
   assert.match(removed, /ohne aktuelle Firmenzuordnung/);
 });
 test("admin review exposes every target and explains removed assignments", () => {
