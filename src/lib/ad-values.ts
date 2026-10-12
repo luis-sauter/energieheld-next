@@ -1,5 +1,5 @@
 import { energieheld } from "../config/energieheld";
-import { portalAdAreaLabel, portalAdSection } from "./ad-target-areas";
+import { isNewAdTarget, portalAdAreaLabel, portalAdSection } from "./ad-target-areas";
 export const adPlacements = {
   top_banner: "Premium-Banner oben",
   sidebar_top: "Banner A",
@@ -160,6 +160,14 @@ export function adTargetUrl(value: string): string | null {
     return null;
   }
 }
+export function validateAdBooking(targets: AdTarget[], existing: AdTarget[] = []) {
+  return targets.every(target => isNewAdTarget(target) || existing.some(saved =>
+    saved.target_type === target.target_type && (saved.category_id ?? null) === (target.category_id ?? null) &&
+    (saved.target_key ?? null) === (target.target_key ?? null) && saved.placement === target.placement))
+    ? undefined : "Neu buchbar sind ausschließlich Startseite, Mottoreisen und Reiseziele. Historische Platzierungen können unverändert erhalten bleiben.";
+}
+
+// Parses historical values too; all write paths additionally enforce validateAdBooking.
 export function validateAdValues(form: FormData): {
   data?: AdValues;
   error?: string;

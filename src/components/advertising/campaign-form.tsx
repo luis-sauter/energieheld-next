@@ -319,7 +319,7 @@ export function CampaignForm({
                 </div>
                 {renderPlacements({ target_type: "portal_area", category_id: null, target_key: key })}
               </div>)}
-            </> : renderPlacements({ target_type: scope.id as "homepage" | "experts_directory", category_id: null })}
+            </> : renderPlacements({ target_type: "homepage", category_id: null })}
           </section>;
         })}
         {availableScopes.length > 0 && <div className={styles.addScope}>
@@ -336,9 +336,12 @@ export function CampaignForm({
         {availabilityError && <p role="alert">{availabilityError}</p>}
         {!publicRequestKey && hasBookedSelection &&
           <p role="alert">Ein ausgewählter Platz ist im gewünschten Zeitraum belegt. Bitte ändern Sie die Auswahl.</p>}
-        {admin && values.targets.filter((target) => target.target_type === "trade").map((target) => (
+        {!pristine && !publicRequestKey && values.targets.filter((target) => target.target_type === "trade" || target.target_type === "experts_directory").map((target) => (
+          <div key={adTargetFormValue(target)}>
+          <p>Historische Platzierung: {target.target_type === "experts_directory" ? "Unterkünfte A–Z" : "Gewerk"} · {adPlacements[target.placement ?? campaign.placement]} (bleibt erhalten)</p>
           <input key={`${target.category_id}|${target.placement}`} type="hidden" name="targets"
-            value={`trade:${target.category_id}|${target.placement ?? campaign.placement}`} />
+            value={adTargetFormValue({ ...target, placement: target.placement ?? campaign.placement })} />
+          </div>
         ))}
         {campaign.targets.some(
           (t) =>

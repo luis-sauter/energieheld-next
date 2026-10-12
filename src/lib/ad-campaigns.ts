@@ -3,6 +3,8 @@ import { checkAdmin, isProfileId } from "./admin-review";
 import { validateMediaFile } from "./company-media";
 import {
   validateAdValues,
+  validateAdBooking,
+  isPristineCustomerAd,
   validAdDate,
   adPlacements,
   adTargetAvailabilityKey,
@@ -183,7 +185,7 @@ export async function prepareAdUpload(
   if (!isProfileId(id)) return { error: failed(admin) };
   let query = client
     .from("company_ad_campaigns")
-    .select("*")
+    .select("*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement)")
     .eq("id", id);
   if (own?.profileId) query = query.eq("profile_id", own.profileId);
   const { data: campaign, error } = await query.maybeSingle();
@@ -230,13 +232,15 @@ export async function saveOwnAd(
     };
   let query = client
     .from("company_ad_campaigns")
-    .select("*")
+    .select("*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement)")
     .eq("id", id);
   if (own?.profileId) query = query.eq("profile_id", own.profileId);
   const { data: campaign, error } = await query.maybeSingle();
   if (error || !campaign || campaign.archived_at || (!admin && !["draft", "rejected"].includes(campaign.status)))
     return { error: admin ? "Dieses Banner kann derzeit nicht bearbeitet werden." : "Diese Angebotsanfrage kann derzeit nicht bearbeitet werden." };
   // Existing media comes from the authorized row, never an arbitrary hidden field.
+  const bookingError = validateAdBooking(values.data.targets, (isPristineCustomerAd(campaign) ? [] : campaign.targets ?? []).map((target: AdCampaign["targets"][number]) => ({ ...target, placement: target.placement ?? campaign.placement })));
+  if (bookingError) return { error: bookingError };
   values.data.image_path = campaign.image_path;
   let file = form.get("image");
   let uploaded: string | undefined;

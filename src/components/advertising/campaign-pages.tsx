@@ -51,7 +51,7 @@ export async function CampaignIndex({
       <p className={styles.intro}>
         {admin
           ? "Prüfen Sie Anzeigen und bestätigen Sie freie Zeiträume. Werbung bleibt unabhängig von Profilfreischaltung und Qualitätssiegel."
-          : "Planen Sie Ihre Anzeige auf der Startseite oder bei Unterkünfte A–Z. Seite, Platz und Zeitraum werden vor der Veröffentlichung geprüft."}
+          : "Planen Sie Ihre Anzeige auf der Startseite, bei Mottoreisen oder Reisezielen. Seite, Platz und Zeitraum werden vor der Veröffentlichung geprüft."}
       </p>
       {!admin && (
         <form action={createCampaign}>

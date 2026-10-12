@@ -393,3 +393,8 @@ test('distinct confirmed/requested dates and a stale editor cannot silently muta
   assert.ok(result.error);assert.deepEqual(db.row,before);assert.ok(!db.calls.some(c=>c.rpc==='save_ad_campaign'||c.download||c.remove));
  }
 });
+
+test('directory cannot create or insert archived placements while existing banner administration remains',async()=>{
+ const db=client();const upload=await prepareInlineAdUpload(db,'/unterkuenfte-a-z',form({campaign_id:'',placement:'sidebar_top',file_type:'image/png',file_size:'100'}));assert.ok(upload.error);assert.ok(!db.calls.some(c=>c.rpc==='create_editorial_ad_campaign'));
+ const archived=client();assert.ok((await reuseInlineAd(archived,'/unterkuenfte-a-z',form({archived_id:id,confirmed:'yes'}))).error);assert.ok(!archived.calls.some(c=>c.rpc==='admin_ad_lifecycle'||c.rpc==='save_ad_campaign'));
+});

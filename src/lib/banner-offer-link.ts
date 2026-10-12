@@ -4,7 +4,7 @@ export function bannerOfferTarget(page: string, placement: string): AdTarget | u
   if (!Object.hasOwn(adPlacements, placement)) return;
   const slot = placement as AdPlacementId;
   if (page === "/") return { target_type: "homepage", category_id: null, placement: slot };
-  if (page === "/unterkuenfte-a-z") return { target_type: "experts_directory", category_id: null, placement: slot };
+  // A–Z remains a delivery surface, not a new booking destination.
   const key = page.startsWith("/") ? page.slice(1) : "";
   if (portalAdSection(key)) return { target_type: "portal_area", target_key: key, category_id: null, placement: slot };
 }

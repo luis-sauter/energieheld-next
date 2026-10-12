@@ -53,6 +53,7 @@ export type InlineBannerResult = {
   metadata?: import('./banner-search-metadata').BannerSearchMetadata;
 };
 export type InlineBannerOptions = {
+  canCreate?: boolean;
   advertisers?: import('./banner-search-metadata').BannerAdvertiserOption[];
   label: string;
   banners: InlineBanner[];

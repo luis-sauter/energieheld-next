@@ -52,12 +52,13 @@ export function InlineBannerProvider({ options, children }: { options?: InlineBa
     }
     return options!.banners.find((item) => !removedIds.includes(item.id) && (campaignId ? item.id === campaignId : item.placement === placement));
   }
-  return <InlineBannerContext.Provider value={{ overrides, bannerAt, reorder: options.reorder,
+  return <InlineBannerContext.Provider value={{ overrides, bannerAt, canCreate: options.canCreate, reorder: options.reorder,
     canMove: () => !options.error,
     reordered: () => { setOverrides({}); setRemovedIds([]); },
     hasBanner: (placement) => Boolean(bannerAt(placement)), open(placement, campaignId) {
     setMessage("");
     const banner = bannerAt(placement, campaignId);
+    if (!banner && options.canCreate === false) return;
     setSelected({ placement, banner });
   } }}>
     {message && <p className={styles.success} role="status">{message}</p>}
