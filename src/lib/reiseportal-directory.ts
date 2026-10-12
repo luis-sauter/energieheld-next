@@ -145,8 +145,16 @@ export async function loadReiseportalFeatured(slugs: readonly string[]) {
 }
 
 export async function loadReiseportalTheme(theme: string) {
-  const directory = await loadReiseportalDirectory();
-  return withPublicImportMarkers(directory.database.filter((listing) => filterTravelDiscovery([listing], "", theme).length > 0));
+  // Filter existing public assignments before touching Storage. Rubric cards
+  // need one provider photo, not every gallery of the whole public directory.
+  const matching = filterTravelDiscovery(await loadReiseportalFinderListings(), '', theme);
+  const result = await loadPublicCompanyDirectory({ profileIds: matching.map(listing => listing.id), cardOnly: true });
+  if (result.error) throw new Error(result.error);
+  const facts = new Map(matching.map(listing => [listing.id, listing]));
+  const listings = result.data!.listings.filter(travelVisible).map(listing => withLegacyImages({
+    ...listing, travelTermKeys: facts.get(listing.id)?.travelTermKeys,
+  }));
+  return withPublicImportMarkers(await withSavedCardImages(listings));
 }
 
 export async function loadReiseportalDestination(destination: string) {

@@ -21,7 +21,7 @@ export const destinations: readonly DiscoveryEntry[] = [
 ];
 
 // Preview matches are published Joomla tags from raw/articles.json.
-export const travelThemes: readonly DiscoveryEntry[] = [
+export const historicalTravelThemes: readonly DiscoveryEntry[] = [
   { title: "Natur pur", slug: "natur-pur", image: "/reiseportal/mottoreisen/natur-pur.jpg", alt: "Originales Joomla-Banner Natur pur", intro: "Endlose Wiesen, grüne Wälder und Natur soweit das Auge reicht.", previewSlugs: ["bayerischer-wald", "villner-hof"] }, // article 443
   { title: "Nordic Walking", slug: "nordic-walking", image: "/reiseportal/mottoreisen/nordic-walking.jpg", alt: "Originales Joomla-Banner Nordic Walking", intro: "Das Hochplateau von Meransen ist ein Paradies für Nordic Walking Fans und die Pension Sonnenhof ist der ideale Standort, um zu erlebnisreichen Touren durch reizvolle Naturlandschaften aufzubrechen.", previewSlugs: ["bayerischer-wald", "hoeflehner", "pension-sonnenhof", "schafhuber", "villner-hof"] }, // article 470
   { title: "Radwandern", slug: "radwandern", image: "/reiseportal/mottoreisen/radwandern.jpg", alt: "Originales Joomla-Banner Radwandern", intro: "Radtouren sind die ideale Methode, die Sächsische Schweiz ausgiebig zu erkunden.", previewSlugs: ["pension-sonnenhof", "villner-hof"] }, // article 462
@@ -35,3 +35,6 @@ export const travelThemes: readonly DiscoveryEntry[] = [
   { title: "Wellnessangebote", slug: "wellnessangebote", image: "/reiseportal/mottoreisen/wellnessangebote.jpg", alt: "Originales Joomla-Banner Wellnessangebote", intro: "Wellnessglück. Aktivitäten und süßes Nichtstun perfekt kombiniert: Willkommen im Wellnesshotel Naturns, Südtirol.", previewSlugs: ["hoeflehner", "golfhotel-andreus"] }, // article 460
   { title: "Geschäftsreisen", slug: "geschaeftsreisen", image: "/reiseportal/mottoreisen/geschaeftsreisen.jpg", alt: "Originales Joomla-Banner Geschäftsreisen", intro: "In unserem Tagungshotel in Bayern gibt es drei helle Tagungsräume mit Platz für insgesamt bis zu 95 Personen und modernster technischer Ausstattung.", previewSlugs: ["hotel-zur-post"] }, // article 457
 ];
+// Retain historical targeting keys and source media; the retired rubric has
+// no public route, navigation, finder option, sitemap or related-page link.
+export const travelThemes = historicalTravelThemes.filter(entry => entry.slug !== 'tauchurlaub');

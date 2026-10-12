@@ -18,6 +18,13 @@
 @media (prefers-reduced-motion: reduce) { .card, .details, .photo { transition: none; } .card:hover .photo { transform: none; } }
 
 .edit { position: absolute; z-index: 2; top: 10px; right: 10px; min-width: 44px; min-height: 44px; border: 1px solid #fff; border-radius: 50%; color: #174761; background: #fff; cursor: pointer; }
+.motto { min-height: 0; aspect-ratio: 1.18; }
+.motto::after { background: linear-gradient(to bottom, transparent 42%, rgb(9 17 21 / 12%) 53%, rgb(9 17 21 / 83%) 78%, #10222af5 100%); }
+.motto .copy { padding: 14px 16px 10px; }
+.motto .copy h3 { font-size: 1.13rem; margin-bottom: 5px; }
+.motto .location { font-size: .6rem; margin-bottom: 4px; }
+.motto .copy .signals ul { margin: 7px 0 2px; }
+.motto .details { font-size: .75rem; padding: 6px 0; }
 .edit:focus-visible { outline: 3px solid #2394d5; outline-offset: 3px; }
 .importMarker { position: absolute; top: 12px; left: 12px; max-width: calc(100% - 80px); pointer-events: none; }
 .importMarker :global(.profile-import-badge) { color: #164a63; background: #f4fbffed; border-color: #ffffff80; font-size: .7rem; box-shadow: 0 1px 5px #102b421a; }

@@ -275,7 +275,7 @@ export function CampaignForm({
                   }
                 }}>
                   <option value="">Rubrik oder Unterrubrik auswählen</option>
-                  {portalSection.areas.map((area) => <option key={area.key} value={area.key} disabled={shownAreas.includes(area.key)}>{area.label}</option>)}
+                  {portalSection.areas.filter(area => admin || area.key !== 'mottoreisen/tauchurlaub').map((area) => <option key={area.key} value={area.key} disabled={shownAreas.includes(area.key)}>{area.label}</option>)}
                 </select>
               </label>
               <p className={styles.sectionHint}>Für diese Rubrik wird eine sichtbare Bannerfläche noch eingerichtet. Ihre Auswahl wird getrennt nach Unterrubrik und Platz geprüft.</p>
@@ -289,7 +289,7 @@ export function CampaignForm({
                       setValues((current) => ({ ...current, targets: changePortalArea(current.targets, key, nextKey) }));
                       setShownAreas((current) => current.map((item) => item === key ? nextKey : item));
                     }}>
-                      {portalSection.areas.map((area) => <option key={area.key} value={area.key} disabled={area.key !== key && shownAreas.includes(area.key)}>{area.label}</option>)}
+                      {portalSection.areas.filter(area => admin || area.key === key || area.key !== 'mottoreisen/tauchurlaub').map((area) => <option key={area.key} value={area.key} disabled={area.key !== key && shownAreas.includes(area.key)}>{area.label}</option>)}
                     </select>
                   </label>
                   <button type="button" className={styles.removeScope} aria-label={`${portalAdAreaLabel(key)} entfernen`}

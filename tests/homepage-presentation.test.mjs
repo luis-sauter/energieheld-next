@@ -257,7 +257,9 @@ test('same accommodation presentation for home, themes and destinations; no phot
  assert.equal(ordinary,rotated);assert.match(ordinary,/Vorhandenes Foto/);
  const empty=renderToStaticMarkup(createElement(AccommodationCard,{listing:{...listing,travelImage:null,travelTermKeys:[]}}));
  assert.doesNotMatch(empty,/<img|data-travel-term=/);assert.match(empty,/accommodation-card-image--empty/);assert.match(empty,/Details ansehen/);
- for(const route of ['reiseziele','mottoreisen'])assert.match(read(`src/app/(energieheld)/${route}/[slug]/page.tsx`),/<DiscoveryDetail/);
+ assert.match(read('src/app/(energieheld)/reiseziele/[slug]/page.tsx'),/<DiscoveryDetail/);
+ assert.match(read('src/app/(energieheld)/mottoreisen/[slug]/page.tsx'),/<MottoDetail/);
+ assert.match(read('src/components/portal/motto-detail.tsx'),/<AccommodationCard/);
 });
 test('Carola styles are isolated, keep text untruncated and provide keyboard/touch/reduced-motion parity',()=>{
  const css=read('src/components/portal/accommodation-card.module.css');

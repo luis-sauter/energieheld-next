@@ -119,7 +119,7 @@ test("header dropdowns derive only existing theme and destination routes from th
     ({ label: title, href: `/mottoreisen/${slug}` })));
   assert.deepEqual(places.children, destinations.map(({ title, slug }) =>
     ({ label: title, href: `/reiseziele/${slug}` })));
-  assert.equal(themes.children.length, 12);
+  assert.equal(themes.children.length, 11);
   assert.equal(places.children.length, 4);
   assert.ok(existsSync(new URL("../src/app/(energieheld)/mottoreisen/[slug]/page.tsx", import.meta.url)));
   assert.ok(existsSync(new URL("../src/app/(energieheld)/reiseziele/[slug]/page.tsx", import.meta.url)));
@@ -279,15 +279,15 @@ test("destination overview publicly displays at most one actual creative, Premiu
   }
 });
 
-test("four destinations and twelve themes have sourced images, links and detail routes", async () => {
+test("four destinations and eleven active themes have sourced images, links and detail routes", async () => {
   globalThis.__travelDirectoryResult = { data: {
     listings: reiseportalPreview.map((listing, index) => ({ ...listing, id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(index + 1).padStart(12, "0")}`, isPreview: false })),
     orderRows: [],
   }, error: null };
   assert.deepEqual(destinations.map((item) => item.title), [...reiseziele]);
-  assert.deepEqual(travelThemes.map((item) => item.title), [...mottoreisen]);
+  assert.deepEqual(travelThemes.map((item) => item.title), [...mottoreisen].filter(title => title !== "Tauchurlaub"));
   assert.equal(destinationRoute.generateStaticParams().length, 4);
-  assert.equal(themeRoute.generateStaticParams().length, 12);
+  assert.equal(themeRoute.generateStaticParams().length, 11);
   for (const [entries, basePath, title] of [[destinations, "/reiseziele", "Reiseziele"], [travelThemes, "/mottoreisen", "Mottoreisen"]]) {
     const html = renderToStaticMarkup(createElement(ReiseOverview, { title, intro: "Intro", entries, basePath }));
     assert.equal((html.match(/class="discovery-card"/g) ?? []).length, entries.length);
@@ -305,7 +305,7 @@ test("four destinations and twelve themes have sourced images, links and detail 
   assert.match(destination, /Höflehner|Schafhuber/);
   const theme = renderToStaticMarkup(createElement(DiscoveryDetail, { entry: travelThemes[0], title: "Mottoreisen", basePath: "/mottoreisen", listings: reiseportalPreview.slice(0, 1) }));
   assert.match(theme, /Bayerischer Wald/);
-  for (const slug of ["tauchurlaub", "nordic-walking"]) {
+  for (const slug of ["natur-pur", "nordic-walking"]) {
     const entry = travelThemes.find((item) => item.slug === slug);
     assert.ok(entry.image?.endsWith(`/${slug}.jpg`));
     const detail = renderToStaticMarkup(createElement(DiscoveryDetail, { entry, title: "Mottoreisen", basePath: "/mottoreisen", listings: [] }));
@@ -317,11 +317,26 @@ test("four destinations and twelve themes have sourced images, links and detail 
   await assert.rejects(destinationRoute.default({ params: Promise.resolve({ slug: "unbekannt" }) }), /NOT_FOUND/);
 });
 
-test("motto redesign renders all twelve genuine themes and eight accessible presentation filters", async () => {
+test('motto detail keeps every matching profile and campaign once with alternating manual rows and editorial', async()=>{
+ const {MottoDetail}=await import('../src/components/portal/motto-detail.tsx');
+ const listings=Array.from({length:47},(_,i)=>({...reiseportalPreview[0],id:'profile-'+i,slug:'profile-'+i,name:'Unterkunft '+i}));
+ const ads=Array.from({length:9},(_,i)=>({id:'ad-'+i,placement: i===0?'top_banner':'sidebar_'+String(i+3).padStart(2,'0'),headline:'Banner '+i,imageUrl:'/existing-'+i+'.jpg',target_url:'https://example.org/'+i}));
+ const html=renderToStaticMarkup(createElement(MottoDetail,{entry:travelThemes[0],listings,advertising:{ads,sidebarOrder:[],options:undefined},seed:'fixed'}));
+ assert.equal((html.match(/class="accommodation-card"/g)||[]).length,47);
+ assert.equal((html.match(/data-placement=/g)||[]).length,9);assert.equal((html.match(/<h1\b/g)||[]).length,1);
+ for(let i=0;i<47;i++)assert.equal((html.match(new RegExp('href="/unterkuenfte/profile-'+i+'"','g'))||[]).length,1);
+ assert.match(html,/motto-editorial-v2\/natur-pur.webp/);assert.match(html,/Wo die Landschaft den Takt vorgibt/);
+ assert.ok(html.indexOf('aria-label="Unterkünfte, Reihe 1"')<html.indexOf('aria-label="Banner, Reihe 1"'));
+ assert.ok(html.indexOf('aria-label="Banner, Reihe 1"')<html.indexOf('aria-label="Unterkünfte, Reihe 2"'));
+ assert.doesNotMatch(html,/Angebot anfragen|Automatischen Wechsel pausieren|Freier Werbeplatz/);
+ await assert.rejects(themeRoute.default({params:Promise.resolve({slug:'tauchurlaub'})}),/NOT_FOUND/);
+});
+
+test("motto overview renders eleven active themes and eight accessible presentation filters", async () => {
   globalThis.__discoveryAdvertising = undefined;
   const { mottoGroups, mottoPresentation } = await import('../src/lib/motto-presentation.ts');
   assert.equal(mottoGroups.length, 8);
-  assert.deepEqual(Object.keys(mottoPresentation), travelThemes.map(entry => entry.slug));
+  assert.deepEqual(Object.keys(mottoPresentation).filter(slug => slug !== "tauchurlaub"), travelThemes.map(entry => entry.slug));
   for (const group of ['alle', ...mottoGroups.slice(1).map(item => item.id)]) {
     const html = renderToStaticMarkup(await ThemeOverview({searchParams:Promise.resolve({gruppe:group})}));
     assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
@@ -382,7 +397,7 @@ test("database travel terms take precedence over fallback slugs and combine all 
     "theme:tauchurlaub", "audience:paar", "accommodation:hotel", "feature:sauna",
   ] };
   assert.deepEqual(filterTravelDiscovery([listing], "", "natur-pur"), []);
-  assert.deepEqual(filterTravelDiscovery([listing], "deutschland", "tauchurlaub", "paar", "hotel", "sauna"), [listing]);
+  assert.deepEqual(filterTravelDiscovery([listing], "deutschland", "tauchurlaub", "paar", "hotel", "sauna"), []);
   assert.deepEqual(filterTravelDiscovery([listing], "", "tauchurlaub", "familie"), []);
   assert.deepEqual(filterTravelDiscovery([listing], "", "", "", "", "pool"), []);
   assert.deepEqual(filterTravelDiscovery([reiseportalPreview[0]], "", "", "paar"), []);
@@ -452,7 +467,7 @@ test("travel loader attaches only profile-specific database assignments", async 
     const directory = await loadReiseportalDirectory();
     assert.deepEqual(directory.database.map((item) => item.travelTermKeys),
       [["theme:tauchurlaub", "audience:paar"], []]);
-    assert.deepEqual(filterTravelDiscovery(directory.database, "", "tauchurlaub").map((item) => item.id), [first.id]);
+    assert.deepEqual(filterTravelDiscovery(directory.database, "", "tauchurlaub").map((item) => item.id), []);
     assert.deepEqual(filterTravelDiscovery(directory.database, "", "natur-pur"), []);
   } finally {
     globalThis.__travelAssignments = null;

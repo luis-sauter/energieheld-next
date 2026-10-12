@@ -68,7 +68,8 @@ async function toListing(
 
 type Result<T> = { data: T; error: null } | { data: null; error: string };
 
-export async function loadPublicCompanyDirectory(): Promise<Result<{ listings: Listing[]; orderRows: DirectoryOrderRow[] }>> {
+export async function loadPublicCompanyDirectory(options?: { profileIds: string[]; cardOnly: boolean }): Promise<Result<{ listings: Listing[]; orderRows: DirectoryOrderRow[] }>> {
+  if (options && !options.profileIds.length) return { data: { listings: [], orderRows: [] }, error: null };
   try {
     const client = createPublicClient();
     const profiles: PublicProfile[] = [];
@@ -77,23 +78,25 @@ export async function loadPublicCompanyDirectory(): Promise<Result<{ listings: L
     let streetReadable = true;
     let galleryReadable = true;
     for (let offset = 0; ; offset += pageSize) {
-      let { data, error } = await client
+      const query = client
         .from("company_profiles")
         .select((streetReadable ? publicFields : publicFieldsWithoutStreet).replace(galleryReadable ? "" : "gallery_initialized,", ""))
         .eq("status", "approved")
         .order("id")
         .range(offset, offset + pageSize - 1);
+      let { data, error } = await (options ? query.in('id', options.profileIds) : query);
       if (galleryReadable && (error?.code === "42703" || error?.code === "PGRST204") && error.message.includes("gallery_initialized")) {
         galleryReadable = false; offset -= pageSize; continue;
       }
       if (error?.code === "42501" && streetReadable) {
         streetReadable = false;
-        ({ data, error } = await client
+        const fallback = client
           .from("company_profiles")
           .select(publicFieldsWithoutStreet.replace(galleryReadable ? "" : "gallery_initialized,", ""))
           .eq("status", "approved")
           .order("id")
-          .range(offset, offset + pageSize - 1));
+          .range(offset, offset + pageSize - 1);
+        ({ data, error } = await (options ? fallback.in('id', options.profileIds) : fallback));
       }
       if (error) throw error;
       const rows = data as unknown as PublicProfile[];
@@ -123,7 +126,7 @@ export async function loadPublicCompanyDirectory(): Promise<Result<{ listings: L
       if (rows.length < pageSize) break;
     }
     const ordered = sortByDirectoryOrder(profiles, orderRows);
-    const media = await signCompanyDirectoryMedia(client, ordered);
+    const media = await signCompanyDirectoryMedia(client, ordered, options?.cardOnly);
     return {
       data: {
         listings: ordered.map(row => companyProfileListing(row, media.get(row.id)!)),

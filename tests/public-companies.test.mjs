@@ -288,6 +288,8 @@ function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((i
         { status: 403 },
       );
     let data = rows.filter((r) => r.status === "approved");
+    const ids = url.searchParams.get('id');
+    if (ids?.startsWith('in.(')) data = data.filter(row => ids.slice(4,-1).replaceAll('"','').split(',').includes(row.id));
     const slug = url.searchParams.get("slug");
     if (slug) data = data.filter((r) => "eq." + r.slug === slug);
     const offset = Number(url.searchParams.get("offset") || 0),
@@ -298,6 +300,18 @@ function api(rows = [row], failure = false, ads = [], orderRows = rows.filter((i
   };
   return requests;
 }
+
+test('rubric directory scopes approved public IDs before signing one photo and keeps unrelated galleries out',async()=>{
+ const {loadPublicCompanyDirectory}=await import('../src/lib/public-companies.ts');
+ const rows=[{...travelRow,company_profile_images:Array.from({length:40},(_,i)=>({id:'photo-'+i,storage_path:'profiles/profile-1/'+i+'.jpg',sort_order:i,alt_text:'Photo'}))},
+  {...travelRow,id:'unrelated',company_profile_images:[{id:'other',storage_path:'profiles/unrelated/other.jpg',sort_order:0,alt_text:'Other'}]}];
+ const before=structuredClone(rows);const requests=api(rows);const fetch=globalThis.fetch;const signed=[];
+ globalThis.fetch=async(input,init)=>{if(new URL(input).pathname==='/storage/v1/object/sign/company-media')signed.push(...JSON.parse(init.body).paths);return fetch(input,init);};
+ const result=await loadPublicCompanyDirectory({profileIds:['profile-1'],cardOnly:true});assert.equal(result.error,null);
+ assert.equal(result.data.listings.length,1);assert.equal(result.data.listings[0].images.length,1);assert.deepEqual(signed,['profiles/profile-1/0.jpg']);
+ assert.ok(requests.some(({url})=>url.searchParams.get('id')==='in.(profile-1)'));assert.deepEqual(rows,before);
+ const previous=requests.length;assert.deepEqual((await loadPublicCompanyDirectory({profileIds:[],cardOnly:true})).data.listings,[]);assert.equal(requests.length,previous);
+});
 const filters = {
   query: "",
   category: "",
