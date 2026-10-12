@@ -217,20 +217,20 @@ export function CampaignForm({
       <fieldset className={styles.formSection}>
         <legend>Ansprechpartner</legend>
         <p className={styles.sectionHint}>So können wir Ihre Anfrage zuordnen und Sie bei Rückfragen erreichen.</p>
-        {publicRequestKey && <label>Unternehmensname<input name="company_name" required maxLength={120} /></label>}
+        {publicRequestKey && <label>Unternehmensname *<input name="company_name" required maxLength={120} /></label>}
         <div className={styles.contactGrid}>
-          <label>Name<input name="contact_name" required={Boolean(publicRequestKey)} maxLength={120} value={values.contact_name ?? ""} onChange={(e) => set("contact_name", e.target.value)} /></label>
-          <label>E-Mail-Adresse<input name="contact_email" type="email" required={Boolean(publicRequestKey)} maxLength={254} value={values.contact_email ?? ""} onChange={(e) => set("contact_email", e.target.value)} /></label>
-          <label>Telefonnummer<input name="contact_phone" type="tel" required={Boolean(publicRequestKey)} maxLength={60} value={values.contact_phone ?? ""} onChange={(e) => set("contact_phone", e.target.value)} /></label>
+          <label>Name{publicRequestKey ? " *" : ""}<input name="contact_name" required={Boolean(publicRequestKey)} maxLength={120} value={values.contact_name ?? ""} onChange={(e) => set("contact_name", e.target.value)} /></label>
+          <label>E-Mail-Adresse{publicRequestKey ? " *" : ""}<input name="contact_email" type="email" required={Boolean(publicRequestKey)} maxLength={254} value={values.contact_email ?? ""} onChange={(e) => set("contact_email", e.target.value)} /></label>
+          <label>Telefonnummer{publicRequestKey ? " *" : ""}<input name="contact_phone" type="tel" required={Boolean(publicRequestKey)} maxLength={60} value={values.contact_phone ?? ""} onChange={(e) => set("contact_phone", e.target.value)} /></label>
         </div>
       </fieldset>
       <fieldset className={styles.formSection}>
         <legend>{admin ? "Kampagnenziel" : "Angaben zur Anzeige"}</legend>
         <div className={styles.formFields}>
-          <label>{admin ? "Interner Kampagnenname" : "Bezeichnung der Angebotsanfrage"}
+          <label>{admin ? "Interner Kampagnenname" : "Bezeichnung der Angebotsanfrage"}{publicRequestKey ? " *" : ""}
             <input name="internal_name" required maxLength={120} value={values.internal_name} onChange={(e) => set("internal_name", e.target.value)} />
           </label>
-          <label>Ziel-URL
+          <label>Ziel-URL{publicRequestKey ? " *" : ""}
             <input type="url" name="target_url" required maxLength={2048} placeholder="https://www.ihre-firma.de" value={values.target_url} onChange={(e) => set("target_url", e.target.value)} />
           </label>
         </div>
@@ -377,8 +377,9 @@ export function CampaignForm({
           <div hidden aria-hidden="true"><label>Fax<input name="fax" tabIndex={-1} autoComplete="off" /></label></div>
           <label className={styles.consentRow}>
             <input name="consent" type="checkbox" required />
-            <span>Ich stimme der Verarbeitung meiner Angaben zur Bearbeitung der Anfrage gemäß der <a href="https://das-reiseportal.com/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutzerklärung</a> zu.</span>
+            <span><span aria-hidden="true">* </span>Ich stimme der Verarbeitung meiner Angaben zur Bearbeitung der Anfrage gemäß der <a href="https://das-reiseportal.com/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutzerklärung</a> zu.</span>
           </label>
+          <p className={styles.sectionHint}>Die mit * gekennzeichneten Felder sind Pflichtfelder.</p>
           <p className={styles.requestAssurance}>Ihre Anfrage ist unverbindlich. Es entsteht keine Buchung oder Veröffentlichung. Werbeplätze und Zeitraum können offen bleiben.</p>
         </> : <p>{admin ? "Redaktionelle Änderungen an einer freigegebenen Kampagne werden sofort wirksam. Entwürfe werden erst nach Freigabe ausgespielt." : "Mit dem Einreichen wird Ihre Angebotsanfrage zur Prüfung gesendet. Die Anzeige wird erst nach Freigabe im bestätigten Zeitraum ausgespielt."}</p>}
       <div className={publicRequestKey ? styles.requestSubmit : styles.actions}>

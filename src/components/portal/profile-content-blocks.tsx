@@ -34,7 +34,8 @@ function flowIntroduction(nodes: ReactNode) {
 }
 
 // One contained surface, shared by public view and editor; no content is truncated.
-export function TextImageSection({ text, image, textWidth, imageWidth, imageFirst, textAlign, flow = "standard", editingText }: {
+export function TextImageSection({ text, image, heading, textWidth, imageWidth, imageFirst, textAlign, flow = "standard", editingText }: {
+  heading?: ReactNode;
   text: ReactNode; image: ReactNode; textWidth: number; imageWidth: number;
   imageFirst: boolean; textAlign?: TextAlignment; flow?: TextImageFlow; editingText?: ReactNode;
 }) {
@@ -46,6 +47,7 @@ export function TextImageSection({ text, image, textWidth, imageWidth, imageFirs
       style={{ "--image-share": imageWidth / (textWidth + imageWidth) * 100 + "%", gridTemplateColumns: imageFirst
         ? "minmax(0, " + imageWidth + "fr) minmax(0, " + textWidth + "fr)"
         : "minmax(0, " + textWidth + "fr) minmax(0, " + imageWidth + "fr)" } as CSSProperties}>
+      {heading && <div className={styles.flowIntro}>{heading}</div>}
       {split && <div className={styles.flowIntro}>{split.intro}</div>}
       {flow === "beside" || flow === "around" ? [imageColumn, textColumn] : imageFirst ? [imageColumn, textColumn] : [textColumn, imageColumn]}
     </div>
@@ -64,7 +66,7 @@ export function BlockImageGrid({ block, editorial = false }: { block: ProfileCon
   if (!images.length) return null;
   const config = normalizeImageGridConfig(block.config);
   return <div className={styles.frame}>
-    <div className={styles.grid} data-columns={publicImageGridColumns(config.columns, images.length)}>
+    <div className={styles.grid} data-columns={editorial ? 1 : publicImageGridColumns(config.columns, images.length)}>
     {images.map((image) => <figure key={image.id} className={styles.figure}>
       <div className={styles.tile} style={{ aspectRatio: editorial ? editorialImageAspectRatio(config) : config.aspect_ratio }}><ProfileBlockImage image={image} /></div>
       {imageCaptionPresentation(image).caption && <figcaption className={styles.caption}>{imageCaptionPresentation(image).caption}</figcaption>}
@@ -94,7 +96,8 @@ export function ProfileContentBlocks({ blocks }: { blocks: ProfileContentBlock[]
       return <div key={row.left[0].id} className="profile-content-block" data-spacing-top={frame.spacing_top} data-spacing-bottom={frame.spacing_bottom}
         style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
         <TextImageSection
-          text={[...row.left, ...row.right].filter((block) => block.type !== "image_grid").map((block) => renderBlock(block, true))}
+          heading={(frame.text_flow ?? "standard") === "standard" ? [...row.left, ...row.right].filter(block => block.type === "heading").map(block => renderBlock(block, true)) : undefined}
+          text={[...row.left, ...row.right].filter((block) => block.type !== "image_grid" && ((frame.text_flow ?? "standard") !== "standard" || block.type !== "heading")).map((block) => renderBlock(block, true))}
           image={[...row.left, ...row.right].filter((block) => block.type === "image_grid").map((block) => <BlockImageGrid key={block.id} block={block} editorial />)}
           textWidth={normalizeBlockLayout(text?.config).width_percent}
           imageWidth={normalizeBlockLayout([...row.left, ...row.right].find((block) => block.type === "image_grid")?.config).width_percent}
@@ -125,17 +128,17 @@ export function ProfileEditorialContent({ items, listing }: { items: EditorialIt
       data-spacing-top={item.layout.spacing_top} data-spacing-bottom={item.layout.spacing_bottom}
       style={{ width: item.imageBlock ? "100%" : `${item.layout.width_percent}%`,
         marginLeft: item.imageBlock ? 0 : `${item.layout.offset_percent}%`, textAlign: item.layout.text_align }}>
-      {!item.headingHidden && <h2 style={{ textAlign: item.headingAlign }}>{item.heading}</h2>}
+      {!item.headingHidden && (!item.imageBlock?.images?.length || item.pairLayout?.text_flow && item.pairLayout.text_flow !== "standard") && <h2 style={{ textAlign: item.headingAlign }}>{item.heading}</h2>}
       {body && <p style={{ textAlign: item.bodyAlign,
         ...(item.kind === "business" ? { whiteSpace: "pre-wrap" } : {}) }}>{body}</p>}
     </section>;
     if (!item.imageBlock?.images?.length) { sections.push(section); continue; }
     const image = item.imageBlock;
-    const frame = item.pairLayout ?? normalizeTextBlockLayout(undefined);
+    const frame = normalizeTextBlockLayout(item.pairLayout);
     sections.push(<div key={item.key} className="profile-content-block"
       data-spacing-top={frame.spacing_top} data-spacing-bottom={frame.spacing_bottom}
       style={{ width: `${frame.width_percent}%`, marginLeft: `${frame.offset_percent}%`, textAlign: frame.text_align }}>
-      <TextImageSection text={section} image={<BlockImageGrid block={image} editorial />}
+      <TextImageSection heading={(frame.text_flow ?? "standard") === "standard" && !item.headingHidden ? <h2 style={{textAlign:item.headingAlign}}>{item.heading}</h2> : undefined} text={section} image={<BlockImageGrid block={image} editorial />}
         textWidth={item.layout.width_percent} imageWidth={normalizeBlockLayout(image.config).width_percent}
         imageFirst={normalizeBlockLayout(image.config).offset_percent < item.layout.offset_percent} flow={frame.text_flow} />
     </div>);

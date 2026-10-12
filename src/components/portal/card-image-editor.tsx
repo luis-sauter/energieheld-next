@@ -36,7 +36,7 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
     finally { setBusy(false); }
   }
   return <>
-    <button type="button" className={styles.edit} aria-label={`Kartenbild von ${profileName} bearbeiten`}
+    <button type="button" className={styles.edit} title="Vorschaubild bearbeiten" aria-label="Vorschaubild bearbeiten"
       onClick={event => { returnFocus.current = event.currentTarget; setError(""); setSelected(assetId && image ? { id: assetId, src: image.src, alt: image.alt } : null); setCrop(savedCrop ?? DEFAULT_IMAGE_CROP); setOpen(true); }}>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a3 3 0 0 0-4-4L4 15Z" /></svg>
     </button>
@@ -44,7 +44,7 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
       onCancel={event => { if (event.target !== event.currentTarget) return; event.preventDefault(); close(); }}
       onClose={event => { if (event.target !== event.currentTarget) return; setOpen(false); setSelected(null); }}>
       {error && <p role="alert">{error}</p>}
-      {selected ? <div style={{ padding: "1.5rem" }}><h2 id="media-library-title">Kartenbild · {profileName}</h2>
+      {selected ? <div style={{ padding: "1.5rem" }}><h2 id="media-library-title">Vorschaubild ändern</h2><p>{profileName}</p>
         <p>Nur das Kartenbild wird geändert. Galerie und Medienoriginal bleiben erhalten.</p>
         <CropControls crop={crop} setCrop={setCrop} ratio={35 / 32} alt={selected.alt} disabled={busy}
           renderImage={value => {
@@ -53,8 +53,8 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
           }} />
         <div className="actions"><button type="button" className="button" disabled={busy} onClick={() => setSelected(null)}>Bild aus Mediathek wählen</button>
           <button type="button" className="button" disabled={busy} onClick={close}>Abbrechen</button>
-          <button type="button" className="button button-primary" disabled={busy} onClick={save}>{busy ? "Speichert …" : "Kartenbild speichern"}</button></div>
-      </div> : <Browser initialProfileId={profileId} initialProfileName={profileName} initialKind="images"
+          <button type="button" className="button button-primary" disabled={busy} onClick={save}>{busy ? "Speichert …" : "Vorschaubild speichern"}</button></div>
+      </div> : <Browser title="Vorschaubild ändern" initialProfileId={profileId} initialProfileName={profileName} initialKind="images"
         onSelected={choose} onBusy={setBusy} onClose={close} />}
     </dialog>}
   </>;

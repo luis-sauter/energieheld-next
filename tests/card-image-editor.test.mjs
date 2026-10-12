@@ -33,7 +33,7 @@ test('actual card edit/cancel closes native dialog and ignores descendant close/
   const nodes=h.open(),dialog=nodes.find(n=>n.type==='dialog');assert.equal(h.counts().modal,true);
   dialog.props.onClose({target:{},currentTarget:h.dialog});assert.ok(h.render().find(n=>n.type==='dialog'));
   dialog.props.onCancel({target:{},currentTarget:h.dialog,preventDefault(){throw Error('nested cancel swallowed');}});
-  const browser=h.render().find(n=>n.type==='LazyTool');assert.equal(browser.props.initialProfileId,profile);assert.equal(browser.props.initialKind,'images');
+  const browser=h.render().find(n=>n.type==='LazyTool');assert.equal(browser.props.initialProfileId,profile);assert.equal(browser.props.initialKind,'images');assert.equal(browser.props.title,'Vorschaubild ändern');const trigger=nodes.find(n=>n.type==='button');assert.equal(trigger.props.title,'Vorschaubild bearbeiten');assert.equal(trigger.props['aria-label'],'Vorschaubild bearbeiten');
   browser.props.onClose();assert.equal(h.counts().modal,false);assert.equal(h.render().filter(n=>n.type==='dialog').length,0);assert.equal(h.counts().saves,0);
  }
 });
@@ -42,7 +42,7 @@ test('library selection and crop are preview-only until explicit save; unrelated
  const image={id:asset,profile_id:profile,kind:'gallery',bucket_id:'company-media',src:'/real.png',alt_text:'Real',archived_at:null};
  assert.throws(()=>browser.props.onSelected({...image,profile_id:'foreign'}));assert.throws(()=>browser.props.onSelected({...image,bucket_id:'ad-media'}));
  browser.props.onSelected(image);let nodes=h.render();assert.equal(h.counts().saves,0);assert.equal(nodes.find(n=>n.type==='LazyTool').props.ratio,35/32);
- const save=nodes.find(n=>n.type==='button'&&n.props.children==='Kartenbild speichern');await save.props.onClick();assert.equal(h.counts().saves,1);assert.equal(h.counts().refreshes,1);assert.equal(h.counts().modal,false);assert.equal(h.render().filter(n=>n.type==='dialog').length,0);
+ const save=nodes.find(n=>n.type==='button'&&n.props.children==='Vorschaubild speichern');await save.props.onClick();assert.equal(h.counts().saves,1);assert.equal(h.counts().refreshes,1);assert.equal(h.counts().modal,false);assert.equal(h.render().filter(n=>n.type==='dialog').length,0);
 });
 
 test('saved images load once in a signed batch and override only travel cards, with safe pre-migration fallback',async()=>{

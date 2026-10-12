@@ -108,3 +108,14 @@
 .page :global(.travel-image-fallback) { display: grid; place-items: center; width: 100%; height: 100%; background: #edf7fc; color: #217ca3; }
 .page :global(.row-contact) { overflow-wrap: anywhere; }
 .page :global(.row-content .row-tagline) { overflow: visible; }
+.page :global(.directory-banner-continuation) { display: grid; gap: 16px; margin-top: 16px; }
+.page :global(.directory-banner-continuation [data-placement]) { margin: 0; }
+.page :global(.directory-banner-continuation img) { display: block; width: 100%; height: auto; }
+.page :global(.commercial-sidebar .travel-package-group) { margin-top: 16px; }
+.page :global(.commercial-sidebar [data-ad-format-group] > div) { grid-template-columns: minmax(0, 1fr); }
+.page :global(.directory-mobile-banner) { display: none; }
+@media (max-width: 900px) {
+  .page :global(.commercial-sidebar.advertising-rail) { display: none; }
+  .page :global(.directory-mobile-banner) { display: block; margin-block: 20px; }
+  .page :global(.directory-mobile-banner img) { display: block; width: 100%; height: auto; }
+}

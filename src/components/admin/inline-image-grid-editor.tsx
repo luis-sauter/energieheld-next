@@ -229,11 +229,11 @@ export function InlineImageGridEditor({ block, saveAction, onBusyChange, editori
         title={count < images.length ? "Bitte zuerst Bilder entfernen" : `${count} ${count === 1 ? "Bild" : "Bilder"}`}
         onClick={() => { setColumnOverride({ base: columns, value: count }); const data = form("layout"); data.set("columns", String(count));
           void run(data, { kind: "image-layout", blockId: block.id, before: columns, after: count }).then((ok) => { if (!ok) setColumnOverride(null); }); }}>
-        {count} {count === 1 ? "Bild" : "Bilder"}
+        {count} {count === 1 ? "Bild" : editorial ? "Bilder untereinander" : "Bilder"}
       </button>)}
     </div>
     <div ref={frameRef} className={`${gridStyles.frame} ${styles.resizableImageFrame}`}>
-    <div ref={gridRef} className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={previewColumns}>
+    <div ref={gridRef} className={`${gridStyles.grid} ${styles.editImageGrid}`} data-columns={editorial ? 1 : previewColumns}>
       {imageGridSlots(previewColumns, visibleImages).map((image, index) => image ? <figure key={image.id} className={styles.imageTile}
         data-block-image-id={image.id}>
         <div className={gridStyles.tile} style={{ aspectRatio: displayRatio }}><ProfileBlockImage image={image} /></div>

@@ -100,21 +100,21 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
     country: field("country", "Land"),
   };
 
-  function renderSpecial(item: EditorialItem) {
+  function renderSpecial(item: EditorialItem, part?: "heading" | "text") {
     const about = item.kind === "about";
     return <div className={styles.specialSection}>
-      <FixedHeadingEditor key={`${item.key}-${item.heading}-${item.headingHidden}-${item.headingAlign}`}
+      {part !== "text" && <FixedHeadingEditor key={`${item.key}-${item.heading}-${item.headingHidden}-${item.headingAlign}`}
         slot={about ? "about_heading" : "business_areas_heading"} sectionKey={item.key}
         value={item.heading} align={item.headingAlign} hidden={item.headingHidden}
-        defaultText={about ? `Über ${listing.name}` : "Tätigkeitsbereiche"} saveAction={saveContent} />
-      <SectionPartFrame key={`${item.key}-text-${item.bodyAlign}-${about ? values.description : values.business_areas}`}
+        defaultText={about ? `Über ${listing.name}` : "Tätigkeitsbereiche"} saveAction={saveContent} />}
+      {part !== "heading" && <SectionPartFrame key={`${item.key}-text-${item.bodyAlign}-${about ? values.description : values.business_areas}`}
         sectionKey={item.key} part="text" align={item.bodyAlign}
         missing={!(about ? values.description : values.business_areas)?.trim()} saveAction={saveContent}>
         {about ? inlineFields.description : inlineFields.business_areas}
         <button type="submit" form={formId} className="button" disabled={busy || history.busy}>
           {busy ? "Wird gespeichert …" : about ? "Beschreibung speichern" : "Tätigkeitsbereiche speichern"}
         </button>
-      </SectionPartFrame>
+      </SectionPartFrame>}
     </div>;
   }
 

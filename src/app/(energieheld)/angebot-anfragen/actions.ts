@@ -26,7 +26,7 @@ export async function updateOfferRequest(_state:AdFormState,form:FormData):Promi
  const {error}=await client.rpc("set_portal_offer_request_status",{p_id:id,p_status:status});
  if(error) return {error:"Der Status konnte nicht gespeichert werden."};
  revalidatePath("/admin");revalidatePath("/admin/werbung");revalidatePath("/admin/werbung/"+id);
- return {success:"Status gespeichert."};
+ return {success:"Status gespeichert.", requestStatus:status as keyof typeof offerRequestStatuses};
  } catch {return {error:"Der Status konnte nicht gespeichert werden."};}
 }
 

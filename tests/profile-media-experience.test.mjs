@@ -87,7 +87,7 @@ test("editor, directory and gallery keep local preview, square framing and reduc
   assert.match(source("src/components/admin/inline-profile-editor.tsx"), /mapLocation=\{editing \? mapLocation : undefined\}/);
   assert.match(source("src/components/portal/listing-detail.tsx"), /googleMapsLocation\(location\)/);
   assert.match(layout, /data-spacing-top=\{previewSpacing\.top\}/);
-  assert.match(grid, /data-columns=\{previewColumns\}/);
+  assert.match(grid, /data-columns=\{editorial \? 1 : previewColumns\}/);
   assert.match(directory, /\.row-logo\s*\{[^}]*aspect-ratio:\s*1;/s);
   assert.match(source("src/components/portal/company-image.tsx"), /fit = "cover"/);
   assert.match(source("src/components/portal/company-image.tsx"), /objectFit: fit/);

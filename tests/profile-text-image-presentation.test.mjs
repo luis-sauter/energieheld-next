@@ -22,14 +22,14 @@ registerHooks({resolve(s,c,next){
 const {ProfileContentBlocks,ProfileEditorialContent}=await import('../src/components/portal/profile-content-blocks.tsx');
 const image={id:'photo',src:'/real-image.webp',alt_text:'Berge',caption:'Blick ins Tal',focus_x:30,focus_y:70,zoom:1.5};
 const block=(id,type,width,offset,text='')=>({id,type,config:{width_percent:width,offset_percent:offset,columns:1,aspect_ratio:1.5,text_align:'left'},content:{text},images:type==='image_grid'?[image]:undefined});
-for(const side of ['left','right'])for(const share of [25,50,75])test(`public pair ${side} ${share}/${100-share}: one heading/body column and stored crop/caption`,()=>{
+for(const side of ['left','right'])for(const share of [25,50,75])test(`public pair ${side} ${share}/${100-share}: shared heading above top-aligned body/image and stored crop/caption`,()=>{
  const textOffset=side==='left'?share:0,imageOffset=side==='left'?0:100-share;
  const heading=block('heading','heading',100-share,textOffset,'Überschrift'),text=block('text','text',100-share,textOffset,'Beschreibung'),img=block('image','image_grid',share,imageOffset);
  const blocks=side==='left'?[img,heading,text]:[heading,text,img];const before=JSON.stringify(blocks);
  const html=renderToStaticMarkup(createElement(ProfileContentBlocks,{blocks}));
  assert.match(html,new RegExp(`data-image-side="${side}"`));
  assert.ok(html.includes(`minmax(0, ${side==='left'?share:100-share}fr) minmax(0, ${side==='left'?100-share:share}fr)`));
- assert.match(html,/<div class="editorialText"[^>]*>[\s\S]*<h2>Überschrift<\/h2>[\s\S]*<p>Beschreibung<\/p>/);
+ assert.match(html,/<div class="flowIntro">[\s\S]*<h2>Überschrift<\/h2>[\s\S]*<div class="editorialText"[^>]*>[\s\S]*<p>Beschreibung<\/p>/);
  assert.match(html,/Blick ins Tal/);assert.match(html,/object-position:30% 70%/);assert.match(html,/scale\(1.5\)/);
  assert.equal(JSON.stringify(blocks),before);assert.equal((html.match(/data-text-image/g)||[]).length,1);
  assert.equal(html.indexOf('editorialImage')<html.indexOf('editorialText'),side==='left');

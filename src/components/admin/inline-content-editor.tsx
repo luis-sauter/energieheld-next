@@ -136,7 +136,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
   blocks: ProfileContentBlock[];
   items: EditorialItem[];
   listing: Listing;
-  renderSpecial: (item: EditorialItem) => React.ReactNode;
+  renderSpecial: (item: EditorialItem, part?: "heading" | "text") => React.ReactNode;
   editing: boolean;
   available: boolean;
   imagesAvailable: boolean;
@@ -503,7 +503,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       const editableText = columns.flat().filter((block) => block.type !== "image_grid").map((block) => renderEditableBlock(block, true));
       const flowText = columns.flat().filter((block) => block.type !== "image_grid").map((block) => block.type === "heading" ? <h2 key={block.id}>{block.content.text}</h2> : <p key={block.id}>{block.content.text}</p>);
       const pairContent = <>
-        <TextImageSection text={flow === "standard" ? editableText : flowText} editingText={flow === "standard" ? undefined : editableText} flow={flow}
+        <TextImageSection heading={flow === "standard" ? columns.flat().filter(block => block.type === "heading").map(block => renderEditableBlock(block, true)) : undefined} text={flow === "standard" ? columns.flat().filter(block => block.type === "text").map(block => renderEditableBlock(block, true)) : flowText} editingText={flow === "standard" ? undefined : editableText} flow={flow}
           image={image ? renderPairedImage(image) : null} textWidth={textLayout?.width_percent ?? 50}
           imageWidth={imageLayout?.width_percent ?? 50} imageFirst={side === "left"} />
       </>;
@@ -586,7 +586,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
       busy={busy || history.busy} first={index === 0} last={index === items.length - 1} save={saveSpecial}>
       {item.hidden && <p role="status">Dieser Abschnitt ist öffentlich ausgeblendet.</p>}
 
-      {shownImage ? <TextImageSection text={previewFlow(item.key, item.pairLayout?.text_flow) === "standard" ? renderSpecial(item) : <section>{!item.headingHidden && <h2 style={{textAlign:item.headingAlign}}>{item.heading}</h2>}<p style={{textAlign:item.bodyAlign}}>{item.kind === "about" ? listing.description : listing.businessAreas}</p></section>}
+      {shownImage ? <TextImageSection heading={previewFlow(item.key, item.pairLayout?.text_flow) === "standard" ? renderSpecial(item,"heading") : undefined} text={previewFlow(item.key, item.pairLayout?.text_flow) === "standard" ? renderSpecial(item,"text") : <section>{!item.headingHidden && <h2 style={{textAlign:item.headingAlign}}>{item.heading}</h2>}<p style={{textAlign:item.bodyAlign}}>{item.kind === "about" ? listing.description : listing.businessAreas}</p></section>}
         editingText={previewFlow(item.key, item.pairLayout?.text_flow) === "standard" ? undefined : renderSpecial(item)} flow={previewFlow(item.key, item.pairLayout?.text_flow)} image={renderPairedImage(shownImage)}
         textWidth={textLayout.width_percent} imageWidth={normalizeBlockLayout(shownImage.config).width_percent}
         imageFirst={normalizeBlockLayout(shownImage.config).offset_percent < textLayout.offset_percent} /> : <>{renderSpecial(item)}{renderAdjacentAction(item.key,

@@ -12,7 +12,7 @@ registerHooks({
     if (specifier.endsWith('inline-banner-editor')) return {url:'data:text/javascript,export function InlineBannerProvider({children}){return children};export function InlineBannerDialog(){return null}',shortCircuit:true};
     if (specifier === 'next/navigation') return {url:'data:text/javascript,export const useRouter=()=>({refresh(){}})',shortCircuit:true};
     if (specifier.endsWith('inline-banner-actions')) return {url:'data:text/javascript,export async function loadSearchBannerEditor(){return {error:"fixture"}}',shortCircuit:true};
-    if (specifier.endsWith('/trades') && context.parentURL.includes('/components/')) return {url:'data:text/javascript,export function AdvertisingLayout({children}){return children}',shortCircuit:true};
+    if (specifier.endsWith('/trades') && context.parentURL.includes('/components/')) return {url:'data:text/javascript,export function AdvertisingLayout({children,sidebarContinuation}){return [children,sidebarContinuation]}',shortCircuit:true};
     if (specifier.includes('/admin/') && !specifier.endsWith('/freshness-status') && !specifier.endsWith('/profile-import-badge')) return {url:'data:text/javascript,export function DirectoryOrderEditor(){return null};export function SidebarOrderEditor(){return null}',shortCircuit:true};
     if (specifier.startsWith('@/') || specifier.startsWith('.')) {
       const base = specifier.startsWith('@/') ? new URL('../src/'+specifier.slice(2), import.meta.url) : new URL(specifier,context.parentURL);
@@ -124,7 +124,7 @@ test('structured zero state is honest while free text still submits globally wit
  assert.match(css,/height: 640px/);
  });
 
-test('advertiser results render once after all listings, retain packages and support banner-only filters',()=>{
+test('advertiser results move to the sidebar after all listings, retain packages and support banner-only filters',()=>{
  const ad={id:'campaign',placement:'sidebar_top',headline:'Öffentliche Anzeige',imageUrl:'/real-creative.png',image_path:null,target_url:'https://example.org/'};
  const banner={banner_key:'campaign:campaign',profile_id:'premium',term_keys:['theme:wellnessangebote'],city:'Bannerstadt',postal_code:'99999',ad};
  const render=(database,values=readTravelFilterValues({}))=>renderToStaticMarkup(createElement(TravelDirectory,{database,preview:[],terms:[],error:null,ads:[],sidebarOrder:[],canReorder:false,hiddenOrderKeys:[],initialValues:values,banners:[banner]}));

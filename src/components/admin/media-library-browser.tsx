@@ -12,7 +12,8 @@ import { MediaLibraryUpload } from './media-library-upload';
 import { PortalVideo } from '@/components/portal/portal-video';
 import { revealMediaDetails, restoreMediaGrid } from '@/lib/media-library-navigation';
 const kinds = [['', 'Alle Medien'], ['images', 'Bilder'], ['video', 'Videos'], ['gallery', 'Unternehmensbilder'], ['logo', 'Logos'], ['contact', 'Ansprechpartnerbilder'], ['block', 'Inhaltsblöcke'], ['banner', 'Werbebanner'], ['unused', 'Nicht verwendete Medien']];
-export function MediaLibraryBrowser({ initialProfileId, initialProfileName, initialKind, target, onClose, onApplied, onBusy, onSelected, onUpload }: {
+export function MediaLibraryBrowser({ initialProfileId, initialProfileName, initialKind, title = "Mediathek", target, onClose, onApplied, onBusy, onSelected, onUpload }: {
+    title?: string;
     initialProfileId?: string;
     initialProfileName?: string;
     initialKind?: string;
@@ -104,7 +105,7 @@ export function MediaLibraryBrowser({ initialProfileId, initialProfileName, init
     } setStatus(done + ' Bild(er) in der Mediathek verfügbar.'); setKind(''); setQuery(''); setPage(1); reload(); }); }
     const currentName = profiles.find(p => p.id === profile)?.display_name ?? (profile ? 'Bilder dieses Unternehmens' : 'Alle Unternehmen');
     return <section ref={container} className={styles.library} aria-busy={busy || loading}>
- <header className={styles.header}><div><h2 id="media-library-title">Mediathek</h2><p>{currentName}</p></div>{onClose && <button type="button" className="button" disabled={busy} onClick={onClose}>Schließen</button>}</header>
+ <header className={styles.header}><div><h2 id="media-library-title">{title}</h2><p>{currentName}</p></div>{onClose && <button type="button" className="button" disabled={busy} onClick={onClose}>{title === "Vorschaubild ändern" ? "Abbrechen" : "Schließen"}</button>}</header>
  <div className={styles.filters}>
  <label>Medien in dieser Auswahl suchen<input type="search" autoFocus={Boolean(onClose)} maxLength={200} value={query} disabled={busy} onChange={e => { reset(); setQuery(e.target.value); }} placeholder="Name oder Bildbeschreibung"/></label>
  <MediaLibraryCompanyPicker searchCache={companyCache} value={profile} name={currentName} disabled={busy} onChange={company => { reset(); setProfile(company.id); setProfiles(current => [company, ...current.filter(p => p.id !== company.id)]); }}/>
