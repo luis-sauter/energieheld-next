@@ -18,6 +18,7 @@ test('request status remains controlled after React resets successful form; fail
  const render=()=>all(OfferRequestDetail({campaign}));
  render().find(n=>n.type==='select').props.onChange({target:{value:'done'}});
  render();const f=new FormData();f.set('request_status','done');await action(f);
+ let prevented=false;render().find(n=>n.type==='form').props.onReset({preventDefault(){prevented=true}});assert.equal(prevented,true);
  const saved=render().find(n=>n.type==='select');assert.equal(saved.props.value,'done');assert.equal(saved.props.defaultValue,undefined);assert.equal(saves,1);
  error=true;saved.props.onChange({target:{value:'new'}});render();f.set('request_status','new');await action(f);const failed=render();assert.equal(failed.find(n=>n.type==='select').props.value,'new');assert.match(failed.find(n=>n.props?.role==='alert').props.children,/nicht gespeichert/);
 });
