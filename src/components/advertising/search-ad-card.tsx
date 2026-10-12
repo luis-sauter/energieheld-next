@@ -1,4 +1,3 @@
-import { BannerCta } from "./banner-cta";
 import type { TravelSearchBanner } from '@/lib/travel-search-banners';
 import styles from './advertising.module.css';
 import grid from './search-ad-card.module.css';
@@ -21,8 +20,5 @@ export function SearchAdCard({ banner, geometry, onGeometry, onEdit, loading = f
         loading={dimensions.width && dimensions.height ? 'lazy' : 'eager'} decoding="async"
         onLoad={event => onGeometry?.({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} />
     </a>
-    <div className={grid.footer}>
-      {banner.ad.imageUrl && <BannerCta placement={banner.ad.placement} />}
-    </div>
   </article>;
 }

@@ -511,7 +511,4 @@
 .consentRow a { color: #174761; text-decoration: underline; text-underline-offset: 3px; }
 .requestAssurance { margin: 0; color: #455864; font-size: 13px; line-height: 1.55; }
 .requestSubmit { display: flex; justify-content: flex-end; }
-.bannerInquiry { display: block; width: fit-content; max-width: 100%; min-height: 24px; margin: 2px 0 0 auto; padding: 4px 0; color: #536775; font-size: 11px; line-height: 16px; text-align: right; text-decoration: none; }
-.bannerInquiry:hover { color: #174761; text-decoration: underline; text-underline-offset: 3px; }
-.bannerInquiry:focus-visible { outline: 2px solid #1e5a7a; outline-offset: 3px; border-radius: 2px; }
 @media (max-width: 700px) { .requestFooter { padding: 16px; } .requestSubmit > button { width: 100%; } }

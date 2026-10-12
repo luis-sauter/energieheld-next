@@ -1,7 +1,5 @@
 "use client";
 
-import { BannerCta } from "./banner-cta";
-
 import { imageCropStyle } from "@/lib/image-crop";
 import { bannerCropRatio } from "@/lib/banner-presentation";
 import Link from "next/link";
@@ -135,7 +133,6 @@ export function CampaignSlot({
           </Link>
         </div>
       )}
-      {!preview && !reordering && displayAd?.imageUrl && destination && <BannerCta placement={placement} />}
     </section>
   );
 }

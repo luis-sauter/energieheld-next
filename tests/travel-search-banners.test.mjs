@@ -124,19 +124,19 @@ test('retired public feature URL does not exclude banners or change advertiser c
  }
 });
 
-test('public banner inquiry link follows the unchanged sponsored creative; previews and reordering omit it',async()=>{
+test('all fixed banner slots retain the sponsored creative without an inquiry link',async()=>{
  const ad={id:'test',headline:'Test banner',imageUrl:'/existing.jpg',target_url:'https://example.org/banner',placement:'sidebar_top'};
- for(const placement of ['top_banner','sidebar_top','sidebar_middle','sidebar_bottom']){
+ for(const placement of ['top_banner','sidebar_top','sidebar_middle','sidebar_bottom',...Array.from({length:9},(_,i)=>'sidebar_'+String(i+4).padStart(2,'0'))]){
   const html=renderToStaticMarkup(createElement(CampaignSlot,{placement,ad}));
   assert.doesNotMatch(html,/Mehr entdecken/);assert.ok(html.includes('href="https://example.org/banner"'));assert.ok(html.includes('rel="sponsored noopener noreferrer"'));
-  assert.ok(html.indexOf('href="/angebot-anfragen?platz='+placement+'"')>html.indexOf('</a>'));
-  assert.equal((html.match(/Angebot anfragen →/g)||[]).length,1);
+  assert.doesNotMatch(html,/Angebot anfragen|angebot-anfragen/);
+  assert.match(html,/src="\/existing.jpg"/);
  }
  for(const props of [{preview:true},{reordering:true},{ad:{...ad,imageUrl:undefined}}])assert.doesNotMatch(renderToStaticMarkup(createElement(CampaignSlot,{placement:'sidebar_top',ad,...props})),/Angebot anfragen →/);
- const {SearchAdCard}=await import('../src/components/advertising/search-ad-card.tsx');const html=renderToStaticMarkup(createElement(SearchAdCard,{banner:{...banner(),ad}}));assert.ok(html.indexOf('/angebot-anfragen?platz=sidebar_top')>html.indexOf('</a>'));assert.doesNotMatch(html,/Mehr entdecken/);
+ const {SearchAdCard}=await import('../src/components/advertising/search-ad-card.tsx');const html=renderToStaticMarkup(createElement(SearchAdCard,{banner:{...banner(),ad}}));assert.doesNotMatch(html,/Angebot anfragen|angebot-anfragen|Mehr entdecken/);
 });
 
-test('inquiry link captures the visible page and fixed display slot without altering the advertiser URL',async()=>{
- const {BannerCta}=await import('../src/components/advertising/banner-cta.tsx');const {bannerOfferTarget}=await import('../src/lib/banner-offer-link.ts');
- const old=globalThis.window;try{globalThis.window={location:{pathname:'/reiseziele/deutschland'}};const node=BannerCta({placement:'sidebar_bottom'}),anchor={href:node.props.href};node.props.onClick({currentTarget:anchor});assert.ok(anchor.href.includes('seite=%2Freiseziele%2Fdeutschland'));assert.deepEqual(bannerOfferTarget('/reiseziele/deutschland','sidebar_bottom'),{target_type:'portal_area',target_key:'reiseziele/deutschland',category_id:null,placement:'sidebar_bottom'});assert.equal(bannerOfferTarget('/unknown','sidebar_top'),undefined);assert.equal(bannerOfferTarget('/','invalid'),undefined);}finally{globalThis.window=old;}
+test('general offer form still accepts existing page and slot deep links',async()=>{
+ const {bannerOfferTarget}=await import('../src/lib/banner-offer-link.ts');
+ assert.deepEqual(bannerOfferTarget('/reiseziele/deutschland','sidebar_bottom'),{target_type:'portal_area',target_key:'reiseziele/deutschland',category_id:null,placement:'sidebar_bottom'});assert.equal(bannerOfferTarget('/unknown','sidebar_top'),undefined);assert.equal(bannerOfferTarget('/','invalid'),undefined);
 });
