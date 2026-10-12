@@ -88,4 +88,5 @@
 /* Balance only the first banner group between quicklinks and inspiration.
    Include the quicklinks' existing 8px bottom padding in the lower gap. */
 .page .quicklinks + .partners { padding-block: clamp(24px, 3vw, 36px) 0; }
+.page .quicklinks + .partners :global(.advertising-rail) { margin-top: 0; }
 .page .quicklinks + .partners + :global(.section) { padding-top: clamp(32px, calc(3vw + 8px), 44px); }
