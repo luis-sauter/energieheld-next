@@ -105,6 +105,7 @@ test('public request reuses original field groups, required contacts/URL, option
  for(const legend of ['Ansprechpartner','Angaben zur Anzeige','Zeitraum (optional)','Wo möchten Sie werben? (optional)','Haben Sie bereits ein Bannerbild?'])assert.ok(html.includes(legend));
  for(const name of ['company_name','contact_name','contact_email','contact_phone','internal_name','target_url'])assert.match(html,new RegExp('<input(?=[^>]*name="'+name+'")(?=[^>]*required)[^>]*>'));
  for(const name of ['requested_start_date','requested_end_date'])assert.doesNotMatch(html,new RegExp('name="'+name+'"[^>]*required'));
+ const requiredLabels=(html.match(/<label[^>]*>[\s\S]*?<\/label>/g)||[]).filter(label=>/required/.test(label));assert.equal(requiredLabels.length,7);assert.ok(requiredLabels.every(label=>label.includes('*')));assert.match(html,/Die mit \* gekennzeichneten Felder sind Pflichtfelder/);
  assert.match(html,/Angebot anfragen/);assert.match(html,/https:\/\/das-reiseportal.com\/datenschutz/);assert.doesNotMatch(html,/name="(?:password)"/);
  assert.throws(()=>ArchivedOwner(),/REDIRECT:\/angebot-anfragen/);
 });

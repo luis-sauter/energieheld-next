@@ -17,6 +17,7 @@ export function AdvertisingRail({
   premium,
   visibleSlots = [...defaultSidebarOrder],
   showAdvertiseLink = true,
+  continuation,
 }: {
   slots: SidebarSlot[];
   ads: ActiveAd[];
@@ -24,6 +25,7 @@ export function AdvertisingRail({
   premium?: ReactNode;
   visibleSlots?: SidebarSlot[];
   showAdvertiseLink?: boolean;
+  continuation?: ReactNode;
 }) {
   const inline = useInlineBanners();
   return (
@@ -40,6 +42,7 @@ export function AdvertisingRail({
           })}
         </div>
       ))}
+      {continuation}
       {showAdvertiseLink && <Link className="advertise-link" href="/werbung">
         Hier könnte Ihre Anzeige stehen →
       </Link>}

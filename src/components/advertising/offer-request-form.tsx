@@ -1,5 +1,5 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Image from "next/image";
 import { updateOfferRequest } from "@/app/(energieheld)/angebot-anfragen/actions";
 import { offerRequestStatuses } from "@/lib/offer-requests";
@@ -7,7 +7,12 @@ import { adPlacements, type AdCampaign, type AdFormState } from "@/lib/ad-values
 import { portalAdAreaLabel } from "@/lib/ad-target-areas";
 import styles from "@/components/auth/auth.module.css";
 export function OfferRequestDetail({campaign:c}:{campaign:AdCampaign}) {
- const [state,action,pending]=useActionState<AdFormState,FormData>(updateOfferRequest,{});
+ const [selected,setSelected]=useState(c.request_status??"new");
+ const [state,action,pending]=useActionState<AdFormState,FormData>(async(previous,form)=>{
+  const result=await updateOfferRequest(previous,form);
+  if(result.success && result.requestStatus) setSelected(result.requestStatus);
+  return result;
+ },{});
  return <section className={styles.card}><h2>{c.request_company_name || c.internal_name}</h2>
  <dl className={styles.details}><dt>Eingang</dt><dd>{new Date(c.created_at).toLocaleString("de-DE")}</dd>
  <dt>Ansprechpartner</dt><dd>{c.contact_name}</dd><dt>E-Mail</dt><dd>{c.contact_email}</dd>
@@ -16,7 +21,7 @@ export function OfferRequestDetail({campaign:c}:{campaign:AdCampaign}) {
  {c.imageUrl && <Image src={c.imageUrl} alt={"Anfragebild: " + c.internal_name} width={640} height={360} style={{maxWidth:"100%",height:"auto",objectFit:"contain"}} />}
  {!c.image_path && c.request_details?.upload_path && <p>Bildupload noch nicht abgeschlossen.</p>}
  <form className={styles.form} action={action}><input name="id" type="hidden" value={c.id}/>
- <label className={styles.field}>Bearbeitungsstatus<select name="request_status" defaultValue={c.request_status??"new"}>{Object.entries(offerRequestStatuses).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
+ <label className={styles.field}>Bearbeitungsstatus<select name="request_status" value={selected} disabled={pending} onChange={event=>setSelected(event.target.value as keyof typeof offerRequestStatuses)}>{Object.entries(offerRequestStatuses).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
  <button className="button button-primary" disabled={pending}>Status speichern</button>
  {state.error&&<p role="alert">{state.error}</p>}{state.success&&<p role="status">{state.success}</p>}</form>
  <p>Diese unverbindliche Anfrage ist keine Buchung. Erledigte Anfragen bleiben im vollständigen Bestand erhalten.</p></section>;
