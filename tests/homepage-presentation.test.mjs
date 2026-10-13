@@ -144,7 +144,7 @@ test('homepage retains selected providers in one equal grid and follows the requ
  assert.ok(html.indexOf('inspiration-title') < html.indexOf('data-placement="top_banner"'));
  assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('stays-title'));
  const source=read('src/app/(energieheld)/page.tsx');
- assert.ok(source.indexOf('</nav>') < source.indexOf('placements={["sidebar_top"'));
+ assert.ok(source.indexOf('<TravelQuicklinks ') < source.indexOf('placements={["sidebar_top"'));
  assert.ok(source.indexOf('placements={["sidebar_top"') < source.indexOf('<TravelNews />'));
  assert.ok(source.indexOf('placements={["sidebar_04"') > source.indexOf('<AutumnShowcase '));
  assert.ok(source.indexOf('placements={["sidebar_04"') < source.indexOf('aria-labelledby="stays-title"'));

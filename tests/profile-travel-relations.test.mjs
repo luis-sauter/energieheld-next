@@ -6,6 +6,9 @@ import {transpileModule,ModuleKind,JsxEmit,ScriptTarget} from 'typescript';
 import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 registerHooks({resolve(s,c,next){
+ if(s.endsWith('.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
+ if(s==='next/image')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export default function Image({fill,unoptimized,...p}){return createElement("img",p)}'),shortCircuit:true};
+ if(s==='react'&&c.parentURL?.startsWith('data:'))return next(s,{...c,parentURL:import.meta.url});
  if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
  if(s.startsWith('@/')||s.startsWith('.')){const b=s.startsWith('@/')?new URL('../src/'+s.slice(2),import.meta.url):new URL(s,c.parentURL);for(const ext of ['.ts','.tsx'])if(existsSync(new URL(b.href+ext)))return next(b.href+ext,c)}return next(s,c);
 },load(u,c,next){if(/\.tsx?$/.test(u))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(u),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX,target:ScriptTarget.ES2022}}).outputText};return next(u,c)}});
@@ -24,9 +27,21 @@ test('empty travel data renders nothing; feature facts do not invent a removed f
  assert.match(html,/Barrierefrei/);assert.doesNotMatch(html,/href=|besonderheit=/);
 });
 
-test('profile closing section combines inspiration with real links; rubric layout remains separate',()=>{
+test('profile closing retains its introduction and uses the identical homepage strip instead of the old grouped cards',async()=>{
  const props={title:'Reiseinformationen und passende Rubriken',links:[{name:'Radwandern',path:'/mottoreisen/radwandern'},{name:'Italien',path:'/reiseziele/suedtirol-italien'}],facts:[]};
  const html=renderToStaticMarkup(createElement(TravelRelations,{...props,presentation:'profile'}));
- assert.match(html,/profile-discover/);assert.match(html,/Hier beginnt Ihre nächste Reiseidee/);assert.equal((html.match(/<h2/g)||[]).length,1);assert.match(html,/href="\/mottoreisen\/radwandern"/);assert.match(html,/href="\/reiseziele\/suedtirol-italien"/);assert.doesNotMatch(html,/Deutschland|loading=|<img/);
+ const {TravelQuicklinks}=await import('../src/components/portal/travel-quicklinks.tsx');
+ assert.match(html,/profile-discover/);assert.match(html,/Inspiration für Ihre Auszeit/);assert.match(html,/Hier beginnt Ihre nächste Reiseidee/);assert.match(html,/Diese Unterkunft hat Sie inspiriert\?/);assert.equal((html.match(/<h2/g)||[]).length,1);
+ assert.ok(html.includes(renderToStaticMarkup(createElement(TravelQuicklinks))));
+ assert.equal((html.match(/data-theme-image="true"/g)||[]).length,14);
+ assert.match(html,/href="\/mottoreisen\/romantik-zu-zweit"/);assert.match(html,/href="\/unterkuenfte-a-z\?zielgruppe=mit-hund"/);assert.match(html,/href="\/unterkuenfte-a-z\?zielgruppe=familie"/);
+ assert.doesNotMatch(html,/profile-discover-facts|profile-discover-ideas|Region entdecken|Reiseideen entdecken|href="\/reiseziele\/|tauchurlaub/);
  const rubric=renderToStaticMarkup(createElement(TravelRelations,props));assert.match(rubric,/travel-relations-grid/);assert.doesNotMatch(rubric,/profile-discover/);
+});
+
+test('every profile gets the shared strip even without assignments, without changing profile data or generic empty behavior',()=>{
+ const props={title:'Reiseinformationen',links:[],facts:[],presentation:'profile'};
+ const before=JSON.stringify(props),html=renderToStaticMarkup(createElement(TravelRelations,props));
+ assert.match(html,/data-travel-quicklinks/);assert.equal((html.match(/data-theme-image="true"/g)||[]).length,14);assert.equal(JSON.stringify(props),before);
+ assert.equal(renderToStaticMarkup(createElement(TravelRelations,{...props,presentation:undefined})), '');
 });
