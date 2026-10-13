@@ -2,7 +2,14 @@ export type MapLocation = { id: string; lat: number; lon: number };
 export type MapView = { x: number; y: number; width: number; height: number };
 export const MAP_WIDTH = 1400;
 export const MAP_HEIGHT = 620;
-export const INITIAL_MAP_VIEW: MapView = { x: 0, y: 0, width: MAP_WIDTH, height: MAP_HEIGHT };
+export const FULL_MAP_VIEW: MapView = { x: 0, y: 0, width: MAP_WIDTH, height: MAP_HEIGHT };
+// Exactly the previous default after one .8 Plus step, centered.
+export const INITIAL_MAP_VIEW: MapView = { x: 140, y: 62, width: 1120, height: 496 };
+
+export function pinTransform(location: MapLocation, view: MapView): string {
+  const [x, y] = projectLocation(location.lat, location.lon);
+  return `translate(${x} ${y}) scale(${view.width / MAP_WIDTH})`;
+}
 
 // Spherical Lambert conformal conic, standard parallels 43° / 62°,
 // central meridian 10° E. The exact same transform builds the local SVG.
