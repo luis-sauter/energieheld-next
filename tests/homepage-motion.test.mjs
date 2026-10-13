@@ -40,7 +40,7 @@ test('executed shared idle lifecycle respects 3 seconds, full restart and indepe
 });
 test('homepage quicklinks retain their SSR scroller and public theme keys beside the static news section',()=>{
  const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
- const home=read('src/app/(energieheld)/page.tsx');assert.equal((home.match(/<ThemeScroller/g)||[]).length,1);assert.equal((home.match(/travelThemes\.map/g)||[]).length,1);assert.doesNotMatch(home,/quickThemes|featuredThemes/);assert.match(home,/discoveryAudiences\.map/);assert.match(home,/discoveryAudienceShortcuts\(\)/);assert.match(home,/discoveryShortcutHref\("theme", entry.slug\)/);assert.match(home,/<TravelNews \/>/);
+ const home=read("src/app/(energieheld)/page.tsx"),quicklinks=read("src/components/portal/travel-quicklinks.tsx");assert.match(home,/<TravelQuicklinks className=/);assert.match(home,/<TravelNews \/>/);assert.equal((quicklinks.match(/<ThemeScroller/g)||[]).length,1);assert.equal((quicklinks.match(/travelThemes\.map/g)||[]).length,1);assert.match(quicklinks,/discoveryAudienceShortcuts\(\)/);assert.match(quicklinks,/discoveryShortcutHref/);
  const finder=read('src/components/portal/travel-finder.tsx');assert.match(finder,/key: "theme", label: .*"Motto", all: "Alle Mottoreisen"/);
  const css=read('src/components/portal/theme-scroller.module.css');assert.match(css,/overflow-x: auto/);assert.match(css,/max-width: 640px/);assert.match(css,/flex-basis: 100%/);assert.match(css,/focus-visible/);
  const component=read('src/components/portal/theme-scroller.tsx');
@@ -49,7 +49,7 @@ test('homepage quicklinks retain their SSR scroller and public theme keys beside
  assert.match(component,/\{heading\}[\s\S]*styles.controls[\s\S]*\{moreLink\}[\s\S]*zurück[\s\S]*weiter/);
  assert.match(css,/scrollbar-width: none/);assert.match(css,/::-webkit-scrollbar \{ display: none/);
  assert.match(css,/data-theme-image.*:is\(:hover, :focus-visible\)/);assert.match(css,/opacity: \.2/);assert.match(css,/opacity: \.55/);assert.match(css,/color: #071522/);assert.match(css,/background: rgb\(255 255 255 \/ 85%\)/);
- assert.match(home,/loading="lazy"/);assert.match(home,/alt="" fill/);
+ assert.match(quicklinks,/loading="lazy"/);assert.match(quicklinks,/alt="" fill/);
  assert.match(css,/transition: none/);assert.doesNotMatch(css,/transform: scale/);
 });
 

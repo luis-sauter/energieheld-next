@@ -1,5 +1,4 @@
 import Link from "@/components/portal/navigation-link";
-import Image from "next/image";
 import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
 import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
 import { HomeBannerGroup } from "@/components/advertising/home-banner-group";
@@ -7,18 +6,15 @@ import { reiseportalPreview } from "@/data/reiseportal-preview";
 import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
 import { AutumnShowcase } from "@/components/portal/autumn-showcase";
-import { travelThemes } from "@/data/reiseportal-discovery";
 import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
-import { ThemeScroller } from "@/components/portal/theme-scroller";
+import { TravelQuicklinks } from "@/components/portal/travel-quicklinks";
 import { HomeTravelFinder } from "@/components/portal/travel-finder";
 import { readTravelFilterValues } from "@/lib/reiseportal-filter-options";
-import { discoveryAudienceShortcuts, discoveryShortcutHref } from "@/lib/discovery-shortcuts";
 import { loadTravelSearchBanners, mergePublicTravelTerms } from "@/lib/public-travel-search-banners";
 import { loadPublicAds } from "@/lib/public-ads";
 import styles from "./home.module.css";
 import { TravelNews } from "@/components/portal/travel-news";
-import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
 import { pageMetadata, type SearchParameters } from "@/lib/seo";
 import { jsonLdGraph, websiteSchema } from "@/lib/seo-schema";
 import { JsonLd } from "@/components/portal/json-ld";
@@ -52,25 +48,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     const listing = bySlug.get(slug);
     return listing && image && !listing.isDemo && !listing.isPreview ? [{ ...listing, images: [image] }] : [];
   });
-  const discoveryAudiences = discoveryAudienceShortcuts();
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
     <HomeTravelFinder banners={searchBanners.banners} listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={mergePublicTravelTerms(terms,searchBanners.terms)} error={directory.error ?? searchBanners.error} />
 
-    <nav className={`container ${styles.quicklinks}`} aria-label="Schnell zu Mottoreisen und Mit wem?" data-travel-quicklinks>
-      <ThemeScroller count={travelThemes.length + discoveryAudiences.length} label="Mottoreisen" compact>
-        {discoveryAudiences.map((entry) => <a key={`audience:${entry.slug}`} href={discoveryShortcutHref("audience", entry.slug)} data-theme-image>
-          <Image src={entry.image} alt="" fill sizes="(max-width: 640px) 45vw, (max-width: 1100px) 23vw, 200px" loading="lazy" />
-          <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.icon} /></span><span>{entry.label}</span>
-        </a>)}
-        {travelThemes.map((entry) => <a key={entry.slug} href={discoveryShortcutHref("theme", entry.slug)} data-theme-image>
-          <Image src={`/reiseportal/redesign/mottoreisen/${entry.slug}.webp`} alt="" fill sizes="(max-width: 640px) 45vw, (max-width: 1100px) 23vw, 200px" loading="lazy" />
-          <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.slug} /></span>
-          <span>{entry.title}</span>
-        </a>)}
-      </ThemeScroller>
-    </nav>
+    <TravelQuicklinks className={`container ${styles.quicklinks}`} />
 
     <HomeBannerGroup ads={ads} placements={["sidebar_top", "sidebar_middle", "sidebar_bottom"]} label="Anzeigen vor den Themenwelten" />
 
