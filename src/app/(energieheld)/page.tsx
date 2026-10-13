@@ -6,7 +6,6 @@ import { HomeBannerGroup } from "@/components/advertising/home-banner-group";
 import { reiseportalPreview } from "@/data/reiseportal-preview";
 import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
-import { TravelSeasons } from "@/components/portal/travel-seasons";
 import { AutumnShowcase } from "@/components/portal/autumn-showcase";
 import { travelThemes } from "@/data/reiseportal-discovery";
 import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
@@ -14,7 +13,7 @@ import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
 import { ThemeScroller } from "@/components/portal/theme-scroller";
 import { HomeTravelFinder } from "@/components/portal/travel-finder";
 import { readTravelFilterValues } from "@/lib/reiseportal-filter-options";
-import { discoveryAudienceShortcuts } from "@/lib/discovery-shortcuts";
+import { discoveryAudienceShortcuts, discoveryShortcutHref } from "@/lib/discovery-shortcuts";
 import { loadTravelSearchBanners, mergePublicTravelTerms } from "@/lib/public-travel-search-banners";
 import { loadPublicAds } from "@/lib/public-ads";
 import styles from "./home.module.css";
@@ -61,11 +60,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <nav className={`container ${styles.quicklinks}`} aria-label="Schnell zu Mottoreisen und Mit wem?" data-travel-quicklinks>
       <ThemeScroller count={travelThemes.length + discoveryAudiences.length} label="Mottoreisen" compact>
-        {discoveryAudiences.map((entry) => <a key={`audience:${entry.slug}`} href={`/unterkuenfte-a-z?zielgruppe=${encodeURIComponent(entry.slug)}`} data-theme-image>
+        {discoveryAudiences.map((entry) => <a key={`audience:${entry.slug}`} href={discoveryShortcutHref("audience", entry.slug)} data-theme-image>
           <Image src={entry.image} alt="" fill sizes="(max-width: 640px) 45vw, (max-width: 1100px) 23vw, 200px" loading="lazy" />
           <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.icon} /></span><span>{entry.label}</span>
         </a>)}
-        {travelThemes.map((entry) => <a key={entry.slug} href={`/unterkuenfte-a-z?thema=${entry.slug}`} data-theme-image>
+        {travelThemes.map((entry) => <a key={entry.slug} href={discoveryShortcutHref("theme", entry.slug)} data-theme-image>
           <Image src={`/reiseportal/redesign/mottoreisen/${entry.slug}.webp`} alt="" fill sizes="(max-width: 640px) 45vw, (max-width: 1100px) 23vw, 200px" loading="lazy" />
           <span className="travel-quicklink-icon" aria-hidden="true"><TravelThemeIcon slug={entry.slug} /></span>
           <span>{entry.title}</span>
@@ -80,7 +79,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige" />
 
     <AutumnShowcase listings={directory.database} />
-    <TravelSeasons />
 
     <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06"]} label="Anzeigen nach den Reisezielen" />
 

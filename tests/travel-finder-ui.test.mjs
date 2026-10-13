@@ -60,8 +60,8 @@ test("both routes use the same finder and show actual initial totals", () => {
   assert.match(home, /<HomeTravelFinder.*listings=/);
   assert.equal((home.match(/travelThemes\.map/g) ?? []).length, 1);
   assert.match(home, /discoveryAudienceShortcuts\(\)/);
-  assert.match(home, /href=\{`\/unterkuenfte-a-z\?thema=\$\{entry\.slug\}`\}/);
-  assert.match(home, /<a key=\{entry\.slug\} href=\{`\/unterkuenfte-a-z\?thema=/);
+  assert.match(home, /href=\{discoveryShortcutHref\("theme", entry\.slug\)\}/);
+  assert.match(home, /<a key=\{entry\.slug\} href=\{discoveryShortcutHref\("theme",/);
   assert.match(source("src/components/portal/travel-finder.tsx"), /window\.location\.assign\(travelFilterUrl\(values\)\)/);
   assert.match(source("src/components/portal/travel-directory.tsx"), /<TravelFinder mode="directory"/);
   const html = render(readTravelFilterValues({}));

@@ -65,10 +65,10 @@ test('partial selection collapses absent providers without placeholders; content
  assert.match(html,/Aktueller öffentlicher Name/);assert.doesNotMatch(html,/existing-1|existing-2/);
 });
 
-test('homepage reuses its public directory without another loader and keeps the existing season navigation',()=>{
+test('homepage reuses its public directory without another loader and excludes the retired four-card season section',()=>{
  const page=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
  assert.match(page,/<AutumnShowcase listings=\{directory.database\} \/>/);
- assert.match(page,/<TravelSeasons \/>/);
+ assert.doesNotMatch(page,/<TravelSeasons|import \{ TravelSeasons \}/);
  assert.equal((page.match(/loadReiseportalDirectory\(\)/g)||[]).length,1);
  const componentSource=readFileSync(new URL('../src/components/portal/autumn-showcase.tsx',import.meta.url),'utf8');
  assert.doesNotMatch(componentSource,/createPublicClient|createSignedUrl|fetch\(|useEffect|useState/);

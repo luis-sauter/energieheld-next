@@ -580,7 +580,6 @@ test("portal home follows the discovery wireframe with the shared advertising ra
     'class="reise-finder"',
     "travel-quicklinks",
     "Reise-News &amp; Inspiration",
-    'id="seasons-title"',
     'id="stays-title"',
   ];
   let last = -1;

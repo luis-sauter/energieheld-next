@@ -44,9 +44,43 @@ const {default:Home,generateMetadata:homeMetadata}=await import('../src/app/(ene
 const {DiscoveryCard}=await import('../src/components/portal/reise-overview.tsx');
 const {AccommodationCard}=await import('../src/components/portal/discovery-detail.tsx');
 const {travelThemes,destinations}=await import('../src/data/reiseportal-discovery.ts');
-const {discoveryAudienceShortcuts}=await import('../src/lib/discovery-shortcuts.ts');
+const {discoveryAudienceShortcuts,discoveryShortcutHref}=await import('../src/lib/discovery-shortcuts.ts');
 const {filterTravelListings}=await import('../src/lib/reiseportal-facets.ts');
 const {readTravelFilterValues}=await import('../src/lib/reiseportal-filter-options.ts');
+
+test('all eleven public motto destinations and the audience exception use canonical slugs, independent of labels',()=>{
+ const expected=['natur-pur','nordic-walking','radwandern','wanderurlaub','familienurlaub','golfurlaub','urlaub-am-wasser','campingurlaub','romantik-zu-zweit','wellnessangebote','geschaeftsreisen'];
+ assert.deepEqual(travelThemes.map(entry=>entry.slug),expected);
+ for(const slug of expected)assert.equal(discoveryShortcutHref('theme',slug),'/mottoreisen/'+slug);
+ assert.equal(discoveryShortcutHref('audience','paar'),'/mottoreisen/romantik-zu-zweit');
+ assert.equal(discoveryShortcutHref('audience','mit-hund'),'/unterkuenfte-a-z?zielgruppe=mit-hund');
+ assert.equal(discoveryShortcutHref('audience','familie'),'/unterkuenfte-a-z?zielgruppe=familie');
+ assert.equal(discoveryShortcutHref('theme','saison-herbst'),'/unterkuenfte-a-z?thema=saison-herbst');
+ assert.equal(discoveryShortcutHref('theme','neues thema'),'/unterkuenfte-a-z?thema=neues%20thema');
+ assert.notEqual(discoveryShortcutHref('theme','tauchurlaub'),'/mottoreisen/tauchurlaub');
+ // Removal from the actual public route catalog also removes the route target.
+ const index=travelThemes.findIndex(entry=>entry.slug==='romantik-zu-zweit'),[removed]=travelThemes.splice(index,1);
+ try {assert.equal(discoveryShortcutHref('audience','paar'),'/unterkuenfte-a-z?zielgruppe=paar');}
+ finally {travelThemes.splice(index,0,removed);}
+});
+
+test('rendered homepage preserves the exact autumn component and removes only the old visual season section',async()=>{
+ const {autumnSelections}=await import('../src/lib/autumn-showcase.ts');
+ const {AutumnShowcase}=await import('../src/components/portal/autumn-showcase.tsx');
+ const rows=autumnSelections.map((entry,index)=>({...profiles[0],id:entry.profileId,slug:'real-autumn-'+index,
+  travelTermKeys:['theme:saison-herbst','theme:wellnessangebote'],images:[{id:entry.imageId,src:'/real-'+index+'.jpg',alt:'Originalbild'}]}));
+ const original=globalThis.homeFixture.profiles;
+ try {
+  globalThis.homeFixture.profiles=[...profiles,...rows];
+  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
+  const unchanged=renderToStaticMarkup(createElement(AutumnShowcase,{listings:rows}));
+  assert.ok(html.includes(unchanged));assert.equal((html.match(/data-autumn-profile=/g)||[]).length,4);
+  assert.doesNotMatch(html,/seasons-title|Ihre nächste Auszeit zur richtigen Jahreszeit|Jede Jahreszeit hat ihren Reiz/);
+  assert.ok(html.indexOf('data-placement="top_banner"')<html.indexOf('autumn-title'));
+  assert.ok(html.indexOf('autumn-title')<html.indexOf('stays-title'));
+  const nav=html.split('<nav')[1].split('</nav>')[0];assert.doesNotMatch(nav,/tauchurlaub/);
+ } finally {globalThis.homeFixture.profiles=original;}
+});
 
 test('homepage brand history is visible before the headline and finder, with matching home-only metadata',async()=>{
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
@@ -67,13 +101,13 @@ test('public shared import badge is opt-in for discovery cards; protected homepa
  try{publicImportPresentation.enabled=false;assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing,showImportMarker:true})),/Neu importiert/);}
  finally{publicImportPresentation.enabled=true;}
 });
-test('homepage composes existing search, all central themes, four seasons and real featured profiles as server HTML',async()=>{
+test('homepage composes existing search, public motto links and real featured profiles without the old season section',async()=>{
  globalThis.homeFixture.calls=[];
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({q:'Nordic Walking',ziel:'schweiz'})}));
  assert.equal((html.match(/<h1\b/g)||[]).length,1);
  assert.match(html,/value="Nordic Walking"/);assert.match(html,/Im Reiseportal suchen/);
- for(const {slug} of travelThemes)assert.match(html,new RegExp('href="/unterkuenfte-a-z\\?thema='+slug+'"'));
- for(const slug of ['fruehling','sommer','herbst','winter'])assert.ok(html.includes('href="/unterkuenfte-a-z?thema=saison-'+slug+'"'));
+ for(const {slug} of travelThemes)assert.ok(html.includes('href="/mottoreisen/'+slug+'"'));
+ assert.doesNotMatch(html,/seasons-title|Ihre nächste Auszeit zur richtigen Jahreszeit|Jede Jahreszeit hat ihren Reiz/);
  for(const slug of slugs)assert.match(html,new RegExp('href="/unterkuenfte/'+slug+'"'));
  assert.match(html,/href="\/angebot-anfragen"/);
  assert.match(html,/data-placement="top_banner"/);assert.match(html,/aria-label="Premium-Anzeige"/);
@@ -108,12 +142,11 @@ test('homepage retains selected providers in one equal grid and follows the requ
  const stays=html.split('aria-labelledby="stays-title"')[1].split('</section>')[0];
  assert.match(stays,/<div class="showcase">/);assert.doesNotMatch(stays,/featuredStay|recommendations|data-placement/);
  assert.ok(html.indexOf('inspiration-title') < html.indexOf('data-placement="top_banner"'));
- assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('seasons-title'));
- assert.ok(html.indexOf('seasons-title') < html.indexOf('stays-title'));
+ assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('stays-title'));
  const source=read('src/app/(energieheld)/page.tsx');
  assert.ok(source.indexOf('</nav>') < source.indexOf('placements={["sidebar_top"'));
  assert.ok(source.indexOf('placements={["sidebar_top"') < source.indexOf('<TravelNews />'));
- assert.ok(source.indexOf('placements={["sidebar_04"') > source.indexOf('<TravelSeasons />'));
+ assert.ok(source.indexOf('placements={["sidebar_04"') > source.indexOf('<AutumnShowcase '));
  assert.ok(source.indexOf('placements={["sidebar_04"') < source.indexOf('aria-labelledby="stays-title"'));
 });
 
@@ -174,14 +207,14 @@ test('audience shortcuts appear first with public labels, unchanged audience lin
   globalThis.homeFixture.terms=[{term_key:'audience:paar',dimension:'audience',slug:'paar',label:'Paar'},{term_key:'audience:familie',dimension:'audience',slug:'familie',label:'Familie'},{term_key:'audience:mit-hund',dimension:'audience',slug:'mit-hund',label:'Mit Hund'}];
   const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));const compact=html.split('<nav')[1].split('</nav>')[0];
   const links=[...compact.matchAll(/href="([^"]+)"/g)].map(match=>match[1]);
-  assert.deepEqual(links.slice(0,3),['/unterkuenfte-a-z?zielgruppe=mit-hund','/unterkuenfte-a-z?zielgruppe=familie','/unterkuenfte-a-z?zielgruppe=paar']);
-  assert.deepEqual(links.slice(3),travelThemes.map(entry=>'/unterkuenfte-a-z?thema='+entry.slug));
+  assert.deepEqual(links.slice(0,3),['/unterkuenfte-a-z?zielgruppe=mit-hund','/unterkuenfte-a-z?zielgruppe=familie','/mottoreisen/romantik-zu-zweit']);
+  assert.deepEqual(links.slice(3),travelThemes.map(entry=>'/mottoreisen/'+entry.slug));
   for(const [slug,label] of [['mit-hund','Mit Hund'],['familie','Mit Kindern'],['paar','Zu zweit']]){
-   const card=compact.split('href="/unterkuenfte-a-z?zielgruppe='+slug+'"')[1].split('</a>')[0];
+   const card=compact.split('href="'+discoveryShortcutHref('audience',slug)+'"')[1].split('</a>')[0];
    assert.ok(card.includes('>'+label+'</span>'));
    assert.match(card,/loading="lazy"/);assert.match(card,/alt=""/);
   }
-  for(const [slug,image] of [['paar','romantik-zu-zweit'],['familie','familienurlaub']]){const card=compact.split('href="/unterkuenfte-a-z?zielgruppe='+slug+'"')[1].split('</a>')[0];assert.match(card,/<img/);assert.ok(card.includes(image+'.webp'));}
+  for(const [slug,image] of [['paar','romantik-zu-zweit'],['familie','familienurlaub']]){const card=compact.split('href="'+discoveryShortcutHref('audience',slug)+'"')[1].split('</a>')[0];assert.match(card,/<img/);assert.ok(card.includes(image+'.webp'));}
   const dog=compact.split('href="/unterkuenfte-a-z?zielgruppe=mit-hund"')[1].split('</a>')[0];
   assert.match(dog,/src="\/reiseportal\/quicklinks\/mit-hund.webp"/);
   assert.match(dog,/travel-quicklink-icon/);
@@ -197,7 +230,7 @@ test('audience shortcuts appear first with public labels, unchanged audience lin
   // available; it must not manufacture a profile assignment or hide the dog link.
   globalThis.homeFixture.terms=[];
   const empty=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
-  for(const slug of ['mit-hund','familie','paar'])assert.ok(empty.includes('href="/unterkuenfte-a-z?zielgruppe='+slug+'"'));
+  for(const slug of ['mit-hund','familie','paar'])assert.ok(empty.includes('href="'+discoveryShortcutHref('audience',slug)+'"'));
  }finally{delete globalThis.homeFixture.terms;}
 });
 test('news cards render three local symbolic images and actual independent original sources',async()=>{
