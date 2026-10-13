@@ -469,7 +469,7 @@ test("homepage keeps the shared ad rail and uses sourced accommodation cards", (
   assert.match(source, /<HomeBannerGroup/);
   assert.match(source, /<AccommodationCard/);
   assert.match(source, /loadReiseportalDirectory\(\)/);
-  assert.match(source, /featuredStays\.flatMap/);
+  assert.match(source, /selectHomeStays\(directory\.database, randomUUID\(\)\)/);
   assert.match(source, /placements=\{\["top_banner"\]\}/);
   const group=readFileSync(new URL("../src/components/advertising/home-banner-group.tsx",import.meta.url),"utf8");
   assert.match(group, /<AdvertisingRail/);assert.match(group,/useInlineBanners/);

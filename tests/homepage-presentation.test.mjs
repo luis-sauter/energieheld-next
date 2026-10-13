@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { registerHooks } from 'node:module';
-import { transpileModule, ModuleKind, JsxEmit } from 'typescript';
+import { transpileModule, ModuleKind, JsxEmit, ScriptTarget } from 'typescript';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 const read = path => readFileSync(new URL('../'+path,import.meta.url),'utf8');
@@ -29,7 +29,7 @@ registerHooks({
   if(specifier === 'server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
   if(specifier === "react" && context.parentURL?.startsWith("data:"))return next(specifier,{...context,parentURL:import.meta.url});
   if(stubs[specifier])return {url:'data:text/javascript,'+encodeURIComponent(stubs[specifier]),shortCircuit:true};
-  if(specifier.endsWith('.css'))return {url:'data:text/javascript,export default '+encodeURIComponent(JSON.stringify(Object.fromEntries(['page','quicklinks','mosaic','destinations','premium','stays','provider','inspiration','showcase','featuredStay','recommendations','partners','header','controls','rail','scroller'].map(k=>[k,k])))),shortCircuit:true};
+  if(specifier.endsWith('.css'))return {url:'data:text/javascript,export default '+encodeURIComponent(JSON.stringify(Object.fromEntries(['page','quicklinks','mosaic','destinations','premium','stays','provider','inspiration','showcase','featuredStay','recommendations','card','row','track','motto','partners','header','controls','rail','scroller'].map(k=>[k,k])))),shortCircuit:true};
   if(specifier==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
   if(specifier==='next/image')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export default function Image({fill,unoptimized,priority,...p}){return createElement("img",p);}'),shortCircuit:true};
   if(specifier.startsWith('@/')||specifier.startsWith('.')){
@@ -38,7 +38,7 @@ registerHooks({
   }
   return next(specifier,context);
  },
- load(url,context,next){if(/\.tsx?$/.test(url))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(url),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX}}).outputText};return next(url,context);}
+ load(url,context,next){if(/\.tsx?$/.test(url))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(url),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX,target:ScriptTarget.ES2022}}).outputText};return next(url,context);}
 });
 const {default:Home,generateMetadata:homeMetadata}=await import('../src/app/(energieheld)/page.tsx');
 const {DiscoveryCard}=await import('../src/components/portal/reise-overview.tsx');
@@ -136,11 +136,11 @@ test('homepage presentation is scoped, responsive, reserves image geometry and r
  assert.match(css,/@media \(prefers-reduced-motion: reduce\)/);assert.match(css,/aspect-ratio: 1.7/);
  assert.doesNotMatch(read('src/app/(energieheld)/page.tsx'),/use client|maps.googleapis|iframe/);
 });
-test('homepage retains selected providers in one equal grid and follows the required fixed-slot sequence', async () => {
+test('homepage reuses one continuous motto row and follows the required fixed-slot sequence', async () => {
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
  assert.equal((html.match(/<article class="accommodation-card"/g)||[]).length,4);
  const stays=html.split('aria-labelledby="stays-title"')[1].split('</section>')[0];
- assert.match(stays,/<div class="showcase">/);assert.doesNotMatch(stays,/featuredStay|recommendations|data-placement/);
+ assert.match(stays,/role="region" aria-label="Ausgewählte Unterkünfte" data-speed="18"/);assert.equal((stays.match(/role="region"/g)||[]).length,1);assert.match(stays,/class="card motto"/);assert.doesNotMatch(stays,/featuredStay|recommendations|data-placement/);
  assert.ok(html.indexOf('inspiration-title') < html.indexOf('data-placement="top_banner"'));
  assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('stays-title'));
  const source=read('src/app/(energieheld)/page.tsx');
@@ -150,13 +150,10 @@ test('homepage retains selected providers in one equal grid and follows the requ
  assert.ok(source.indexOf('placements={["sidebar_04"') < source.indexOf('aria-labelledby="stays-title"'));
 });
 
-test('curation uses visually checked provider originals without changing canonical profile galleries or accepting demo profiles', async () => {
+test('homepage retains canonical card imagery and rejects demo profiles', async () => {
  const original=JSON.stringify(profiles);
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
- for(const [slug,file] of [['golfhotel-andreus','04'],['bayerischer-wald','01'],['hoeflehner','01'],['schafhuber','04']]) {
-  const src='/reiseportal/unterkuenfte/'+slug+'/'+file+'.jpg';
-  assert.match(html,new RegExp(src));assert.ok(existsSync(new URL('../public'+src,import.meta.url)));
- }
+ assert.match(html,/src="\/reiseportal\/hero.jpg"/);
  assert.equal(JSON.stringify(profiles),original);
  try {
   globalThis.homeFixture.profiles=profiles.map(p=>({...p,isDemo:true}));
@@ -324,7 +321,7 @@ test('Carola styles are isolated, keep text untruncated and provide keyboard/tou
  assert.match(css,/aspect-ratio: 35 \/ 32/);assert.match(css,/object-fit: cover/);assert.match(css,/linear-gradient\(to bottom/);
  assert.match(css,/\.card:focus-visible/);assert.match(css,/\.card:hover/);assert.match(css,/hover: none/);assert.match(css,/prefers-reduced-motion: reduce/);
  assert.match(css,/overflow-wrap: anywhere/);assert.doesNotMatch(css,/line-clamp|text-overflow: ellipsis/);
- const home=read('src/app/(energieheld)/page.tsx');assert.match(home,/styles.showcase/);assert.doesNotMatch(home,/styles.featuredStay|styles.recommendations/);
+ const home=read('src/app/(energieheld)/page.tsx');assert.match(home,/<MottoRow label="Ausgewählte Unterkünfte" speed=\{18\}/);assert.doesNotMatch(home,/styles.featuredStay|styles.recommendations/);
  const directory=read('src/components/portal/travel-directory.tsx');assert.match(directory,/<ListingRow/);assert.doesNotMatch(directory,/AccommodationCard/);
  const homeCss=read('src/app/(energieheld)/home.module.css');assert.doesNotMatch(homeCss,/accommodation-card-copy|accommodation-card-image/);
 });
@@ -334,6 +331,6 @@ test('Carola styles are isolated, keep text untruncated and provide keyboard/tou
  assert.match(css,/min-height: 16rem; aspect-ratio: 35 \/ 32/);assert.match(css,/\.card:hover \.photo \{ transform: scale\(1\.035\)/);
  assert.match(css,/@media \(hover: hover\) and \(pointer: fine\)/);assert.match(css,/\.card:hover \.photo \{ transform: none/);
  assert.doesNotMatch(css,/line-clamp|text-overflow|\.card:hover \{ transform/);
- const grid=read('src/app/(energieheld)/home.module.css');assert.match(grid,/repeat\(4, minmax\(0, 1fr\)\)/);
+ const grid=read('src/app/(energieheld)/home.module.css');assert.doesNotMatch(grid,/\.showcase/); assert.match(read("src/components/portal/motto-detail.module.css"),/grid-auto-columns: calc\(\(100% - 36px\) \/ 3\)/);
  assert.match(read('src/components/portal/profile-rotation.module.css'),/--card-height: 20.8rem/);
 });

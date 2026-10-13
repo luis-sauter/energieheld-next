@@ -2,8 +2,9 @@ import Link from "@/components/portal/navigation-link";
 import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
 import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
 import { HomeBannerGroup } from "@/components/advertising/home-banner-group";
-import { reiseportalPreview } from "@/data/reiseportal-preview";
-import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
+import { randomUUID } from "node:crypto";
+import { selectHomeStays } from "@/lib/home-stays";
+import { MottoRow } from "@/components/portal/motto-row";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
 import { AutumnShowcase } from "@/components/portal/autumn-showcase";
 import { EuropeMap } from "@/components/portal/europe-map";
@@ -26,15 +27,6 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
     noindex: Object.values(await searchParams).some(Boolean) });
 }
 
-// Editorial selection, not package ranking. These provider-matched originals
-// were visually checked for this showcase; profile galleries remain unchanged.
-const featuredStays = [
-  { slug: "golfhotel-andreus", image: importedJoomlaMedia["golfhotel-andreus"].images[3] },
-  ...["bayerischer-wald", "hoeflehner", "schafhuber"].map((slug) => ({
-    slug, image: reiseportalPreview.find((listing) => listing.slug === slug)?.images[slug === "schafhuber" ? 3 : 0],
-  })),
-];
-
 export const dynamic = "force-dynamic";
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -45,11 +37,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     loadPublicTravelTerms(),
     loadInlineBannerOptions("/"), loadTravelSearchBanners(),
   ]);
-  const bySlug = new Map(directory.database.map((listing) => [listing.slug, listing]));
-  const featured = featuredStays.flatMap(({ slug, image }) => {
-    const listing = bySlug.get(slug);
-    return listing && image && !listing.isDemo && !listing.isPreview ? [{ ...listing, images: [image] }] : [];
-  });
+  const featured = selectHomeStays(directory.database, randomUUID());
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
@@ -72,10 +60,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <section className={`section container ${styles.stays}`} aria-labelledby="stays-title">
       <div className="section-heading"><div><p className="eyebrow">Ein guter Ort zum Ankommen</p><h2 id="stays-title">Ausgewählte Unterkünfte</h2></div>
         <Link className="text-link" href="/unterkuenfte-a-z">Alle Unterkünfte →</Link></div>
-      <div className={styles.showcase}>
-        {featured.map((listing) => <AccommodationCard key={listing.id} listing={listing} cardEditing={Boolean(bannerOptions)}
-          sizes="(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 25vw" />)}
-      </div>
+      <MottoRow label="Ausgewählte Unterkünfte" speed={18}>
+        {featured.map((listing) => <AccommodationCard key={listing.id} listing={listing} motto cardEditing={Boolean(bannerOptions)}
+          sizes="(max-width: 600px) 86vw, (max-width: 900px) 45vw, 360px" />)}
+      </MottoRow>
     </section>
 
 
