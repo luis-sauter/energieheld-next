@@ -71,7 +71,7 @@ async function toListing(
 
 type Result<T> = { data: T; error: null } | { data: null; error: string };
 
-export async function loadPublicCompanyDirectory(options?: { profileIds: string[]; cardOnly: boolean }): Promise<Result<{ listings: Listing[]; orderRows: DirectoryOrderRow[] }>> {
+export async function loadPublicCompanyDirectory(options?: { profileIds: string[]; cardOnly: boolean; directoryPreview?: boolean }): Promise<Result<{ listings: Listing[]; orderRows: DirectoryOrderRow[] }>> {
   if (options && !options.profileIds.length) return { data: { listings: [], orderRows: [] }, error: null };
   try {
     const client = createPublicClient();
@@ -108,7 +108,7 @@ export async function loadPublicCompanyDirectory(options?: { profileIds: string[
     }
     const orderRows: DirectoryOrderRow[] = [];
     let legacyOrder = false;
-    for (let offset = 0; ; offset += pageSize) {
+    for (let offset = 0; !options?.directoryPreview; offset += pageSize) {
       const { data, error } = await client
         .from("company_directory_order")
         .select(legacyOrder ? "profile_id,sort_order" : "profile_id,demo_slug,item_key,sort_order")
@@ -129,7 +129,7 @@ export async function loadPublicCompanyDirectory(options?: { profileIds: string[
       if (rows.length < pageSize) break;
     }
     const ordered = sortByDirectoryOrder(profiles, orderRows);
-    const media = await signCompanyDirectoryMedia(client, ordered, options?.cardOnly);
+    const media = await signCompanyDirectoryMedia(client, ordered, options?.cardOnly, options?.directoryPreview);
     return {
       data: {
         listings: ordered.map(row => companyProfileListing(row, media.get(row.id)!)),

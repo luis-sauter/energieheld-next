@@ -79,13 +79,14 @@ export function withLegacyImages(listing: Listing): Listing {
   return result.video ? { ...result, video: { ...result.video, poster: result.images[0]?.src } } : result;
 }
 
-async function loadDirectoryPackages() {
+async function loadDirectoryPackages(profileIds?: string[]) {
   const client = createPublicClient();
   const packages = new Map<string, "basic" | "premium">();
   const pageSize = 500;
   for (let offset = 0; ; offset += pageSize) {
-    const { data, error } = await client.from("company_profile_directory_packages")
+    const query = client.from("company_profile_directory_packages")
       .select("profile_id,package").order("profile_id").range(offset, offset + pageSize - 1);
+    const { data, error } = await (profileIds ? query.in("profile_id", profileIds) : query);
     if (error) throw error;
     for (const row of data ?? []) {
       if (row.package === "basic" || row.package === "premium") packages.set(row.profile_id, row.package);
@@ -93,6 +94,23 @@ async function loadDirectoryPackages() {
     if ((data?.length ?? 0) < pageSize) break;
   }
   return packages;
+}
+
+// Hydrate only the visible search page; search itself owns ranking and counts.
+// Directory previews reuse its canonical media/package presentation without
+// gallery-wide signing or a second alphabetical search.
+export async function loadReiseportalSearchListings(profileIds: string[], facts: Listing[]) {
+  const ids = [...new Set(profileIds)].slice(0, 20);
+  if (!ids.length) return [];
+  const [result, packages] = await Promise.all([
+    loadPublicCompanyDirectory({ profileIds: ids, cardOnly: false, directoryPreview: true }),
+    loadDirectoryPackages(ids),
+  ]);
+  if (result.error) throw new Error(result.error);
+  const assignments = new Map(facts.map(listing => [listing.id, listing.travelTermKeys]));
+  return result.data!.listings.map(listing => withLegacyImages({ ...listing,
+    directoryPackage: packages.get(listing.id) ?? "basic", travelTermKeys: assignments.get(listing.id) ?? [],
+  }));
 }
 
 export async function loadReiseportalDirectory() {

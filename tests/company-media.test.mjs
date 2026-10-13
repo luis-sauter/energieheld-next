@@ -44,6 +44,15 @@ test('rubric cards sign only one ordered provider photo, no logo or full gallery
  assert.deepEqual(calls,[[row(1).storage_path]]);assert.equal(media.get(profile.id).logo,undefined);
  assert.deepEqual(media.get(profile.id).images.map(image=>image.id),['image-1']);assert.deepEqual(profile,before);
 });
+test('search directory preview signs at most logo plus first image per hit without changing normal gallery signing', async () => {
+ const profiles=Array.from({length:20},(_,i)=>({id:`p${i}`,display_name:'Hotel',logo_path:`profiles/p${i}/logo/logo.png`,company_profile_images:Array.from({length:40},(_,n)=>({id:`${i}-${n}`,storage_path:`profiles/p${i}/gallery/${n}.png`,sort_order:n,alt_text:'Photo'}))}));
+ const before=structuredClone(profiles),calls=[];
+ const client={storage:{from(){return {async createSignedUrls(paths){calls.push(paths);return {data:paths.map(path=>({path,signedUrl:'https://example.test/'+path})),error:null};}}}}};
+ const media=await signCompanyDirectoryMedia(client,profiles,false,true);
+ assert.equal(calls.length,1);assert.equal(calls[0].length,40);
+ for(const p of profiles){assert.equal(media.get(p.id).images.length,1);assert.ok(media.get(p.id).logo);}
+ assert.deepEqual(profiles,before);
+});
 const form = (values = {}) => {
   const f = new FormData();
   for (const [k, v] of Object.entries({

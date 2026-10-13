@@ -64,7 +64,8 @@ test('SSR search UI, noindex follow, ad links and bounded single-RPC provider re
   const page = await readFile(new URL('../src/app/(energieheld)/suche/page.tsx', import.meta.url), 'utf8');
   const provider = await readFile(new URL('../src/lib/portal-search.ts', import.meta.url), 'utf8');
   assert.match(page, /pageMetadata\(\{[^\n]*noindex: true/); assert.match(page, /<SearchTravelFinder/);
-  assert.doesNotMatch(page, /<form|portal-query/); assert.match(page, /sponsored noopener noreferrer/);
+  assert.doesNotMatch(page, /<form|portal-query/);
+  assert.match(await readFile(new URL('../src/components/portal/search-results.tsx', import.meta.url), 'utf8'), /sponsored noopener noreferrer/);
   assert.match(page, /travelSearchReturnUrl/); assert.doesNotMatch(page, /use client|dangerouslySetInnerHTML/);
   assert.equal((provider.match(/\.rpc\(/g) ?? []).length, 1); assert.doesNotMatch(provider, /signAdImages|loadReiseportalDirectory|createSigned/);
 });
