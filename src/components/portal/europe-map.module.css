@@ -1,0 +1,23 @@
+.section { padding: clamp(36px, 4vw, 64px) 0; background: #faf8f4; }
+.header { text-align: center; margin: 0 auto 28px; color: #12354b; }
+.header h2 { margin: 0 0 12px; font: 500 clamp(1.8rem, 3vw, 2.8rem)/1.15 Georgia, 'Times New Roman', serif; color: #12354b; }
+.header p { margin: 0 0 16px; color: #566873; font-size: 1.05rem; }
+.link { color: #80512e; text-underline-offset: 4px; font-size: .9rem; }
+.link span { margin-left: 10px; }
+.frame { position: relative; overflow: hidden; border-radius: 20px; border: 1px solid #eee8df; background: #adc2c7; box-shadow: 0 12px 36px #253b4810; }
+.map { display: block; width: 100%; aspect-ratio: 1400 / 620; touch-action: pan-y pinch-zoom; cursor: grab; }
+.map[data-touch-active="true"] { touch-action: none; }
+.map:active { cursor: grabbing; }
+.map:focus-visible { outline: 3px solid #176887; outline-offset: -4px; }
+.controls { position: absolute; right: 14px; top: 14px; display: grid; gap: 6px; }
+.controls button { width: 44px; height: 44px; padding: 0; background: #fffdf9; color: #12354b; border: 1px solid #dcded9; border-radius: 9px; box-shadow: 0 2px 7px #24374514; font-size: 1.45rem; line-height: 1; cursor: pointer; }
+.controls button:hover:not(:disabled) { background: #f6ebdc; }
+.controls button:disabled { opacity: .5; cursor: default; }
+.controls button:focus-visible, .touchButton:focus-visible, .link:focus-visible { outline: 3px solid #176887; outline-offset: 3px; }
+.footnote { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 18px; padding: 12px 2px 0; color: #596d76; font-size: .75rem; }
+.footnote p { margin: 0; }
+.credit { margin-left: auto !important; }
+.credit a { color: inherit; text-underline-offset: 3px; }
+.touchButton { display: none; min-height: 44px; border: 1px solid #d9dcd8; border-radius: 8px; background: #fffdf9; color: #1e5a7a; padding: 8px 12px; font-size: .8rem; }
+@media (pointer: coarse) { .touchButton { display: inline-block; } }
+@media (max-width: 600px) { .map { aspect-ratio: 1.3; } .frame { border-radius: 14px; } .controls { right: 8px; top: 8px; } .header p { font-size: .95rem; line-height: 1.5; } .footnote { display: block; } .footnote > * { margin-bottom: 8px !important; } }
