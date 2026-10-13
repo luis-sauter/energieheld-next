@@ -7,6 +7,7 @@ import { reiseportalPreview } from "@/data/reiseportal-preview";
 import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
 import { TravelSeasons } from "@/components/portal/travel-seasons";
+import { AutumnShowcase } from "@/components/portal/autumn-showcase";
 import { travelThemes } from "@/data/reiseportal-discovery";
 import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
@@ -78,6 +79,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige" />
 
+    <AutumnShowcase listings={directory.database} />
     <TravelSeasons />
 
     <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06"]} label="Anzeigen nach den Reisezielen" />

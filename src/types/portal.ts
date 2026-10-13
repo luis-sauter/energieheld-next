@@ -6,7 +6,7 @@ export type Location = {
   region: string;
   country: string;
 };
-export type PortalImage = { src: string; alt: string };
+export type PortalImage = { id?: string; src: string; alt: string };
 export type CompanyVerification = {
   status: "verified";
   verified_at: string;

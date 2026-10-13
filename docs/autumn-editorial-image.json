@@ -1,0 +1,11 @@
+{
+  "asset": "/reiseportal/seasons/herbst-auszeit.webp",
+  "role": "AI-generated editorial symbol image; not a real accommodation or destination photograph",
+  "created": "2026-10-13",
+  "mode": "built-in image_gen",
+  "prompt": "Use case: photorealistic-natural. Asset type: one portrait editorial autumn inspiration photograph for a German travel portal, left-hand feature panel. Primary request: a tranquil alpine lake in the golden autumn season, glowing copper and gold deciduous trees at the shore, layered wooded hills and distant mountains, still water reflecting the morning light, a subtle walking path along the lake. Composition: vertical portrait 2:3, richly photographic detail with quiet pale mist and open light sky in the upper half for HTML editorial copy; richest golden foliage and landscape in the lower half. Warm natural autumn light, tasteful magazine travel photography, calm welcoming atmosphere. This is a fictional generic nature scene used as a clearly labeled AI editorial symbol image, not a real property or a real destination photograph. No hotels, buildings, identifiable landmarks, people, text, typography, logos, watermark or embedded UI. Produce exactly one image.",
+  "width": 960,
+  "height": 1440,
+  "format": "WebP",
+  "provider_images": "Existing gallery IDs only, selected by selectAutumnStays; never generated or copied into a second gallery"
+}
