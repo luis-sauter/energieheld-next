@@ -205,6 +205,9 @@
 .travelGroup { border: 0; padding: 0; margin-block: 24px; min-width: 0; }
 .travelGroup legend { font-weight: 700; margin-bottom: 12px; }
 .travelChoices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.seasonChoice { display: grid; align-content: start; gap: 8px; min-width: 0; }
+.seasonChoice > label:not(.travelChoice) { color: var(--muted); font-size: .8rem; }
+.seasonChoice textarea { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; resize: vertical; }
 .travelChoice { display: flex; align-items: center; gap: 12px; padding: 12px; min-height: 64px; background: white; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; overflow-wrap: anywhere; }
 .travelChoice input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--brand-primary); }
 .travelChoice[data-assigned="true"] { border-color: var(--brand-primary); background: var(--brand-surface); }

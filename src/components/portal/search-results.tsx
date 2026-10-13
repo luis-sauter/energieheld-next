@@ -7,8 +7,8 @@ import type { Listing } from '@/types/portal';
 import styles from '@/app/(energieheld)/suche/search.module.css';
 import cardStyles from './directory-listing-rows.module.css';
 
-export function SearchResults({ hits, listings, facts, travelLabels }: {
-  hits: SearchHit[]; listings: Listing[]; facts: Listing[]; travelLabels: Record<string, string>;
+export function SearchResults({ hits, listings, facts, travelLabels, season }: {
+  hits: SearchHit[]; listings: Listing[]; facts: Listing[]; travelLabels: Record<string, string>; season?: string;
 }) {
   const cards = new Map(listings.map(listing => [listing.id, listing]));
   const fallback = new Map(facts.map(listing => [listing.id, listing]));
@@ -25,7 +25,7 @@ export function SearchResults({ hits, listings, facts, travelLabels }: {
         categoryIds: [], services: [], images: [], isDemo: false,
         location: { city: '', country: '', region: '', postalCode: '' },
         contact: { email: '', phone: '', website: '' },
-      }} categories={[]} href={hit.url} showVerification={false} travel travelLabels={travelLabels} />
+      }} categories={[]} href={hit.url} showVerification={false} travel travelLabels={travelLabels} season={season} />
         : entry ? <DiscoveryCard entry={entry} basePath={hit.type === 'theme' ? '/mottoreisen' : '/reiseziele'}
           sizes="(max-width: 700px) 100vw, 50vw" />
           : <article className={styles.textResult}><h3>{hit.external

@@ -6,8 +6,8 @@ import { HomeBannerGroup } from "@/components/advertising/home-banner-group";
 import { reiseportalPreview } from "@/data/reiseportal-preview";
 import { importedJoomlaMedia } from "@/data/reiseportal-import-media";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
-import { DiscoveryCard } from "@/components/portal/reise-overview";
-import { destinations, travelThemes } from "@/data/reiseportal-discovery";
+import { TravelSeasons } from "@/components/portal/travel-seasons";
+import { travelThemes } from "@/data/reiseportal-discovery";
 import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
 import { ThemeScroller } from "@/components/portal/theme-scroller";
@@ -78,16 +78,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige" />
 
-    <section className={styles.destinations} aria-labelledby="destinations-title"><div className="section container">
-      <div className="section-heading"><div><p className="eyebrow">Landschaften kennenlernen</p><h2 id="destinations-title">Reiseziele für Ihre nächste Auszeit</h2></div>
-        <Link className="text-link" href="/reiseziele">Alle Reiseziele →</Link></div>
-      <div className="discovery-grid">
-        {destinations.map((entry) => <DiscoveryCard key={entry.slug}
-          entry={{ ...entry, image: `/reiseportal/redesign/reiseziele/${entry.slug}.webp`,
-            alt: `See- und Berglandschaft in ${entry.title}` }}
-          sizes="(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 290px" basePath="/reiseziele" />)}
-      </div>
-    </div></section>
+    <TravelSeasons />
 
     <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06"]} label="Anzeigen nach den Reisezielen" />
 

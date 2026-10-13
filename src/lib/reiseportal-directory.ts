@@ -11,7 +11,7 @@ import { companyProfileListing } from "./company-presentation";
 import { directoryItemKey } from "./company-directory-order";
 import { loadPublicCompanyBySlug, loadPublicCompanyDirectory, loadPublicCompanyProfileIndex } from "./public-companies";
 import { demoProfileId, demoPublicSlug, demoSourceSlug } from "./reiseportal-demo";
-import { loadPublicTravelAssignments } from "./public-travel-taxonomy";
+import { loadPublicTravelAssignments, type TravelAssignments } from "./public-travel-taxonomy";
 import { filterTravelDiscovery } from "./reiseportal-search";
 import { createPublicClient } from "./supabase/public";
 import { providerTravelImage } from './provider-card-media';
@@ -109,7 +109,7 @@ export async function loadReiseportalSearchListings(profileIds: string[], facts:
   if (result.error) throw new Error(result.error);
   const assignments = new Map(facts.map(listing => [listing.id, listing.travelTermKeys]));
   return result.data!.listings.map(listing => withLegacyImages({ ...listing,
-    directoryPackage: packages.get(listing.id) ?? "basic", travelTermKeys: assignments.get(listing.id) ?? [],
+    directoryPackage: packages.get(listing.id) ?? "basic", travelTermKeys: assignments.get(listing.id) ?? [], seasonTeasers: facts.find(fact => fact.id === listing.id)?.seasonTeasers,
   }));
 }
 
@@ -129,7 +129,7 @@ export async function loadReiseportalDirectory() {
     error: result.error,
   };
   const demo = result.data.listings.map(publicDemo).find((item) => item !== null);
-  let assignments: Map<string, string[]> | null;
+  let assignments: TravelAssignments | null;
   try {
     assignments = await loadPublicTravelAssignments();
   } catch {
@@ -139,7 +139,7 @@ export async function loadReiseportalDirectory() {
   const database = await withSavedCardImages(result.data.listings.filter(travelVisible).map((listing) => withLegacyImages({
     ...listing,
     directoryPackage: packages.get(listing.id) ?? "basic",
-    ...(assignments ? { travelTermKeys: assignments.get(listing.id) ?? [] } : {}),
+    ...(assignments ? { travelTermKeys: assignments.get(listing.id) ?? [], seasonTeasers: assignments.seasonTeasers?.get(listing.id) } : {}),
   })));
   const shown = new Set(database.map(directoryItemKey));
   const hiddenOrderKeys = result.data.orderRows
@@ -192,6 +192,6 @@ export async function loadReiseportalListingBySlug(slug: string) {
 // Facet counts on the result route need facts, not images or signed media.
 export async function loadReiseportalFinderListings(factsOnly = false): Promise<Listing[]> {
   const [profiles, assignments] = await Promise.all([loadPublicCompanyProfileIndex(factsOnly), loadPublicTravelAssignments()]);
-  return profiles.map(profile => ({ ...companyProfileListing(profile, { images: [] }), travelTermKeys: assignments?.get(profile.id) ?? [] }))
+  return profiles.map(profile => ({ ...companyProfileListing(profile, { images: [] }), travelTermKeys: assignments?.get(profile.id) ?? [], seasonTeasers: assignments?.seasonTeasers?.get(profile.id) }))
     .filter(travelVisible);
 }

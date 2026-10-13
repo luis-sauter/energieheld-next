@@ -42,7 +42,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       : <section aria-labelledby="search-results"><h2 id="search-results">{result.total} {result.total === 1 ? 'Ergebnis' : 'Ergebnisse'} für „{result.query}“</h2>
         {!result.total && <p className="empty-state">Keine passenden Inhalte gefunden. Versuchen Sie einen anderen Suchbegriff.</p>}
         {cards.error && <p role="status">{cards.error}</p>}
-        <SearchResults hits={result.hits} listings={cards.listings} facts={finder.listings}
+        <SearchResults season={values.theme} hits={result.hits} listings={cards.listings} facts={finder.listings}
           travelLabels={Object.fromEntries(finder.terms.map(term => [term.term_key, term.label]))} />
         {result.total > SEARCH_PAGE_SIZE && <nav aria-label="Ergebnisseiten" className={styles.pagination}>
           {result.page > 1 && <Link className="button" href={href(result.page - 1)}>← Vorherige</Link>}

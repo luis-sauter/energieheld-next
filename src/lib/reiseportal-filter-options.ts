@@ -1,3 +1,4 @@
+import { travelSeason } from "./travel-seasons";
 import { publicTravelLabel } from "./travel-presentation";
 import { publicImportPresentation } from "../config/import-presentation";
 import { destinations, travelThemes } from "@/data/reiseportal-discovery";
@@ -59,7 +60,7 @@ export function activeTravelFilterLabels(
   const active: string[] = [];
   if (values.destination) active.push(`Reiseziel: ${selected(values.destination,
     options.destinations, "Nicht verfügbar")}`);
-  if (values.theme) active.push(`Motto: ${selected(values.theme, options.themes, "Nicht verfügbar")}`);
+  if (values.theme) active.push(travelSeason(values.theme) ? `Jahreszeit: ${travelSeason(values.theme)!.label}` : `Motto: ${selected(values.theme, options.themes, "Nicht verfügbar")}`);
   if (values.audience) active.push(`Mit wem: ${selected(values.audience, options.audiences, "Nicht verfügbar")}`);
   if (values.accommodation) active.push(`Unterkunft: ${selected(values.accommodation, options.accommodations, "Nicht verfügbar")}`);
   if (values.query) active.push(`Suche: ${values.query}`);

@@ -82,7 +82,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     const basic = grouped.filter(row => row.directoryPackage !== "premium");
     let mobileIndex = 0;
     const render = (rows: Listing[]) => <div className="listing-rows">{rows.map((listing,index) => <Fragment key={listing.id}>
-      <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels}
+      <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} season={values.theme}
         adminStatus={freshnessStatuses?.[listing.id] || importedProfileIds?.includes(listing.id) || (publicImportPresentation.enabled && listing.importedAt) ? <span className="profile-review-badges">{freshnessStatuses?.[listing.id] && <FreshnessStatus status={freshnessStatuses[listing.id]} />}<ProfileImportBadge imported={importedProfileIds?.includes(listing.id) || (publicImportPresentation.enabled && Boolean(listing.importedAt))} /></span> : undefined} />
       {((index + 1) % 6 === 0 || index === rows.length - 1) && bannerPool[mobileIndex] && <div className="directory-mobile-banner">{mobileBanner(bannerPool[mobileIndex++])}</div>}
       </Fragment>)}</div>;
@@ -158,7 +158,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
           {!error && editingAvailable && saveOrder && databaseResults.length > 0 ? <>
             <DirectoryOrderEditor listings={databaseResults} hiddenDemoKeys={hiddenOrderKeys} saveOrder={saveOrder}
               categories={[]} basePath="/unterkuenfte" showVerification={false} premiumFirst travelLabels={travelLabels} freshnessStatuses={freshnessStatuses ?? undefined} renderResults={ordered => renderResults([...ordered, ...previewResults])}
-              editingExtras={<div className="listing-rows">{previewResults.map(listing => <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} />)}</div>} />
+              editingExtras={<div className="listing-rows">{previewResults.map(listing => <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} season={values.theme} />)}</div>} />
           </> : !error && count > 0 ? renderResults(results) : !error && <div className="empty-state" role="status">
               <p>Für diese Kombination haben wir aktuell keine passende Unterkunft.</p>
               <button type="button" className="button" onClick={() => { setValues(readTravelFilterValues({})); setReviewFilter(""); }}>Alle Filter zurücksetzen</button>

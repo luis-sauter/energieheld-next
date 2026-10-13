@@ -1,3 +1,4 @@
+import { travelSeason } from "./travel-seasons";
 import { destinations, travelThemes } from "@/data/reiseportal-discovery";
 import type { Listing } from "@/types/portal";
 
@@ -14,11 +15,12 @@ export function filterTravelDiscovery(
 ) {
   const selectedDestination = destinations.find((entry) => entry.slug === destination);
   const selectedTheme = travelThemes.find((entry) => entry.slug === theme);
+  const season = travelSeason(theme);
   return items.filter((listing) => {
     const hasTerm = (dimension: string, slug: string) =>
       !slug || listing.travelTermKeys?.includes(`${dimension}:${slug}`) === true;
     return (!destination || (selectedDestination && countryNames[destination]?.includes(listing.location.country))) &&
-      (!theme || (selectedTheme && (listing.travelTermKeys
+      (!theme || (season ? hasTerm("theme", theme) : selectedTheme && (listing.travelTermKeys
         ? hasTerm("theme", theme)
         : selectedTheme.previewSlugs.includes(listing.slug)))) &&
       hasTerm("audience", audience) && hasTerm("accommodation", accommodation) &&
