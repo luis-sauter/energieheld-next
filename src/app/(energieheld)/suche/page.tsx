@@ -1,4 +1,4 @@
-import { TravelSignals } from "@/components/portal/travel-signals";
+import { SearchResults } from "@/components/portal/search-results";
 import Link from '@/components/portal/navigation-link';
 import { pageMetadata } from '@/lib/seo';
 import { searchPortal, accommodationSearchOnly } from '@/lib/portal-search';
@@ -6,7 +6,7 @@ import { searchTypes, SEARCH_PAGE_SIZE } from '@/lib/portal-search-values';
 import styles from './search.module.css';
 import { readTravelFilterValues } from '@/lib/reiseportal-filter-options';
 import { SearchTravelFinder } from '@/components/portal/travel-finder';
-import { loadReiseportalFinderListings } from '@/lib/reiseportal-directory';
+import { loadReiseportalFinderListings, loadReiseportalSearchListings } from '@/lib/reiseportal-directory';
 import { loadPublicTravelTerms } from '@/lib/public-travel-taxonomy';
 import { travelSearchReturnUrl, travelSearchUrl } from '@/lib/travel-search-intent';
 
@@ -19,6 +19,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const [result, finder] = await Promise.all([searchPortal(params.q, { type: params.typ, page: params.seite, filters: initialFilters }),
     Promise.all([loadReiseportalFinderListings(true), loadPublicTravelTerms()]).then(([listings, terms]) => ({ listings, terms, error: null as string | null }))
       .catch(() => ({ listings: [], terms: [], error: "Die Reisefilter sind gerade nicht verfügbar. Die Freitextsuche bleibt möglich." }))]);
+  const cards = await loadReiseportalSearchListings(result.hits.filter(hit => hit.type === 'accommodation').map(hit => hit.id), finder.listings)
+    .then(listings => ({ listings, error: null as string | null }))
+    .catch(() => ({ listings: [], error: 'Die Vorschaubilder sind gerade nicht verfügbar. Ihre Suchtreffer bleiben erhalten.' }));
   const values = { ...readTravelFilterValues(params), query: result.query };
   const origin = params.von === 'home' ? 'home' : 'directory';
   const context = new URLSearchParams(travelSearchUrl(values, origin).split('?')[1]);
@@ -38,11 +41,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       : !result.query ? <p className="empty-state">Geben Sie einen Suchbegriff ein.</p>
       : <section aria-labelledby="search-results"><h2 id="search-results">{result.total} {result.total === 1 ? 'Ergebnis' : 'Ergebnisse'} für „{result.query}“</h2>
         {!result.total && <p className="empty-state">Keine passenden Inhalte gefunden. Versuchen Sie einen anderen Suchbegriff.</p>}
-        <ol className={styles.results}>{result.hits.map(hit => <li key={`${hit.type}:${hit.id}`}>
-          <article>{hit.type !== "ad" && <p className="eyebrow">{searchTypes[hit.type]}</p>}<h3>
-            {hit.external ? <a href={hit.url} target="_blank" rel="sponsored noopener noreferrer">{hit.title} ↗</a> : <Link href={hit.url}>{hit.title} →</Link>}
-          </h3>{hit.type === "accommodation" && <TravelSignals termKeys={finder.listings.find(listing => listing.id === hit.id)?.travelTermKeys} />}<p>{hit.excerpt}</p></article>
-        </li>)}</ol>
+        {cards.error && <p role="status">{cards.error}</p>}
+        <SearchResults hits={result.hits} listings={cards.listings} facts={finder.listings}
+          travelLabels={Object.fromEntries(finder.terms.map(term => [term.term_key, term.label]))} />
         {result.total > SEARCH_PAGE_SIZE && <nav aria-label="Ergebnisseiten" className={styles.pagination}>
           {result.page > 1 && <Link className="button" href={href(result.page - 1)}>← Vorherige</Link>}
           <span>Seite {result.page}</span>

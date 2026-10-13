@@ -320,6 +320,31 @@ const filters = {
   sort: "",
 };
 
+test('search card hydration scopes rows/packages to visible hits, skips directory sorting and reuses canonical presentation',async()=>{
+ const {loadReiseportalSearchListings}=await import('../src/lib/reiseportal-directory.ts');
+ const rows=[{...travelRow,logo_path:'profiles/profile-1/logo/logo.png',company_profile_images:Array.from({length:33},(_,n)=>({id:'img-'+n,storage_path:'profiles/profile-1/gallery/'+n+'.jpg',sort_order:n,alt_text:'Photo'}))}];
+ const before=structuredClone(rows);const requests=api(rows,false,[],[],null,[{profile_id:'profile-1',package:'premium'}]);
+ const listings=await loadReiseportalSearchListings(['profile-1','profile-1'],[{id:'profile-1',travelTermKeys:['audience:mit-hund']}]);
+ assert.equal(listings.length,1);assert.equal(listings[0].directoryPackage,'premium');assert.deepEqual(listings[0].travelTermKeys,['audience:mit-hund']);assert.equal(listings[0].images.length,1);assert.ok(listings[0].logo);
+ assert.equal(requests.filter(r=>r.url.pathname==='/rest/v1/company_profiles').length,1);
+ assert.ok(requests.find(r=>r.url.pathname==='/rest/v1/company_profile_directory_packages').url.searchParams.get('profile_id')==='in.(profile-1)');
+ assert.ok(!requests.some(r=>r.url.pathname==='/rest/v1/company_directory_order'));assert.deepEqual(rows,before);
+ const previous=requests.length;assert.deepEqual(await loadReiseportalSearchListings([],[]),[]);assert.equal(requests.length,previous);
+});
+
+test('search uses actual A–Z rows and actual discovery cards in unchanged relevance order, including safe media failure fallback',async()=>{
+ const {SearchResults}=await import('../src/components/portal/search-results.tsx');
+ const {ListingRow}=await import('../src/components/portal/listing-row.tsx');
+ const {companyProfileListing}=await import('../src/lib/company-presentation.ts');
+ const card={...companyProfileListing(travelRow,{images:[{src:'/reiseportal/test.jpg',alt:'Profile image'}]}),directoryPackage:'premium',travelTermKeys:['audience:mit-hund']};
+ const hits=[{id:card.id,type:'accommodation',title:card.name,url:'/unterkuenfte/'+card.slug,excerpt:'Pool',rank:1000},{id:'oesterreich',type:'destination',title:'Österreich',url:'/reiseziele/oesterreich',excerpt:'Region',rank:900},{id:'wellnessangebote',type:'theme',title:'Wellness',url:'/mottoreisen/wellnessangebote',excerpt:'Wellness',rank:800}];
+ const html=renderToStaticMarkup(createElement(SearchResults,{hits,listings:[card],facts:[],travelLabels:{}}));
+ const expected=renderToStaticMarkup(createElement(ListingRow,{listing:card,categories:[],href:hits[0].url,showVerification:false,travel:true,travelLabels:{}}));
+ assert.ok(html.includes(expected.slice(expected.indexOf('<article'))));assert.ok(html.indexOf('data-search-id="'+card.id+'"')<html.indexOf('data-search-id="oesterreich"'));
+ assert.equal((html.match(/class="discovery-card"/g)||[]).length,2);assert.match(html,/Reiseziel/);assert.match(html,/Mottoreise/);
+ const fallback=renderToStaticMarkup(createElement(SearchResults,{hits:hits.slice(0,1),listings:[],facts:[],travelLabels:{}}));assert.match(fallback,/listing-row/);assert.ok(fallback.includes(hits[0].url));
+});
+
 test("public loader applies manual order before demos and keeps the directory available before migration deployment", async () => {
   const rows = [
     { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: "alpha", display_name: "Alpha" },
