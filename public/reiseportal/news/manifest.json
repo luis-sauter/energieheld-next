@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-10-13",
+  "tool": "Built-in image_gen",
+  "purpose": "Editorial symbolic images; no specific real business or documented news event depicted.",
+  "rightsBasis": "User explicitly authorized these three AI-generated images. No original-source photographs were copied.",
+  "assets": [
+    {
+      "file": "thermenherbst.webp",
+      "prompt": "Photorealistic natural editorial travel photograph for a large lead card on a German travel portal, landscape 4:3. A peaceful generic Alpine autumn wellness scene, not a real hotel or identifiable spa: warm outdoor thermal pool in foreground, subtle steam, a single adult visitor viewed from behind at respectful distance resting arms on the water edge, tasteful natural stone and minimal timber architecture at far right, golden larch woodland and layered Austrian-style Alpine mountain landscape under soft late afternoon light. High-end magazine photography, realistic water reflections, believable human anatomy, warm autumn gold and clean blue tones, nuanced natural detail, main subject and vista comfortably within central frame for responsive crop. Editorial symbolic image only, no suggestion of a documented event or specific business. No text, lettering, logos, watermarks, signs, brand marks, montage or card/UI borders. Generate exactly one image.",
+      "format": "WebP",
+      "processing": "Local resize and compression only; no visual editing."
+    },
+    {
+      "file": "herbstcamping.webp",
+      "prompt": "Photorealistic natural editorial travel photograph, wide landscape 16:9 composition for a small horizontal news card. Quiet autumn camping on a maintained designated lakeside campsite in a generic Bavarian foothill setting, no identifiable real place: discreet modern unbranded camper van at right, two empty folding chairs beside a small camping table on the pitch, glimmering lake central and left, warm gold deciduous trees and soft distant hills, fresh early autumn morning light. Clearly a legal established campsite rather than wild camping in a protected landscape. Premium realistic travel magazine photograph, restrained colors and authentic textures, van and chairs inside central 70 percent of frame for a shallow horizontal crop. This is an editorial symbolic image, not documentary imagery of a particular campsite. No text, license plate characters, logos, writing, watermarks, signs, UI or graphic overlays. Generate exactly one image.",
+      "format": "WebP",
+      "processing": "Local resize and compression only; no visual editing."
+    },
+    {
+      "file": "familienherbst.webp",
+      "prompt": "Photorealistic natural editorial travel photograph, wide landscape 16:9 for a small horizontal travel news card. Generic Alpine autumn family walk, two adults and two school-age children viewed from behind walking calmly together on a broad safe easy path through golden meadow, a few autumn-colored trees, layered mountain panorama under bright soft daylight. Tasteful ordinary hiking clothes and small unbranded backpacks; warm family moment, realistic proportions and anatomy, no steep exposed ledge or risky activity. Keep family fully visible in central right area and mountains and path across middle for shallow horizontal crop. Refined authentic travel magazine photography, soft blue sky, natural autumn ochre and greens. Symbolic editorial scene, not a specific event, trail attraction or real destination documentation. No text, logos, signs, letters, watermarks, montage, UI or frame. Generate exactly one image.",
+      "format": "WebP",
+      "processing": "Local resize and compression only; no visual editing."
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 // Derived at build time from the actual public JSX, never maintained separately.
 // Only allowlisted public editorial components: no auth/admin/owner copy.
 const sources = [
-  ['/', 'Startseite', ['src/app/(energieheld)/page.tsx', 'src/components/portal/travel-finder.tsx']],
+  ['/', 'Startseite', ['src/app/(energieheld)/page.tsx', 'src/components/portal/travel-finder.tsx', 'src/components/portal/travel-news.tsx']],
   ['/unterkuenfte-a-z', 'Unterkünfte A–Z', ['src/components/portal/travel-directory.tsx', 'src/components/portal/travel-finder.tsx']],
   ['/mottoreisen', 'Mottoreisen', ['src/app/(energieheld)/mottoreisen/page.tsx']],
   ['/reiseziele', 'Reiseziele', ['src/app/(energieheld)/reiseziele/page.tsx']],

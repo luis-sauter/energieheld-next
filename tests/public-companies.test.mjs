@@ -461,7 +461,7 @@ test("homepage shows real travel cards and distributes only homepage ads without
   assert.match(html, /hero-loop\.mp4/);
   assert.doesNotMatch(html, /poster=|hero\.jpg/);
   assert.match(html, /name="q"/);
-  assert.match(html, /href="\/mottoreisen\/natur-pur"/);
+  assert.match(html, /href="\/unterkuenfte-a-z\?thema=natur-pur"/);
   assert.match(html, /Ausgewählte Unterkünfte/);
   assert.doesNotMatch(html, /Demo GmbH/);
   assert.match(html, /href="\/unterkuenfte\/bayerischer-wald"/);

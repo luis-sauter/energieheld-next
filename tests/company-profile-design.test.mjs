@@ -579,7 +579,7 @@ test("portal home follows the discovery wireframe with the shared advertising ra
     "travel-hero",
     'class="reise-finder"',
     "travel-quicklinks",
-    "Inspiration &amp; Themenwelten",
+    "Reise-News &amp; Inspiration",
     'id="destinations-title"',
     'id="stays-title"',
   ];
