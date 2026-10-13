@@ -40,6 +40,8 @@ test('generated editorial catalog follows actual JSX rather than independently m
   const sample = publicJsxCopy('<div><h1>Öffentlicher Titel</h1><p>Aktuelle Beschreibung</p><Overview intro="Öffentliche Einführung" /><B2BPage description="Sichtbare Seitenbeschreibung" /></div>');
   assert.match(sample, /Aktuelle Beschreibung/); assert.match(sample, /Öffentliche Einführung/); assert.match(sample, /Sichtbare Seitenbeschreibung/);
   assert.equal(publicJsxCopy('const adminNote="Interne Notiz"; export const metadata={title:"Privat"};'), '');
+  assert.equal(publicJsxCopy('<div>{editingAvailable && saveOrder && <p>Interne Reihenfolge</p>}{freshnessStatuses !== undefined && <p>Interner Prüfstatus</p>}{editingAvailable ? <p>Privater Editor</p> : <p>Öffentliche Ergebnisse</p>}{hasResults && <p>Passende Unterkünfte</p>}</div>', ['editingAvailable', 'freshnessStatuses']), 'Öffentliche Ergebnisse Passende Unterkünfte');
+  assert.doesNotMatch(pages.find(p => p.url === '/unterkuenfte-a-z').body, /Banner-Reihenfolge bearbeiten|Prüfung erforderlich|Prüfstände konnten/);
   for (const entry of [...travelThemes, ...destinations]) assert.ok(matchSearchDocument({ id: entry.slug, title: entry.title, body: entry.intro, url: entry.slug, type: 'page' }, entry.title));
 });
 

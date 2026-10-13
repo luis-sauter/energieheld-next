@@ -1,0 +1,91 @@
+BEGIN;
+-- Additive read-only successor. Historical RPC, source data and RLS unchanged.
+-- Existing GIN candidates; live public visibility; no media signing/downloads.
+CREATE FUNCTION public.search_public_portal_v2(p_query text,p_limit integer DEFAULT 100,p_offset integer DEFAULT 0,p_areas text[] DEFAULT '{}'::text[],p_catalog jsonb DEFAULT '[]'::jsonb,p_filters jsonb DEFAULT '{}'::jsonb) RETURNS jsonb
+LANGUAGE sql STABLE SECURITY INVOKER SET search_path='' AS $$
+ WITH filters AS (
+ SELECT left(coalesce(p_filters->>'destination',''),80) AS destination,
+ left(coalesce(p_filters->>'theme',''),80) AS theme,
+ left(coalesce(p_filters->>'audience',''),80) AS audience,
+ left(coalesce(p_filters->>'accommodation',''),80) AS accommodation,
+ public.portal_search_normalize(left(coalesce(p_filters->>'location',''),120)) AS location,
+ CASE WHEN p_filters->>'sort' IN ('name','city','imported') THEN p_filters->>'sort' ELSE '' END AS sort,
+ coalesce(p_filters->>'destination','')<>'' OR coalesce(p_filters->>'theme','')<>'' OR coalesce(p_filters->>'audience','')<>'' OR coalesce(p_filters->>'accommodation','')<>'' OR public.portal_search_normalize(left(coalesce(p_filters->>'location',''),120))<>'' OR coalesce(p_filters->>'sort','') IN ('name','city','imported') AS active
+ ), query AS (SELECT public.portal_search_query(coalesce(p_query,'')) AS tsq,public.portal_search_normalize(left(btrim(coalesce(p_query,'')),160)) AS normalized),
+ catalog AS (SELECT left(item->>'id',2048) AS id,item->>'type' AS type,left(item->>'title',300) AS title,
+ left(item->>'body',10000) AS body,left(item->>'url',2048) AS url,left(item->>'context',160) AS context
+ FROM (SELECT value AS item FROM jsonb_array_elements(CASE WHEN jsonb_typeof(p_catalog)='array' THEN p_catalog ELSE '[]'::jsonb END) LIMIT 256) input
+ WHERE item->>'type' IN ('page','theme','destination','ad') AND jsonb_typeof(item)='object'),
+ catalog_matches AS (SELECT c.id,c.type,c.title,c.url,c.context,
+ ts_headline('pg_catalog.german',coalesce(c.body,''),q.tsq,'StartSel="",StopSel="",MaxWords=40,MinWords=15,MaxFragments=1') AS excerpt,
+ CASE WHEN public.portal_search_normalize(c.title)=q.normalized THEN 1000 WHEN public.portal_search_normalize(c.title) LIKE q.normalized || '%' THEN 800
+ WHEN public.portal_search_vector(c.title) @@ q.tsq THEN 600 ELSE 100 END +
+ ts_rank_cd(setweight(public.portal_search_vector(coalesce(c.title,'')),'A') || setweight(public.portal_search_vector(coalesce(c.body,'')),'D'),q.tsq,32) AS rank
+ FROM catalog c CROSS JOIN query q CROSS JOIN filters f WHERE NOT f.active AND numnode(q.tsq)>0 AND public.portal_search_vector(concat_ws(' ',c.title,c.body)) @@ q.tsq),
+ candidate_query AS (SELECT to_tsquery('pg_catalog.german',replace(tsq::text,' & ',' | ')) AS tsq FROM query),
+ candidates AS (
+ SELECT p.id FROM public.company_profiles p CROSS JOIN candidate_query q WHERE p.status='approved' AND public.portal_search_vector(
+ coalesce(p.display_name,'') || ' ' || coalesce(p.tagline,'') || ' ' || coalesce(p.description,'') || ' ' || coalesce(p.business_areas,'') || ' ' ||
+ coalesce(p.city,'') || ' ' || coalesce(p.region,'') || ' ' || coalesce(p.country,'')) @@ q.tsq
+ UNION SELECT b.profile_id FROM public.profile_content_blocks b CROSS JOIN candidate_query q WHERE b.slot IS NULL AND b.type IN ('heading','text') AND public.portal_search_vector(coalesce(b.content->>'text','')) @@ q.tsq
+ UNION SELECT b.profile_id FROM public.profile_content_blocks b CROSS JOIN candidate_query q WHERE b.slot IS NOT NULL AND public.portal_search_vector(coalesce(b.content->>'text','')) @@ q.tsq
+ UNION SELECT b.profile_id FROM public.profile_content_block_images i JOIN public.profile_content_blocks b ON b.id=i.block_id CROSS JOIN candidate_query q WHERE public.portal_search_vector(coalesce(i.caption,'')) @@ q.tsq
+ UNION SELECT pt.profile_id FROM public.company_profile_travel_terms pt JOIN public.travel_terms t USING(term_key) CROSS JOIN candidate_query q WHERE public.portal_search_vector(t.label || ' ' || replace(t.slug,'-',' ')) @@ q.tsq
+ UNION SELECT p.id FROM public.company_profiles p CROSS JOIN candidate_query q WHERE p.status='approved' AND public.portal_search_vector(concat_ws(' ',p.street,p.postal_code,p.phone,p.public_email,p.website)) @@ q.tsq
+ ),
+ matches AS (SELECT d.id,d.url,d.title,d.location,
+ concat_ws(' ',d.headings,d.body,d.location) AS excerpt_source,
+ (CASE WHEN public.portal_search_normalize(d.title)=q.normalized THEN 1000 WHEN public.portal_search_normalize(d.title) LIKE q.normalized || '%' THEN 800
+ WHEN public.portal_search_vector(d.title) @@ q.tsq THEN 600 WHEN public.portal_search_vector(d.location) @@ q.tsq THEN 400
+ WHEN public.portal_search_vector(d.terms) @@ q.tsq THEN 300 WHEN public.portal_search_vector(d.headings) @@ q.tsq THEN 200 ELSE 100 END
+ + ts_rank_cd(d.document,q.tsq,32)) AS rank FROM public.portal_search_documents d JOIN candidates c ON c.id=d.id
+ JOIN public.company_profiles p ON p.id=d.id CROSS JOIN query q CROSS JOIN filters f
+ WHERE numnode(q.tsq)>0 AND d.document @@ q.tsq
+ AND (f.destination='' OR p.country=ANY(CASE f.destination
+ WHEN 'deutschland' THEN ARRAY['Deutschland','Germany','DE'] WHEN 'oesterreich' THEN ARRAY['Österreich','Austria','AT']
+ WHEN 'schweiz' THEN ARRAY['Schweiz','Switzerland','CH'] WHEN 'suedtirol-italien' THEN ARRAY['Italien','Italy','IT'] ELSE ARRAY[]::text[] END))
+ AND (f.location='' OR strpos(public.portal_search_normalize(concat_ws(' ',p.city,p.postal_code,p.region,p.country)),f.location)>0)
+ AND (f.theme='' OR EXISTS(SELECT 1 FROM public.company_profile_travel_terms t WHERE t.profile_id=p.id AND t.term_key='theme:'||f.theme))
+ AND (f.audience='' OR EXISTS(SELECT 1 FROM public.company_profile_travel_terms t WHERE t.profile_id=p.id AND t.term_key='audience:'||f.audience))
+ AND (f.accommodation='' OR EXISTS(SELECT 1 FROM public.company_profile_travel_terms t WHERE t.profile_id=p.id AND t.term_key='accommodation:'||f.accommodation))),
+ related_catalog_matches AS (
+ SELECT c.id,c.type,c.title,c.url,c.context,left(c.body,240) AS excerpt,75::real AS rank
+ FROM catalog c CROSS JOIN filters f
+ WHERE NOT f.active AND c.type IN ('theme','destination')
+ AND NOT EXISTS(SELECT 1 FROM catalog_matches direct WHERE direct.type=c.type AND direct.id=c.id)
+ AND EXISTS(SELECT 1 FROM matches m JOIN public.company_profiles p ON p.id=m.id WHERE
+ (c.type='theme' AND EXISTS(SELECT 1 FROM public.company_profile_travel_terms t WHERE t.profile_id=m.id AND t.term_key='theme:'||c.id))
+ OR (c.type='destination' AND p.country=ANY(CASE c.id
+ WHEN 'deutschland' THEN ARRAY['Deutschland','Germany','DE'] WHEN 'oesterreich' THEN ARRAY['Österreich','Austria','AT']
+ WHEN 'schweiz' THEN ARRAY['Schweiz','Switzerland','CH'] WHEN 'suedtirol-italien' THEN ARRAY['Italien','Italy','IT'] ELSE ARRAY[]::text[] END)))
+ ),
+ imports AS (
+ SELECT marker.* FROM (SELECT array_agg(id) AS ids FROM (
+ SELECT m.id,(row_number() OVER(ORDER BY m.id)-1)/500 AS batch FROM matches m CROSS JOIN filters f WHERE f.sort='imported'
+ ) numbered GROUP BY batch) batches CROSS JOIN LATERAL public.public_company_import_markers(batches.ids) marker
+ ),
+ contexts AS (SELECT scope,key,path FROM public.public_banner_search_contexts() CROSS JOIN filters f CROSS JOIN query q WHERE NOT f.active AND numnode(q.tsq)>0),
+ ads AS (SELECT c.path,a.id,a.placement,a.headline,a.body_text,a.target_url,a.image_path,
+ a.image_path IS NULL OR EXISTS (SELECT 1 FROM storage.objects o WHERE o.bucket_id='ad-media' AND o.name=a.image_path) AS image_available,
+ CASE WHEN public.portal_search_vector(concat_ws(' ',a.headline,a.body_text)) @@ q.tsq THEN
+ CASE WHEN public.portal_search_normalize(a.headline)=q.normalized THEN 1000 WHEN public.portal_search_vector(a.headline) @@ q.tsq THEN 600 ELSE 100 END
+ + ts_rank_cd(setweight(public.portal_search_vector(a.headline),'A') || setweight(public.portal_search_vector(coalesce(a.body_text,'')),'D'),q.tsq,32) ELSE 0 END AS rank
+ FROM contexts c CROSS JOIN LATERAL public.get_active_ad_campaigns(c.scope,c.key) a CROSS JOIN query q),
+ settings AS (SELECT c.path,s.placement,s.size,s.legacy_hidden,s.legacy_target_url,s.legacy_placement,s.display_source FROM contexts c JOIN public.ad_slot_presentations s
+ ON s.target_type=c.scope AND s.target_key IS NOT DISTINCT FROM c.key)
+ SELECT jsonb_build_object('total',(SELECT count(*) FROM matches),'hits',coalesce((SELECT jsonb_agg(row_to_json(h)) FROM (
+  SELECT m.id,m.url,m.title,ts_headline('pg_catalog.german',m.excerpt_source,q.tsq,'StartSel="",StopSel="",MaxWords=40,MinWords=15,MaxFragments=1') AS excerpt,m.rank FROM matches m CROSS JOIN filters f CROSS JOIN query q LEFT JOIN imports i ON i.profile_id=m.id
+ ORDER BY CASE WHEN f.sort='name' THEN public.portal_search_normalize(m.title) END COLLATE pg_catalog."C" ASC,
+ CASE WHEN f.sort='city' THEN public.portal_search_normalize(m.location) END COLLATE pg_catalog."C" ASC,
+ CASE WHEN f.sort='imported' THEN i.imported_at IS NOT NULL END DESC,
+ CASE WHEN f.sort='imported' THEN i.imported_at END DESC NULLS LAST,
+ CASE WHEN f.sort='' THEN m.rank END DESC,public.portal_search_normalize(m.title) COLLATE pg_catalog."C",m.id LIMIT greatest(1,least(coalesce(p_limit,100),1000)) OFFSET greatest(0,least(coalesce(p_offset,0),10000))) h),'[]'::jsonb),
+ 'catalog_hits',coalesce((SELECT jsonb_agg(row_to_json(c) ORDER BY c.rank DESC,c.title,c.id) FROM (SELECT * FROM catalog_matches UNION ALL SELECT * FROM related_catalog_matches) c),'[]'::jsonb),
+ 'banner_metadata',coalesce((SELECT jsonb_agg(row_to_json(b)) FROM (SELECT d.*, CASE WHEN public.portal_search_vector(concat_ws(' ',d.name,d.body,d.postal_code,d.city,d.categories)) @@ q.tsq THEN 100 + ts_rank_cd(public.portal_search_vector(concat_ws(' ',d.name,d.body,d.postal_code,d.city,d.categories)),q.tsq,32) ELSE 0 END AS rank FROM public.public_banner_search_data() d CROSS JOIN query q CROSS JOIN filters f WHERE NOT f.active AND numnode(q.tsq)>0) b),'[]'::jsonb),
+ 'ads',coalesce((SELECT jsonb_agg(row_to_json(a)) FROM ads a),'[]'::jsonb),'presentations',coalesce((SELECT jsonb_agg(row_to_json(s)) FROM settings s),'[]'::jsonb));
+$$;
+
+REVOKE ALL ON FUNCTION public.search_public_portal_v2(text,integer,integer,text[],jsonb,jsonb) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.search_public_portal_v2(text,integer,integer,text[],jsonb,jsonb) TO anon,authenticated;
+COMMENT ON FUNCTION public.search_public_portal_v2(text,integer,integer,text[],jsonb,jsonb) IS 'Read-only indexed public portal search with accommodation filters; SECURITY INVOKER, original RLS and historical RPC preserved.';
+COMMIT;

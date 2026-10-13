@@ -17,15 +17,18 @@ const publicFields =
 const publicFieldsWithoutStreet = publicFields.replace("website,street,postal_code", "website,postal_code");
 
 // Sitemap data: no signed media, contact details or session client required.
-export async function loadPublicCompanyProfileIndex() {
+export async function loadPublicCompanyProfileIndex(factsOnly = false) {
   const client = createPublicClient();
   const profiles: { id: string; status: string; slug: string; display_name: string;
-    tagline: string | null; description: string | null; business_areas: string | null;
+    tagline: string | null; description?: string | null; business_areas?: string | null;
     city?: string | null; postal_code?: string | null; region?: string | null; country?: string | null;
     company_profile_categories: { category_id: string }[] }[] = [];
   for (let offset = 0; ; offset += 500) {
-    const { data, error } = await client.from("company_profiles")
-      .select("id,status,slug,display_name,tagline,description,business_areas,city,postal_code,region,country,company_profile_categories(category_id),company_profile_public_visibility(is_listed)")
+    const base = client.from("company_profiles");
+    const query = factsOnly
+      ? base.select("id,status,slug,display_name,tagline,city,postal_code,region,country,company_profile_categories(category_id),company_profile_public_visibility(is_listed)")
+      : base.select("id,status,slug,display_name,tagline,description,business_areas,city,postal_code,region,country,company_profile_categories(category_id),company_profile_public_visibility(is_listed)");
+    const { data, error } = await query
       .eq("status", "approved").order("id").range(offset, offset + 499);
     if (error) throw new Error(PUBLIC_COMPANIES_ERROR);
     const rows = data ?? [];
