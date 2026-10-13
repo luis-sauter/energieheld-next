@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { INITIAL_MAP_VIEW, MAP_HEIGHT, MAP_WIDTH, clampMapView, projectLocation, zoomMap, type MapLocation } from "@/lib/europe-map";
+import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
+import { INITIAL_MAP_VIEW, MAP_HEIGHT, MAP_WIDTH, clampMapView, pinTransform, zoomMap, type MapLocation } from "@/lib/europe-map";
 import styles from "./europe-map.module.css";
 
 export function EuropeMap({ locations }: { locations: MapLocation[] }) {
@@ -9,7 +9,9 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
   const [touchActive, setTouchActive] = useState(false);
   const svg = useRef<SVGSVGElement>(null);
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
+  const pinId = useId();
   const zoomed = view.width < MAP_WIDTH;
+  const atDefault = view.x === INITIAL_MAP_VIEW.x && view.y === INITIAL_MAP_VIEW.y && view.width === INITIAL_MAP_VIEW.width;
   const zoom = Math.round(MAP_WIDTH / view.width * 100);
   useEffect(() => {
     const element = svg.current;
@@ -66,18 +68,19 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
             }
           }}>
           <title id="map-title">Unternehmensstandorte in Europa</title>
-          <desc id="map-description">{locations.length} veröffentlichte Unternehmensstandorte mit verifizierter Position. Mit Plus und Minus zoomen, mit Pfeiltasten oder Ziehen verschieben, mit Pos1 zurücksetzen. Keine einzelnen Standortlinks.</desc>
+          <desc id="map-description">{locations.length} verifizierte Standorte öffentlicher Unternehmen und aktuell vertretener Werbekunden. Mit Plus und Minus zoomen, mit Pfeiltasten oder Ziehen verschieben, mit Pos1 zurücksetzen. Keine einzelnen Standortlinks.</desc>
+          <defs><g id={pinId} fill="#b5682b" stroke="#fff6e9" strokeWidth=".9">
+            <path d="M0 0C-2.5-3.5-7-8-7-12a7 7 0 1 1 14 0C7-8 2.5-3.5 0 0Z" />
+            <circle cx="0" cy="-12" r="2.4" fill="#fff6e9" stroke="none" />
+          </g></defs>
           <image href="/reiseportal/maps/europe.svg" x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT} />
-          <g aria-hidden="true">{locations.map(location => {
-            const [cx, cy] = projectLocation(location.lat, location.lon);
-            return <circle key={location.id} data-location-id={location.id} cx={cx} cy={cy} r={3.7 * view.width / MAP_WIDTH}
-              fill="#b5682b" stroke="#fff6e9" strokeWidth={1.1 * view.width / MAP_WIDTH} />;
-          })}</g>
+          <g aria-hidden="true">{locations.map(location => <use key={location.id} data-location-id={location.id}
+            href={`#${pinId}`} transform={pinTransform(location, view)} />)}</g>
         </svg>
         <div className={styles.controls} role="group" aria-label="Kartenansicht">
           <button type="button" aria-label="Karte vergrößern" disabled={zoom >= 500} onClick={() => setView(current => zoomMap(current, .8))}>+</button>
           <button type="button" aria-label="Karte verkleinern" disabled={!zoomed} onClick={() => setView(current => zoomMap(current, 1.25))}>−</button>
-          <button type="button" aria-label="Karte zurücksetzen" disabled={!zoomed} onClick={() => { setView(INITIAL_MAP_VIEW); setTouchActive(false); }}>↺</button>
+          <button type="button" aria-label="Karte zurücksetzen" disabled={atDefault} onClick={() => { setView(INITIAL_MAP_VIEW); setTouchActive(false); }}>↺</button>
         </div>
       </div>
       <div className={styles.footnote}>
@@ -85,7 +88,7 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
         <button className={styles.touchButton} type="button" aria-pressed={touchActive} onClick={() => setTouchActive(active => !active)}>
           {touchActive ? "Seitenscrollen aktivieren" : "Karte per Touch verschieben"}
         </button>
-        <p className={styles.credit}>Karte: <a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noopener noreferrer">Natural Earth</a> · Standorte: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap-Mitwirkende</a></p>
+        <p className={styles.credit}>Karte: <a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noopener noreferrer">Natural Earth</a> · Standorte: Betreiberangaben / © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap-Mitwirkende</a></p>
       </div>
     </div>
   </section>;

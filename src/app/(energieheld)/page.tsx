@@ -65,7 +65,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <AutumnShowcase listings={directory.database} />
 
-    <EuropeMap locations={companyMapLocations(directory.database)} />
+    <EuropeMap locations={companyMapLocations(directory.database, searchBanners.banners)} />
 
     <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06"]} label="Anzeigen nach den Reisezielen" />
 

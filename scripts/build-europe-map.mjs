@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { projectLocation, MAP_WIDTH, MAP_HEIGHT } from '../src/lib/europe-map.ts';
-const [countriesFile, profilesFile, reviewedFile] = process.argv.slice(2);
+const [countriesFile, profilesFile, reviewedFile, advertisersFile] = process.argv.slice(2);
 if (!countriesFile || !profilesFile || !reviewedFile) throw new Error('Usage: node scripts/build-europe-map.mjs countries.geojson public-profiles.json reviewed-locations.json (local files only)');
 const countries = JSON.parse(await fs.readFile(countriesFile, 'utf8'));
 const profiles = JSON.parse(await fs.readFile(profilesFile, 'utf8'));
@@ -45,8 +45,26 @@ for (const feature of countries.features) {
 }
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${MAP_WIDTH} ${MAP_HEIGHT}"><title>Europa — Natural Earth, Lambert-Kegelprojektion</title><defs><linearGradient id="sea" x2="0" y2="1"><stop stop-color="#a9bfc5"/><stop offset="1" stop-color="#bdced0"/></linearGradient><linearGradient id="land" x2="0.4" y2="1"><stop stop-color="#f0ede4"/><stop offset="1" stop-color="#e3ddce"/></linearGradient></defs><path fill="url(#sea)" d="M0 0H${MAP_WIDTH}V${MAP_HEIGHT}H0Z"/><g fill="url(#land)" stroke="#fcfaf4" stroke-width=".8" stroke-linejoin="round" fill-rule="evenodd">${paths.join('')}</g></svg>`;
 if (Buffer.byteLength(svg) > 150000) throw new Error('Map exceeds size budget');
-const ids = new Set(profiles.map(p=>p.id));
+const advertisers = advertisersFile ? JSON.parse(await fs.readFile(advertisersFile,'utf8')) : [];
+const eligibility = new Set();
+for (const entry of advertisers) {
+ if (!entry.locationId || !entry.advertiserKey || !Array.isArray(entry.campaignIds) || !entry.campaignIds.length) throw new Error('Reviewed advertiser identity/campaigns required');
+ for (const campaign of entry.campaignIds) {
+  const key=entry.advertiserKey+'|'+campaign;
+  if(eligibility.has(key))throw new Error('Ambiguous campaign/site assignment');
+  eligibility.add(key);
+ }
+}
+const ids = new Set([...profiles.map(p=>p.id),...advertisers.map(p=>p.locationId)]);
 const locations = reviewed.filter(p=>p.verified === true && ids.has(p.id)).map(({id,lat,lon})=>({id,lat,lon}));
+// Published verified coordinates are immutable during an extension. A changed
+// business location requires an explicit reviewed update, not a silent rebuild.
+const existing = JSON.parse(await fs.readFile(new URL('../src/data/company-locations.json',import.meta.url),'utf8'));
+for (const previous of existing) {
+ const next=locations.find(p=>p.id===previous.id);
+ if (ids.has(previous.id) && !next) throw new Error('Still eligible verified coordinate omitted from review');
+ if (next && (next.lat!==previous.lat||next.lon!==previous.lon)) throw new Error('Verified coordinate replacement requires explicit review');
+}
 if (new Set(locations.map(p=>p.id)).size !== locations.length) throw new Error('Duplicate public ID');
 for (const p of locations) {
  const [x,y]=projectLocation(p.lat,p.lon);
@@ -58,4 +76,5 @@ await fs.mkdir(new URL('../public/reiseportal/maps/',import.meta.url),{recursive
 await fs.writeFile(new URL('../public/reiseportal/maps/europe.svg',import.meta.url),svg);
 await fs.writeFile(new URL('../src/data/company-locations.json',import.meta.url),JSON.stringify(locations)+'\n');
 await fs.writeFile(new URL('../src/data/company-location-addresses.json',import.meta.url),JSON.stringify(fingerprints)+'\n');
+if (advertisersFile) await fs.writeFile(new URL('../src/data/company-location-advertisers.json',import.meta.url),JSON.stringify(advertisers)+'\n');
 console.log(JSON.stringify({locations:locations.length,excluded:profiles.length-locations.length,svgBytes:Buffer.byteLength(svg),locationBytes:Buffer.byteLength(JSON.stringify(locations))}));

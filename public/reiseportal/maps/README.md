@@ -17,9 +17,19 @@ Es werden nur öffentliche Profil-IDs und geografische Koordinaten verwendet.
 Die angezeigten Punkte werden zusätzlich durch die aktuelle öffentliche
 Profilansicht und den unveränderten Adress-Fingerprint gefiltert.
 
-Stand: 13.10.2026, 106 veröffentlichte Profile überprüft; 95 belastbare
-Gebäude-/Betriebspositionen, 11 ohne ausreichend verlässliche Position.
+Stand: 13.10.2026, 106 veröffentlichte Profile überprüft; 104 belastbare
+Gebäude-/Betriebspositionen, zwei ohne ausreichend verlässliche Position.
+Die ursprünglichen 95 Koordinaten bleiben unverändert; neun Positionen anhand
+offizieller Betreiberangaben und zwei gezielten OSM-Gebäudereferenzen ergänzt.
+46 gültige Kampagnen geprüft: keine weiteren eindeutig eigenständigen
+Werbekunden ohne öffentliches Profil; vier Domain-Zuordnungen sind bekannte
+Profilunternehmen und erzeugen keine doppelten Marker.
 Keine Orts-, Länder- oder Regionsmittelpunkte als Ersatz.
+
+Marker: wiederverwendbarer lokaler SVG-Tropfen, Spitze bei (0,0) exakt an
+der geografischen Position. Standardansicht 125 %, entsprechend dem bisherigen
+einmaligen Plus-Schritt; Reset und Pos1 kehren dorthin zurück. Herauszoomen
+bis zur vollständigen Europakarte bleibt möglich.
 
 Aktualisierung: nach Veröffentlichung oder Adressänderung gezielt eine aktuelle
 öffentliche Profil-/Adressliste und geprüfte Standortnachweise bereitstellen.
@@ -27,7 +37,7 @@ Bereits passende Cache-Ergebnisse wiederverwenden. Neue/unklare Adressen nur
 redaktionell geokodieren und prüfen; kein automatischer Geocoder im Build.
 Der lokale Generator wird ausdrücklich aufgerufen:
 
-`node scripts/build-europe-map.mjs countries.geojson public-profiles.json reviewed-locations.json`
+`node scripts/build-europe-map.mjs countries.geojson public-profiles.json reviewed-locations.json [reviewed-advertisers.json]`
 
 Eingaben bleiben außerhalb des Repositorys. `reviewed-locations.json` enthält
 IDs, lat/lon und `verified: true` nur nach Herkunfts-/Adressprüfung. Das Skript
@@ -39,3 +49,15 @@ Archivier-/Veröffentlichungsänderungen wirken bei der vorhandenen öffentliche
 Verzeichnisabfrage sofort auch auf die dargestellten Punkte; neue Profile
 werden nach gezielter Snapshot-Aktualisierung ergänzt. Geänderte Adressen
 werden bis zur erneuten Koordinatenprüfung nicht mit alten Positionen dargestellt.
+
+Bannerkunden ohne öffentliche Präsentation: dieselbe Koordinatenliste verwenden,
+zusätzlich den Standort in `company-location-advertisers.json` mit geprüfter
+Werbekundenidentität und konkreten Kampagnen-IDs zuordnen. Profil-/Domain-Aliasse
+verwenden dieselbe Standort-ID. Unterschiedliche Betriebsstandorte benötigen
+eindeutige eigene Nachweise und Kampagnenzuordnungen. Der Generator lehnt
+mehrdeutige Kampagnenzuordnungen und stilles Überschreiben geprüfter Positionen ab.
+Zur Laufzeit wird die bereits auf der Startseite geladene öffentliche
+Bannerprojektion wiederverwendet; keine zusätzliche DB-/Signierungsabfrage.
+Nur tatsächlich öffentlich lieferbare aktive Kampagnen qualifizieren einen
+Bannerstandort, keine archivierten/abgelaufenen Kampagnen oder Legacy-Fallbacks.
+Neue Kampagnen-IDs und neue Standorte gezielt prüfen und lokal ergänzen.
