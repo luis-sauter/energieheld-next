@@ -5,19 +5,20 @@ import { destinations, travelThemes } from '@/data/reiseportal-discovery';
 import { searchTypes, type SearchHit } from '@/lib/portal-search-values';
 import type { Listing } from '@/types/portal';
 import styles from '@/app/(energieheld)/suche/search.module.css';
+import cardStyles from './directory-listing-rows.module.css';
 
 export function SearchResults({ hits, listings, facts, travelLabels }: {
   hits: SearchHit[]; listings: Listing[]; facts: Listing[]; travelLabels: Record<string, string>;
 }) {
   const cards = new Map(listings.map(listing => [listing.id, listing]));
   const fallback = new Map(facts.map(listing => [listing.id, listing]));
-  return <ol className={styles.results}>{hits.map(hit => {
+  return <ol className={`${styles.results} ${cardStyles.rows}`}>{hits.map(hit => {
     const entry = hit.type === 'theme' ? travelThemes.find(entry => entry.slug === hit.id)
       : hit.type === 'destination' ? destinations.find(entry => entry.slug === hit.id) : undefined;
     const listing = cards.get(hit.id) ?? fallback.get(hit.id);
     return <li key={`${hit.type}:${hit.id}`} data-search-result={hit.type} data-search-id={hit.id}
       className={entry ? styles.discoveryResult : styles.wideResult}>
-      {hit.type !== 'ad' && <p className={styles.resultType}>{searchTypes[hit.type]}</p>}
+      {hit.type !== 'ad' && hit.type !== 'accommodation' && <p className={styles.resultType}>{searchTypes[hit.type]}</p>}
       {hit.type === 'accommodation' ? <ListingRow listing={listing ?? {
         id: hit.id, slug: hit.url.split('/').pop() ?? '', name: hit.title,
         initials: hit.title.slice(0, 2), tagline: '', description: hit.excerpt,

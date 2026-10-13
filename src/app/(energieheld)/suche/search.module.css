@@ -6,7 +6,7 @@
 .form label { display: block; font-weight: 600; margin-bottom: 8px; }
 .form input, .form select { width: 100%; min-height: 44px; padding: 10px; border: 1px solid var(--line); border-radius: 6px; font: inherit; background: var(--white); color: inherit; }
 .form :focus-visible, .page a:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 3px; }
-.results { list-style: none; padding: 0; margin: 24px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.results { list-style: none; padding: 0; margin: 24px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .results > li { min-width: 0; }
 .wideResult { grid-column: 1 / -1; }
 .resultType { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--brand-primary); }
@@ -14,7 +14,7 @@
 .textResult h3 { margin: 0 0 8px; }
 .textResult p { margin: 0; line-height: 1.6; }
 .discoveryResult { min-width: 0; }
-@media (max-width: 700px) { .results { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
+@media (max-width: 700px) { .results { grid-template-columns: minmax(0, 1fr); } }
 .pagination { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
 @media (max-width: 640px) { .form { flex-direction: column; align-items: stretch; } .form > div:first-of-type { flex: auto; } .page { padding-block: 24px 40px; } }
 

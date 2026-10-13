@@ -9,6 +9,7 @@ import { FreshnessStatus } from "@/components/admin/freshness-status";
 import { freshnessMatches, freshnessCounts } from "@/lib/content-freshness";
 import type { AdminFreshnessStatuses } from "@/lib/profile-freshness";
 import styles from "./travel-directory.module.css";
+import cardStyles from "./directory-listing-rows.module.css";
 import { directoryBannerPool, directoryImageKey, sampleDirectoryCreative, type CreativeSamples } from "@/lib/directory-banner-layout";
 import type { ActiveAd } from "@/lib/ad-values";
 import type { SidebarSlot } from "@/lib/sidebar-order";
@@ -107,7 +108,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     return () => window.removeEventListener("popstate", restore);
   }, []);
 
-  return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`travel-directory-page ${styles.page}`}>
+  return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`travel-directory-page ${styles.page} ${cardStyles.rows}`}>
     <TravelFinder mode="directory" banners={banners} listings={listings} options={options} values={values} onChange={setValues} error={error ?? bannerError} renderFinder={(finder) =>
     <div className="trade-page travel-directory-content">
       <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder} editorEnabled={editingAvailable} premiumInSidebar showEmptySlots={Boolean(bannerOptions)}
