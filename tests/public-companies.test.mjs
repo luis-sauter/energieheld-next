@@ -341,6 +341,11 @@ test('search uses actual A–Z rows and actual discovery cards in unchanged rele
  const html=renderToStaticMarkup(createElement(SearchResults,{hits,listings:[card],facts:[],travelLabels:{}}));
  const expected=renderToStaticMarkup(createElement(ListingRow,{listing:card,categories:[],href:hits[0].url,showVerification:false,travel:true,travelLabels:{}}));
  assert.ok(html.includes(expected.slice(expected.indexOf('<article'))));assert.ok(html.indexOf('data-search-id="'+card.id+'"')<html.indexOf('data-search-id="oesterreich"'));
+ assert.doesNotMatch(html, /<p[^>]*>Unterkunft<\/p>/);
+ assert.match(source('src/components/portal/search-results.tsx'), /cardStyles\.rows/);
+ assert.match(source('src/components/portal/travel-directory.tsx'), /cardStyles\.rows/);
+ assert.match(source('src/components/portal/directory-listing-rows.module.css'), /\.travel-card-tags li/);
+ assert.doesNotMatch(source('src/components/portal/travel-directory.module.css'), /\.listing-row\)/);
  assert.equal((html.match(/class="discovery-card"/g)||[]).length,2);assert.match(html,/Reiseziel/);assert.match(html,/Mottoreise/);
  const fallback=renderToStaticMarkup(createElement(SearchResults,{hits:hits.slice(0,1),listings:[],facts:[],travelLabels:{}}));assert.match(fallback,/listing-row/);assert.ok(fallback.includes(hits[0].url));
 });

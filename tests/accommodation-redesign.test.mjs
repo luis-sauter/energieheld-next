@@ -93,7 +93,7 @@ test('private URLs keep bypassing optimizer while local card images opt in with 
   assert.equal(imageProps({image:{src:'/real.jpg',alt:'real'},cover:true}).unoptimized,true);
 });
 test('A–Z layout is scoped, reserves square images, stacks rail on mobile and keeps shared fixed-slot delivery/editor',()=>{
-  const css=source('src/components/portal/travel-directory.module.css');
+  const css=source('src/components/portal/travel-directory.module.css')+source('src/components/portal/directory-listing-rows.module.css');
   assert.match(css,/aspect-ratio: 1/);assert.match(css,/400px/);assert.match(css,/@media \(max-width: 900px\)/);assert.match(css,/@media \(max-width: 600px\)/);
   assert.match(css,/outline: 3px/);
   const directorySource=source('src/components/portal/travel-directory.tsx');
@@ -116,7 +116,7 @@ test('structured zero state is honest while free text still submits globally wit
  const item=listing('logo',true);item.logo=item.directoryImage;
  const html=renderToStaticMarkup(createElement(ListingRow,{listing:item,categories:[],href:'/logo',travel:true}));
  assert.match(html,/row-logo--contain/);assert.match(html,/object-fit:contain/);
- const css=source('src/components/portal/travel-directory.module.css');
+ const css=source('src/components/portal/travel-directory.module.css')+source('src/components/portal/directory-listing-rows.module.css');
  assert.match(css,/220px/);assert.match(css,/72px/);assert.match(css,/background: rgb\(255 255 255 \/ 96%\)/);
  assert.match(code,/premiumInSidebar showEmptySlots=\{Boolean\(bannerOptions\)\}/);
  assert.match(css,/\.listing-row--premium \.travel-card-tags\) \{ margin-top: auto/);
