@@ -32,6 +32,24 @@ const snapshot={terms,assignedKeys:['theme:wanderurlaub'],proposedKeys:['accommo
 function reset(){states.clear();context=null;tasks.length=0;globalThis.__hostDecisions=[]}
 const button=(tree,label)=>nodes(tree,e=>e.type==='button'&&text(e)===label)[0];
 
+test('season-only teaser edits use normal editor persistence, preserve ordinary keys, reload normalized text and cancel safely',async()=>{
+ reset();
+ const winter='theme:saison-winter',summer='theme:saison-sommer';
+ let incoming={...snapshot,terms:[...terms,{term_key:winter,dimension:'theme',label:'Winter'},{term_key:summer,dimension:'theme',label:'Sommer'}],assignedKeys:['theme:wanderurlaub',winter],seasonTeasers:{[winter]:'Winterruhe.'},revision:20};
+ const calls=[];const refresh=()=>{context=render('season-context',TravelReviewProvider,{snapshot:incoming,children:null,saveAction:async(...args)=>{calls.push(args);return {success:'Saved',assignedKeys:args[0],revision:21,seasonTeasers:args[4]}}}).props.value;return render('season-editor',TravelTaxonomyEditor,{compact:true})};
+ let tree=refresh();assert.equal(context.dirty,false);
+ assert.equal(nodes(tree,e=>e.type==='fieldset'&&text(e.props.children[0])==='Jahreszeiten').length,1);
+ context.setTeaser(winter,'Wellness nach kühlen Tagen.');refresh();assert.equal(context.dirty,true);
+ assert.deepEqual(context.selected,['theme:wanderurlaub',winter]);const result=await context.persist(undefined,false);tree=refresh();
+ assert.equal(result.success,'Saved');assert.equal(context.dirty,false);assert.deepEqual(calls[0][4],{[winter]:'Wellness nach kühlen Tagen.'});
+ incoming={...incoming,assignedKeys:context.selected,revision:21,seasonTeasers:context.teasers};states.clear();tree=refresh();
+ assert.equal(nodes(tree,e=>e.type==='textarea')[0].props.value,'Wellness nach kühlen Tagen.');
+ context.toggle(winter);refresh();assert.equal(context.dirty,true);context.reset();tree=refresh();
+ assert.equal(context.dirty,false);assert.equal(nodes(tree,e=>e.type==='textarea')[0].props.value,'Wellness nach kühlen Tagen.');
+ context.setTeaser(winter,'Discard');refresh();context.reset();refresh();assert.equal(context.dirty,false);
+});
+
+
 test('real local selection changes preview immediately without save; dirty/pending/error block publication; explicit save updates revision',async()=>{
  reset();const calls=[];let result={error:'Conflict: reload'};
  const refresh=()=>{context=render('provider',TravelReviewProvider,{snapshot,children:null,saveAction:async(...args)=>{calls.push(args);return result}}).props.value;return context};
@@ -43,7 +61,7 @@ test('real local selection changes preview immediately without save; dirty/pendi
  button(editor,'Reisezuordnungen speichern').props.onClick();refresh();assert.equal(context.busy,true);assert.equal(button(render('actions',ReviewActions,{profileId:'profile',status:'pending',canReview:true}),'Profil veröffentlichen').props.disabled,true);
  await Promise.all(tasks);refresh();assert.equal(context.dirty,true);assert.deepEqual(context.assignedKeys,snapshot.assignedKeys);assert.equal(context.message.success,undefined);
  result={success:'Saved',assignedKeys:['theme:wanderurlaub','accommodation:hotel'],revision:5};context.save();await Promise.all(tasks);refresh();
- assert.equal(context.dirty,false);assert.equal(context.revision,5);assert.deepEqual(calls.at(-1),[['theme:wanderurlaub','accommodation:hotel'],snapshot.assignedKeys,snapshot.proposedKeys,3]);
+ assert.equal(context.dirty,false);assert.equal(context.revision,5);assert.deepEqual(calls.at(-1),[['theme:wanderurlaub','accommodation:hotel'],snapshot.assignedKeys,snapshot.proposedKeys,3,{}]);
  actions=render('actions',ReviewActions,{profileId:'profile',status:'pending',canReview:true});assert.equal(button(actions,'Profil veröffentlichen').props.disabled,false);
  button(actions,'Profil veröffentlichen').props.onClick();refresh();assert.equal(context.busy,true);await Promise.all(tasks);assert.deepEqual(globalThis.__hostDecisions,[['approved','profile',5,snapshot.proposedKeys]]);
 });

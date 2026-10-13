@@ -34,6 +34,7 @@ export type Listing = {
   categoryIds: string[];
   /** Present when the travel taxonomy has been loaded from Supabase. */
   travelTermKeys?: string[];
+  seasonTeasers?: Record<string, string>;
   location: Location;
   services: string[];
   images: PortalImage[];

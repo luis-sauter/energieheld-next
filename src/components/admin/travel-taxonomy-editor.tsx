@@ -7,6 +7,8 @@ import { travelFilterPreview, travelTermIcon } from "@/lib/travel-review-state";
 import { useTravelReview } from "./travel-review-context";
 import styles from "./admin.module.css";
 
+import { isSeasonTerm, travelSeasons } from "@/lib/travel-seasons";
+
 const groups = [["theme", "Mottoreisen"], ["audience", "Zielgruppen"], ["accommodation", "Unterkunftsarten"], ["feature", "Interne Merkmale"]] as const;
 export function TravelTaxonomyEditor({ published = false, compact = false, disabled = false }: { published?: boolean; compact?: boolean; disabled?: boolean }) {
   const review = useTravelReview();
@@ -35,7 +37,7 @@ export function TravelTaxonomyEditor({ published = false, compact = false, disab
       <label>Gruppe<select value={dimension} onChange={event => setDimension(event.target.value)}><option value="all">Alle Gruppen</option>{groups.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
     </div>}
     {groups.filter(([key]) => compact || dimension === "all" || key === dimension).map(([key, label]) => {
-      const options = terms.filter(term => term.dimension === key && (compact || publicTravelLabel(term.term_key, term.label).toLocaleLowerCase("de").includes(query.toLocaleLowerCase("de"))));
+      const options = terms.filter(term => term.dimension === key && !isSeasonTerm(term.term_key) && (compact || publicTravelLabel(term.term_key, term.label).toLocaleLowerCase("de").includes(query.toLocaleLowerCase("de"))));
       return <fieldset key={key} className={styles.travelGroup} disabled={busy || disabled}><legend>{label}</legend>
         {!options.length && <p>{query ? "Keine passenden Reisebegriffe." : "Keine belegten Optionen vorhanden."}</p>}
         <div className={styles.travelChoices}>{options.map(term => <label key={term.term_key} className={styles.travelChoice} data-assigned={selected.includes(term.term_key)}>
@@ -45,6 +47,14 @@ export function TravelTaxonomyEditor({ published = false, compact = false, disab
         </label>)}</div>
       </fieldset>;
     })}
+    <fieldset className={styles.travelGroup} disabled={busy || disabled}><legend>Jahreszeiten</legend>
+      <p>Nur belegte Angebote zuordnen. Der Kurztext ergänzt die saisonalen Treffer; bestehende Profiltexte bleiben erhalten.</p>
+      <div className={styles.travelChoices}>{travelSeasons.filter(season => terms.some(term => term.term_key === `theme:${season.slug}`)).map(season => {
+        const key = `theme:${season.slug}`, checked = selected.includes(key);
+        return <div key={key} className={styles.seasonChoice}><label className={styles.travelChoice} data-assigned={checked}><input type="checkbox" checked={checked} onChange={() => review.toggle(key)} /><span>{season.label}</span></label>
+          {checked && <><label htmlFor={`teaser-${season.slug}`}>Saisonaler Kurztext · {season.label}</label><textarea id={`teaser-${season.slug}`} rows={3} maxLength={240} value={review.teasers[key] ?? ""} onChange={event => review.setTeaser(key, event.target.value)} /></>}</div>;
+      })}</div>
+    </fieldset>
     {!compact && <section className={styles.travelBriefing} aria-labelledby="travel-preview-title">
       <h3 id="travel-preview-title">So wird die Unterkunft auffindbar</h3>
       <p>{dirty ? "Vorschau Ihrer Auswahl — noch nicht gespeichert." : assignedKeys.length ? "Gespeicherte Reisezuordnungen." : "Noch keine Reisezuordnungen gespeichert."} {!published && "Öffentlich wirksam erst nach Veröffentlichung des Profils."}</p>

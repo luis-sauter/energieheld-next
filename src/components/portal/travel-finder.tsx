@@ -11,6 +11,8 @@ import { SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
 import { Breadcrumbs } from "./breadcrumbs";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 
+import { travelSeason } from "@/lib/travel-seasons";
+
 type Options = ReturnType<typeof availableTravelFilters>;
 type FacetOptions = { slug: string; label: string }[];
 
@@ -33,7 +35,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
   const update = (key: keyof TravelFilterValues, value: string) => onChange({ ...values, [key]: value });
   const facets: { key: TravelFacet; label: string; all: string; entries: FacetOptions }[] = [
     { key: "destination", label: "Wohin?", all: "Alle Reiseziele", entries: options.destinations },
-    { key: "theme", label: "Motto", all: "Alle Mottoreisen", entries: options.themes },
+    { key: "theme", label: travelSeason(values.theme) ? "Jahreszeit / Motto" : "Motto", all: "Alle Mottoreisen", entries: travelSeason(values.theme) ? [{ slug: values.theme, label: travelSeason(values.theme)!.label }, ...options.themes] : options.themes },
     { key: "audience", label: "Mit wem?", all: "Alle Zielgruppen", entries: options.audiences },
     { key: "accommodation", label: "Unterkunft", all: "Alle Unterkunftstypen", entries: options.accommodations },
   ];

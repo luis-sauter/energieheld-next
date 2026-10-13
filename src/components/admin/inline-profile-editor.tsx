@@ -54,7 +54,7 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
   originalDemoMedia?: boolean;
   freshness?: ContentFreshness | null;
   travelError?: string;
-  travelReview?: { snapshot: TravelReviewSnapshot; saveAction: (selected: string[], expected: string[], proposals: string[], revision: number) => Promise<TravelSaveResult> };
+  travelReview?: { snapshot: TravelReviewSnapshot; saveAction: (selected: string[], expected: string[], proposals: string[], revision: number, teasers?: import("@/lib/travel-seasons").SeasonTeasers) => Promise<TravelSaveResult> };
   withdrawFreshness?: (revision: number, reviewedAt: string) => Promise<{ error?: string; success?: string }>;
   reviewFreshness?: (revision: number) => Promise<{ error?: string; success?: string }>;
 }) {

@@ -67,13 +67,13 @@ test('public shared import badge is opt-in for discovery cards; protected homepa
  try{publicImportPresentation.enabled=false;assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing,showImportMarker:true})),/Neu importiert/);}
  finally{publicImportPresentation.enabled=true;}
 });
-test('homepage composes existing search, all central themes, four destinations and real featured profiles as server HTML',async()=>{
+test('homepage composes existing search, all central themes, four seasons and real featured profiles as server HTML',async()=>{
  globalThis.homeFixture.calls=[];
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({q:'Nordic Walking',ziel:'schweiz'})}));
  assert.equal((html.match(/<h1\b/g)||[]).length,1);
  assert.match(html,/value="Nordic Walking"/);assert.match(html,/Im Reiseportal suchen/);
  for(const {slug} of travelThemes)assert.match(html,new RegExp('href="/unterkuenfte-a-z\\?thema='+slug+'"'));
- for(const d of destinations)assert.match(html,new RegExp('href="/reiseziele/'+d.slug+'"'));
+ for(const slug of ['fruehling','sommer','herbst','winter'])assert.ok(html.includes('href="/unterkuenfte-a-z?thema=saison-'+slug+'"'));
  for(const slug of slugs)assert.match(html,new RegExp('href="/unterkuenfte/'+slug+'"'));
  assert.match(html,/href="\/angebot-anfragen"/);
  assert.match(html,/data-placement="top_banner"/);assert.match(html,/aria-label="Premium-Anzeige"/);
@@ -108,12 +108,12 @@ test('homepage retains selected providers in one equal grid and follows the requ
  const stays=html.split('aria-labelledby="stays-title"')[1].split('</section>')[0];
  assert.match(stays,/<div class="showcase">/);assert.doesNotMatch(stays,/featuredStay|recommendations|data-placement/);
  assert.ok(html.indexOf('inspiration-title') < html.indexOf('data-placement="top_banner"'));
- assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('destinations-title'));
- assert.ok(html.indexOf('destinations-title') < html.indexOf('stays-title'));
+ assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('seasons-title'));
+ assert.ok(html.indexOf('seasons-title') < html.indexOf('stays-title'));
  const source=read('src/app/(energieheld)/page.tsx');
  assert.ok(source.indexOf('</nav>') < source.indexOf('placements={["sidebar_top"'));
  assert.ok(source.indexOf('placements={["sidebar_top"') < source.indexOf('<TravelNews />'));
- assert.ok(source.indexOf('placements={["sidebar_04"') > source.indexOf('aria-labelledby="destinations-title"'));
+ assert.ok(source.indexOf('placements={["sidebar_04"') > source.indexOf('<TravelSeasons />'));
  assert.ok(source.indexOf('placements={["sidebar_04"') < source.indexOf('aria-labelledby="stays-title"'));
 });
 

@@ -25,6 +25,7 @@ export function ListingRow({
   travel = false,
   travelLabels = {},
   adminStatus,
+  season,
 }: {
   listing: Listing;
   categories: Category[];
@@ -33,6 +34,7 @@ export function ListingRow({
   travel?: boolean;
   travelLabels?: Record<string, string>;
   adminStatus?: React.ReactNode;
+  season?: string;
 }) {
   const cardImage = travel ? providerCardImage(listing, 'directory') : listing.directoryImage ?? listing.logo ?? listing.images[0];
   const isLogo = Boolean(cardImage && listing.logo?.src === cardImage.src);
@@ -70,6 +72,7 @@ export function ListingRow({
             .map((category) => <span className="row-category" key={category.id}>{category.name}</span>)}
         </div>
         {teaser && <p className="row-tagline">{teaser}{travel && !listing.tagline && listing.description.length > 240 ? " …" : ""}</p>}
+        {season && listing.seasonTeasers?.[`theme:${season}`] && <p className="row-tagline">{listing.seasonTeasers[`theme:${season}`]}</p>}
         {travel && <TravelSignals termKeys={listing.travelTermKeys} />}
         {tags.length > 0 && <ul className="travel-card-tags" aria-label="Reisemerkmale">{tags.map((tag) => <li key={tag}>{tag}</li>)}</ul>}
         {premium && listing.businessAreas && <p className="row-business-areas">{listing.businessAreas}</p>}
