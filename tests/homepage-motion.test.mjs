@@ -38,9 +38,9 @@ test('executed shared idle lifecycle respects 3 seconds, full restart and indepe
   observe([{isIntersecting:false}]);m=Render();context.mock.timers.tick(10000);assert.equal(advanced,2);observe([{isIntersecting:true}]);m=Render();m.toggle();m=Render();context.mock.timers.tick(10000);assert.equal(advanced,2);m.toggle();Render();context.mock.timers.tick(3000);assert.equal(advanced,3);
  }finally{effects.forEach(e=>e.cleanup?.());Object.assign(globalThis,original)}
 });
-test('both homepage areas use the same SSR child scroller and public labels retain technical theme keys',()=>{
+test('homepage quicklinks retain their SSR scroller and public theme keys beside the static news section',()=>{
  const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
- const home=read('src/app/(energieheld)/page.tsx');assert.equal((home.match(/<ThemeScroller/g)||[]).length,2);assert.equal((home.match(/travelThemes\.map/g)||[]).length,2);assert.doesNotMatch(home,/quickThemes|featuredThemes/);assert.match(home,/discoveryAudiences\.map/);assert.match(home,/discoveryAudienceShortcuts\(\)/);assert.match(home,/href=\{`\/unterkuenfte-a-z\?thema=\$\{entry.slug\}`\}/);assert.match(home,/basePath="\/mottoreisen"/);
+ const home=read('src/app/(energieheld)/page.tsx');assert.equal((home.match(/<ThemeScroller/g)||[]).length,1);assert.equal((home.match(/travelThemes\.map/g)||[]).length,1);assert.doesNotMatch(home,/quickThemes|featuredThemes/);assert.match(home,/discoveryAudiences\.map/);assert.match(home,/discoveryAudienceShortcuts\(\)/);assert.match(home,/href=\{`\/unterkuenfte-a-z\?thema=\$\{entry.slug\}`\}/);assert.match(home,/<TravelNews \/>/);
  const finder=read('src/components/portal/travel-finder.tsx');assert.match(finder,/key: "theme", label: "Motto", all: "Alle Mottoreisen"/);
  const css=read('src/components/portal/theme-scroller.module.css');assert.match(css,/overflow-x: auto/);assert.match(css,/max-width: 640px/);assert.match(css,/flex-basis: 100%/);assert.match(css,/focus-visible/);
  const component=read('src/components/portal/theme-scroller.tsx');

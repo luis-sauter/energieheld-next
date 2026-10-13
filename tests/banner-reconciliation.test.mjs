@@ -74,6 +74,6 @@ test('mobile Premium art direction uses actual verified dimensions without anoth
 test('homepage Premium retains its fixed identity exactly once, after themes and before destinations',()=>{
  const home=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
  assert.equal(home.match(/placements=\{\["top_banner"\]\}/g).length,1);
- assert.ok(home.indexOf('placements={["top_banner"]}')>home.indexOf('aria-labelledby="inspiration-title"'));
+ assert.ok(home.indexOf('placements={["top_banner"]}')>home.indexOf('<TravelNews />'));
  assert.ok(home.indexOf('placements={["top_banner"]}')<home.indexOf('aria-labelledby="destinations-title"'));
 });

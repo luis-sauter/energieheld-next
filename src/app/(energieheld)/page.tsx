@@ -17,7 +17,7 @@ import { discoveryAudienceShortcuts } from "@/lib/discovery-shortcuts";
 import { loadTravelSearchBanners, mergePublicTravelTerms } from "@/lib/public-travel-search-banners";
 import { loadPublicAds } from "@/lib/public-ads";
 import styles from "./home.module.css";
-import { mottoPresentation } from "@/lib/motto-presentation";
+import { TravelNews } from "@/components/portal/travel-news";
 import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
 import { pageMetadata, type SearchParameters } from "@/lib/seo";
 import { jsonLdGraph, websiteSchema } from "@/lib/seo-schema";
@@ -74,16 +74,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <HomeBannerGroup ads={ads} placements={["sidebar_top", "sidebar_middle", "sidebar_bottom"]} label="Anzeigen vor den Themenwelten" />
 
-    <section className="section container" aria-labelledby="inspiration-title">
-      <ThemeScroller count={travelThemes.length} label="Inspiration & Themenwelten" edgeNavigation
-        heading={<div><p className="eyebrow">Was macht Ihre Reise aus?</p><h2 id="inspiration-title">Inspiration & Themenwelten</h2></div>}
-        moreLink={<Link className="text-link" href="/mottoreisen">Alle Mottoreisen →</Link>}>
-        {travelThemes.map((entry) => <DiscoveryCard key={entry.slug}
-          entry={{ ...entry, image: `/reiseportal/redesign/mottoreisen/${entry.slug}.webp`, alt: mottoPresentation[entry.slug].alt }}
-          sizes="(max-width: 640px) calc(100vw - 48px), (max-width: 1100px) 45vw, 400px"
-          basePath="/mottoreisen" />)}
-      </ThemeScroller>
-    </section>
+    <TravelNews />
 
     <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige" />
 

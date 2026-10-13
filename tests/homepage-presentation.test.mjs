@@ -72,7 +72,7 @@ test('homepage composes existing search, all central themes, four destinations a
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({q:'Nordic Walking',ziel:'schweiz'})}));
  assert.equal((html.match(/<h1\b/g)||[]).length,1);
  assert.match(html,/value="Nordic Walking"/);assert.match(html,/Im Reiseportal suchen/);
- for(const {slug} of travelThemes){assert.match(html,new RegExp('href="/mottoreisen/'+slug+'"'));assert.match(html,new RegExp('href="/unterkuenfte-a-z\\?thema='+slug+'"'));}
+ for(const {slug} of travelThemes)assert.match(html,new RegExp('href="/unterkuenfte-a-z\\?thema='+slug+'"'));
  for(const d of destinations)assert.match(html,new RegExp('href="/reiseziele/'+d.slug+'"'));
  for(const slug of slugs)assert.match(html,new RegExp('href="/unterkuenfte/'+slug+'"'));
  assert.match(html,/href="\/angebot-anfragen"/);
@@ -112,7 +112,7 @@ test('homepage retains selected providers in one equal grid and follows the requ
  assert.ok(html.indexOf('destinations-title') < html.indexOf('stays-title'));
  const source=read('src/app/(energieheld)/page.tsx');
  assert.ok(source.indexOf('</nav>') < source.indexOf('placements={["sidebar_top"'));
- assert.ok(source.indexOf('placements={["sidebar_top"') < source.indexOf('aria-labelledby="inspiration-title"'));
+ assert.ok(source.indexOf('placements={["sidebar_top"') < source.indexOf('<TravelNews />'));
  assert.ok(source.indexOf('placements={["sidebar_04"') > source.indexOf('aria-labelledby="destinations-title"'));
  assert.ok(source.indexOf('placements={["sidebar_04"') < source.indexOf('aria-labelledby="stays-title"'));
 });
@@ -152,19 +152,15 @@ test('only Premium and A–F ads appear publicly while stored G–J campaigns st
  } finally {globalThis.homeFixture.ads=original;}
 });
 
-test('homepage inspiration uses image-edge arrows without header buttons; other scrollers retain their controls',async()=>{
+test('homepage news replaces only inspiration without carousel controls; other scrollers retain their controls',async()=>{
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
  const compact=html.split('<nav')[1].split('</nav>')[0];
  assert.equal((compact.match(/data-theme-image="true"/g)||[]).length,travelThemes.length+3);
  assert.doesNotMatch(compact,/<button/);
  const inspiration=html.split('aria-labelledby="inspiration-title"')[1].split('</section>')[0];
- const header=inspiration.split('<div class="header">')[1].split('</div></div>')[0];
- assert.match(header,/id="inspiration-title"/);assert.match(header,/Alle Mottoreisen/);
- assert.doesNotMatch(header,/<button/);
- assert.match(inspiration,/data-edge-navigation="true"/);
- assert.equal((inspiration.match(/Inspiration &amp; Themenwelten: zurück/g)||[]).length,1);
- assert.equal((inspiration.match(/Inspiration &amp; Themenwelten: weiter/g)||[]).length,1);
- assert.equal((inspiration.match(/class="discovery-card"/g)||[]).length,travelThemes.length);
+ assert.match(inspiration,/id="inspiration-title"/);assert.match(inspiration,/Reise-News &amp; Inspiration/);
+ assert.doesNotMatch(inspiration,/Alle Mottoreisen|Alle Reise-Artikel|<button|data-edge-navigation/);
+ assert.equal((inspiration.match(/data-news-id=/g)||[]).length,3);
  assert.doesNotMatch(inspiration,/Automatischen Wechsel|aria-pressed/);
  const {ThemeScroller}=await import('../src/components/portal/theme-scroller.tsx');
  const standard=renderToStaticMarkup(createElement(ThemeScroller,{count:4,label:'Andere Seite'}));
@@ -204,11 +200,19 @@ test('audience shortcuts appear first with public labels, unchanged audience lin
   for(const slug of ['mit-hund','familie','paar'])assert.ok(empty.includes('href="/unterkuenfte-a-z?zielgruppe='+slug+'"'));
  }finally{delete globalThis.homeFixture.terms;}
 });
-test('full inspiration rail renders every central theme with an existing image and valid destination',async()=>{
+test('news cards render three local symbolic images and actual independent original sources',async()=>{
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));const inspiration=html.split('aria-labelledby="inspiration-title"')[1].split('</section>')[0];
- assert.equal((inspiration.match(/class="discovery-card"/g)||[]).length,travelThemes.length);
- assert.equal((inspiration.match(/<img /g)||[]).length,travelThemes.length);
- for(const {slug} of travelThemes){assert.ok(inspiration.includes('/mottoreisen/'+slug+'"'));assert.ok(inspiration.includes('/mottoreisen/'+slug+'.webp'));}
+ assert.equal((inspiration.match(/<img /g)||[]).length,3);
+ const {travelNews}=await import('../src/data/travel-news.ts');
+ assert.equal(travelNews.length,3);assert.equal(travelNews.filter(n=>n.featured).length,1);assert.equal(travelNews[0].featured,true);
+ assert.equal(new Set(travelNews.map(n=>new URL(n.sourceUrl).hostname)).size,3);
+ assert.equal(travelNews.filter(n=>n.sourceUrl.includes('adac.de')).length,1);
+ for(const item of travelNews){assert.ok(inspiration.includes(item.image));assert.ok(inspiration.includes(item.sourceUrl.replaceAll('&','&amp;')));assert.ok(existsSync(new URL('../public'+item.image,import.meta.url)));assert.match(item.imageAlt,/KI-Symbolbild/);assert.ok(item.publishedAt<='2026-10-13');}
+ assert.equal((inspiration.match(/target="_blank"/g)||[]).length,3);assert.equal((inspiration.match(/rel="noopener noreferrer"/g)||[]).length,3);
+ const code=read('src/components/portal/travel-news.tsx'),css=read('src/components/portal/travel-news.module.css');
+ assert.doesNotMatch(code,/use client|fetch\(|supabase|useEffect|setInterval|ThemeScroller/);
+ assert.match(css,/grid-template-rows: repeat\(2, minmax\(min-content, 1fr\)\)/);
+ assert.match(css,/grid-row: 1 \/ span 2/);assert.doesNotMatch(css,/line-clamp|max-height:/);
 });
 
 test('audience shortcut deep links reuse existing facet filtering, survive URL reload and never invent terms',()=>{
