@@ -36,6 +36,13 @@ before(async () => {
   await db.exec(await read('20261001190000_public_portal_search.sql'));
   await db.exec(await read('20261001193000_portal_search_plain_excerpts.sql'));
   await db.exec(await read('20261009173154_company_profile_public_visibility.sql'));
+  await db.exec(`create table public.company_profile_imports(profile_id uuid primary key,imported_at timestamptz,private_note text);
+   create function public.public_banner_search_contexts() returns table(scope text,key text,path text) language sql stable security invoker set search_path='' as $$ select 'homepage'::text,null::text,'/'::text $$;
+   create function public.public_banner_search_data() returns table(name text,body text,postal_code text,city text,categories text) language sql stable security invoker set search_path='' as $$ select null::text,null::text,null::text,null::text,null::text where false $$;`);
+  await db.exec(await read('20261011205940_public_company_import_markers.sql'));
+  const searchBefore=(await db.query("select pg_get_functiondef('public.search_public_portal(text,integer,integer,text[],jsonb)'::regprocedure) as definition")).rows[0].definition;
+  await db.exec(await read('20261013100238_portal_freetext_search_filters.sql'));
+  assert.equal((await db.query("select pg_get_functiondef('public.search_public_portal(text,integer,integer,text[],jsonb)'::regprocedure) as definition")).rows[0].definition,searchBefore);
   afterMigration = (await db.query("select jsonb_build_object('profiles',(select jsonb_agg(to_jsonb(p)) from company_profiles p),'ads',(select jsonb_agg(to_jsonb(a)) from company_ad_campaigns a),'targets',(select jsonb_agg(to_jsonb(t)) from company_ad_campaign_targets t),'policies',(select jsonb_agg(to_jsonb(p) order by schemaname,tablename,policyname) from pg_policies p)) as snapshot")).rows[0].snapshot;
 });
 after(async () => db?.close()); beforeEach(async () => db.exec('begin')); afterEach(async () => db.exec('rollback'));
@@ -121,4 +128,49 @@ test('visibility is reversible/admin-only; search excludes hidden profiles and l
  await actor();assert.equal((await query('Pension Sonnenhof')).hits.length,0);assert.equal((await db.query('select status from company_profiles where id=$1',[ids[0]])).rows[0].status,status);
  await actor('authenticated',admin);await db.query('update company_profile_public_visibility set is_listed=true where profile_id=$1',[ids[0]]);
  await actor();assert.equal((await query('Pension Sonnenhof')).hits[0].title,'Pension Sonnenhof');
+});
+
+const v2=async(value,filters={},limit=20,offset=0,catalog=[]) => (await db.query('select search_public_portal_v2($1,$2,$3,$4,$5,$6) as result',[value,limit,offset,[],JSON.stringify(catalog),JSON.stringify(filters)])).rows[0].result;
+test('v2 existing indexed arbitrary words, inflected/prefix/multiword and public catalogue remain searchable',async()=>{
+ await actor();for(const word of ['Pension Sonnenhof','PENSION Sonn','Nordic Walking Meransen','Tagungsräume','SUEDTIROL'])assert.ok((await v2(word)).total>0,word);assert.equal((await v2('xyznichtvorhanden')).total,0);assert.equal((await v2('!!!')).total,0);
+ const catalog=[{id:'wellness',type:'theme',title:'Wellnessangebote',body:'Pool, Sauna und Erholung.',url:'/mottoreisen/wellnessangebote'},{id:'oesterreich',type:'destination',title:'Österreich',body:'Salzburg und Alpenregionen',url:'/reiseziele/oesterreich'}];
+ assert.equal((await v2('Pool',{},20,0,catalog)).catalog_hits[0].type,'theme');assert.equal((await v2('Salzburg',{},20,0,catalog)).catalog_hits[0].type,'destination');
+});
+test('v2 AND travel filters are applied before count/limit; non-profile types excluded explicitly',async()=>{
+ const catalog=[{id:'italien',type:'destination',title:'Italien',body:'Sonnenhof Meransen',url:'/reiseziele/suedtirol-italien'}];await actor();
+ assert.equal((await v2('Sonnenhof',{destination:'deutschland'})).total,0);assert.equal((await v2('Sonnenhof',{destination:'suedtirol-italien',theme:'nordic-walking',location:'MERANSEN'},1,0,catalog)).total,1);
+ const result=await v2('Sonnenhof',{destination:'suedtirol-italien',audience:'mit-hund'},1,0,catalog);assert.equal(result.total,0);assert.deepEqual(result.catalog_hits,[]);assert.deepEqual(result.ads,[]);
+ assert.equal((await v2('Sonnenhof',{accommodation:'hotel'})).total,0);assert.equal((await v2('Sonnenhof',{destination:'erfunden'})).total,0);
+});
+test('v2 denies unpublished/archive/hidden data for anonymous and admin and does not expose private import notes',async()=>{
+ await actor('postgres');await db.query('insert into company_profile_imports values($1,now(),$2)',[ids[0],'PrivateGeheimnotiz']);await db.query("update company_profiles set status='pending' where id=$1",[ids[1]]);await db.query('insert into company_profile_public_visibility values($1,false)',[ids[2]]);
+ for(const[role,user]of[['anon',''],['authenticated',owner],['authenticated','22222222-2222-4222-8222-222222222222'],['authenticated',admin]]){await actor(role,user);assert.equal((await v2('Tagung')).total,0);assert.equal((await v2('Andreus')).total,0);assert.equal((await v2('PrivateGeheimnotiz')).total,0);assert.equal((await v2('Sonnenhof',{sort:'imported'})).total,1);}
+ const flags=(await db.query("select prosecdef from pg_proc where oid='public.search_public_portal_v2(text,integer,integer,text[],jsonb,jsonb)'::regprocedure")).rows[0];assert.equal(flags.prosecdef,false);
+});
+
+test('v2 linked published taxonomy/destination pages are relevant without fabricated text matches',async()=>{
+ await actor();const catalog=[{id:'nordic-walking',type:'theme',title:'Nordic Walking',body:'Bewegung in der Landschaft',url:'/mottoreisen/nordic-walking'},{id:'suedtirol-italien',type:'destination',title:'Südtirol / Italien',body:'Reiseideen',url:'/reiseziele/suedtirol-italien'}];const result=await v2('Sonnenhof',{},20,0,catalog);assert.deepEqual(result.catalog_hits.map(x=>x.id).sort(),['nordic-walking','suedtirol-italien']);assert.ok(result.catalog_hits.every(x=>x.rank<result.hits[0].rank));assert.deepEqual((await v2('xyznichtvorhanden',{},20,0,catalog)).catalog_hits,[]);
+});
+test('v2 filters/count/order/pagination remain correct on larger local fixtures without changing source rows or RLS',async()=>{
+ await actor('postgres');const testIds=[];for(let i=0;i<605;i++){const id=crypto.randomUUID();testIds.push(id);await db.query("insert into company_profiles(id,company_id,slug,display_name,description,city,country,status) values($1,$2,$3,$4,'Pool Ausstattung','Salzburg','Österreich','approved')",[id,owner,'local-search-'+i,'Pool Gastgeber '+String(i).padStart(3,'0')]);}
+ await db.query('insert into company_profile_imports values($1,now(),$2)',[testIds[604],'NichtÖffentlich']);const before=(await db.query('select md5(string_agg(row_to_json(p)::text,\'\' order by id)) as hash from company_profiles p')).rows[0].hash;
+ await actor();const first=await v2('Pool',{destination:'oesterreich',sort:'name'},20,0),second=await v2('Pool',{destination:'oesterreich',sort:'name'},20,20),last=await v2('Pool',{destination:'oesterreich',sort:'name'},20,600);assert.equal(first.total,605);assert.equal(first.hits.length,20);assert.equal(second.hits.length,20);assert.equal(last.hits.length,5);assert.equal(new Set([...first.hits,...second.hits,...last.hits].map(x=>x.id)).size,45);assert.equal((await v2('Pool',{sort:'imported'},1)).hits[0].id,testIds[604]);
+ await actor('postgres');assert.equal((await db.query('select md5(string_agg(row_to_json(p)::text,\'\' order by id)) as hash from company_profiles p')).rows[0].hash,before);
+});
+
+test('filtered v2 search does not invoke the unrelated banner context or metadata functions',async()=>{
+ await actor('postgres');await db.exec(`create or replace function public.public_banner_search_contexts() returns table(scope text,key text,path text) language plpgsql stable security invoker set search_path='' as $$ begin raise exception 'unrelated_banner_context_called'; end; $$;
+ create or replace function public.public_banner_search_data() returns table(name text,body text,postal_code text,city text,categories text) language plpgsql stable security invoker set search_path='' as $$ begin raise exception 'unrelated_banner_metadata_called'; end; $$;`);
+ await actor();assert.equal((await v2('Sonnenhof',{theme:'nordic-walking'})).total,1);
+ await db.exec('savepoint negative');await assert.rejects(()=>v2('Sonnenhof'),/unrelated_banner/);await db.exec('rollback to savepoint negative;release savepoint negative');
+});
+
+test('v2 generic named provider, description, equipment, city/country, punctuation and compound prefix are real database matches',async()=>{
+ await actor('postgres');await db.query("update company_profiles set display_name='Camping Rendez-vous',description='Pool und Hunde. Wanderurlaub mit Panoramafenster.',city='Salzburg',country='Österreich' where id=$1",[ids[0]]);
+ await db.exec("insert into travel_terms(term_key,dimension,slug,label) values('feature:badmintonarena','feature','badmintonarena','Badmintonarena')");await db.query("insert into company_profile_travel_terms(profile_id,term_key) values($1,'feature:badmintonarena')",[ids[0]]);await actor();
+ for(const term of ['Camping Rendez-vous','CAMPING rendez VOUS','Panoramafenster','Badmintonarena','Salzburg','Oesterreich','Wander','Pool, Hunde!!'])assert.ok((await v2(term)).hits.some(h=>h.id===ids[0]),term);
+});
+
+test('v2 equal-ranked normalized name ties use stable ordering across offset pages',async()=>{
+ await actor('postgres');const names=['Ährenhotel','Adlerhotel','Zebrahof','Ödenhotel'];for(const name of names)await db.query("insert into company_profiles(id,company_id,slug,display_name,description,city,country,status) values($1,$2,$3,$4,'TieTestWort','Salzburg','Österreich','approved')",[crypto.randomUUID(),owner,'local-'+crypto.randomUUID(),name]);await actor();const a=await v2('TieTestWort',{},2,0),b=await v2('TieTestWort',{},2,2);assert.deepEqual([...a.hits,...b.hits].map(h=>h.title),['Adlerhotel','Ährenhotel','Ödenhotel','Zebrahof']);
 });

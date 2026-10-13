@@ -16,7 +16,7 @@ registerHooks({
   if(s==='@/components/portal/discovery-detail')return {url:'data:text/javascript,export function DiscoveryDetail(){return null}',shortCircuit:true};
   if(s==='@/components/portal/motto-detail')return {url:'data:text/javascript,export function MottoDetail(){return null}',shortCircuit:true};
   if(s==='@/lib/discovery-advertising')return {url:'data:text/javascript,export async function loadDiscoveryAdvertising(){return {}}',shortCircuit:true};
-  if(s==='@/lib/portal-search')return {url:'data:text/javascript,export async function searchPortal(){throw Error("Not used by metadata")}',shortCircuit:true};
+  if(s==='@/lib/portal-search')return {url:'data:text/javascript,export const accommodationSearchOnly=()=>false;export async function searchPortal(){throw Error("Not used by metadata")}',shortCircuit:true};
   if(s.startsWith('@/')||s.startsWith('.')) {
    const base=s.startsWith('@/')?new URL('../src/'+s.slice(2),import.meta.url):new URL(s,c.parentURL);
    for(const ext of ['.ts','.tsx'])if(existsSync(new URL(base.href+ext)))return next(base.href+ext,c);

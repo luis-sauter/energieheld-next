@@ -1,7 +1,7 @@
 import { TravelSignals } from "@/components/portal/travel-signals";
-import Link from 'next/link';
+import Link from '@/components/portal/navigation-link';
 import { pageMetadata } from '@/lib/seo';
-import { searchPortal } from '@/lib/portal-search';
+import { searchPortal, accommodationSearchOnly } from '@/lib/portal-search';
 import { searchTypes, SEARCH_PAGE_SIZE } from '@/lib/portal-search-values';
 import styles from './search.module.css';
 import { readTravelFilterValues } from '@/lib/reiseportal-filter-options';
@@ -14,8 +14,10 @@ export const metadata = pageMetadata({ title: 'Suchergebnisse', description: 'Ö
 export const dynamic = 'force-dynamic';
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
-  const [result, finder] = await Promise.all([searchPortal(params.q, { type: params.typ, page: params.seite }),
-    Promise.all([loadReiseportalFinderListings(), loadPublicTravelTerms()]).then(([listings, terms]) => ({ listings, terms, error: null as string | null }))
+  const initialFilters = readTravelFilterValues(params);
+  const filtered = accommodationSearchOnly(initialFilters);
+  const [result, finder] = await Promise.all([searchPortal(params.q, { type: params.typ, page: params.seite, filters: initialFilters }),
+    Promise.all([loadReiseportalFinderListings(true), loadPublicTravelTerms()]).then(([listings, terms]) => ({ listings, terms, error: null as string | null }))
       .catch(() => ({ listings: [], terms: [], error: "Die Reisefilter sind gerade nicht verfügbar. Die Freitextsuche bleibt möglich." }))]);
   const values = { ...readTravelFilterValues(params), query: result.query };
   const origin = params.von === 'home' ? 'home' : 'directory';
@@ -25,9 +27,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     <SearchTravelFinder key={JSON.stringify(values)} listings={finder.listings} terms={finder.terms} initialValues={values} origin={origin} error={finder.error} />
     <div className={`container ${styles.page}`}>
     <Link className="text-link" href={travelSearchReturnUrl(values, origin)}>← Zur Suche zurück</Link>
-    <p>Ergebnisse aus dem gesamten Reiseportal. Ihre Reisefilter bleiben für die Rückkehr zur Suche erhalten.</p>
+    <p>{filtered ? 'Ihre Reisefilter grenzen die Suche auf passende Unterkünfte ein. Für Reiseziele und Mottoreisen entfernen Sie die Reisefilter.' : 'Ergebnisse aus dem gesamten Reiseportal: Unterkünfte, Reiseziele und Mottoreisen.'}</p>
     <nav className={styles.types} aria-label="Ergebnistyp">
-      {[['', 'Alle Inhalte'], ...Object.entries(searchTypes)].map(([key, label]) => {
+      {(filtered ? [['accommodation', 'Unterkünfte mit Ihren Reisefiltern']] : [['', 'Alle Inhalte'], ...Object.entries(searchTypes)]).map(([key, label]) => {
         const next = new URLSearchParams(context); if (key) next.set('typ', key);
         return <Link key={key} href={`/suche?${next}`} aria-current={(result.type ?? '') === key ? 'page' : undefined}>{label}</Link>;
       })}

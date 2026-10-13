@@ -123,6 +123,12 @@ export function HomeTravelFinder({ listings, terms, error, initialValues, banner
 
 export function SearchTravelFinder({ listings, terms, initialValues, origin, error }: { listings: Listing[]; terms: PublicTravelTerm[]; initialValues: TravelFilterValues; origin: "home" | "directory"; error?: string | null }) {
   const [values, setValues] = useState(initialValues);
+  useEffect(() => {
+    const restore = () => setValues(readTravelFilterValues(Object.fromEntries(new URLSearchParams(window.location.search))));
+    window.addEventListener('popstate', restore);
+    window.addEventListener('pageshow', restore);
+    return () => { window.removeEventListener('popstate', restore); window.removeEventListener('pageshow', restore); };
+  }, []);
   const options = useMemo(() => availableTravelFilters(listings, terms), [listings, terms]);
   return <TravelFinder mode="search" origin={origin} listings={listings} options={options} values={values} onChange={setValues} error={error} />;
 }

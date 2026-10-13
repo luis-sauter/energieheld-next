@@ -37,7 +37,10 @@ export function mergeSearchHits(hits: SearchHit[]) {
     const key = `${hit.type}:${hit.id}`;
     if (!unique.has(key) || unique.get(key)!.rank < hit.rank) unique.set(key, hit);
   }
-  return [...unique.values()].sort((a, b) => b.rank - a.rank || a.title.localeCompare(b.title, 'de') || a.id.localeCompare(b.id));
+  // Same normalized lexical tie-break as the RPC's C collation. A different
+  // client locale order can move equal-ranked hits between paginated prefixes.
+  const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
+  return [...unique.values()].sort((a, b) => b.rank - a.rank || compare(normalizeSearch(a.title), normalizeSearch(b.title)) || compare(a.id, b.id));
 }
 export function searchResultPage(profiles: SearchHit[], otherHits: SearchHit[], profileTotal: number, type: SearchType | undefined, page: number) {
   const other = mergeSearchHits(otherHits);

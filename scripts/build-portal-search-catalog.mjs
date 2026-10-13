@@ -15,10 +15,23 @@ const sources = [
   ['/registrieren', 'Firma registrieren', ['src/app/(energieheld)/registrieren/page.tsx', 'src/components/auth/auth-form.tsx']],
 ];
 const root = new URL('../', import.meta.url);
-export function publicJsxCopy(source) {
+export function publicJsxCopy(source, privateFlags = []) {
   const file = ts.createSourceFile('public.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const texts = [];
+  function privateCondition(node) {
+    if (ts.isIdentifier(node) && privateFlags.includes(node.text)) return true;
+    let found = false;
+    ts.forEachChild(node, child => { if (privateCondition(child)) found = true; });
+    return found;
+  }
   function visit(node) {
+    // Public copy may share a component with role-gated editorial controls.
+    // Ignore those branches, while retaining the public alternative.
+    if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken && privateCondition(node.left)) return;
+    if (ts.isConditionalExpression(node) && privateCondition(node.condition)) {
+      visit(node.whenFalse);
+      return;
+    }
     if (ts.isJsxText(node)) texts.push(node.text);
     // Visible literal values (e.g. intro props), not metadata/IDs/CSS/asset paths.
     if (ts.isJsxAttribute(node) && ['title', 'intro', 'label', 'description'].includes(node.name.getText(file)) && node.initializer && ts.isStringLiteral(node.initializer)) texts.push(node.initializer.text);
@@ -30,7 +43,8 @@ export function publicJsxCopy(source) {
 }
 export async function buildCatalog() {
   const pages = await Promise.all(sources.map(async ([url, title, files]) => ({
-    url, title, body: (await Promise.all(files.map(async file => publicJsxCopy(await readFile(new URL(file, root), 'utf8'))))).join(' '),
+    url, title, body: (await Promise.all(files.map(async file => publicJsxCopy(await readFile(new URL(file, root), 'utf8'),
+      file === 'src/components/portal/travel-directory.tsx' ? ['editingAvailable', 'freshnessStatuses'] : [])))).join(' '),
   })));
   const directory = new URL('src/data/generated/', root);
   await mkdir(directory, { recursive: true });

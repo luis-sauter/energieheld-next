@@ -172,8 +172,8 @@ export async function loadReiseportalListingBySlug(slug: string) {
 }
 
 // Facet counts on the result route need facts, not images or signed media.
-export async function loadReiseportalFinderListings(): Promise<Listing[]> {
-  const [profiles, assignments] = await Promise.all([loadPublicCompanyProfileIndex(), loadPublicTravelAssignments()]);
+export async function loadReiseportalFinderListings(factsOnly = false): Promise<Listing[]> {
+  const [profiles, assignments] = await Promise.all([loadPublicCompanyProfileIndex(factsOnly), loadPublicTravelAssignments()]);
   return profiles.map(profile => ({ ...companyProfileListing(profile, { images: [] }), travelTermKeys: assignments?.get(profile.id) ?? [] }))
     .filter(travelVisible);
 }
