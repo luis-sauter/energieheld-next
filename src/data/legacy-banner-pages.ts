@@ -227,7 +227,7 @@ export const legacyBannerPages: Readonly<Record<string, readonly LegacyPageBanne
       "id": "legacy-412",
       "placement": "sidebar_08",
       "imageUrl": "/images/legacy-ads/reconciled/414.jpg",
-      "targetUrl": "https://www.ostseehotel-dierhagen.de/de/home",
+      "targetUrl": "https://www.westerwald.info/",
       "alt": "Westerwald",
       "width": 350,
       "height": 120,
@@ -1063,7 +1063,7 @@ export const legacyBannerPages: Readonly<Record<string, readonly LegacyPageBanne
       "placement": "sidebar_06",
       "imageUrl": "/images/legacy-ads/reconciled/603.jpg",
       "targetUrl": "https://www.josef.bz/de/hotel-hafling/1-0.html",
-      "alt": "Hof Maran",
+      "alt": "Josef Mountain Resort",
       "width": 350,
       "height": 120,
       "size": "small"
@@ -1413,7 +1413,7 @@ export const legacyBannerPages: Readonly<Record<string, readonly LegacyPageBanne
       "placement": "sidebar_04",
       "imageUrl": "/images/legacy-ads/reconciled/603.jpg",
       "targetUrl": "https://www.josef.bz/de/hotel-hafling/1-0.html",
-      "alt": "Hof Maran",
+      "alt": "Josef Mountain Resort",
       "width": 350,
       "height": 120,
       "size": "small"
