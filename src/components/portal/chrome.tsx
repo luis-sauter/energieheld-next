@@ -54,6 +54,7 @@ export function PortalFooter({ brand }: { brand: BrandConfig }) {
         </span>
         <Link href="/angebot-anfragen">Angebot anfragen</Link>
         <Link href="/login?next=/admin">Redaktion / Login</Link>
+        {brand.id === "reiseportal" && <Link href="/designvorschau/unternehmensprofil" prefetch={false}>Profil-Designvorschau</Link>}
       </div>
     </footer>
   );
