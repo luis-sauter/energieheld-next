@@ -1,10 +1,10 @@
 /* A–Z presentation only: shared search, delivery and editing stay unchanged. */
 .page {
-  --portal-primary: #217ca3;
-  --portal-primary-deep: #145d80;
-  --brand-primary: #145d80;
+  --portal-primary: var(--portal-blue);
+  --portal-primary-deep: var(--portal-blue);
+  --brand-primary: var(--portal-blue);
   --line: #dce8ed;
-  color: #253f50;
+  color: var(--portal-basalt);
   background: linear-gradient(180deg, #eef8fc 0, #faf7f2 620px, #fffdfb 100%);
 }
 .page :global(.container) { width: min(1560px, calc(100% - 64px)); }
@@ -13,35 +13,35 @@
 .page :global(.travel-hero::after) { height: 640px; bottom: auto; background: linear-gradient(180deg, transparent 65%, #faf7f2 100%), linear-gradient(90deg, rgb(244 250 253 / 94%) 0%, rgb(244 250 253 / 70%) 43%, rgb(244 250 253 / 8%) 100%); }
 .page :global(.travel-hero-content) { padding-block: 28px 0; transform: none; }
 .page :global(.breadcrumbs) { margin-bottom: 24px; font-size: .82rem; }
-.page :global(.travel-hero h1) { max-width: 1000px; font-size: clamp(2.2rem, 4vw, 3.7rem); letter-spacing: -.035em; color: #103f5b; }
+.page :global(.travel-hero h1) { max-width: 1000px; font-size: clamp(2.2rem, 4vw, 3.7rem); letter-spacing: -.035em; color: var(--portal-blue); }
 .page :global(.travel-hero .eyebrow) { font-size: .75rem; letter-spacing: .16em; }
-.page :global(.travel-hero-content > p:not(.eyebrow)) { max-width: 700px; margin-bottom: 25px; color: #345870; line-height: 1.55; }
+.page :global(.travel-hero-content > p:not(.eyebrow)) { max-width: 700px; margin-bottom: 25px; color: var(--portal-basalt); line-height: 1.55; }
 .page :global(.reise-finder) { position: relative; margin-bottom: 28px; background: rgb(255 255 255 / 96%); border-radius: 18px; border: 1px solid #e6edf1; box-shadow: 0 12px 36px rgb(31 74 99 / 9%); padding: 24px; }
 .page :global(.reise-finder-grid) { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-.page :global(.reise-finder label) { color: #174761; font-size: .86rem; }
+.page :global(.reise-finder label) { color: var(--portal-blue); font-size: .86rem; }
 .page :global(.reise-finder :is(input, select)) { border-color: #d5e4ed; border-radius: 8px; min-height: 44px; color: #274b64; background: #fbfdff; }
 .page :global(.reise-finder-grid .reise-finder-submit) { grid-column: span 2; }
-.page :global(.reise-finder-submit) { background: #ff8a4c; color: #153d53; min-height: 44px; border: 1px solid #ff8a4c; border-radius: 8px; }
-.page :global(.reise-finder-submit:hover) { background: #ff9d69; }
-.page :global(.reise-finder-summary) { font-size: .85rem; margin-top: 12px; color: #345870; }
-.page :global(#reise-finder-hint) { font-size: .8rem; line-height: 1.5; margin: 6px 0 0; color: #526876; }
+.page :global(.reise-finder-submit) { background: var(--portal-button); color: var(--portal-white); min-height: 44px; border: 1px solid var(--portal-button); border-radius: 8px; }
+.page :global(.reise-finder-submit:hover:not(:disabled)) { background: var(--portal-button-hover); }
+.page :global(.reise-finder-summary) { font-size: .85rem; margin-top: 12px; color: var(--portal-basalt); }
+.page :global(#reise-finder-hint) { font-size: .8rem; line-height: 1.5; margin: 6px 0 0; color: var(--portal-basalt); }
 .page :global(.travel-directory-content) { padding-top: 0; }
 .page :global(.commercial-layout) { margin-top: 0; }
 .page :global(.commercial-columns) { grid-template-columns: minmax(0, 3.5fr) minmax(240px, 1fr); gap: 24px; margin-top: 0; }
 .page :global(.commercial-sidebar.advertising-rail) { display: block; padding: 16px; background: #fff; border: 1px solid #e2ebef; border-radius: 16px; }
 .page :global(.advertising-rail-label) { color: #587487; font-size: .7rem; }
 .page :global(.travel-results-heading) { align-items: center; margin-bottom: 14px; }
-.page :global(.travel-results-heading h2) { font-size: 1.25rem; font-weight: 700; color: #174761; }
-.page :global(.travel-results-heading p) { font-size: .85rem; line-height: 1.5; color: #526876; }
+.page :global(.travel-results-heading h2) { font-size: 1.25rem; font-weight: 700; color: var(--portal-blue); }
+.page :global(.travel-results-heading p) { font-size: .85rem; line-height: 1.5; color: var(--portal-basalt); }
 .page :global(.travel-results-heading .eyebrow) { display: none; }
 .page :global(.travel-results-tools) { gap: 8px; flex-wrap: wrap; }
 .page :global(.travel-results-tools label) { min-width: 145px; font-size: .8rem; }
 .page :global(.travel-results-tools .reise-finder-reset) { font-size: .8rem; }
 .page :global(.travel-package-group + .travel-package-group) { margin-top: 28px; }
 .page :global(.travel-package-heading) { margin-bottom: 14px; }
-.page :global(.travel-package-heading h2) { color: #145d80; font-size: clamp(1.5rem, 2vw, 1.9rem); font-weight: 700; margin-bottom: 5px; }
-.page :global(.travel-package-heading p) { color: #526876; font-size: .9rem; }
-.page :global(:is(a, button, input, select):focus-visible) { outline: 3px solid #217ca3; outline-offset: 3px; }
+.page :global(.travel-package-heading h2) { color: var(--portal-blue); font-size: clamp(1.5rem, 2vw, 1.9rem); font-weight: 700; margin-bottom: 5px; }
+.page :global(.travel-package-heading p) { color: var(--portal-basalt); font-size: .9rem; }
+.page :global(:is(a, button, input, select):focus-visible) { outline: 3px solid var(--portal-blue); outline-offset: 3px; }
 
 
 @media (max-width: 900px) {

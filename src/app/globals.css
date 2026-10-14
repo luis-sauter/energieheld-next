@@ -3078,20 +3078,24 @@ h6 {
 
 /* Reiseportal discovery: original travel photography and functional directory search. */
 .reiseportal-shell {
-  --portal-primary: #1e5a7a;
-  --portal-primary-deep: #174761;
-  --portal-accent: #ff8a4c;
-  --portal-surface: #faf7f2;
-  --portal-ink: #1a2731;
-  --portal-card: #ffffff;
-  --brand-accent-hover: #f47838;
+  --portal-primary: var(--portal-blue);
+  --portal-primary-deep: var(--portal-blue);
+  --portal-accent: var(--portal-orange);
+  --portal-surface: var(--portal-light-gray);
+  --portal-ink: var(--portal-basalt);
+  --portal-card: var(--portal-white);
+  --portal-button: var(--portal-orange);
+  --portal-button-hover: var(--portal-orange);
+  --portal-button-active: var(--portal-orange);
+  --brand-accent-hover: var(--portal-button-hover);
+  --brand-accent-light: var(--portal-light-orange);
   --brand-secondary: var(--portal-primary-deep);
-  --category-blue: #eaf3f7;
+  --category-blue: var(--portal-light-orange);
   --white: var(--portal-card);
   --surface: var(--portal-surface);
   --line: #dce6e9;
   --text: var(--portal-ink);
-  --muted: #475b68;
+  --muted: var(--portal-basalt);
   background: var(--portal-surface);
 }
 .reiseportal-shell :is(a, button, input, select, summary):focus-visible {
@@ -3100,18 +3104,36 @@ h6 {
 .reiseportal-shell :is(h1, h2, h3) { color: var(--portal-primary-deep); }
 .reiseportal-shell .button-primary,
 .reiseportal-shell .header-cta {
-  border-color: var(--portal-accent);
-  background: var(--portal-accent);
-  color: var(--portal-ink);
+  border-color: var(--portal-button);
+  background: var(--portal-button);
+  color: var(--portal-white);
 }
 .reiseportal-shell .company-profile .detail-title { color: var(--portal-primary-deep); }
-.reiseportal-shell .company-profile .button-primary { color: var(--portal-ink); }
+.reiseportal-shell .company-profile .button-primary { color: var(--portal-white); }
 .reiseportal-shell .button-primary:hover:not(:disabled),
 .reiseportal-shell .header-cta:hover {
-  border-color: var(--brand-accent-hover);
-  background: var(--brand-accent-hover);
-  color: var(--portal-ink);
+  border-color: var(--portal-button-hover);
+  background: var(--portal-button-hover);
+  color: var(--portal-white);
 }
+
+/* Shared primary-action states, including the orange A–Z/search profile link.
+   Scoped to the travel portal: legacy energy tokens and semantic alerts stay intact. */
+.reiseportal-shell :is(.button-primary, .header-cta, .listing-row--premium .row-profile-link):hover:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]) {
+  background: var(--portal-button-hover); border-color: var(--portal-blue); color: var(--portal-white); box-shadow: 0 0 0 1px var(--portal-blue);
+}
+.reiseportal-shell :is(.button-primary, .header-cta, .listing-row--premium .row-profile-link):active:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]) {
+  background: var(--portal-button-active); border-color: var(--portal-blue); color: var(--portal-white); box-shadow: inset 0 0 0 1px var(--portal-blue); transform: none;
+}
+.reiseportal-shell :is(.button-primary, .header-cta, .listing-row--premium .row-profile-link):is(:disabled, [aria-disabled="true"], [aria-busy="true"]) {
+  background: var(--portal-button); border-color: var(--portal-button); color: var(--portal-white); opacity: 1; transform: none;
+}
+.reiseportal-shell :is(.button-primary, .header-cta, .listing-row--premium .row-profile-link):focus-visible {
+  outline: 3px solid var(--portal-blue); outline-offset: 3px; box-shadow: 0 0 0 2px var(--portal-white);
+}
+.reiseportal-shell :is(.button-primary, .header-cta, .listing-row--premium .row-profile-link)[aria-busy="true"] { cursor: progress; }
+.reiseportal-shell :is(.button-primary, .header-cta, .listing-row--premium .row-profile-link)[aria-disabled="true"] { cursor: not-allowed; }
+.reiseportal-shell :is(.button-primary, .header-cta, .listing-row--premium .row-profile-link) svg { color: inherit; }
 .reiseportal-shell .site-header {
   background: var(--portal-card);
   box-shadow: 0 3px 18px rgb(23 71 97 / 6%);
