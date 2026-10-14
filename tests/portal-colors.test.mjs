@@ -39,5 +39,7 @@ test('legacy button overrides use the approved brand tokens without touching dim
   assert.match(css,/\[aria-busy="true"\]\) \{[^}]*opacity: 1; transform: none/);
   assert.match(css,/outline: 3px solid var\(--portal-blue\); outline-offset: 3px/);
   assert.match(css,/--portal-ink: var\(--portal-basalt\)/);
+  assert.match(css,/\.reiseportal-shell \.mobile-menu a:not\(\.header-cta\),/);
+  assert.doesNotMatch(css,/\.reiseportal-shell \.mobile-menu a,/);
   assert.doesNotMatch(css,/\.reiseportal-shell \.company-profile \.button-primary \{ color: var\(--portal-ink\)/);
 });

@@ -3140,7 +3140,7 @@ h6 {
 }
 .reiseportal-shell .desktop-nav,
 .reiseportal-shell .desktop-nav a,
-.reiseportal-shell .mobile-menu a,
+.reiseportal-shell .mobile-menu a:not(.header-cta),
 .reiseportal-shell .nav-chevron-button { color: var(--portal-primary-deep); }
 .reiseportal-shell .desktop-nav a:hover,
 .reiseportal-shell .desktop-nav a:focus-visible,
