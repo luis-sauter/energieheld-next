@@ -113,7 +113,7 @@ test("existing single-value URL parameters round-trip and reset together", () =>
   const values = readTravelFilterValues({ ziel: "deutschland", thema: "wellnessangebote", zielgruppe: "paar",
     unterkunftstyp: "hotel", besonderheit: "sauna", q: "Alpen Spa", ort: "Berlin", sort: "city" });
   const url = travelFilterUrl(values);
-  assert.equal(url, "/unterkuenfte-a-z?ziel=deutschland&thema=wellnessangebote&zielgruppe=paar&unterkunftstyp=hotel&q=Alpen+Spa&ort=Berlin&sort=city");
+  assert.equal(url, "/unterkuenfte-a-z?ziel=deutschland&thema=wellnessangebote&zielgruppe=paar&unterkunftstyp=hotel&q=Alpen+Spa&sort=city");
   assert.deepEqual(readTravelFilterValues(Object.fromEntries(new URL(url, "https://example.test").searchParams)), values);
   assert.equal(travelFilterUrl(readTravelFilterValues({})), "/unterkuenfte-a-z");
 });
@@ -138,16 +138,16 @@ test("every taxonomy dimension filters alone and combinations intersect with q, 
 
 test("a copied URL restores values and human labels; reset removes all filters", () => {
   const params = Object.fromEntries(new URLSearchParams(
-    "ziel=deutschland&thema=wellnessangebote&zielgruppe=paar&unterkunftstyp=hotel&besonderheit=sauna&q=Spa&ort=Berlin",
+    "ziel=deutschland&thema=wellnessangebote&zielgruppe=paar&unterkunftstyp=hotel&besonderheit=sauna&q=Spa",
   ));
   const values = readTravelFilterValues(params);
   assert.deepEqual(values, {
     destination: "deutschland", theme: "wellnessangebote", audience: "paar",
-    accommodation: "hotel", feature: "", query: "Spa", location: "Berlin", sort: "",
+    accommodation: "hotel", feature: "", query: "Spa", location: "", sort: "",
   });
   const labels = activeTravelFilterLabels(values, availableTravelFilters(approved, terms));
   assert.deepEqual(labels, ["Reiseziel: Deutschland", "Motto: Wellnessangebote",
-    "Mit wem: Zu zweit", "Unterkunft: Hotel", "Suche: Spa", "Ort/PLZ: Berlin"]);
+    "Mit wem: Zu zweit", "Unterkunft: Hotel", "Suche: Spa"]);
   assert.ok(labels.every((label) => !/theme:|audience:|feature:|accommodation:/.test(label)));
   assert.deepEqual(readTravelFilterValues({}), {
     destination: "", theme: "", audience: "", accommodation: "", feature: "",

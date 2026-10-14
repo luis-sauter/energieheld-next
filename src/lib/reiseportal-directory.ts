@@ -34,7 +34,7 @@ export async function loadReiseportalProfileIndex() {
 
 // This is the approved, existing test profile, presented under a travel-safe
 // public alias. Suppress its energy-sector copy, including media alt text.
-function publicDemo(listing: Listing): Listing | null {
+export function publicDemo(listing: Listing): Listing | null {
   if (listing.id !== demoProfileId || listing.slug !== demoSourceSlug) return null;
   return {
     ...listing,
@@ -79,7 +79,7 @@ export function withLegacyImages(listing: Listing): Listing {
   return result.video ? { ...result, video: { ...result.video, poster: result.images[0]?.src } } : result;
 }
 
-async function loadDirectoryPackages(profileIds?: string[]) {
+export async function loadDirectoryPackages(profileIds?: string[]) {
   const client = createPublicClient();
   const packages = new Map<string, "basic" | "premium">();
   const pageSize = 500;
@@ -194,4 +194,9 @@ export async function loadReiseportalFinderListings(factsOnly = false): Promise<
   const [profiles, assignments] = await Promise.all([loadPublicCompanyProfileIndex(factsOnly), loadPublicTravelAssignments()]);
   return profiles.map(profile => ({ ...companyProfileListing(profile, { images: [] }), travelTermKeys: assignments?.get(profile.id) ?? [], seasonTeasers: assignments?.seasonTeasers?.get(profile.id) }))
     .filter(travelVisible);
+}
+
+export async function loadReiseportalDirectoryFacts(){
+ const [profiles,assignments]=await Promise.all([loadPublicCompanyProfileIndex(),loadPublicTravelAssignments()]);
+ return profiles.flatMap(profile=>{const row={...companyProfileListing(profile,{images:[]}),...(assignments?{travelTermKeys:assignments.get(profile.id)??[],seasonTeasers:assignments.seasonTeasers?.get(profile.id)}:{})};const safe=travelVisible(row)?row:publicDemo(row);return safe?[{...safe,description:'',businessAreas:''}]:[];});
 }

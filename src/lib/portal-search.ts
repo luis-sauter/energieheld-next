@@ -3,7 +3,7 @@ import { createPublicClient } from './supabase/public';
 import { portalAdSections } from './ad-target-areas';
 import { portalSearchCatalog } from './portal-search-catalog';
 import { legacySearchCatalog, publicBannerSearch, type SearchAdSource, type SearchPresentation, type BannerSearchData } from './portal-search-banners';
-import { searchResultPage, searchExcerpt, searchQuery, searchType, SEARCH_PAGE_SIZE, queryWords, type SearchHit, type SearchType } from './portal-search-values';
+import { searchResultBatch, type SearchCursor, searchResultPage, searchExcerpt, searchQuery, searchType, SEARCH_PAGE_SIZE, queryWords, type SearchHit, type SearchType } from './portal-search-values';
 import type { TravelFilterValues } from './reiseportal-filter-options';
 
 export function portalSearchFilters(values?: TravelFilterValues) {
@@ -16,19 +16,20 @@ export function accommodationSearchOnly(values?: TravelFilterValues) {
 }
 
 type SearchResponse = { total: number; hits: Omit<SearchHit, 'type'>[]; catalog_hits: SearchHit[]; ads: SearchAdSource[]; presentations: SearchPresentation[]; banner_metadata?: BannerSearchData[] };
-export type SearchResult = { query: string; type?: SearchType; page: number; total: number; accommodationTotal: number; hits: SearchHit[]; error?: string };
+export type SearchResult = { query: string; type?: SearchType; page: number; total: number; accommodationTotal: number; hits: SearchHit[]; nextCursor?: SearchCursor | null; error?: string };
 // Provider boundary: the server page consumes only SearchResult, never Supabase rows.
-export async function searchPortal(value: unknown, options: { type?: unknown; page?: unknown; filters?: TravelFilterValues } = {}): Promise<SearchResult> {
+export async function searchPortal(value: unknown, options: { type?: unknown; page?: unknown; filters?: TravelFilterValues; cursor?: SearchCursor } = {}): Promise<SearchResult> {
   const filtered = accommodationSearchOnly(options.filters);
   const query = searchQuery(value), type = filtered ? 'accommodation' : searchType(options.type);
   const requestedPage = Number(options.page);
   const page = Number.isInteger(requestedPage) ? Math.max(1, Math.min(50, requestedPage)) : 1;
+  const cursor = options.cursor;
   const empty = { query, type, page, total: 0, accommodationTotal: 0, hits: [] };
   if (!queryWords(query).length) return empty;
   try {
     // One bounded RPC, no full profile loader, no signing and no per-card calls.
     const { data, error } = await createPublicClient().rpc('search_public_portal_v2', {
-      p_query: query, p_limit: filtered ? SEARCH_PAGE_SIZE : page * SEARCH_PAGE_SIZE, p_offset: filtered ? (page-1)*SEARCH_PAGE_SIZE : 0,
+      p_query: query, p_limit: cursor || filtered ? SEARCH_PAGE_SIZE : page * SEARCH_PAGE_SIZE, p_offset: cursor ? cursor.profiles : filtered ? (page-1)*SEARCH_PAGE_SIZE : 0,
       p_areas: portalAdSections.flatMap(section => section.areas.map(area => area.key)),
       p_catalog: [...portalSearchCatalog(), ...legacySearchCatalog()],
       p_filters: portalSearchFilters(options.filters),
@@ -37,8 +38,9 @@ export async function searchPortal(value: unknown, options: { type?: unknown; pa
     const result = data as SearchResponse;
     const profiles: SearchHit[] = result.hits.map(hit => ({ ...hit, type: 'accommodation', excerpt: searchExcerpt(hit.excerpt, query) }));
     // Filter/count/order happen before the bounded DB prefix. Preserve that order.
-    if (filtered) return { query, type, page, total: result.total, accommodationTotal: result.total, hits: profiles };
+    if (filtered) return { query, type, page, total: result.total, accommodationTotal: result.total, hits: profiles, ...(cursor ? {nextCursor: cursor.profiles+profiles.length < result.total && profiles.length ? {profiles:cursor.profiles+profiles.length,other:0} : null} : {}) };
     const otherHits = [...result.catalog_hits.filter(hit => hit.type !== 'ad'), ...publicBannerSearch(result.ads, result.presentations, query, result.catalog_hits, result.banner_metadata)];
+    if(cursor) return {query,type,page,accommodationTotal:result.total,...searchResultBatch(profiles,otherHits,result.total,type,cursor)};
     return { query, type, page, accommodationTotal: result.total, ...searchResultPage(profiles, otherHits, result.total, type, page) };
   } catch {
     // Never present an incomplete list as the complete portal search.

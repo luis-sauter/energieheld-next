@@ -44,8 +44,8 @@ test('season results require exact assignments, support multiple seasons, and ne
 test('existing search RPC receives exact theme; q, sort, return URL and season label survive without changing rank engine',()=>{
  const values=readTravelFilterValues({thema:'saison-herbst',q:'Pool',sort:'name',ort:'Lana'});
  assert.equal(portalSearchFilters(values).theme,'saison-herbst');
- assert.equal(travelSearchUrl(values,'directory'),'/suche?thema=saison-herbst&q=Pool&ort=Lana&sort=name&von=directory');
- assert.equal(travelSearchReturnUrl(values,'directory'),'/unterkuenfte-a-z?thema=saison-herbst&q=Pool&ort=Lana&sort=name');
+ assert.equal(travelSearchUrl(values,'directory'),'/suche?thema=saison-herbst&q=Pool&sort=name&von=directory');
+ assert.equal(travelSearchReturnUrl(values,'directory'),'/unterkuenfte-a-z?thema=saison-herbst&q=Pool&sort=name');
  assert.ok(activeTravelFilterLabels(values,availableTravelFilters([],[])).includes('Jahreszeit: Herbst'));
  assert.equal(validSeasonTeasers({'theme:saison-herbst':'Ruhige Zeit im Spa.'}),true);
  for(const invalid of [null,[],{'theme:wellnessangebote':'wrong'},{'theme:saison-winter':'x'.repeat(241)}])assert.equal(validSeasonTeasers(invalid),false);

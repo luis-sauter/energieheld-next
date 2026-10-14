@@ -102,9 +102,9 @@ test('A–Z layout is scoped, reserves square images, stacks rail on mobile and 
   assert.match(source('src/components/advertising/advertising-rail.tsx'),/defaultSidebarOrder\.filter.*\.map/);
 });
 test('structured zero state is honest while free text still submits globally without matching accommodations',()=>{
-  const html=directory([listing('only',true)],{ort:'Missing place',q:'Nordic Walking'});
+  const html=directory([listing('only',true)],{ziel:'erfunden',q:'Nordic Walking'});
   assert.match(html,/Für diese Kombination/);assert.match(html,/Im Reiseportal suchen/);assert.doesNotMatch(html,/type="submit" disabled/);
-  assert.match(html,/name="ort"/);assert.match(html,/name="q"/);
+  assert.doesNotMatch(html,/name="ort"/);assert.match(html,/name="q"/);
 });
 
  test('shared advertising columns contain finder before results, with neutral fallbacks and contained real logos',()=>{
@@ -133,7 +133,7 @@ test('advertiser results move to the sidebar after all listings, retain packages
  assert.ok(html.indexOf('href="/unterkuenfte/premium"')<html.indexOf('data-search-banner='));
  assert.ok(html.lastIndexOf('data-search-banner=')>html.indexOf('href="/unterkuenfte/basic"')); assert.match(source('src/components/advertising/search-ad-results.module.css'),/repeat\(2, minmax\(0, 1fr\)\)/); assert.equal((html.match(/id="search-ads-title"/g)||[]).length,0);
  assert.match(html,/Anzeige/);assert.match(html,/sponsored noopener noreferrer/);
- const only=render([listing('premium',true)],readTravelFilterValues({ort:'99999'}));
+ const only=render([listing('premium',true)],readTravelFilterValues({thema:'wellnessangebote'}));
  assert.match(only,/1 Ergebnis anzeigen/);assert.match(only,/data-search-banner=/);assert.doesNotMatch(only,/aktuell keine passende Unterkunft/);
- const none=render([],readTravelFilterValues({ort:'unmatched'}));assert.match(none,/aktuell keine passende Unterkunft/);assert.doesNotMatch(none,/data-search-banner=/);
+ const none=render([],readTravelFilterValues({ziel:'erfunden'}));assert.match(none,/aktuell keine passende Unterkunft/);assert.doesNotMatch(none,/data-search-banner=/);
 });

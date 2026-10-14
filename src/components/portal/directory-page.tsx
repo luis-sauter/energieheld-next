@@ -25,6 +25,8 @@ import { JsonLd } from "./json-ld";
 import { jsonLdGraph, breadcrumbSchema, collectionSchema } from "@/lib/seo-schema";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 import { hubDescriptions, indexableProfile } from "@/lib/seo";
+import {loadPublicDirectoryIndex,directoryWindows,hydrateDirectoryWindow,hydrateBannerWindow} from "@/lib/public-result-pages";
+import { travelFilterUrl } from "@/lib/reiseportal-facets";
 import { filterTravelListings } from "@/lib/reiseportal-facets";
 
 export async function DirectoryPage({ searchParams, trade, mode = "energy", canReorder = false,
@@ -38,6 +40,25 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
   saveSidebarOrder?: (slots: SidebarSlot[]) => Promise<{ success?: string; error?: string }>;
 }) {
   const params = await searchParams;
+  if (mode === "travel" && !adminClient) {
+    const initialValues=readTravelFilterValues(params);
+    const loaded=await (async()=>{
+      const [index,terms,sidebarOrder]=await Promise.all([loadPublicDirectoryIndex(),loadPublicTravelTerms(),loadPublicSidebarOrder()]);
+      const windows=directoryWindows(index,initialValues);
+      const [profiles,advertisements]=await Promise.all([hydrateDirectoryWindow(windows.profiles,index.facts),hydrateBannerWindow(windows.advertisements)]);
+      return {index,terms,sidebarOrder,profiles,advertisements};
+    })().catch(()=>null);
+    if(!loaded) {
+
+      return <TravelDirectory initialValues={initialValues} database={[]} preview={[]} terms={[]} error="Die Unterkünfte konnten gerade nicht geladen werden."
+        ads={[]} sidebarOrder={[]} canReorder={false} hiddenOrderKeys={[]} />;
+    }
+    const {index,terms,sidebarOrder,profiles,advertisements}=loaded;
+    return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Unterkünfte A–Z","/unterkuenfte-a-z")),collectionSchema({name:"Unterkünfte A–Z",description:hubDescriptions.directory,path:"/unterkuenfte-a-z",items:profiles.items.filter(indexableProfile).map(row=>({name:row.name,path:'/unterkuenfte/'+row.slug}))})])}/>
+        <TravelDirectory initialValues={initialValues} database={index.facts} preview={[]} terms={mergePublicTravelTerms(terms,index.terms)} banners={index.banners}
+          error={null} bannerError={index.error} ads={advertisements.items} sidebarOrder={sidebarOrder} canReorder={false} hiddenOrderKeys={[]}
+          pagination={{key:travelFilterUrl({...initialValues,query:""}),profiles,banners:advertisements}} /></>;
+  }
   if (mode === "travel") {
     const [loaded, terms, ads, sidebarOrder, bannerOptions, searchBanners] = await Promise.all([
       loadReiseportalDirectory().then(async loaded => ({ ...loaded, database: await withPublicImportMarkers(loaded.database) })), loadPublicTravelTerms(), loadPublicAds(undefined), loadPublicSidebarOrder(),
