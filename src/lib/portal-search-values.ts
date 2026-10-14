@@ -48,3 +48,8 @@ export function searchResultPage(profiles: SearchHit[], otherHits: SearchHit[], 
   const total = type === 'accommodation' ? profileTotal : type ? other.filter(hit => hit.type === type).length : profileTotal + other.length;
   return { total, hits: combined.slice((page - 1) * SEARCH_PAGE_SIZE, page * SEARCH_PAGE_SIZE) };
 }
+
+// The profile total comes from the RPC before pagination, never from cards or ads.
+export function accommodationResultSummary(total: number) {
+  return total === 0 ? 'Keine Unterkünfte gefunden' : total === 1 ? '1 Unterkunft gefunden' : `${total} Unterkünfte gefunden`;
+}

@@ -105,9 +105,9 @@ test('audience results count advertisers once and use honest public result label
  const rows=[banner('a',{advertiser_key:'dog-customer',term_keys:['audience:mit-hund']}),banner('b',{advertiser_key:'dog-customer',term_keys:['audience:mit-hund']})];
  const values={...empty,audience:'mit-hund'};
  const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'home',listings:[],banners:rows,options:availableTravelFilters([],[]),values,onChange(){}}));
- assert.match(html,/1 Ergebnis anzeigen/);assert.match(html,/1 passendes Ergebnis/);assert.doesNotMatch(html,/1 passende Unterkunft/);
+ assert.match(html,/1 Ergebnis anzeigen/);assert.match(html,/Keine Unterkünfte gefunden/);assert.doesNotMatch(html,/1 passende Unterkunft/);
  const normal=renderToStaticMarkup(createElement(TravelFinder,{mode:'directory',listings:[listing('real')],options:availableTravelFilters([],[]),values:empty,onChange(){}}));
- assert.match(normal,/1 Unterkunft anzeigen/);assert.match(normal,/1 passende Unterkunft/);
+ assert.match(normal,/1 Unterkunft anzeigen/);assert.match(normal,/1 Unterkunft gefunden/);
  assert.equal(travelSearchResults([],rows,values).count,1);
 });
 
@@ -139,4 +139,11 @@ test('all fixed banner slots retain the sponsored creative without an inquiry li
 test('general offer form still accepts existing page and slot deep links',async()=>{
  const {bannerOfferTarget}=await import('../src/lib/banner-offer-link.ts');
  assert.deepEqual(bannerOfferTarget('/reiseziele/deutschland','sidebar_bottom'),{target_type:'portal_area',target_key:'reiseziele/deutschland',category_id:null,placement:'sidebar_bottom'});assert.equal(bannerOfferTarget('/unknown','sidebar_top'),undefined);assert.equal(bannerOfferTarget('/','invalid'),undefined);
+});
+
+
+test('finder accommodation summary excludes banner-only advertisers while retaining their existing result logic',()=>{
+ const listings=[listing('one'),listing('two')];
+ const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'directory',listings,banners:[banner()],options:availableTravelFilters(listings,[]),values:empty,onChange(){}}));
+ assert.match(html,/2 Unterkünfte gefunden/);assert.match(html,/3 Ergebnisse anzeigen/);assert.doesNotMatch(html,/3 Unterkünfte gefunden/);
 });

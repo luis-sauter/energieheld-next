@@ -116,7 +116,7 @@ test('both hero forms submit portal queries despite zero local matches or direct
       assert.equal(url.searchParams.get('ziel'), 'schweiz'); assert.equal(url.searchParams.get('von'), mode);
       const html = renderToStaticMarkup(createElement(TravelFinder, { mode, listings, options, values, onChange() {}, error: 'Unterkünfte nicht verfügbar' }));
       assert.match(html, /Im Reiseportal suchen/); assert.doesNotMatch(html, /type="submit" disabled/);
-      assert.match(html, /Reisefilter gelten nur bei leerem Suchbegriff/);
+      assert.match(html, /Gewählte Reisefilter grenzen die Suche auf Unterkünfte ein/);
     }
   } finally { globalThis.window = previousWindow; }
 });
@@ -180,4 +180,23 @@ for (const mode of ["home", "directory", "search"]) test(mode + " finder omits f
   const url = travelSearchUrl({ ...values, query: "Nordic Walking", feature: "sauna" }, "home");
   assert.equal(url, "/suche?q=Nordic+Walking&von=home");
   assert.equal(travelSearchReturnUrl({ ...values, feature: "sauna" }, "home"), "/");
+});
+
+
+test('completed search shows the RPC-wide accommodation count, not visible cards or banners',()=>{
+ for(const [total,label] of [[0,'Keine Unterkünfte gefunden'],[1,'1 Unterkunft gefunden'],[8,'8 Unterkünfte gefunden'],[127,'127 Unterkünfte gefunden']]){
+  const values=readTravelFilterValues({q:'Wellness',ziel:'oesterreich'});
+  const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'search',listings,options,values,onChange(){},completedSearch:{values,total}}));
+  assert.ok(html.includes(label));assert.match(html,/aria-live="polite"/);
+ }
+});
+test('editing or resetting a completed query/filter never leaves a stale result count, and failures are not zero matches',()=>{
+ const completed=readTravelFilterValues({q:'Pension Sonnenhof',ziel:'oesterreich'});
+ const renderCase=(values,error)=>renderToStaticMarkup(createElement(TravelFinder,{mode:'search',listings,options,values,onChange(){},completedSearch:{values:completed,total:127,error}}));
+ for(const values of [readTravelFilterValues({q:'Pool',ziel:'oesterreich'}),readTravelFilterValues({q:'Pension Sonnenhof',ziel:'deutschland'})]){
+  const html=renderCase(values);assert.doesNotMatch(html,/127 Unterkünfte gefunden/);assert.match(html,/Suche mit Enter/);
+ }
+ assert.match(renderCase(readTravelFilterValues({})),/2 Unterkünfte gefunden/);
+ const failed=renderCase(completed,'Die Portalsuche ist gerade nicht verfügbar.');assert.match(failed,/Portalsuche ist gerade nicht verfügbar/);assert.doesNotMatch(failed,/127 Unterkünfte gefunden|Keine Unterkünfte gefunden/);
+ for(const mode of ['home','directory'])assert.doesNotMatch(render(readTravelFilterValues({q:'Wellness'}),mode),/\d+ Unterkünfte gefunden/);
 });
