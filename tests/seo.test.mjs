@@ -58,7 +58,7 @@ test('metadata provides title/description/OG/Twitter and canonical without previ
  assert.deepEqual(home.title,{absolute:production.defaultTitle});assert.equal(home.robots.index,true);
  assert.equal(home.alternates.canonical,'https://portal.example/');assert.equal(home.openGraph.locale,'de_DE');
  assert.ok(home.openGraph.images[0].url.startsWith('https://portal.example/'));assert.equal(home.twitter.card,'summary_large_image');
- assert.equal(rootMetadata(production).title.template,'%s | DAS Reiseportal');assert.equal(rootMetadata(production).robots.index,false);
+ assert.equal(rootMetadata(production).title.template,'%s | DAS-Reiseportal.com');assert.equal(rootMetadata(production).robots.index,false);
  const preview=pageMetadata({title:'Reiseziele',description:'Echte Ziele',path:'/reiseziele'},siteSeo({CONTEXT:'branch-deploy'}));
  assert.equal(preview.robots.index,false);assert.equal(preview.robots.follow,true);assert.equal(preview.alternates,undefined);assert.equal(preview.openGraph.url,undefined);assert.equal(preview.openGraph.images,undefined);
 });

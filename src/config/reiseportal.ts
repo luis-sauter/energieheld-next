@@ -3,7 +3,7 @@ import { portalColors } from './portal-colors';
 
 export const reiseportal: BrandConfig = {
   id: "reiseportal",
-  name: "DAS Reiseportal",
+  name: "DAS-Reiseportal.com",
   tagline: "Neue Lieblingsorte entdecken.",
   colors: { primary: portalColors.blue, accent: portalColors.orange, surface: portalColors['light-gray'] },
   providerLabel: "Unterkünfte",

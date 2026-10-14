@@ -9,7 +9,7 @@ export function CompanyPublication({ status }: { status: string }) {
   if (status === "pending" || state.submitted) return <section id="freischaltung" className="profile-publication" aria-labelledby="submission-title">
     <h2 id="submission-title">Ihr Profil wurde zur Prüfung eingereicht</h2>
     <p>Danke! Ihre Angaben und Bilder sind bei unserer Redaktion eingegangen.</p>
-    <p>Wir prüfen Ihre Einreichung und gestalten daraus Ihren Auftritt auf DAS Reiseportal.</p>
+    <p>Wir prüfen Ihre Einreichung und gestalten daraus Ihren Auftritt auf DAS-Reiseportal.com.</p>
     <p>Falls wir noch Informationen benötigen, erhalten Sie eine Rückmeldung in Ihrem Firmenbereich.</p>
     <p role="status"><strong>Wartet auf redaktionelle Prüfung</strong></p>
     <Link className="button" href="/firma">Zurück zum Firmenbereich</Link>

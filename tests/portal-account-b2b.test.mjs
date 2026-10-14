@@ -81,7 +81,7 @@ test('real login action honors authorized next and logout retains the existing d
 test('B2B pages share accessible layout and honest CTAs; auth preserves required form fields',async()=>{
  globalThis.__accountClient=client({signedIn:false});
  const providers=renderToStaticMarkup(Providers()),ad=renderToStaticMarkup(await Advertising());
- assert.match(providers,/Ihre Unterkunft auf DAS Reiseportal/);assert.match(providers,/href="\/angebot-anfragen"/);assert.doesNotMatch(providers,/zukünftiges Profil|Wir gestalten gerade|Ihr Können/);
+ assert.match(providers,/Ihre Unterkunft auf DAS-Reiseportal.com/);assert.match(providers,/href="\/angebot-anfragen"/);assert.doesNotMatch(providers,/zukünftiges Profil|Wir gestalten gerade|Ihr Können/);
  assert.match(ad,/href="\/angebot-anfragen"/);assert.match(ad,/Angebot anfragen/);assert.doesNotMatch(ad,/Werbekampagne planen/);
  const loginHtml=renderToStaticMarkup(await Login({searchParams:Promise.resolve({next:'/firma/werbung'})}));assert.match(loginHtml,/name="next" value="\/firma\/werbung"/);assert.match(loginHtml,/Angebot anfragen/);
  assert.throws(()=>Register(),/REDIRECT:\/angebot-anfragen/);

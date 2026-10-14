@@ -20,9 +20,8 @@ export function TravelNews() {
           </div>
           <div className={styles.body}>
             <h3>{item.title}</h3><p className={styles.teaser}>{item.teaser}</p>
-            <p className={styles.source}>{item.source} · {item.dateLabel} <time dateTime={item.publishedAt}>{item.publishedAt.split('-').reverse().join('.')}</time></p>
-            <span className={styles.cta}>Bei der Quelle weiterlesen <span aria-hidden="true">↗</span><span className={styles.visuallyHidden}> (öffnet in einem neuen Tab)</span></span>
-            <small className={styles.credit}>{item.imageCredit}</small>
+            <p className={styles.source}>Quelle: {item.source} · {item.dateLabel} <time dateTime={item.publishedAt}>{item.publishedAt.split('-').reverse().join('.')}</time></p>
+            <span className={styles.cta}>Weiterlesen <span aria-hidden="true">↗</span><span className={styles.visuallyHidden}> (öffnet in einem neuen Tab)</span></span>
           </div>
         </a>)}
       </div>

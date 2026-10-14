@@ -10,7 +10,7 @@ import { loadReiseportalFinderListings, loadReiseportalSearchListings } from '@/
 import { loadPublicTravelTerms } from '@/lib/public-travel-taxonomy';
 import { travelSearchReturnUrl, travelSearchUrl } from '@/lib/travel-search-intent';
 
-export const metadata = pageMetadata({ title: 'Suchergebnisse', description: 'Öffentliche Inhalte im DAS Reiseportal durchsuchen und passende Seiten entdecken.', noindex: true });
+export const metadata = pageMetadata({ title: 'Suchergebnisse', description: 'Öffentliche Inhalte im DAS-Reiseportal.com durchsuchen und passende Seiten entdecken.', noindex: true });
 export const dynamic = 'force-dynamic';
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;

@@ -63,7 +63,7 @@ export const hubDescriptions = {
 
 export function discoveryMetadata(entry: DiscoveryEntry, kind: "destination" | "theme", config: SiteSeo = siteSeo()) {
   const description = kind === "destination"
-    ? entry.seoDescription ?? `${entry.title} im DAS Reiseportal: Entdecken Sie passende Unterkünfte mit Standort, Kontakt und zugeordneten Reisethemen.`
+    ? entry.seoDescription ?? `${entry.title} im DAS-Reiseportal.com: Entdecken Sie passende Unterkünfte mit Standort, Kontakt und zugeordneten Reisethemen.`
     : `${entry.title}: ${plainSeoText(entry.intro)}`;
   return pageMetadata({ title: kind === "destination" && entry.seoTitle ? entry.seoTitle : `${entry.title} – ${kind === "destination" ? "Reiseziele und Unterkünfte" : "Reisethema und passende Anbieter"}`,
     description, path: `/${kind === "destination" ? "reiseziele" : "mottoreisen"}/${entry.slug}`, image: entry.image ?? undefined }, config);
@@ -89,7 +89,7 @@ export function profileDescription(listing: Listing) {
   const location = plainSeoText(listing.location.city || listing.location.region);
   const prefix = `${name}${location ? ` in ${location}` : ""}.`;
   const detail = plainSeoText(listing.tagline) || plainSeoText(listing.description);
-  return seoExcerpt(`${prefix} ${detail || "Standort und Kontaktinformationen im DAS Reiseportal."}`);
+  return seoExcerpt(`${prefix} ${detail || "Standort und Kontaktinformationen im DAS-Reiseportal.com."}`);
 }
 
 export function profileMetadata(listing: Listing, config: SiteSeo = siteSeo()) {

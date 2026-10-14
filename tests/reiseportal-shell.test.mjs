@@ -151,7 +151,7 @@ test("account button and dropdown groups use server-provided access without perm
   assert.doesNotMatch(admin, /href="\/firma"|href="\/login"/);
   assert.deepEqual(accountMenuGroups("admin").administration.map((link) => link.label), ["Redaktion"]);
 
-  assert.match(footer("unauthenticated"), /DAS Reiseportal.*Neue Lieblingsorte entdecken/s);
+  assert.match(footer("unauthenticated"), /DAS-Reiseportal.com.*Neue Lieblingsorte entdecken/s);
   assert.match(footer("unauthenticated"), /Redaktion \/ Login/);
   assert.match(footer("forbidden"), /href="\/angebot-anfragen"/);
 });

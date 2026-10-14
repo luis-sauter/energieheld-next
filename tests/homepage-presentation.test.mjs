@@ -84,13 +84,13 @@ test('rendered homepage preserves the exact autumn component and removes only th
 
 test('homepage brand history is visible before the headline and finder, with matching home-only metadata',async()=>{
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
- assert.match(html,/<p class="eyebrow">DAS Reiseportal · Reiseideen seit 2010<\/p>/);
+ assert.match(html,/<p class="eyebrow">DAS-Reiseportal.com · Reiseideen seit 2010<\/p>/);
  assert.ok(html.indexOf('Reiseideen seit 2010')<html.indexOf('<h1'));
  assert.equal((html.match(/<h1\b/g)||[]).length,1);
  assert.match(html,/Reisen beginnt mit einer guten Idee/);
  assert.doesNotMatch(html,/Deine Unterkunft|Lass dich|Sag uns/);
  const meta=await homeMetadata({searchParams:Promise.resolve({})});
- assert.deepEqual(meta.title,{absolute:'DAS Reiseportal – Reiseideen seit 2010'});
+ assert.deepEqual(meta.title,{absolute:'DAS-Reiseportal.com – Reiseideen seit 2010'});
  assert.match(meta.description,/seit 2010/);assert.equal(meta.openGraph.description,meta.description);
 });
 test('public shared import badge is opt-in for discovery cards; protected homepage stays unchanged',async()=>{
@@ -238,6 +238,9 @@ test('news cards render three local symbolic images and actual independent origi
  assert.equal(new Set(travelNews.map(n=>new URL(n.sourceUrl).hostname)).size,3);
  assert.equal(travelNews.filter(n=>n.sourceUrl.includes('adac.de')).length,1);
  for(const item of travelNews){assert.ok(inspiration.includes(item.image));assert.ok(inspiration.includes(item.sourceUrl.replaceAll('&','&amp;')));assert.ok(existsSync(new URL('../public'+item.image,import.meta.url)));assert.match(item.imageAlt,/KI-Symbolbild/);assert.ok(item.publishedAt<='2026-10-13');}
+ assert.equal((inspiration.match(/Weiterlesen/g)||[]).length,3);
+ assert.equal((inspiration.match(/Quelle:/g)||[]).length,3);
+ assert.doesNotMatch(inspiration,/Bei der Quelle weiterlesen|<small/);
  assert.equal((inspiration.match(/target="_blank"/g)||[]).length,3);assert.equal((inspiration.match(/rel="noopener noreferrer"/g)||[]).length,3);
  const code=read('src/components/portal/travel-news.tsx'),css=read('src/components/portal/travel-news.module.css');
  assert.doesNotMatch(code,/use client|fetch\(|supabase|useEffect|setInterval|ThemeScroller/);

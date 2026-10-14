@@ -16,15 +16,17 @@ test('all six corporate colors have one source shared by branding and portal CSS
   assert.deepEqual(Object.fromEntries(['orange','blue','basalt','light-orange','light-gray','white'].map(k=>[k,portalColors[k]])),
     {orange:'#F7902F',blue:'#13237F',basalt:'#435152','light-orange':'#FDF1E4','light-gray':'#F4F4F4',white:'#FFFFFF'});
   assert.deepEqual(reiseportal.colors,{primary:portalColors.blue,accent:portalColors.orange,surface:portalColors['light-gray']});
+  assert.equal(reiseportal.name,'DAS-Reiseportal.com');
   for(const [name,value] of Object.entries(portalColors))assert.equal(portalColorVariables['--portal-'+name],value);
   assert.match(read('src/app/(energieheld)/layout.tsx'),/\.\.\.portalColorVariables/);
 });
-test('exact orange/white is the approved choice, honestly below AA; focus and body text retain contrast',()=>{
+test('basalt/white primary buttons exceed AA while orange stays the unchanged accent',()=>{
   assert.ok(Math.abs(contrast(portalColors.orange,portalColors.white)-2.3372)<0.001);
-  assert.ok(contrast(portalColors.orange,portalColors.white)<4.5);
+  assert.ok(Math.abs(contrast(portalColors.basalt,portalColors.white)-8.276)<0.001);
+  assert.ok(contrast(portalColors.basalt,portalColors.white)>=4.5);
   assert.equal(Object.keys(portalColors).length,6);
   const css=read('src/app/globals.css');
-  for(const name of ['button','button-hover','button-active'])assert.ok(css.includes(`--portal-${name}: var(--portal-orange);`));
+  for(const name of ['button','button-hover','button-active'])assert.ok(css.includes(`--portal-${name}: var(--portal-basalt);`));
   for(const background of ['white','light-gray','light-orange'])assert.ok(contrast(portalColors.blue,portalColors[background])>=3);
   assert.ok(contrast(portalColors.basalt,portalColors.white)>=4.5);
 });

@@ -23,7 +23,7 @@ import { jsonLdGraph, websiteSchema } from "@/lib/seo-schema";
 import { JsonLd } from "@/components/portal/json-ld";
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParameters> }) {
-  return pageMetadata({ title: "DAS Reiseportal – Reiseideen seit 2010", description: "Reiseideen seit 2010: Entdecken Sie Reiseziele, Mottoreisen und Unterkünfte für Ihre nächste Auszeit. Lernen Sie Gastgeber und ihre Angebote kennen.", path: "/", home: true,
+  return pageMetadata({ title: "DAS-Reiseportal.com – Reiseideen seit 2010", description: "Reiseideen seit 2010: Entdecken Sie Reiseziele, Mottoreisen und Unterkünfte für Ihre nächste Auszeit. Lernen Sie Gastgeber und ihre Angebote kennen.", path: "/", home: true,
     noindex: Object.values(await searchParams).some(Boolean) });
 }
 
@@ -68,7 +68,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
 
     <section className={`${styles.provider} container`} aria-labelledby="provider-title">
-      <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Ihre Unterkunft auf DAS Reiseportal</h2>
+      <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Ihre Unterkunft auf DAS-Reiseportal.com</h2>
         <p>Machen Sie Ihre Unterkunft dort sichtbar, wo neue Reisepläne entstehen. Wir beraten Sie persönlich – unverbindlich und ohne Registrierung.</p></div>
       <Link className="button button-primary" href="/angebot-anfragen">Angebot anfragen →</Link>
     </section>
