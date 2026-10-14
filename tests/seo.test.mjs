@@ -41,7 +41,7 @@ const {TravelRelations}=await import('../src/components/portal/travel-relations.
 const {loadPublicCompanyProfileIndex}=await import('../src/lib/public-companies.ts');
 const {loadReiseportalProfileIndex}=await import('../src/lib/reiseportal-directory.ts');
 const production=siteSeo({SITE_URL:'https://portal.example',SITE_INDEXING:'enabled',NODE_ENV:'production',CONTEXT:'production'});
-const listing={id:'real-1',slug:'sonnenhof',name:'Pension Sonnenhof',tagline:'Urlaub in Meransen.',description:'<p>Ein echter Profiltext.</p>',location:{street:'Dorfstraße 1',city:'Meransen',postalCode:'39037',region:'Südtirol',country:'Italien'},categoryIds:[],contact:{phone:'+39 123',email:'info@example.com',website:'https://provider.example'},images:[{src:'/reiseportal/hero.jpg',alt:'Originalbild'}],services:[],isDemo:false,travelTermKeys:['theme:wellnessangebote','accommodation:pension','audience:familie']};
+const listing={id:'real-1',slug:'sonnenhof',name:'Pension Sonnenhof',tagline:'Urlaub in Meransen.',description:'<p>Ein echter Profiltext.</p>',location:{street:'Dorfstraße 1',city:'Meransen',postalCode:'39037',region:'Südtirol',country:'Italien'},categoryIds:[],contact:{phone:'+39 123',email:'info@example.com',website:'https://provider.example'},images:[{src:'/reiseportal/unterkuenfte/blausee/02.jpg',alt:'Originalbild'}],services:[],isDemo:false,travelTermKeys:['theme:wellnessangebote','accommodation:pension','audience:familie']};
 const terms=[{term_key:'theme:wellnessangebote',dimension:'theme',slug:'wellnessangebote',label:'Wellnessangebote'},{term_key:'accommodation:pension',dimension:'accommodation',slug:'pension',label:'Pension'},{term_key:'audience:familie',dimension:'audience',slug:'familie',label:'Familie'},{term_key:'feature:pool',dimension:'feature',slug:'pool',label:'Pool'},{term_key:'accommodation:hotel',dimension:'accommodation',slug:'hotel',label:'Hotel'}];
 
 test('production identity is explicit and portable; missing/invalid/preview origins fail closed',()=>{
@@ -57,7 +57,7 @@ test('metadata provides title/description/OG/Twitter and canonical without previ
  const home=pageMetadata({title:production.defaultTitle,description:production.defaultDescription,path:'/',home:true},production);
  assert.deepEqual(home.title,{absolute:production.defaultTitle});assert.equal(home.robots.index,true);
  assert.equal(home.alternates.canonical,'https://portal.example/');assert.equal(home.openGraph.locale,'de_DE');
- assert.ok(home.openGraph.images[0].url.startsWith('https://portal.example/'));assert.equal(home.twitter.card,'summary_large_image');
+ assert.equal(home.openGraph.images[0].url,'https://portal.example/brand/das-reiseportal-logo.png');assert.equal(home.twitter.card,'summary_large_image');
  assert.equal(rootMetadata(production).title.template,'%s | DAS-Reiseportal.com');assert.equal(rootMetadata(production).robots.index,false);
  const preview=pageMetadata({title:'Reiseziele',description:'Echte Ziele',path:'/reiseziele'},siteSeo({CONTEXT:'branch-deploy'}));
  assert.equal(preview.robots.index,false);assert.equal(preview.robots.follow,true);assert.equal(preview.alternates,undefined);assert.equal(preview.openGraph.url,undefined);assert.equal(preview.openGraph.images,undefined);

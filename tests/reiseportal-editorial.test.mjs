@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { historicalTravelThemes as travelThemes } from "../src/data/reiseportal-discovery.ts";
 import { importedJoomlaMedia } from "../src/data/reiseportal-import-media.ts";
 
@@ -31,13 +31,32 @@ test("selected Joomla provider media refer only to existing local originals", ()
   }
 });
 
-test("the video remains the hero medium and the still image is only a reduced-motion fallback", () => {
+test("hero loading, errors and reduced motion use a neutral background without the retired photo", () => {
   const home = readFileSync(new URL("../src/app/(energieheld)/page.tsx", import.meta.url), "utf8");
   const finder = readFileSync(new URL("../src/components/portal/travel-finder.tsx", import.meta.url), "utf8");
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   assert.match(home, /<HomeTravelFinder/);
   assert.match(finder, /<video autoPlay muted loop playsInline preload="metadata"/);
   assert.doesNotMatch(home, /hero\.jpg|poster=/);
-  assert.match(css, /\.travel-hero\s*\{[^}]*hero\.jpg/);
+  assert.match(css, /\.travel-hero\s*\{[^}]*background: var\(--portal-surface\);/);
+  assert.doesNotMatch(css, /hero\.jpg/);
+  assert.doesNotMatch(finder, /hero\.jpg|poster=|fallbackImage/);
+  assert.ok(!existsSync(asset("/reiseportal/hero.jpg")));
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.travel-hero > video \{ display: none; \}/);
+});
+
+
+test("retired hero has no active source reference; independent provider and destination originals survive", () => {
+  const scan = directory => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const path = new URL(entry.name + (entry.isDirectory() ? '/' : ''), directory);
+      if (entry.isDirectory()) scan(path);
+      else if (/\.(?:css|[cm]?[jt]sx?|json)$/.test(entry.name))
+        assert.ok(!readFileSync(path, 'utf8').includes('/reiseportal/hero.jpg'), path.pathname);
+    }
+  };
+  scan(new URL('../src/', import.meta.url));
+  assert.ok(existsSync(asset('/reiseportal/hero-loop.mp4')));
+  for (const original of ['/reiseportal/destinations/schweiz.jpg', '/reiseportal/unterkuenfte/blausee/01.jpg'])
+    assert.ok(existsSync(asset(original)), original);
 });

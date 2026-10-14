@@ -3183,7 +3183,8 @@ h6 {
   align-items: center;
   isolation: isolate;
   overflow: hidden;
-  background: var(--portal-primary-deep) url('/reiseportal/hero.jpg') center 55% / cover no-repeat;
+  /* Neutral before playback, on media errors and with reduced motion. */
+  background: var(--portal-surface);
 }
 .travel-hero > video {
   position: absolute;
