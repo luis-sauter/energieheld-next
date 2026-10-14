@@ -79,13 +79,13 @@ const { default: LegacyExperts } = await import("../src/app/(energieheld)/expert
 const { default: LegacyDetail } = await import("../src/app/(energieheld)/experten/[slug]/page.tsx");
 const { default: LegacyTrades } = await import("../src/app/(energieheld)/gewerke/page.tsx");
 
-test("Reiseportal palette keeps coral for actions and all quicklink symbols blue", () => {
-  assert.deepEqual(reiseportal.colors, { primary: "#1E5A7A", accent: "#FF8A4C", surface: "#FAF7F2" });
+test("Reiseportal palette uses the Release 1 corporate palette and all quicklink symbols blue", () => {
+  assert.deepEqual(reiseportal.colors, { primary: "#13237F", accent: "#F7902F", surface: "#F4F4F4" });
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
-  for (const color of ["#1e5a7a", "#174761", "#ff8a4c", "#faf7f2", "#1a2731", "#ffffff"])
-    assert.ok(css.includes(color), `${color} must remain in the portal palette`);
-  assert.match(css, /\.reiseportal-shell \.button-primary,[\s\S]*?color: var\(--portal-ink\)/);
-  assert.match(css, /\.reiseportal-shell \.company-profile \.button-primary \{ color: var\(--portal-ink\); \}/);
+  assert.match(css, /--portal-primary: var\(--portal-blue\)/);
+  assert.match(css, /--portal-accent: var\(--portal-orange\)/);
+  assert.match(css, /\.reiseportal-shell \.button-primary,[\s\S]*?color: var\(--portal-white\)/);
+  assert.match(css, /\.reiseportal-shell \.company-profile \.button-primary \{ color: var\(--portal-white\); \}/);
   assert.match(css, /\.reiseportal-shell \.company-profile \.detail-title \{ color: var\(--portal-primary-deep\); \}/);
   assert.match(css, /\.motto-intro-image \{ width: 100%; min-width: 0; min-height: 0; \}/);
   assert.match(css, /\.travel-quicklink-icon\s*\{[^}]*color: var\(--portal-primary\)/);
@@ -420,10 +420,10 @@ test("database travel terms take precedence over fallback slugs and combine all 
   assert.deepEqual(filterTravelDiscovery([reiseportalPreview[0]], "", "", "paar"), []);
 });
 
-test("public Reiseportal uses blue hierarchy, dark body text and separate coral actions", () => {
+test("public Reiseportal uses blue hierarchy, dark body text and white brand-orange actions", () => {
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
-  assert.equal(reiseportal.colors.primary, "#1E5A7A");
-  assert.equal(reiseportal.colors.accent, "#FF8A4C");
+  assert.equal(reiseportal.colors.primary, "#13237F");
+  assert.equal(reiseportal.colors.accent, "#F7902F");
   assert.match(css, /\.reiseportal-shell\s*\{[^}]*--text: var\(--portal-ink\);/);
   assert.match(css, /\.reiseportal-shell :is\(a, button, input, select, summary\):focus-visible\s*\{\s*outline-color: var\(--portal-primary\);/);
   assert.match(css, /\.motto-page \.discovery-card-title span \{ color: var\(--portal-primary\); \}/);

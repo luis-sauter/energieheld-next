@@ -253,7 +253,7 @@
   box-shadow: none;
 }
 .company-profile .button-primary {
-  background: var(--brand-accent);
+  background: var(--portal-button, var(--brand-accent));
   color: var(--white);
 }
 .company-profile .contact-card .button {

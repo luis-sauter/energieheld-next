@@ -98,13 +98,13 @@
   border-color: #d9e4e9;
   background: #fff;
 }
-.requestForm .placement input { grid-row: 1 / 3; width: 20px; height: 20px; margin: 0; accent-color: #1e5a7a; }
-.placementName { color: #1a2731; font-size: 14px; }
+.requestForm .placement input { grid-row: 1 / 3; width: 20px; height: 20px; margin: 0; accent-color: var(--portal-blue); }
+.placementName { color: var(--portal-basalt); font-size: 14px; }
 .requestForm .placement small { grid-column: 2; color: #455864; font-size: 12px; }
-.requestForm .placement:has(input:checked) { padding: 9px 11px; border: 2px solid #1e5a7a; background: #eaf4f8; }
+.requestForm .placement:has(input:checked) { padding: 9px 11px; border: 2px solid var(--portal-blue); background: var(--portal-light-orange); }
 .requestForm .placement:has(input:disabled) { opacity: .75; }
 .requestForm .placement .slotBooked { color: #6b5151; }
-.requestForm .placement .slotAvailability { color: #1e5a7a; }
+.requestForm .placement .slotAvailability { color: var(--portal-blue); }
 @media (max-width: 800px) {
   .contactGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -487,7 +487,7 @@
 .editorialPromo .promoCopy strong { font-size: clamp(1.3rem, 2.4vw, 2rem); line-height: 1.2; }
 .editorialPromo .promoCopy p { margin: 12px 0; color: #455f70; line-height: 1.5; }
 .editorialPromo .promoLabel { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; }
-.editorialPromo .promoCta { display: inline-flex; align-items: center; gap: 16px; background: #ff8a4c; color: #1a2731; border-radius: 8px; padding: 12px 18px; font-weight: 700; }
+.editorialPromo .promoCta { display: inline-flex; align-items: center; gap: 16px; background: var(--portal-button); color: var(--portal-white); border-radius: 8px; padding: 12px 18px; font-weight: 700; }
 @media (max-width: 700px) {
   .editorialPromo .imageCreative img { min-height: 0; }
   .editorialPromo .imageCreative::after { display: none; }
@@ -507,8 +507,8 @@
 /* Compact public request completion; checkbox never inherits full-width inputs. */
 .requestFooter { display: grid; gap: 14px; padding: 20px; background: #fff; border: 1px solid #d9e4e9; border-radius: 12px; }
 .requestForm .consentRow { display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: start; gap: 12px; font-size: 14px; line-height: 1.6; font-weight: 400; }
-.requestForm .consentRow input { width: 20px; height: 20px; margin: 2px 0 0; padding: 0; accent-color: #1e5a7a; }
-.consentRow a { color: #174761; text-decoration: underline; text-underline-offset: 3px; }
+.requestForm .consentRow input { width: 20px; height: 20px; margin: 2px 0 0; padding: 0; accent-color: var(--portal-blue); }
+.consentRow a { color: var(--portal-blue); text-decoration: underline; text-underline-offset: 3px; }
 .requestAssurance { margin: 0; color: #455864; font-size: 13px; line-height: 1.55; }
 .requestSubmit { display: flex; justify-content: flex-end; }
 @media (max-width: 700px) { .requestFooter { padding: 16px; } .requestSubmit > button { width: 100%; } }

@@ -1,6 +1,7 @@
 import "@/components/portal/company-profile.css";
 import type { CSSProperties, ReactNode } from "react";
 import { reiseportal } from "@/config/reiseportal";
+import { portalColorVariables } from '@/config/portal-colors';
 import { PortalHeader, PortalFooter } from "@/components/portal/chrome";
 import { getPortalAccount } from "@/lib/portal-account-server";
 
@@ -24,6 +25,7 @@ export default async function ReiseportalLayout({
     identity = { name, email, initials: initials || "K" };
   }
   const style = {
+    ...portalColorVariables,
     "--brand-primary": reiseportal.colors.primary,
     "--brand-accent": reiseportal.colors.accent,
     "--brand-surface": reiseportal.colors.surface,

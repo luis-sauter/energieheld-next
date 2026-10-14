@@ -1,10 +1,11 @@
 import type { BrandConfig } from "@/types/portal";
+import { portalColors } from './portal-colors';
 
 export const reiseportal: BrandConfig = {
   id: "reiseportal",
   name: "DAS Reiseportal",
   tagline: "Neue Lieblingsorte entdecken.",
-  colors: { primary: "#1E5A7A", accent: "#FF8A4C", surface: "#FAF7F2" },
+  colors: { primary: portalColors.blue, accent: portalColors.orange, surface: portalColors['light-gray'] },
   providerLabel: "Unterkünfte",
   searchLabel: "Unterkunft entdecken",
   cta: { label: "Unterkünfte A–Z", href: "/unterkuenfte-a-z" },

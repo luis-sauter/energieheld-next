@@ -1,4 +1,4 @@
-.page { --portal-primary: #217ca3; --portal-primary-deep: #145d80; background: linear-gradient(#fff 52%, #fffbf7); padding-bottom: clamp(48px, 6vw, 88px); }
+.page { --portal-primary: var(--portal-blue); --portal-primary-deep: var(--portal-blue); background: linear-gradient(#fff 52%, #fffbf7); padding-bottom: clamp(48px, 6vw, 88px); }
 .hero { position: relative; isolation: isolate; min-height: 420px; display: flex; align-items: flex-start; background: #e9f7ff; }
 .heroImage { z-index: -2; object-fit: cover; object-position: center 55%; filter: brightness(1.06); }
 .hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgb(250 253 255 / 95%) 0%, rgb(250 253 255 / 87%) 30%, rgb(250 253 255 / 32%) 62%, transparent 85%); }
