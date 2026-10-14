@@ -174,3 +174,11 @@ test('v2 generic named provider, description, equipment, city/country, punctuati
 test('v2 equal-ranked normalized name ties use stable ordering across offset pages',async()=>{
  await actor('postgres');const names=['Ährenhotel','Adlerhotel','Zebrahof','Ödenhotel'];for(const name of names)await db.query("insert into company_profiles(id,company_id,slug,display_name,description,city,country,status) values($1,$2,$3,$4,'TieTestWort','Salzburg','Österreich','approved')",[crypto.randomUUID(),owner,'local-'+crypto.randomUUID(),name]);await actor();const a=await v2('TieTestWort',{},2,0),b=await v2('TieTestWort',{},2,2);assert.deepEqual([...a.hits,...b.hits].map(h=>h.title),['Adlerhotel','Ährenhotel','Ödenhotel','Zebrahof']);
 });
+
+
+test('v2 profile totals cover exact/prefix/theme/destination/zero searches independently of catalog content',async()=>{
+ await actor();const catalog=[{id:'italien',type:'destination',title:'Italien',body:'Urlaub in Italien',url:'/reiseziele/suedtirol-italien'}];
+ for(const [term,total] of [['Pension Sonnenhof',1],['PENSION SONN',1],['Nordic Walking',1],['Deutschland',2],['zzzzkeinTreffer',0]]){
+  const result=await v2(term,{},1,0,catalog);assert.equal(result.total,total,term);assert.ok(result.hits.length<=1);
+ }
+});

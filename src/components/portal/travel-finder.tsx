@@ -7,18 +7,21 @@ import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, 
 import { travelFacetCount, travelFilterParams, travelFilterUrl, type TravelFacet } from "@/lib/reiseportal-facets";
 import { travelSearchUrl, travelSearchReturnUrl } from "@/lib/travel-search-intent";
 import { travelResultNoun, travelSearchResults, travelSearchAdvertisers, type TravelSearchBanner } from "@/lib/travel-search-banners";
-import { SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
+import { accommodationResultSummary, SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
 import { Breadcrumbs } from "./breadcrumbs";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 
 import { travelSeason } from "@/lib/travel-seasons";
 
 type Options = ReturnType<typeof availableTravelFilters>;
+type CompletedSearch = { values: TravelFilterValues; total: number; error?: string };
+
 type FacetOptions = { slug: string; label: string }[];
 
-export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, banners = [], origin = "directory" }: {
+export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, banners = [], origin = "directory", completedSearch }: {
   mode: "home" | "directory" | "search";
   origin?: "home" | "directory";
+  completedSearch?: CompletedSearch;
   listings: Listing[];
   banners?: TravelSearchBanner[];
   options: Options;
@@ -28,6 +31,8 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
   renderFinder?: (finder: ReactNode) => ReactNode;
 }) {
   const portalQuery = values.query.trim();
+  const completed = completedSearch && travelSearchUrl(values, origin) === travelSearchUrl(completedSearch.values, origin);
+  const querySummary = completed ? completedSearch.error ?? accommodationResultSummary(completedSearch.total) : "Suche mit Enter oder dem Suchbutton starten";
   const filterValues = { ...values, query: "" };
   const matched = travelSearchResults(listings, banners, filterValues);
   const count = matched.count;
@@ -83,9 +88,9 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
           </button>
         </div>
         <div className="reise-finder-summary" aria-live="polite" aria-atomic="true">
-          {portalQuery ? "Suche in allen öffentlichen Inhalten" : error ?? `${count} ${count === 1 && matched.advertisers.length > 0 ? "passendes" : "passende"} ${resultNoun}`}
+          {portalQuery ? querySummary : error ?? accommodationResultSummary(matched.listings.length)}
         </div>
-        <p id="reise-finder-hint">{portalQuery ? "Freitext durchsucht das gesamte Portal. Reisefilter gelten nur bei leerem Suchbegriff und bleiben für Ihre Rückkehr erhalten." : "Mit einem Suchbegriff finden Sie auch Reiseziele, Mottoreisen und weitere Inhalte im gesamten Portal."}</p>
+        <p id="reise-finder-hint">{portalQuery ? "Freitext durchsucht das gesamte Portal. Gewählte Reisefilter grenzen die Suche auf Unterkünfte ein." : "Mit einem Suchbegriff finden Sie auch Reiseziele, Mottoreisen und weitere Inhalte im gesamten Portal."}</p>
         {active.length > 0 && <div className="reise-finder-active" aria-label="Aktive Filter">
           {active.map(({ key, label }) => <button key={key} type="button" className="reise-finder-chip"
             onClick={() => update(key, "")} aria-label={`${label} entfernen`}>{label} <span aria-hidden="true">×</span></button>)}
@@ -123,7 +128,7 @@ export function HomeTravelFinder({ listings, terms, error, initialValues, banner
     values={values} onChange={setValues} error={error} />;
 }
 
-export function SearchTravelFinder({ listings, terms, initialValues, origin, error }: { listings: Listing[]; terms: PublicTravelTerm[]; initialValues: TravelFilterValues; origin: "home" | "directory"; error?: string | null }) {
+export function SearchTravelFinder({ listings, terms, initialValues, origin, error, completedSearch }: { completedSearch?: CompletedSearch; listings: Listing[]; terms: PublicTravelTerm[]; initialValues: TravelFilterValues; origin: "home" | "directory"; error?: string | null }) {
   const [values, setValues] = useState(initialValues);
   useEffect(() => {
     const restore = () => setValues(readTravelFilterValues(Object.fromEntries(new URLSearchParams(window.location.search))));
@@ -132,5 +137,5 @@ export function SearchTravelFinder({ listings, terms, initialValues, origin, err
     return () => { window.removeEventListener('popstate', restore); window.removeEventListener('pageshow', restore); };
   }, []);
   const options = useMemo(() => availableTravelFilters(listings, terms), [listings, terms]);
-  return <TravelFinder mode="search" origin={origin} listings={listings} options={options} values={values} onChange={setValues} error={error} />;
+  return <TravelFinder mode="search" origin={origin} completedSearch={completedSearch} listings={listings} options={options} values={values} onChange={setValues} error={error} />;
 }
