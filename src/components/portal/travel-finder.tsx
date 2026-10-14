@@ -16,14 +16,29 @@ import { travelSeason } from "@/lib/travel-seasons";
 type Options = ReturnType<typeof availableTravelFilters>;
 type CompletedSearch = { values: TravelFilterValues; total: number; error?: string };
 
+// A URL/form draft is not an executed search. Only submission marks a pending
+// request; completedSearch remains the server-authoritative result snapshot.
+export function useTravelSearchPending(values: TravelFilterValues, origin: "home" | "directory") {
+  const [submitted, setSubmitted] = useState<string | null>(null);
+  const signature = travelSearchUrl(values, origin);
+  useEffect(() => {
+    const restore = () => setSubmitted(null);
+    window.addEventListener("pageshow", restore);
+    return () => window.removeEventListener("pageshow", restore);
+  }, []);
+  return { searchPending: submitted === signature, onSearchStart: () => setSubmitted(signature) };
+}
+
 type FacetOptions = { slug: string; label: string }[];
 
-export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, banners = [], origin = "directory", completedSearch, profileTotal, profileLoading }: {
+export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, banners = [], origin = "directory", completedSearch, profileTotal, profileLoading, searchPending = false, onSearchStart }: {
   mode: "home" | "directory" | "search";
   origin?: "home" | "directory";
   completedSearch?: CompletedSearch;
   profileTotal?: number;
   profileLoading?: boolean;
+  searchPending?: boolean;
+  onSearchStart?: () => void;
   listings: Listing[];
   banners?: TravelSearchBanner[];
   options: Options;
@@ -34,7 +49,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
 }) {
   const portalQuery = values.query.trim();
   const completed = completedSearch && travelSearchUrl(values, origin) === travelSearchUrl(completedSearch.values, origin);
-  const querySummary = completed ? completedSearch.error ?? accommodationResultSummary(completedSearch.total) : "Suche mit Enter oder dem Suchbutton starten";
+  const querySummary = searchPending ? "Suche wird ausgeführt …" : completed ? completedSearch.error ?? accommodationResultSummary(completedSearch.total) : "Suche mit Enter oder dem Suchbutton starten";
   const filterValues = { ...values, query: "" };
   const matched = travelSearchResults(listings, banners, filterValues);
   const count = (profileTotal ?? matched.listings.length) + matched.advertisers.length;
@@ -51,12 +66,13 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
   const active: { key: keyof TravelFilterValues; label: string }[] = facets.filter(({ key }) => values[key]).map(({ key, label }) => ({
     key, label: labels.get(`${key}:${values[key]}`) ?? `${label}: Nicht verfügbar`,
   }));
-  if (values.query) active.push({ key: "query", label: `Suche: ${values.query}` });
+  if (values.query) active.push({ key: "query", label: `${completed || searchPending ? "Suche" : "Eingabe"}: ${values.query}` });
   const reset = () => onChange(readTravelFilterValues({}));
 
-  const finder = <form className="reise-finder" role="search" aria-label="Reisefinder" onSubmit={(event) => {
+  const finder = <form className="reise-finder" role="search" aria-label="Reisefinder" aria-busy={searchPending || undefined} onSubmit={(event) => {
         event.preventDefault();
-        if (portalQuery) { window.location.assign(travelSearchUrl(values, mode === "search" ? origin : mode)); return; }
+        if (searchPending) return;
+        if (portalQuery) { onSearchStart?.(); window.location.assign(travelSearchUrl(values, mode === "search" ? origin : mode)); return; }
         if (count === 0 || error) return;
         if (mode === "home" || mode === "search") window.location.assign(travelFilterUrl(values));
         else document.getElementById("unterkunft-ergebnisse")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
@@ -80,8 +96,8 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
             <input name="q" type="search" value={values.query} onChange={(event) => update("query", event.target.value)}
               maxLength={SEARCH_QUERY_LIMIT} placeholder="Name, Ort oder Reisethema" aria-describedby="reise-finder-hint" />
           </label>
-          <button className="button button-primary reise-finder-submit" type="submit" disabled={!portalQuery && (profileLoading || count === 0 || Boolean(error))}>
-            {portalQuery ? "Im Reiseportal suchen" : profileLoading ? "Unterkünfte werden geladen …" : count === 0 ? "Keine passenden Ergebnisse" : `${count} ${resultNoun} anzeigen`}
+          <button className="button button-primary reise-finder-submit" type="submit" disabled={searchPending || !portalQuery && (profileLoading || count === 0 || Boolean(error))}>
+            {searchPending ? "Suche läuft …" : portalQuery ? "Im Reiseportal suchen" : profileLoading ? "Unterkünfte werden geladen …" : count === 0 ? "Keine passenden Ergebnisse" : `${count} ${resultNoun} anzeigen`}
           </button>
         </div>
         <div className="reise-finder-summary" aria-live="polite" aria-atomic="true">
@@ -111,6 +127,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
 
 export function HomeTravelFinder({ listings, terms, error, initialValues, banners }: { listings: Listing[]; terms: PublicTravelTerm[]; error?: string | null; initialValues: TravelFilterValues; banners?: TravelSearchBanner[] }) {
   const [values, setValues] = useState<TravelFilterValues>(initialValues);
+  const pending = useTravelSearchPending(values, "home");
   useEffect(() => {
     const url = travelSearchReturnUrl(values, 'home');
     if (`${window.location.pathname}${window.location.search}` !== url) window.history.replaceState(window.history.state, '', url);
@@ -121,12 +138,13 @@ export function HomeTravelFinder({ listings, terms, error, initialValues, banner
     return () => window.removeEventListener('popstate', restore);
   }, []);
   const options = useMemo(() => availableTravelFilters(listings, terms, banners?.flatMap(b => b.term_keys), banners?.flatMap(b => b.destination_slugs ?? [])), [listings, terms, banners]);
-  return <TravelFinder mode="home" banners={banners} listings={listings} options={options}
+  return <TravelFinder mode="home" {...pending} banners={banners} listings={listings} options={options}
     values={values} onChange={setValues} error={error} />;
 }
 
 export function SearchTravelFinder({ listings, terms, initialValues, origin, error, completedSearch }: { completedSearch?: CompletedSearch; listings: Listing[]; terms: PublicTravelTerm[]; initialValues: TravelFilterValues; origin: "home" | "directory"; error?: string | null }) {
   const [values, setValues] = useState(initialValues);
+  const pending = useTravelSearchPending(values, origin);
   useEffect(() => {
     const restore = () => setValues(readTravelFilterValues(Object.fromEntries(new URLSearchParams(window.location.search))));
     window.addEventListener('popstate', restore);
@@ -134,5 +152,5 @@ export function SearchTravelFinder({ listings, terms, initialValues, origin, err
     return () => { window.removeEventListener('popstate', restore); window.removeEventListener('pageshow', restore); };
   }, []);
   const options = useMemo(() => availableTravelFilters(listings, terms), [listings, terms]);
-  return <TravelFinder mode="search" origin={origin} completedSearch={completedSearch} listings={listings} options={options} values={values} onChange={setValues} error={error} />;
+  return <TravelFinder mode="search" {...pending} origin={origin} completedSearch={completedSearch} listings={listings} options={options} values={values} onChange={setValues} error={error} />;
 }

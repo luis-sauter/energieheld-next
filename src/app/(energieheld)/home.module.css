@@ -14,7 +14,7 @@
 }
 .page :global(.reise-finder input), .page :global(.reise-finder select) { border-color: rgb(30 90 122 / 16%); }
 .page :global(.reise-finder input:focus-visible), .page :global(.reise-finder select:focus-visible) { border-color: var(--portal-primary); }
-.page :global(.reise-finder-submit) { grid-column: span 2; }
+.page :global(.reise-finder-submit) { grid-column: span 3; }
 .page :global(#reise-finder-hint) { margin: 8px 0 0; font-size: .8rem; line-height: 1.5; color: var(--muted); }
 .page :global(.section) { padding-block: clamp(44px, 5vw, 72px); }
 .page :global(.section-heading) { margin-bottom: 28px; gap: 20px; }
@@ -52,6 +52,9 @@
 .provider p:not(:global(.eyebrow)) { max-width: 620px; margin-bottom: 0; }
 .provider :global(.button) { flex-shrink: 0; }
 .page a:focus-visible { outline: 3px solid var(--portal-primary); outline-offset: 5px; }
+@media (max-width: 1050px) {
+  .page :global(.reise-finder-submit) { grid-column: auto; }
+}
 @media (max-width: 1100px) {
   .partners :global(.advertising-rail-creatives), .partners :global(.advertising-rail > div) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .destinations :global(.discovery-card-image) { aspect-ratio: 1.7; }
