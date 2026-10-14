@@ -3268,7 +3268,8 @@ h6 {
 .reise-finder :is(input, select):hover,
 .reise-finder :is(input, select):focus-visible { border-color: var(--portal-primary); }
 .reise-finder-facets { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: inherit; }
-.reise-finder-grid .reise-finder-query, .reise-finder-grid .reise-finder-submit { grid-column: span 2; }
+.reise-finder-grid .reise-finder-query { grid-column: auto; }
+.reise-finder-grid .reise-finder-submit { grid-column: span 3; }
 .reise-finder-submit { min-height: 54px; width: 100%; font-size: 1rem; }
 .reise-finder-summary { margin-top: 15px; font-weight: 700; color: var(--text); }
 .reise-finder-active { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }

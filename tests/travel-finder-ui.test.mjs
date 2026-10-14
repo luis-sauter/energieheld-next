@@ -204,3 +204,20 @@ test('editing or resetting a completed query/filter never leaves a stale result 
 for(const mode of ['home','directory','search'])test(mode+' finder removes the separate location field and ignores legacy location filters',()=>{const values=readTravelFilterValues({q:'München',ort:'nonmatching'});assert.equal(values.location,'');const html=render(values,mode);assert.doesNotMatch(html,/name="ort"|Ort oder Postleitzahl/);assert.match(html,/value="München"/);assert.doesNotMatch(travelSearchUrl({...values,location:'stale'},'home'),/ort=/);});
 
 test('structured page total is taken from the page response rather than rendered cards or stale facet facts',()=>{const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'directory',listings:listings.slice(0,1),options,values:readTravelFilterValues({}),onChange(){},profileTotal:127}));assert.match(html,/127 Unterkünfte gefunden/);assert.match(html,/127 Unterkünfte anzeigen/);});
+
+for (const mode of ['home', 'directory', 'search']) test(mode + ' distinguishes draft, submitted and completed query chips without inventing a count', () => {
+  const values = readTravelFilterValues({q:'pension',ziel:'oesterreich'});
+  const html = extra => renderToStaticMarkup(createElement(TravelFinder,{mode,listings,options,values,onChange(){},...extra}));
+  assert.match(html({}),/Eingabe: pension/); assert.doesNotMatch(html({}),/Suche: pension|\d+ Unterkünfte gefunden/);
+  const pending=html({searchPending:true}); assert.match(pending,/Suche wird ausgeführt/); assert.match(pending,/aria-busy="true"/); assert.match(pending,/Suche: pension/); assert.doesNotMatch(pending,/Suche mit Enter|\d+ Unterkünfte gefunden/);
+  const completed=html({completedSearch:{values,total:51}}); assert.match(completed,/51 Unterkünfte gefunden/); assert.match(completed,/Suche: pension/); assert.doesNotMatch(completed,/Eingabe: pension|Suche mit Enter/);
+  const changed=html({completedSearch:{values:{...values,query:'Wellness'},total:51}}); assert.match(changed,/Eingabe: pension/); assert.doesNotMatch(changed,/51 Unterkünfte gefunden|Suche: pension/);
+});
+
+test('submission marks pending once before navigation, while duplicate pending submissions are ignored',()=>{
+ const previous=globalThis.window;const calls=[];
+ try {globalThis.window={location:{assign(){calls.push('navigate')}}};const props={mode:'home',listings,options,values:readTravelFilterValues({q:'pension'}),onChange(){},onSearchStart(){calls.push('pending')}};
+ formIn(TravelFinder(props)).props.onSubmit({preventDefault(){}});assert.deepEqual(calls,['pending','navigate']);
+ formIn(TravelFinder({...props,searchPending:true})).props.onSubmit({preventDefault(){}});assert.deepEqual(calls,['pending','navigate']);
+ }finally{globalThis.window=previous;}
+});
