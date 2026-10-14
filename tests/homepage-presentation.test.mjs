@@ -287,7 +287,7 @@ test('central audience labels and assigned icons render in cards and profile hea
  assert.equal(renderToStaticMarkup(createElement(TravelSignals,{termKeys:[]})),'');
  assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing:{...listing,travelTermKeys:[],description:'Hunde Familie Radwandern'}})),/data-travel-term=/);
  const row=renderToStaticMarkup(createElement(ListingRow,{listing,categories:[],href:'/unterkuenfte/pension-sonnenhof',travel:true}));assert.match(row,/travel-image-fallback/);assert.doesNotMatch(row,/<img/);
- assert.match(read('src/app/(energieheld)/suche/page.tsx'),/SearchResults/);
+ assert.match(read('src/app/(energieheld)/suche/page.tsx'),/SearchResultStream/);
  assert.match(read('src/components/portal/search-results.tsx'),/ListingRow/);
  for(const file of ['src/components/portal/listing-row.tsx','src/components/portal/listings.tsx'])assert.match(read(file),/TravelSignals/);
  const {availableTravelFilters,activeTravelFilterLabels,readTravelFilterValues}=await import('../src/lib/reiseportal-filter-options.ts');

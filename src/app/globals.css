@@ -3267,6 +3267,8 @@ h6 {
 }
 .reise-finder :is(input, select):hover,
 .reise-finder :is(input, select):focus-visible { border-color: var(--portal-primary); }
+.reise-finder-facets { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: inherit; }
+.reise-finder-grid .reise-finder-query, .reise-finder-grid .reise-finder-submit { grid-column: span 2; }
 .reise-finder-submit { min-height: 54px; width: 100%; font-size: 1rem; }
 .reise-finder-summary { margin-top: 15px; font-weight: 700; color: var(--text); }
 .reise-finder-active { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
@@ -3427,12 +3429,15 @@ h6 {
 .discovery-detail .accommodation-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 1050px) {
   .reise-finder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reise-finder-facets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reise-finder-grid .reise-finder-query, .reise-finder-grid .reise-finder-submit { grid-column: auto; }
   .discovery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .travel-quicklinks { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .discovery-detail .accommodation-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 700px) {
   .reise-finder-grid { grid-template-columns: minmax(0, 1fr); }
+  .reise-finder-facets { grid-template-columns: minmax(0, 1fr); }
   .travel-results-heading { align-items: stretch; flex-direction: column; }
   .travel-results-tools { align-items: stretch; flex-direction: column; }
   .travel-results-heading label { width: 100%; }

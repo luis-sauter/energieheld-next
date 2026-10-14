@@ -18,10 +18,12 @@ type CompletedSearch = { values: TravelFilterValues; total: number; error?: stri
 
 type FacetOptions = { slug: string; label: string }[];
 
-export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, banners = [], origin = "directory", completedSearch }: {
+export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, banners = [], origin = "directory", completedSearch, profileTotal, profileLoading }: {
   mode: "home" | "directory" | "search";
   origin?: "home" | "directory";
   completedSearch?: CompletedSearch;
+  profileTotal?: number;
+  profileLoading?: boolean;
   listings: Listing[];
   banners?: TravelSearchBanner[];
   options: Options;
@@ -35,7 +37,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
   const querySummary = completed ? completedSearch.error ?? accommodationResultSummary(completedSearch.total) : "Suche mit Enter oder dem Suchbutton starten";
   const filterValues = { ...values, query: "" };
   const matched = travelSearchResults(listings, banners, filterValues);
-  const count = matched.count;
+  const count = (profileTotal ?? matched.listings.length) + matched.advertisers.length;
   const resultNoun = travelResultNoun(count, matched.advertisers.length);
   const update = (key: keyof TravelFilterValues, value: string) => onChange({ ...values, [key]: value });
   const facets: { key: TravelFacet; label: string; all: string; entries: FacetOptions }[] = [
@@ -50,7 +52,6 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
     key, label: labels.get(`${key}:${values[key]}`) ?? `${label}: Nicht verfügbar`,
   }));
   if (values.query) active.push({ key: "query", label: `Suche: ${values.query}` });
-  if (values.location) active.push({ key: "location", label: `Ort/PLZ: ${values.location}` });
   const reset = () => onChange(readTravelFilterValues({}));
 
   const finder = <form className="reise-finder" role="search" aria-label="Reisefinder" onSubmit={(event) => {
@@ -61,7 +62,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
         else document.getElementById("unterkunft-ergebnisse")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
       }}>
         <div className="reise-finder-grid">
-          {facets.filter(({ entries }) => entries.length > 0).map(({ key, label, all, entries }) =>
+          {facets.some(({entries})=>entries.length>0) && <div className="reise-finder-facets">{facets.filter(({ entries }) => entries.length > 0).map(({ key, label, all, entries }) =>
             <label key={key}>{label}
               <select name={travelFilterParams[key]} value={values[key]} onChange={(event) => update(key, event.target.value)}>
                 <option value="">{all}</option>
@@ -74,21 +75,17 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
                   </option>;
                 })}
               </select>
-            </label>)}
-          <label>Suchbegriff
+            </label>)}</div>}
+          <label className="reise-finder-query">Suchbegriff
             <input name="q" type="search" value={values.query} onChange={(event) => update("query", event.target.value)}
-              maxLength={SEARCH_QUERY_LIMIT} placeholder="Name, Reisethema oder Inhalt" aria-describedby="reise-finder-hint" />
+              maxLength={SEARCH_QUERY_LIMIT} placeholder="Name, Ort oder Reisethema" aria-describedby="reise-finder-hint" />
           </label>
-          <label>Ort oder Postleitzahl
-            <input name="ort" type="search" value={values.location} onChange={(event) => update("location", event.target.value)}
-              placeholder="Ort, Region oder PLZ" />
-          </label>
-          <button className="button button-primary reise-finder-submit" type="submit" disabled={!portalQuery && (count === 0 || Boolean(error))}>
-            {portalQuery ? "Im Reiseportal suchen" : count === 0 ? "Keine passenden Ergebnisse" : `${count} ${resultNoun} anzeigen`}
+          <button className="button button-primary reise-finder-submit" type="submit" disabled={!portalQuery && (profileLoading || count === 0 || Boolean(error))}>
+            {portalQuery ? "Im Reiseportal suchen" : profileLoading ? "Unterkünfte werden geladen …" : count === 0 ? "Keine passenden Ergebnisse" : `${count} ${resultNoun} anzeigen`}
           </button>
         </div>
         <div className="reise-finder-summary" aria-live="polite" aria-atomic="true">
-          {portalQuery ? querySummary : error ?? accommodationResultSummary(matched.listings.length)}
+          {portalQuery ? querySummary : error ?? (profileLoading ? "Unterkünfte werden geladen …" : accommodationResultSummary(profileTotal ?? matched.listings.length))}
         </div>
         <p id="reise-finder-hint">{portalQuery ? "Freitext durchsucht das gesamte Portal. Gewählte Reisefilter grenzen die Suche auf Unterkünfte ein." : "Mit einem Suchbegriff finden Sie auch Reiseziele, Mottoreisen und weitere Inhalte im gesamten Portal."}</p>
         {active.length > 0 && <div className="reise-finder-active" aria-label="Aktive Filter">

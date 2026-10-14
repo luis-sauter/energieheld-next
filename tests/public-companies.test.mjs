@@ -575,7 +575,7 @@ test("travel directory groups Premium before Basic across filters, search and ex
     api([...legacyRows, demoRow], false, [], undefined, null, packageRows);
     const html = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve(params) }));
     const rows = [...html.matchAll(/<article class="listing-row listing-row--(premium|basic)"/g)].map(x => x[1]);
-    assert.ok(rows.includes("premium") && rows.includes("basic"), JSON.stringify(params));
+    assert.ok(rows.includes("premium") && rows.includes("basic"), JSON.stringify({params,rows,html:html.includes("Die Unterkünfte")?"loader error":"rendered"}));
     assert.deepEqual(rows, [...rows].sort((a, b) => Number(b === "premium") - Number(a === "premium")), JSON.stringify(params));
     assert.match(html, new RegExp(`${rows.length} Unterk`));
   }
@@ -1263,4 +1263,14 @@ test("hidden profiles leave directory, direct URL and sitemap index before media
   assert.equal(requests.some(r=>r.url.pathname.includes('/object/sign/company-media')),false);
   api([{...hidden,company_profile_public_visibility:{is_listed:true}}]);
   assert.equal((await loadPublicCompanyBySlug(hidden.slug)).data.id,hidden.id);
+});
+
+
+test('public directory page hydrates twenty IDs and one gallery preview per profile, preserving order and source data',async()=>{
+ const rows=Array.from({length:106},(_,i)=>({...travelRow,id:'pagination-'+i,slug:'pagination-'+i,display_name:'Pagination '+i,gallery_initialized:true,company_profile_images:Array.from({length:40},(_,n)=>({id:'image-'+n,sort_order:n,storage_path:'profiles/pagination-'+i+'/gallery/'+n+'.jpg',alt_text:'Existing'}))}));
+ const before=JSON.stringify(rows);const requests=api(rows);const {loadPublicDirectoryIndex,directoryWindows,hydrateDirectoryWindow}=await import('../src/lib/public-result-pages.ts');
+ const index=await loadPublicDirectoryIndex();const {readTravelFilterValues}=await import("../src/lib/reiseportal-filter-options.ts");const window=directoryWindows(index,readTravelFilterValues({}));assert.equal(window.profiles.items.length,20);assert.equal(window.profiles.total,106);assert.equal(window.profiles.nextCursor,20);
+ const batch=await hydrateDirectoryWindow(window.profiles,index.facts);assert.equal(batch.items.length,20);assert.ok(batch.items.every(row=>row.images.length<=1&&row.description.length<=240));assert.deepEqual(batch.items.map(row=>row.id),window.profiles.items.map(row=>row.id));assert.equal(JSON.stringify(rows),before);
+ const cards=requests.filter(q=>q.url.pathname==='/rest/v1/company_profiles'&&q.url.searchParams.has('id'));assert.equal(cards.length,1);assert.equal(cards[0].url.searchParams.get('company_profile_images.limit'),'1');assert.ok(cards[0].url.searchParams.get('id').split(',').length<=20);
+ const oldBytes=Buffer.byteLength(JSON.stringify(rows)),newBytes=Buffer.byteLength(JSON.stringify(batch));assert.ok(newBytes<oldBytes/8);console.log('Local pagination payload',{profiles:batch.items.length,indexProfiles:index.facts.length,oldFixtureBytes:oldBytes,newCardPageBytes:newBytes});
 });

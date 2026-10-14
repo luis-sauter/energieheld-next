@@ -2,6 +2,8 @@
 import { OfferRequestCta } from "@/components/portal/offer-request-cta";
 
 
+import { AutoLoad } from "./auto-load";
+import { useResultStream, type ResultBatch } from "./use-result-stream";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { ProfileImportBadge } from "@/components/admin/profile-import-badge";
 import { publicImportPresentation } from "@/config/import-presentation";
@@ -27,7 +29,8 @@ import { InlineBannerProvider } from "@/components/advertising/inline-banner-edi
 import type { InlineBannerOptions } from "@/lib/inline-ad-context";
 
 export function TravelDirectory({ initialValues, database, preview, terms, error, ads, sidebarOrder,
-  canReorder, freshnessStatuses, importedProfileIds, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions, banners = [], bannerError }: {
+  canReorder, freshnessStatuses, importedProfileIds, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions, banners = [], bannerError, pagination }: {
+  pagination?: {key:string;profiles:ResultBatch<Listing,number>;banners:ResultBatch<ActiveAd,number>};
   initialValues: TravelFilterValues;
   database: Listing[];
   preview: Listing[];
@@ -56,19 +59,28 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   const results = travelResults.filter(listing => !freshnessStatuses || freshnessMatches(freshnessStatuses[listing.id], reviewFilter));
   const databaseResults = filterTravelListings(database, filterValues);
   const travelLabels = Object.fromEntries(terms.map((term) => [term.term_key, term.label]));
-  const count = results.length + matched.banners.length;
+
   const previewResults = filterTravelListings(preview, filterValues);
   const editingAvailable = canReorder && Boolean(saveOrder && saveSidebarOrder) &&
     !reviewFilter && Object.values(values).every((value) => !value);
 
+  const identity=travelFilterUrl({...values,query:"",location:""});
+  const pageUrl=(stream:string,offset:number)=>{const params=new URLSearchParams(identity.split('?')[1]);params.set('kind','directory');params.set('stream',stream);params.set('offset',String(offset));return '/api/portal-results?'+params;};
+  const noProfiles:ResultBatch<Listing,number>={items:[],total:0,nextCursor:null};
+  const noBanners:ResultBatch<ActiveAd,number>={items:[],total:0,nextCursor:null};
+  const profileStream=useResultStream({identity,initialIdentity:pagination?.key??identity,initial:pagination?.profiles??noProfiles,firstCursor:0,url:(offset:number)=>pageUrl('profiles',offset),itemKey:(row:Listing)=>row.id});
+  const bannerStream=useResultStream({identity,initialIdentity:pagination?.key??identity,initial:pagination?.banners??noBanners,firstCursor:0,url:(offset:number)=>pageUrl('banners',offset),itemKey:(row:ActiveAd)=>row.id});
+  const shownResults=pagination?profileStream.items:results;
+  const count = (pagination ? profileStream.total : results.length) + matched.banners.length;
   const [samples, setSamples] = useState<CreativeSamples>({});
-  const bannerPool = useMemo(() => directoryBannerPool([...ads, ...matched.advertisers.map(banner => banner.ad)], samples), [ads, matched.advertisers, samples]);
+  const bannerPool = useMemo(() => directoryBannerPool(pagination?bannerStream.items:[...ads, ...matched.advertisers.map(banner => banner.ad)], samples), [ads, matched.advertisers, samples, pagination, bannerStream.items]);
   function recordCreative(ad: ActiveAd, image: HTMLImageElement) {
     const key = directoryImageKey(ad), value = sampleDirectoryCreative(image);
     if (value.length) setSamples(current => current[key] ? current : { ...current, [key]: value });
   }
   function asBanner(ad: ActiveAd): TravelSearchBanner {
-    return matched.advertisers.find(banner => banner.ad.id === ad.id) ?? {
+    const matchedBanner=matched.advertisers.find(banner => banner.ad.id === ad.id);
+    return matchedBanner ? {...matchedBanner,ad} : {
       banner_key: ad.id, advertiser_key: ad.id, profile_id: null, postal_code: "", city: "", term_keys: [], source_path: "/unterkuenfte-a-z", ad,
     };
   }
@@ -84,7 +96,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     const render = (rows: Listing[]) => <div className="listing-rows">{rows.map((listing,index) => <Fragment key={listing.id}>
       <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} season={values.theme}
         adminStatus={freshnessStatuses?.[listing.id] || importedProfileIds?.includes(listing.id) || (publicImportPresentation.enabled && listing.importedAt) ? <span className="profile-review-badges">{freshnessStatuses?.[listing.id] && <FreshnessStatus status={freshnessStatuses[listing.id]} />}<ProfileImportBadge imported={importedProfileIds?.includes(listing.id) || (publicImportPresentation.enabled && Boolean(listing.importedAt))} /></span> : undefined} />
-      {((index + 1) % 6 === 0 || index === rows.length - 1) && bannerPool[mobileIndex] && <div className="directory-mobile-banner">{mobileBanner(bannerPool[mobileIndex++])}</div>}
+      {((index + 1) % 6 === 0 || index === rows.length - 1 && (!pagination || rows.length === results.filter(row => row.directoryPackage === rows[0]?.directoryPackage).length)) && bannerPool[mobileIndex] && <div className="directory-mobile-banner">{mobileBanner(bannerPool[mobileIndex++])}</div>}
       </Fragment>)}</div>;
     return <>
       {premium.length > 0 && <section className="travel-package-group" aria-labelledby="premium-title">
@@ -95,7 +107,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
       </section>}
     </>;
   }
-  const advertisements = <SearchAdResults banners={bannerPool.map(asBanner)} filtered={false} compact directory canEdit={Boolean(bannerOptions)} onCreativeLoaded={recordCreative} />;
+  const advertisements = <><SearchAdResults banners={bannerPool.map(asBanner)} filtered={false} compact directory canEdit={Boolean(bannerOptions)} onCreativeLoaded={recordCreative} />{pagination && <AutoLoad hasMore={bannerStream.nextCursor!==null} loading={bannerStream.loading} error={bannerStream.error} load={bannerStream.load} />}</>;
 
   useEffect(() => {
     const nextUrl = travelFilterUrl(values);
@@ -109,7 +121,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   }, []);
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`travel-directory-page ${styles.page} ${cardStyles.rows}`}>
-    <TravelFinder mode="directory" banners={banners} listings={listings} options={options} values={values} onChange={setValues} error={error ?? bannerError} renderFinder={(finder) =>
+    <TravelFinder mode="directory" profileTotal={pagination ? profileStream.total : undefined} profileLoading={Boolean(pagination && profileStream.loading && !profileStream.items.length)} banners={banners} listings={listings} options={options} values={values} onChange={setValues} error={error ?? bannerError} renderFinder={(finder) =>
     <div className="trade-page travel-directory-content">
       <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder} editorEnabled={editingAvailable} premiumInSidebar showEmptySlots={Boolean(bannerOptions)}
         sidebarContent={<aside className="commercial-sidebar advertising-rail" aria-label="Werbeanzeigen"><p className="advertising-rail-label">Anzeige</p>{advertisements}
@@ -122,7 +134,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
           <div className="results-heading travel-results-heading">
             <div>
               <p className="eyebrow">Unterkünfte A–Z</p>
-              <h2 id="travel-results-title" aria-live="polite">{count} {travelResultNoun(count, matched.advertisers.length)}</h2>
+              <h2 id="travel-results-title" aria-live="polite">{pagination && profileStream.loading && !profileStream.items.length ? "Unterkünfte" : `${count} ${travelResultNoun(count, matched.advertisers.length)}`}</h2>
               <p>Entdecken Sie Gastgeber und besondere Orte für Ihre nächste Reise.</p>
             </div>
             <div className="travel-results-tools">
@@ -159,10 +171,11 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
             <DirectoryOrderEditor listings={databaseResults} hiddenDemoKeys={hiddenOrderKeys} saveOrder={saveOrder}
               categories={[]} basePath="/unterkuenfte" showVerification={false} premiumFirst travelLabels={travelLabels} freshnessStatuses={freshnessStatuses ?? undefined} renderResults={ordered => renderResults([...ordered, ...previewResults])}
               editingExtras={<div className="listing-rows">{previewResults.map(listing => <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} season={values.theme} />)}</div>} />
-          </> : !error && count > 0 ? renderResults(results) : !error && <div className="empty-state" role="status">
+          </> : !error && count > 0 ? renderResults(shownResults) : !error && <div className="empty-state" role="status">
               <p>Für diese Kombination haben wir aktuell keine passende Unterkunft.</p>
               <button type="button" className="button" onClick={() => { setValues(readTravelFilterValues({})); setReviewFilter(""); }}>Alle Filter zurücksetzen</button>
             </div>}
+          {pagination && <AutoLoad hasMore={profileStream.nextCursor!==null} loading={profileStream.loading} showLoading={profileStream.items.length>0} error={profileStream.error} load={profileStream.load} />}
           {!error && !results.length && <div className="directory-mobile-banner">{advertisements}</div>}
         </section>
       </AdvertisingLayout>

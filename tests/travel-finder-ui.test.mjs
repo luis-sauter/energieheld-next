@@ -122,7 +122,7 @@ test('both hero forms submit portal queries despite zero local matches or direct
 });
 test('empty free text retains structured filter URLs and return links preserve origin and selections', () => {
   const filters = readTravelFilterValues({ ziel: 'oesterreich', thema: 'wellnessangebote', ort: 'Tirol', q: '   ' });
-  assert.equal(travelSearchUrl(filters, 'home'), '/unterkuenfte-a-z?ziel=oesterreich&thema=wellnessangebote&ort=Tirol');
+  assert.equal(travelSearchUrl(filters, 'home'), '/unterkuenfte-a-z?ziel=oesterreich&thema=wellnessangebote');
   const query = { ...filters, query: 'Nordic Walking' };
   assert.match(travelSearchReturnUrl(query, 'home'), /^\/\?ziel=oesterreich/);
   assert.match(travelSearchReturnUrl(query, 'directory'), /^\/unterkuenfte-a-z\?/);
@@ -155,9 +155,9 @@ test('result-route finder retains all context fields and submits with the origin
   const values = readTravelFilterValues({ q: 'City Apart', ziel: 'deutschland', thema: 'wellnessangebote', zielgruppe: 'paar', unterkunftstyp: 'hotel', besonderheit: 'sauna', ort: 'Berlin', sort: 'name' });
   const html = render(values, 'search');
   assert.equal((html.match(/role="search"/g) ?? []).length, 1);
-  for (const label of ['Wohin?', 'Motto', 'Mit wem?', 'Unterkunft', 'Suchbegriff', 'Ort oder Postleitzahl']) assert.ok(html.includes(label));
+  for (const label of ['Wohin?', 'Motto', 'Mit wem?', 'Unterkunft', 'Suchbegriff']) assert.ok(html.includes(label));
   for (const selected of ['deutschland', 'wellnessangebote', 'paar', 'hotel']) assert.ok(html.includes(`value="${selected}" selected`));
-  assert.match(html,/value="City Apart"/); assert.match(html,/value="Berlin"/);
+  assert.match(html,/value="City Apart"/); assert.doesNotMatch(html,/name="ort"/);
   const previous = globalThis.window;
   try {
     let url; globalThis.window = { location: { assign(value) { url=value; } } };
@@ -200,3 +200,7 @@ test('editing or resetting a completed query/filter never leaves a stale result 
  const failed=renderCase(completed,'Die Portalsuche ist gerade nicht verfügbar.');assert.match(failed,/Portalsuche ist gerade nicht verfügbar/);assert.doesNotMatch(failed,/127 Unterkünfte gefunden|Keine Unterkünfte gefunden/);
  for(const mode of ['home','directory'])assert.doesNotMatch(render(readTravelFilterValues({q:'Wellness'}),mode),/\d+ Unterkünfte gefunden/);
 });
+
+for(const mode of ['home','directory','search'])test(mode+' finder removes the separate location field and ignores legacy location filters',()=>{const values=readTravelFilterValues({q:'München',ort:'nonmatching'});assert.equal(values.location,'');const html=render(values,mode);assert.doesNotMatch(html,/name="ort"|Ort oder Postleitzahl/);assert.match(html,/value="München"/);assert.doesNotMatch(travelSearchUrl({...values,location:'stale'},'home'),/ort=/);});
+
+test('structured page total is taken from the page response rather than rendered cards or stale facet facts',()=>{const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'directory',listings:listings.slice(0,1),options,values:readTravelFilterValues({}),onChange(){},profileTotal:127}));assert.match(html,/127 Unterkünfte gefunden/);assert.match(html,/127 Unterkünfte anzeigen/);});

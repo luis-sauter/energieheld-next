@@ -53,3 +53,26 @@ export function searchResultPage(profiles: SearchHit[], otherHits: SearchHit[], 
 export function accommodationResultSummary(total: number) {
   return total === 0 ? 'Keine Unterkünfte gefunden' : total === 1 ? '1 Unterkunft gefunden' : `${total} Unterkünfte gefunden`;
 }
+
+
+export type SearchCursor = { profiles: number; other: number };
+export function readSearchCursor(profiles: unknown, other: unknown): SearchCursor {
+  const read = (value: unknown) => { const n=Number(value); return Number.isInteger(n)&&n>=0&&n<=10000?n:0; };
+  return {profiles:read(profiles),other:read(other)};
+}
+// Merge two ordered streams without reloading an ever-growing profile prefix.
+export function searchResultBatch(profiles: SearchHit[], otherHits: SearchHit[], profileTotal: number, type: SearchType | undefined, cursor: SearchCursor) {
+  const other=mergeSearchHits(otherHits).filter(hit=>!type||hit.type===type);
+  const profileRows=!type||type==='accommodation'?profiles:[];
+  const hits=mergeSearchHits([...profileRows,...other.slice(cursor.other)]).slice(0,SEARCH_PAGE_SIZE);
+  const consumedProfiles=hits.filter(hit=>hit.type==='accommodation').length;
+  const consumedOther=hits.length-consumedProfiles;
+  const next={profiles:cursor.profiles+consumedProfiles,other:cursor.other+consumedOther};
+  const total=type==='accommodation'?profileTotal:type?other.length:profileTotal+other.length;
+  const hasMore=(!type||type==='accommodation')&&next.profiles<profileTotal || next.other<other.length;
+  return {total,hits,nextCursor:hasMore&&hits.length?next:null};
+}
+
+export function compactResultCard(row: import("@/types/portal").Listing): import("@/types/portal").Listing {
+  return {...row,description:row.description.replace(/\s+/g,' ').trim().slice(0,240),businessAreas:'',images:row.images.slice(0,1)};
+}

@@ -47,7 +47,7 @@ export function readTravelFilterValues(params: Record<string, string | string[] 
     destination: read("ziel"), theme: read("thema") === 'tauchurlaub' ? '' : read("thema"), audience: read("zielgruppe"),
     // Retired public filter: legacy URLs must not restrict results invisibly.
     accommodation: read("unterkunftstyp"), feature: "",
-    query: read("q"), location: read("ort"), sort: read("sort") === "imported" && !publicImportPresentation.enabled ? "" : read("sort"),
+    query: read("q"), location: "", sort: read("sort") === "imported" && !publicImportPresentation.enabled ? "" : read("sort"),
   };
 }
 

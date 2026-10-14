@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 registerHooks({
   resolve(s,c,next){
+   if(s==="./use-result-stream" && c.parentURL?.endsWith("/travel-directory.tsx"))return {url:'data:text/javascript,export function useResultStream({initial}){return {...initial,loading:false,error:"",load(){}}}',shortCircuit:true};
    if(s.endsWith('/admin/mediathek/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function searchLibraryProfiles(){throw Error("Unexpected company lookup during directory render")};export async function createLibraryCompany(){throw Error("Unexpected company creation")}'};
    if(s.endsWith('inline-banner-actions'))return {shortCircuit:true,url:'data:text/javascript,export async function loadSearchBannerEditor(){throw Error("Unexpected banner editor request during directory render")}'};
    if(s.endsWith('/admin/werbung/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function lifecycleCampaign(){throw Error("Unexpected banner lifecycle write during directory render")}'};

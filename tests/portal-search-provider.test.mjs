@@ -26,3 +26,8 @@ test('query cases forward the exact profile count; empty and failure never fake 
  globalThis.__searchClient={rpc:async()=>({data:null,error:{code:'timeout'}})};assert.ok((await searchPortal('Pool')).error);
  }finally{globalThis.__searchClient=previous;}
 });
+
+
+test('stream pagination requests only twenty new profile rows at the consumed offset and retains accommodation total',async()=>{
+ calls=[];const result=await searchPortal('Pool',{cursor:{profiles:17,other:1}});assert.equal(calls.length,1);assert.equal(calls[0].args.p_limit,20);assert.equal(calls[0].args.p_offset,17);assert.equal(result.accommodationTotal,80);assert.ok(result.hits.length<=20);
+});

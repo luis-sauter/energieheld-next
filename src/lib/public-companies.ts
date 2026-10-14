@@ -87,7 +87,9 @@ export async function loadPublicCompanyDirectory(options?: { profileIds: string[
         .eq("status", "approved")
         .order("id")
         .range(offset, offset + pageSize - 1);
-      let { data, error } = await (options ? query.in('id', options.profileIds) : query);
+      const bounded = options?.directoryPreview ? query.order('sort_order', {referencedTable:'company_profile_images'})
+        .order('id', {referencedTable:'company_profile_images'}).limit(1, {referencedTable:'company_profile_images'}) : query;
+      let { data, error } = await (options ? bounded.in('id', options.profileIds) : bounded);
       if (galleryReadable && (error?.code === "42703" || error?.code === "PGRST204") && error.message.includes("gallery_initialized")) {
         galleryReadable = false; offset -= pageSize; continue;
       }
@@ -99,7 +101,9 @@ export async function loadPublicCompanyDirectory(options?: { profileIds: string[
           .eq("status", "approved")
           .order("id")
           .range(offset, offset + pageSize - 1);
-        ({ data, error } = await (options ? fallback.in('id', options.profileIds) : fallback));
+        const boundedFallback=options?.directoryPreview?fallback.order('sort_order',{referencedTable:'company_profile_images'})
+          .order('id',{referencedTable:'company_profile_images'}).limit(1,{referencedTable:'company_profile_images'}):fallback;
+        ({ data, error } = await (options ? boundedFallback.in('id', options.profileIds) : boundedFallback));
       }
       if (error) throw error;
       const rows = data as unknown as PublicProfile[];

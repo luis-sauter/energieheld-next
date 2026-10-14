@@ -7,7 +7,7 @@ import type { PublicTravelTerm } from './reiseportal-filter-options';
 import type { TravelSearchBanner } from './travel-search-banners';
 
 type Metadata = BannerSearchData & Partial<TravelSearchBanner> & { term_keys: string[]; profile_id: string | null };
-export const loadTravelSearchBanners = cache(async (): Promise<{banners: TravelSearchBanner[]; terms: PublicTravelTerm[]; error: string | null}> => {
+export const loadTravelSearchBanners = cache(async (sign = true): Promise<{banners: TravelSearchBanner[]; terms: PublicTravelTerm[]; error: string | null}> => {
   try {
     const client = createPublicClient();
     const {data,error} = await client.rpc('public_travel_search_banners');
@@ -16,12 +16,12 @@ export const loadTravelSearchBanners = cache(async (): Promise<{banners: TravelS
     // Sign each unique public creative once. Invalid/missing media remains suppressed,
     // rather than resurrecting the historical fallback beneath a booked campaign.
     const eligible = payload.ads.filter(ad => ad.image_available && ad.image_path?.startsWith(`campaigns/${ad.id}/creative/`));
-    const signed = await signAdImages(client, eligible);
+    const signed = sign ? await signAdImages(client, eligible) : eligible.map(ad=>({...ad,imageUrl:"public-creative"}));
     const urls = new Map(signed.map(ad => [ad.image_path,ad.imageUrl]));
     const ads = payload.ads.map(ad => ({...ad,imageUrl: urls.get(ad.image_path),image_available: Boolean(urls.get(ad.image_path))}));
     const unique = new Map<string, TravelSearchBanner>();
     for (const {ad,identity,details,path} of publicBannerCreatives(ads,payload.presentations,payload.metadata)) {
-      if (!ad.imageUrl || ad.imageUrl === 'public-creative' || !details || unique.has(identity)) continue;
+      if (!ad.imageUrl || sign && ad.imageUrl === 'public-creative' || !details || unique.has(identity)) continue;
       const metadata = details as Metadata;
       unique.set(identity,{...metadata,banner_key:identity,source_path:path,profile_id:metadata.profile_id,postal_code:metadata.postal_code,city:metadata.city,term_keys:metadata.term_keys,ad:{...ad,headline:metadata.name}});
     }
