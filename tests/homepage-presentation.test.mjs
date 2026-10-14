@@ -7,7 +7,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 const read = path => readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const slugs = ['golfhotel-andreus','bayerischer-wald','hoeflehner','schafhuber'];
-const profiles = slugs.map(slug=>({id:slug,slug,name:slug,initials:'AB',tagline:'Bestehender Profiltext',description:'',categoryIds:[],travelTermKeys:['theme:natur-pur'],location:{city:'Ort',country:'Deutschland',postalCode:'',region:''},images:[{src:'/reiseportal/hero.jpg',alt:'Vorhandenes Foto'}],services:[],isDemo:false,contact:{email:'',phone:'',website:''}}));
+const profiles = slugs.map(slug=>({id:slug,slug,name:slug,initials:'AB',tagline:'Bestehender Profiltext',description:'',categoryIds:[],travelTermKeys:['theme:natur-pur'],location:{city:'Ort',country:'Deutschland',postalCode:'',region:''},images:[{src:'/reiseportal/unterkuenfte/blausee/02.jpg',alt:'Vorhandenes Foto'}],services:[],isDemo:false,contact:{email:'',phone:'',website:''}}));
 globalThis.homeFixture = {profiles, ads:[{id:'existing',placement:'top_banner',imageUrl:'/existing.jpg'}], calls:[]};
 const stubs = {
  '@/lib/profile-card-images':'export async function loadCardEditing(){return false;} export async function withSavedCardImages(rows){return rows;}',
@@ -153,7 +153,7 @@ test('homepage reuses one continuous motto row and follows the required fixed-sl
 test('homepage retains canonical card imagery and rejects demo profiles', async () => {
  const original=JSON.stringify(profiles);
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
- assert.match(html,/src="\/reiseportal\/hero.jpg"/);
+ assert.match(html,/src="\/reiseportal\/unterkuenfte\/blausee\/02.jpg"/);
  assert.equal(JSON.stringify(profiles),original);
  try {
   globalThis.homeFixture.profiles=profiles.map(p=>({...p,isDemo:true}));
