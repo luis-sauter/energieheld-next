@@ -20,21 +20,24 @@ test('all six corporate colors have one source shared by branding and portal CSS
   for(const [name,value] of Object.entries(portalColors))assert.equal(portalColorVariables['--portal-'+name],value);
   assert.match(read('src/app/(energieheld)/layout.tsx'),/\.\.\.portalColorVariables/);
 });
-test('basalt/white primary buttons exceed AA while orange stays the unchanged accent',()=>{
+test('orange/basalt primary buttons preserve the approved colors and measured contrast',()=>{
   assert.ok(Math.abs(contrast(portalColors.orange,portalColors.white)-2.3372)<0.001);
   assert.ok(Math.abs(contrast(portalColors.basalt,portalColors.white)-8.276)<0.001);
   assert.ok(contrast(portalColors.basalt,portalColors.white)>=4.5);
+  assert.ok(Math.abs(contrast(portalColors.orange,portalColors.basalt)-3.5409)<0.001);
+  assert.ok(contrast(portalColors.orange,portalColors.basalt)<4.5);
   assert.equal(Object.keys(portalColors).length,6);
   const css=read('src/app/globals.css');
-  for(const name of ['button','button-hover','button-active'])assert.ok(css.includes(`--portal-${name}: var(--portal-basalt);`));
+  for(const name of ['button','button-hover','button-active'])assert.ok(css.includes(`--portal-${name}: var(--portal-orange);`));
+  assert.ok(css.includes('--portal-button-text: var(--portal-basalt);'));
   for(const background of ['white','light-gray','light-orange'])assert.ok(contrast(portalColors.blue,portalColors[background])>=3);
   assert.ok(contrast(portalColors.basalt,portalColors.white)>=4.5);
 });
 test('legacy button overrides use the approved brand tokens without touching dimensions or image rendering',()=>{
   const rows=read('src/components/portal/directory-listing-rows.module.css');
-  assert.match(rows,/listing-row--premium \.row-profile-link\) \{ background: var\(--portal-button\); color: var\(--portal-white\)/);
+  assert.match(rows,/listing-row--premium \.row-profile-link\) \{ background: var\(--portal-button\); color: var\(--portal-button-text\)/);
   const directory=read('src/components/portal/travel-directory.module.css');
-  assert.match(directory,/reise-finder-submit\) \{ background: var\(--portal-button\); color: var\(--portal-white\)/);
+  assert.match(directory,/reise-finder-submit\) \{ background: var\(--portal-button\); color: var\(--portal-button-text\)/);
   assert.doesNotMatch(directory,/background: #ff(?:8a4c|9d69)/i);
   assert.match(read('src/components/portal/company-profile.css'),/\.company-profile \.button-primary \{\s*background: var\(--portal-button, var\(--brand-accent\)\);/);
   const css=read('src/app/globals.css');

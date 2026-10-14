@@ -19,7 +19,7 @@
 .rows :global(.row-contact), .rows :global(.listing-row--premium .row-contact), .rows :global(.listing-row--basic .row-contact) { grid-column: 2; margin: 0 20px 16px; padding: 14px 0 0; border-left: 0; border-top: 1px solid #e3edf2; font-size: .8rem; gap: 8px; }
 .rows :global(.row-contact p), .rows :global(.row-contact a:not(.row-profile-link)) { color: var(--portal-basalt); }
 .rows :global(.row-contact .row-profile-link) { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; white-space: normal; text-align: center; border-radius: 7px; padding: 10px 14px; color: var(--portal-blue); font-size: .85rem; }
-.rows :global(.listing-row--premium .row-profile-link) { background: var(--portal-button); color: var(--portal-white); align-self: stretch; }
+.rows :global(.listing-row--premium .row-profile-link) { background: var(--portal-button); color: var(--portal-button-text); align-self: stretch; }
 .rows :global(.listing-row--basic) { grid-template-columns: 72px minmax(0, 1fr) minmax(180px, 30%); padding: 8px; }
 .rows :global(.listing-row--basic .row-content) { padding: 6px 12px; }
 .rows :global(.listing-row--basic .row-contact) { grid-column: 3; border-top: 0; border-left: 1px solid #e3edf2; margin: 0; padding: 0 10px 0 16px; }

@@ -254,7 +254,7 @@
 }
 .company-profile .button-primary {
   background: var(--portal-button, var(--brand-accent));
-  color: var(--white);
+  color: var(--portal-button-text, var(--brand-primary));
 }
 .company-profile .contact-card .button {
   width: 100%;
