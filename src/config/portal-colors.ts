@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
-// Release 1: orange remains the brand accent. White-label primary buttons use
-// the unchanged basalt brand color (#435152), with 8.276:1 text contrast.
+// Release 1: brand-orange buttons use basalt text (3.541:1 contrast).
+// This approved combination does not meet AA for normal text.
 export const portalColors = {
   orange: '#F7902F',
   blue: '#13237F',

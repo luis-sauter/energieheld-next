@@ -84,8 +84,8 @@ test("Reiseportal palette uses the Release 1 corporate palette and all quicklink
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   assert.match(css, /--portal-primary: var\(--portal-blue\)/);
   assert.match(css, /--portal-accent: var\(--portal-orange\)/);
-  assert.match(css, /\.reiseportal-shell \.button-primary,[\s\S]*?color: var\(--portal-white\)/);
-  assert.match(css, /\.reiseportal-shell \.company-profile \.button-primary \{ color: var\(--portal-white\); \}/);
+  assert.match(css, /\.reiseportal-shell \.button-primary,[\s\S]*?color: var\(--portal-button-text\)/);
+  assert.match(css, /\.reiseportal-shell \.company-profile \.button-primary \{ color: var\(--portal-button-text\); \}/);
   assert.match(css, /\.reiseportal-shell \.company-profile \.detail-title \{ color: var\(--portal-primary-deep\); \}/);
   assert.match(css, /\.motto-intro-image \{ width: 100%; min-width: 0; min-height: 0; \}/);
   assert.match(css, /\.travel-quicklink-icon\s*\{[^}]*color: var\(--portal-primary\)/);
@@ -420,7 +420,7 @@ test("database travel terms take precedence over fallback slugs and combine all 
   assert.deepEqual(filterTravelDiscovery([reiseportalPreview[0]], "", "", "paar"), []);
 });
 
-test("public Reiseportal uses blue hierarchy, dark body text and white brand-orange actions", () => {
+test("public Reiseportal uses blue hierarchy, dark body text and basalt text on brand-orange actions", () => {
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   assert.equal(reiseportal.colors.primary, "#13237F");
   assert.equal(reiseportal.colors.accent, "#F7902F");
