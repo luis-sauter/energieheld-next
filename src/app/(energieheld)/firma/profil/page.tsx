@@ -40,7 +40,7 @@ export default async function CompanyProfilePage() {
             <p>
               Profilstatus: <strong>{profileStatus(profile.status)}</strong>
             </p>
-            <p>Erzählen Sie uns von Ihrer Unterkunft. Tragen Sie die wichtigsten Informationen, Kontaktdaten und besonderen Angebote ein. Diese Angaben bilden die Grundlage für Ihr Profil auf DAS Reiseportal.</p>
+            <p>Erzählen Sie uns von Ihrer Unterkunft. Tragen Sie die wichtigsten Informationen, Kontaktdaten und besonderen Angebote ein. Diese Angaben bilden die Grundlage für Ihr Profil auf DAS-Reiseportal.com.</p>
             <p>Unsere Redaktion unterstützt Sie bei der Gestaltung Ihres öffentlichen Auftritts. Sie müssen noch keine fertigen Werbetexte oder ein eigenes Layout erstellen.</p>
             {profile.status === "approved" && <p>Änderungen an veröffentlichten Profiltexten und Kontaktdaten sind direkt sichtbar. Reisevorschläge werden separat von der Redaktion geprüft.</p>}
             {travel && ("error" in travel ? <p role="alert">{travel.error}</p> :

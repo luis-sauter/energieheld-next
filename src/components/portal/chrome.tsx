@@ -25,7 +25,7 @@ export function PortalHeader({ brand, access = "unauthenticated", identity, hasC
               src="/brand/das-reiseportal-logo.png"
               width={2048}
               height={333}
-              alt="DAS Reiseportal"
+              alt={brand.name}
               priority
             />
           </Link>

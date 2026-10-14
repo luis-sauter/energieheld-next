@@ -3084,9 +3084,9 @@ h6 {
   --portal-surface: var(--portal-light-gray);
   --portal-ink: var(--portal-basalt);
   --portal-card: var(--portal-white);
-  --portal-button: var(--portal-orange);
-  --portal-button-hover: var(--portal-orange);
-  --portal-button-active: var(--portal-orange);
+  --portal-button: var(--portal-basalt);
+  --portal-button-hover: var(--portal-basalt);
+  --portal-button-active: var(--portal-basalt);
   --brand-accent-hover: var(--portal-button-hover);
   --brand-accent-light: var(--portal-light-orange);
   --brand-secondary: var(--portal-primary-deep);
@@ -3117,7 +3117,7 @@ h6 {
   color: var(--portal-white);
 }
 
-/* Shared primary-action states, including the orange A–Z/search profile link.
+/* Shared primary-action states, including the primary A–Z/search profile link.
    Scoped to the travel portal: legacy energy tokens and semantic alerts stay intact. */
 .reiseportal-shell :is(.button-primary, .header-cta, .listing-row--premium .row-profile-link):hover:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]) {
   background: var(--portal-button-hover); border-color: var(--portal-blue); color: var(--portal-white); box-shadow: 0 0 0 1px var(--portal-blue);

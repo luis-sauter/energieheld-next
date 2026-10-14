@@ -588,7 +588,7 @@ test("portal home follows the discovery wireframe with the shared advertising ra
     assert.ok(current > last, `${marker} must follow the previous section`);
     last = current;
   }
-  assert.match(html, /DAS Reiseportal/);
+  assert.match(html, /DAS-Reiseportal.com/);
   assert.doesNotMatch(html, /Freier Werbeplatz|Premium-Anzeige|Weitere Partner und Gastgeber/);
   assert.match(html, /Reisen beginnt mit einer guten Idee/);
   assert.match(html, /name="q"/);

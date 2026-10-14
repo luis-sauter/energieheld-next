@@ -27,8 +27,8 @@ export function siteSeo(env: SeoEnvironment = process.env) {
     indexable: Boolean(canonicalOrigin) && env.SITE_INDEXING === "enabled" &&
       env.NODE_ENV === "production" && !preview,
     titleTemplate: `%s | ${reiseportal.name}`,
-    defaultTitle: "DAS Reiseportal – Reiseziele, Themen & Unterkünfte",
-    defaultDescription: "Reiseinspiration, Reiseziele und Mottoreisen entdecken. Lernen Sie reale Unterkünfte und Reiseanbieter mit Standort und Kontakt im DAS Reiseportal kennen.",
+    defaultTitle: "DAS-Reiseportal.com – Reiseziele, Themen & Unterkünfte",
+    defaultDescription: "Reiseinspiration, Reiseziele und Mottoreisen entdecken. Lernen Sie reale Unterkünfte und Reiseanbieter mit Standort und Kontakt im DAS-Reiseportal.com kennen.",
     locale: "de_DE",
     language: "de",
     defaultImage: "/reiseportal/hero.jpg",
