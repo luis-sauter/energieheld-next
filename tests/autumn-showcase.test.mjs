@@ -44,9 +44,17 @@ test('special topic uses its own assignment, keeps curated images and never muta
  assert.equal(selectAutumnStays([{...listings[0],id:'new-editorially-selected-profile'}]).length,1);
  assert.equal(selectAutumnStays([{...listings[0],travelTermKeys:[AUTUMN_TERM]}]).length,0);
  assert.equal(selectAutumnStays([...listings,...listings]).length,4);
- assert.equal(selectAutumnStays(Array.from({length:8},(_,i)=>({...listings[0],id:'selected-'+i}))).length,4);
+ assert.equal(selectAutumnStays(Array.from({length:8},(_,i)=>({...listings[0],id:'selected-'+i}))).length,8);
  assert.equal(selectAutumnStays([{...listings[0],images:[listings[0].images[0]]}])[0].image.src,'/other.jpg');
  assert.equal(selectAutumnStays([]).length,0);
+ const fifth={...listings[0],id:'sonnenhof',slug:'pension-sonnenhof',name:'Pension Sonnenhof'};
+ assert.equal(selectAutumnStays([...listings,fifth]).at(-1).listing.id,'sonnenhof');
+ const html=renderToStaticMarkup(createElement(AutumnShowcase,{listings:[...listings,fifth]}));
+ assert.equal((html.match(/data-autumn-profile=/g)||[]).length,5);
+ assert.match(html,/href="\/unterkuenfte\/pension-sonnenhof"/);
+ assert.match(html,/data-page-size="4"/);
+ assert.equal((html.match(/data-carousel-page=/g)||[]).length,2);
+ assert.match(html,/Sonderthemen-Unterkünfte: weiter/);
 });
 
 test('reference layout renders one declared AI editorial image, genuine linked cards and existing season CTA as server HTML',()=>{
@@ -60,7 +68,7 @@ test('reference layout renders one declared AI editorial image, genuine linked c
  assert.ok(html.includes('href="'+AUTUMN_HREF+'"'));
  for(const row of rows)assert.ok(html.includes('href="/unterkuenfte/'+row.slug+'"'));
  assert.doesNotMatch(html,/Gespeicherter saisonaler Kurztext/);
- assert.doesNotMatch(html,/Panorama Lodge Aurelia|Chalet Kupferlaub|Herbstresidenz Mirabell|Seegut Waldruh|iframe|<button/);
+ assert.doesNotMatch(html,/Panorama Lodge Aurelia|Chalet Kupferlaub|Herbstresidenz Mirabell|Seegut Waldruh|iframe/);
  assert.equal(renderToStaticMarkup(createElement(AutumnShowcase,{listings:[]})),'');
 });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRotationMotion } from "./use-rotation-motion";
 import styles from "./theme-scroller.module.css";
 
@@ -17,8 +17,8 @@ export function nextThemeScroll(left: number, step: number, max: number, directi
 }
 
 // Cards/links are server-rendered children; navigation never fetches more data.
-export function ThemeScroller({ children, count, label, compact = false, heading, moreLink, edgeNavigation = false }: {
-  children: ReactNode; count: number; label: string; compact?: boolean; heading?: ReactNode; moreLink?: ReactNode; edgeNavigation?: boolean;
+export function ThemeScroller({ children, count, label, compact = false, heading, moreLink, edgeNavigation = false, pageSize, autoPlay = true }: {
+  children: ReactNode; count: number; label: string; compact?: boolean; heading?: ReactNode; moreLink?: ReactNode; edgeNavigation?: boolean; pageSize?: number; autoPlay?: boolean;
 }) {
   const rail = useRef<HTMLDivElement>(null);
   const [interaction, setInteraction] = useState(0);
@@ -26,11 +26,13 @@ export function ThemeScroller({ children, count, label, compact = false, heading
   const manualUntil = useRef(0);
   const autoLeft = useRef<number | null>(null);
   const direction = useRef(1);
+  const pageItems = pageSize ? Children.toArray(children) : [];
   const move = useCallback((direction: number, smooth: boolean) => {
     const element = rail.current;
     if (!element) return;
-    const first = element.children[0] as HTMLElement | undefined;
-    const second = element.children[1] as HTMLElement | undefined;
+    const page = element.children[0] as HTMLElement | undefined;
+    const first = (pageSize && page && getComputedStyle(page).display === 'contents' ? page.firstElementChild : page) as HTMLElement | undefined;
+    const second = first?.nextElementSibling as HTMLElement | undefined;
     const step = compact ? element.clientWidth * 0.8
       : first && second ? second.offsetLeft - first.offsetLeft : element.clientWidth;
     manualUntil.current = performance.now() + 1500;
@@ -38,11 +40,11 @@ export function ThemeScroller({ children, count, label, compact = false, heading
     element.scrollTo({ left: nextThemeScroll(element.scrollLeft, step,
       element.scrollWidth - element.clientWidth, direction), behavior: smooth ? "smooth" : "instant" });
     setInteraction(value => value + 1);
-  }, [compact]);
+  }, [compact, pageSize]);
   const advance = useCallback(() => move(1, true), [move]);
-  const { root, handlers, reducedMotion, interact, canPlay } = useRotationMotion(overflowing ? count : 1, advance, interaction, themeScrollerDelay, !compact);
+  const { root, handlers, reducedMotion, interact, canPlay } = useRotationMotion(overflowing ? count : 1, advance, interaction, themeScrollerDelay, !compact && autoPlay);
   useEffect(() => {
-    if (!compact || !canPlay) return;
+    if (!compact || !canPlay || !autoPlay) return;
     let frame = 0, previous: number | undefined, position = rail.current?.scrollLeft ?? 0;
     const tick = (now: number) => {
       const element = rail.current;
@@ -59,7 +61,7 @@ export function ThemeScroller({ children, count, label, compact = false, heading
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [compact, canPlay]);
+  }, [compact, canPlay, autoPlay]);
   // Native scroll + CSS snap support touch, trackpads and focused links.
   const attachRail = useCallback((element: HTMLDivElement | null) => {
     rail.current = element;
@@ -80,11 +82,13 @@ export function ThemeScroller({ children, count, label, compact = false, heading
       if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
         event.preventDefault(); move(event.key === "ArrowRight" ? 1 : -1, !reducedMotion);
       }
-    }}>{children}</div>;
+    }}>{pageSize ? Array.from({ length: Math.ceil(pageItems.length / pageSize) }, (_, index) =>
+      <div key={index} className={styles.page} data-carousel-page>{pageItems.slice(index * pageSize, (index + 1) * pageSize)}</div>) : children}</div>;
   return <div ref={root} className={styles.scroller} data-compact={compact || undefined}
     data-edge-navigation={edgeNavigation || undefined}
+    data-page-size={pageSize}
     role="region" aria-label={label} {...handlers}>
-    {!compact && <div className={styles.header}>
+    {!compact && (heading || moreLink || !edgeNavigation) && <div className={styles.header}>
       {heading}
       <div className={styles.controls}>
         {moreLink}
