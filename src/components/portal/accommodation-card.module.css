@@ -5,7 +5,7 @@
 .card::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(to bottom, transparent 20%, rgb(9 17 21 / 20%) 40%, rgb(9 17 21 / 85%) 72%, #091115 100%); }
 .fallback { display: grid; height: 45%; place-items: center; color: #e7f3fa; font-size: 3rem; font-weight: 700; }
 .copy { width: 100%; min-width: 0; padding: clamp(16px, 2vw, 24px); overflow-wrap: anywhere; }
-.copy h3 { margin: 0 0 .65rem; color: #fff; font-size: clamp(1.1rem, 1.5vw, 1.5rem); line-height: 1.2; font-weight: 750; }
+.copy h3 { margin: 0 0 .65rem; color: #fff; font-size: clamp(1.1rem, 1.5vw, 1.5rem); line-height: 1.2; font-weight: var(--font-heading-weight); }
 .location { margin: 0 0 .4rem; color: #e6edf0; font-size: .65rem; line-height: 1.45; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; }
 .copy .signals ul { gap: 5px; margin: .65rem 0 .9rem; }
 .copy .signals li { color: #fff; background: rgb(255 255 255 / 8%); border: 1px solid rgb(255 255 255 / 36%); padding: 4px 7px; font-size: .68rem; }

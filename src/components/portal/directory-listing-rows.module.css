@@ -8,7 +8,7 @@
 .rows :global(.row-content) { padding: 10px 14px; }
 .rows :global(.listing-row--premium .row-content) { display: flex; flex-direction: column; }
 .rows :global(.listing-row--premium .travel-card-tags) { margin-top: auto; padding-top: 12px; }
-.rows :global(.row-content h3) { font-size: clamp(1.1rem, 1.5vw, 1.4rem); font-weight: 700; line-height: 1.3; }
+.rows :global(.row-content h3) { font-size: clamp(1.1rem, 1.5vw, 1.4rem); font-weight: var(--font-heading-weight); line-height: 1.3; }
 .rows :global(.row-content h3 a) { color: var(--portal-blue); }
 .rows :global(.row-location) { display: flex; align-items: center; gap: 6px; color: var(--portal-basalt); font-size: .85rem; margin: 4px 0 8px; }
 .rows :global(.row-content .row-tagline) { font-size: .9rem; color: var(--portal-basalt); line-height: 1.4; }
