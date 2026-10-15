@@ -6,14 +6,8 @@ import { legacySearchCatalog, publicBannerSearch, type SearchAdSource, type Sear
 import { searchResultBatch, type SearchCursor, searchResultPage, searchExcerpt, searchQuery, searchType, SEARCH_PAGE_SIZE, queryWords, type SearchHit, type SearchType } from './portal-search-values';
 import type { TravelFilterValues } from './reiseportal-filter-options';
 
-export function portalSearchFilters(values?: TravelFilterValues) {
-  return { destination: values?.destination ?? '', theme: values?.theme ?? '', audience: values?.audience ?? '',
-    accommodation: values?.accommodation ?? '', location: (values?.location ?? '').trim().slice(0,120),
-    sort: ['name','city','imported'].includes(values?.sort ?? '') ? values!.sort : '' };
-}
-export function accommodationSearchOnly(values?: TravelFilterValues) {
-  return Object.values(portalSearchFilters(values)).some(Boolean);
-}
+import { portalSearchFilters, accommodationSearchOnly } from './portal-search-filters';
+export { portalSearchFilters, accommodationSearchOnly } from './portal-search-filters';
 
 type SearchResponse = { total: number; hits: Omit<SearchHit, 'type'>[]; catalog_hits: SearchHit[]; ads: SearchAdSource[]; presentations: SearchPresentation[]; banner_metadata?: BannerSearchData[] };
 export type SearchResult = { query: string; type?: SearchType; page: number; total: number; accommodationTotal: number; hits: SearchHit[]; nextCursor?: SearchCursor | null; error?: string };

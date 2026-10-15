@@ -182,3 +182,13 @@ test('v2 profile totals cover exact/prefix/theme/destination/zero searches indep
   const result=await v2(term,{},1,0,catalog);assert.equal(result.total,total,term);assert.ok(result.hits.length<=1);
  }
 });
+
+test('live count branch equals actual v2 totals for one-letter/prefixes, filters and protected data, without banner work',async()=>{
+ await actor('postgres');await db.exec(`create or replace function public.public_banner_search_contexts() returns table(scope text,key text,path text) language plpgsql stable security invoker set search_path='' as $$ begin raise exception 'banner_count_forbidden'; end; $$;`);
+ await actor();
+ for(const q of ['B','Ba','Bay','Bayern','Pension Sonnenhof','zzzzkeinetreffer'])for(const filters of [{},{destination:'deutschland'},{theme:'nordic-walking'}]){
+   const count=await v2(q,{...filters,sort:'name'},1,0);const full=await v2(q,{...filters,sort:'city'},20,0);
+   assert.equal(count.total,full.total,q);assert.ok(count.hits.length<=1);assert.deepEqual(count.ads,[]);assert.deepEqual(count.catalog_hits,[]);
+   if(['B','Ba','Bay','Bayern'].includes(q)&&!Object.keys(filters).length)assert.equal(count.total,1,q);
+ }
+});
