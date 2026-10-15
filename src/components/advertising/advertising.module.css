@@ -146,6 +146,29 @@
   font-weight: 700;
   margin-bottom: 12px;
 }
+/* Public enquiry only: retain semantic fieldsets and persistent labels, but
+   place group headings inside their cards instead of on the border. */
+.publicRequest .formSection legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+  margin: 0 0 16px;
+  color: var(--portal-blue);
+}
+.publicRequest .formSection legend + * { clear: both; }
+.publicRequest .formSection > label:has(+ .contactGrid) { margin-bottom: 20px; }
+.publicRequest label { gap: 8px; }
+.publicRequest :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]), select, textarea) {
+  min-height: 52px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+.publicRequest :is(input, select, textarea):focus-visible {
+  outline: 3px solid var(--portal-blue);
+  outline-offset: 3px;
+  border-color: var(--portal-blue);
+}
 .placements {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

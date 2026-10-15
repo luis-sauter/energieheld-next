@@ -1,4 +1,4 @@
-.page { background: var(--white); }
+.page { background: var(--white); padding-bottom: clamp(32px, 4vw, var(--space-section)); }
 .page :global(.travel-hero) { min-height: 650px; }
 .page :global(.travel-hero)::after {
   background: linear-gradient(90deg, rgb(250 247 242 / 94%), rgb(250 247 242 / 70%) 42%, rgb(250 247 242 / 12%) 80%);
@@ -47,7 +47,7 @@
 .partners :global(.advertising-rail > div:has(button[aria-label$="verschieben"])) { display: block; }
 .partners :global(.advertising-rail > div:has(button[aria-label$="verschieben"]) [data-sidebar-slot]) { max-width: 400px; margin-bottom: 18px; }
 .partners :global(.advertise-link) { margin-top: 22px; }
-.provider { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(24px, 4vw, 48px); margin-bottom: 56px; border-radius: 16px; background: var(--category-blue); }
+.provider { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(24px, 4vw, 48px); margin-bottom: 0; border-radius: 16px; background: var(--category-blue); }
 .provider h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); line-height: 1.2; margin-bottom: 12px; }
 .provider p:not(:global(.eyebrow)) { max-width: 620px; margin-bottom: 0; }
 .provider :global(.button) { flex-shrink: 0; }
@@ -74,7 +74,7 @@
   .partners :global(.advertising-rail-creatives), .partners :global(.advertising-rail > div) { grid-template-columns: minmax(0, 1fr); }
   .partners :global([data-sidebar-slot]:has([data-size])),
   .partners :global(.advertising-rail-creatives > section:has([data-size])) { grid-row: auto; }
-  .provider { flex-direction: column; align-items: flex-start; gap: 24px; margin-bottom: 32px; }
+  .provider { flex-direction: column; align-items: flex-start; gap: 24px; }
 }
 @media (max-width: 360px) {
   .page :global(.reise-finder-grid) { grid-template-columns: minmax(0, 1fr); }
@@ -85,8 +85,8 @@
 
 .quicklinks { padding-block: 18px 8px; }
 
-/* Balance only the first banner group between quicklinks and inspiration.
-   Include the quicklinks' existing 8px bottom padding in the lower gap. */
-.page .quicklinks + .partners { padding-block: clamp(32px, calc(3vw + 8px), 44px) 0; }
+/* Keep whitespace on both sides of the first banner group, including before
+   the news background. The news section's own padding stays inside its color. */
+.page .quicklinks + .partners { padding-block: clamp(32px, calc(3vw + 8px), 44px) clamp(32px, 4vw, 48px); }
 .page .quicklinks + .partners :global(.advertising-rail) { margin-top: 0; }
 .page .quicklinks + .partners + :global(.section) { padding-top: clamp(24px, 3vw, 36px); }

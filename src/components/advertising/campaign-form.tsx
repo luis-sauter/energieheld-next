@@ -218,7 +218,7 @@ export function CampaignForm({
   </div>;
   if (publicRequestKey && state.success) return <div className={styles.success} role="status">{state.success}</div>;
   return (
-    <><form action={action} className={`${styles.form} ${styles.requestForm}`} onSubmit={event => {
+    <><form action={action} className={`${styles.form} ${styles.requestForm} ${publicRequestKey ? styles.publicRequest : ""}`} onSubmit={event => {
       if (checkPeriod(event.currentTarget)) { event.preventDefault(); event.currentTarget.reportValidity(); }
     }}>
       <input type="hidden" name="campaign_id" value={campaign.id} />
