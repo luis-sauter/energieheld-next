@@ -105,7 +105,7 @@ test('homepage composes existing search, public motto links and real featured pr
  globalThis.homeFixture.calls=[];
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({q:'Nordic Walking',ziel:'schweiz'})}));
  assert.equal((html.match(/<h1\b/g)||[]).length,1);
- assert.match(html,/value="Nordic Walking"/);assert.match(html,/Im Reiseportal suchen/);
+ assert.match(html,/value="Nordic Walking"/);assert.match(html,/Ergebnisse werden gezählt/);
  for(const {slug} of travelThemes)assert.ok(html.includes('href="/mottoreisen/'+slug+'"'));
  assert.doesNotMatch(html,/seasons-title|Ihre nächste Auszeit zur richtigen Jahreszeit|Jede Jahreszeit hat ihren Reiz/);
  for(const slug of slugs)assert.match(html,new RegExp('href="/unterkuenfte/'+slug+'"'));

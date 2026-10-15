@@ -3271,7 +3271,7 @@ h6 {
 .reise-finder-grid .reise-finder-query { grid-column: auto; }
 .reise-finder-grid .reise-finder-submit { grid-column: span 3; }
 .reise-finder-submit { min-height: 54px; width: 100%; font-size: 1rem; }
-.reise-finder-summary { margin-top: 15px; font-weight: 700; color: var(--text); }
+.reise-finder > #reise-finder-hint { margin-top: 12px; }
 .reise-finder-active { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
 .reise-finder-chip, .reise-finder-reset {
   min-height: 42px;

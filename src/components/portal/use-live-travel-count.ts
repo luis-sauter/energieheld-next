@@ -6,8 +6,8 @@ import {queryWords} from '@/lib/portal-search-values';
 import {createCountCache,createLiveCount,type LiveCountState} from '@/lib/live-travel-count';
 const cache=createCountCache();
 const serverState:LiveCountState={key:'',status:'idle'};
-export function useLiveTravelCount(values:TravelFilterValues,completed?:{values:TravelFilterValues;total:number;error?:string}) {
-  const keyFor=(v:TravelFilterValues)=>travelFilterUrl({...v,query:v.query.trim(),sort:''}).split('?')[1]??'';
+export function useLiveTravelCount(values:TravelFilterValues,completed?:{values:TravelFilterValues;total?:number;error?:string}) {
+  const keyFor=(v:TravelFilterValues)=>travelFilterUrl({...v,query:v.query.trim()}).split('?')[1]??'';
   const key=values.query.trim()?keyFor(values):'';
   const seed=completed&&!completed.error&&key===keyFor(completed.values)?completed.total:undefined;
   const failed=Boolean(completed?.error&&key===keyFor(completed.values));

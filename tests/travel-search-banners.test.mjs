@@ -105,9 +105,9 @@ test('audience results count advertisers once and use honest public result label
  const rows=[banner('a',{advertiser_key:'dog-customer',term_keys:['audience:mit-hund']}),banner('b',{advertiser_key:'dog-customer',term_keys:['audience:mit-hund']})];
  const values={...empty,audience:'mit-hund'};
  const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'home',listings:[],banners:rows,options:availableTravelFilters([],[]),values,onChange(){}}));
- assert.match(html,/1 Ergebnis anzeigen/);assert.match(html,/Keine Unterkünfte gefunden/);assert.doesNotMatch(html,/1 passende Unterkunft/);
+ assert.match(html,/1 Ergebnis anzeigen/);assert.doesNotMatch(html,/reise-finder-summary|Unterkünfte gefunden/);assert.doesNotMatch(html,/1 passende Unterkunft/);
  const normal=renderToStaticMarkup(createElement(TravelFinder,{mode:'directory',listings:[listing('real')],options:availableTravelFilters([],[]),values:empty,onChange(){}}));
- assert.match(normal,/1 Unterkunft anzeigen/);assert.match(normal,/1 Unterkunft gefunden/);
+ assert.match(normal,/1 Ergebnis anzeigen/);assert.doesNotMatch(normal,/reise-finder-summary|Unterkunft gefunden/);
  assert.equal(travelSearchResults([],rows,values).count,1);
 });
 
@@ -142,8 +142,8 @@ test('general offer form still accepts existing page and slot deep links',async(
 });
 
 
-test('finder accommodation summary excludes banner-only advertisers while retaining their existing result logic',()=>{
+test('finder button includes banner advertisers without a separate accommodation summary',()=>{
  const listings=[listing('one'),listing('two')];
  const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'directory',listings,banners:[banner()],options:availableTravelFilters(listings,[]),values:empty,onChange(){}}));
- assert.match(html,/2 Unterkünfte gefunden/);assert.match(html,/3 Ergebnisse anzeigen/);assert.doesNotMatch(html,/3 Unterkünfte gefunden/);
+ assert.match(html,/3 Ergebnisse anzeigen/);assert.doesNotMatch(html,/reise-finder-summary|Unterkünfte gefunden/);
 });

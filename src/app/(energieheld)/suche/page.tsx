@@ -28,7 +28,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const context = new URLSearchParams(travelSearchUrl(values, origin).split('?')[1]);
   if (result.type) context.set('typ', result.type);
   return <main id="hauptinhalt">
-    <SearchTravelFinder key={JSON.stringify(values)} listings={finder.listings} terms={finder.terms} initialValues={values} origin={origin} error={finder.error} completedSearch={{ values, total: result.accommodationTotal, error: result.error }} />
+    <SearchTravelFinder key={JSON.stringify(values)} listings={finder.listings} terms={finder.terms} initialValues={values} origin={origin} error={finder.error} completedSearch={{ values, total: !filtered && result.type ? undefined : result.total, error: result.error }} />
     <div className={`container ${styles.page}`}>
     <Link className="text-link" href={travelSearchReturnUrl(values, origin)}>← Zur Suche zurück</Link>
     <p>{filtered ? 'Ihre Reisefilter grenzen die Suche auf passende Unterkünfte ein. Für Reiseziele und Mottoreisen entfernen Sie die Reisefilter.' : 'Ergebnisse aus dem gesamten Reiseportal: Unterkünfte, Reiseziele und Mottoreisen.'}</p>

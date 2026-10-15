@@ -31,3 +31,15 @@ test('query cases forward the exact profile count; empty and failure never fake 
 test('stream pagination requests only twenty new profile rows at the consumed offset and retains accommodation total',async()=>{
  calls=[];const result=await searchPortal('Pool',{cursor:{profiles:17,other:1}});assert.equal(calls.length,1);assert.equal(calls[0].args.p_limit,20);assert.equal(calls[0].args.p_offset,17);assert.equal(result.accommodationTotal,80);assert.ok(result.hits.length<=20);
 });
+
+test('count-only projection matches mixed result totals including deduplicated banners, not profile count',async()=>{
+ const previous=globalThis.__searchClient;
+ try{
+ const campaign={id:'existing',path:'/mottoreisen/wellnessangebote',placement:'sidebar_top',headline:'Neue Schänke',body_text:null,target_url:'https://www.neue-schaenke.de/',image_path:null,rank:600};
+ const payload={total:80,hits:[{id:'profile',title:'Hotel',url:'/unterkuenfte/hotel',excerpt:'text',rank:1000}],catalog_hits:[{id:'wellnessangebote',type:'theme',title:'Wellness',url:'/mottoreisen/wellnessangebote',excerpt:'',rank:500}],ads:[campaign,{...campaign,path:'/'}],presentations:[]};
+ globalThis.__searchClient={rpc(name,args){calls.push({name,args});const p=Promise.resolve({data:payload,error:null});p.abortSignal=signal=>{calls.at(-1).signal=signal;return p};return p;}};
+ const full=await searchPortal('Neue Wellness');calls=[];const signal=new AbortController().signal;const preview=await searchPortal('Neue Wellness',{countOnly:true,signal});assert.equal(preview.total,full.total);assert.equal(preview.total,82);assert.equal(preview.accommodationTotal,80);assert.deepEqual(preview.hits,[]);assert.equal(calls.length,1);assert.equal(calls[0].args.p_limit,1);assert.equal(calls[0].args.p_filters.sort,'');assert.ok(calls[0].args.p_areas.length);assert.equal(calls[0].signal,signal);
+ const filtered=await searchPortal('Neue Wellness',{countOnly:true,filters:{...blank,destination:'oesterreich'}});assert.equal(filtered.total,80);assert.deepEqual(filtered.hits,[]);
+ calls=[];for(const q of ['','!!!','und'])assert.equal((await searchPortal(q,{countOnly:true})).total,0);assert.equal(calls.length,0);
+ }finally{globalThis.__searchClient=previous;}
+});
