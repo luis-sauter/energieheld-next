@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from './navigation-link';
 import { TravelSignals } from './travel-signals';
 import { TravelThemeIcon } from './travel-theme-icon';
+import { ThemeScroller } from './theme-scroller';
 import { AUTUMN_HREF, selectAutumnStays } from '@/lib/autumn-showcase';
 import { SPECIAL_TOPIC_TERM } from '@/lib/travel-editorial';
 import type { Listing } from '@/types/portal';
@@ -33,7 +34,7 @@ export function AutumnShowcase({ listings }: { listings: readonly Listing[] }) {
           </div>
           <small className={styles.caption}>KI-generiertes Symbolbild</small>
         </aside>
-        <div className={styles.stays}>
+        <ThemeScroller count={stays.length} label="Sonderthemen-Unterkünfte" edgeNavigation pageSize={4} autoPlay={false}>
           {stays.map(({ listing, image }) => <article className={styles.card} key={listing.id} data-autumn-profile={listing.id} data-editorial-term={SPECIAL_TOPIC_TERM}>
             <Link href={`/unterkuenfte/${listing.slug}`} className={styles.cardLink} aria-label={`${listing.name} – Unternehmensprofil ansehen`}>
               <div className={styles.photo}><Image src={image.src} alt={image.alt} fill unoptimized={image.src.startsWith('http')} loading="lazy" sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" /></div>
@@ -45,7 +46,7 @@ export function AutumnShowcase({ listings }: { listings: readonly Listing[] }) {
               </div>
             </Link>
           </article>)}
-        </div>
+        </ThemeScroller>
       </div>
     </div>
   </section>;

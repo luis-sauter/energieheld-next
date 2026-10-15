@@ -20,6 +20,19 @@ test('all six corporate colors have one source shared by branding and portal CSS
   for(const [name,value] of Object.entries(portalColors))assert.equal(portalColorVariables['--portal-'+name],value);
   assert.match(read('src/app/(energieheld)/layout.tsx'),/\.\.\.portalColorVariables/);
 });
+
+test('legacy accent aliases, video/season focus and map pins use the exact shared brand orange',()=>{
+ const css=read('src/app/globals.css');
+ assert.match(css,/--brand-accent: var\(--portal-orange, #F7902F\)/);
+ assert.match(css,/--brand-accent-hover: var\(--portal-orange, #F7902F\)/);
+ assert.doesNotMatch(css,/#ef970c|#d8860b|#f2a835/i);
+ for(const file of ['src/components/portal/portal-video.module.css','src/components/portal/travel-seasons.module.css']){
+  assert.match(read(file),/outline: 3px solid var\(--portal-orange\)/);
+  assert.doesNotMatch(read(file),/#ff8a4c|#ff8b48/i);
+ }
+ assert.match(read('src/components/portal/europe-map.tsx'),/fill="var\(--portal-orange\)"/);
+ assert.match(read('src/config/energieheld.ts'),/accent: portalColors.orange/);
+});
 test('orange/basalt primary buttons preserve the approved colors and measured contrast',()=>{
   assert.ok(Math.abs(contrast(portalColors.orange,portalColors.white)-2.3372)<0.001);
   assert.ok(Math.abs(contrast(portalColors.basalt,portalColors.white)-8.276)<0.001);

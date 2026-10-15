@@ -10,7 +10,7 @@ globalThis.__motionHooks={
  effect(fn,deps){let i=effectCursor++;if(!effects[i]||deps.some((d,j)=>d!==effects[i].deps[j]))pending.push(()=>{effects[i]?.cleanup?.();effects[i]={deps,cleanup:fn()}})}
 };
 registerHooks({resolve(s,c,next){
- if(s==='react'&&(c.parentURL?.endsWith('/use-rotation-motion.ts') || c.parentURL?.endsWith('/image-gallery.tsx') || c.parentURL?.endsWith('/theme-scroller.tsx')))return{url:'data:text/javascript,'+encodeURIComponent('export const useCallback=f=>f,useState=v=>globalThis.__motionHooks.state(v),useRef=v=>globalThis.__motionHooks.ref(v),useEffect=(f,d)=>globalThis.__motionHooks.effect(f,d);'),shortCircuit:true};
+ if(s==='react'&&(c.parentURL?.endsWith('/use-rotation-motion.ts') || c.parentURL?.endsWith('/image-gallery.tsx') || c.parentURL?.endsWith('/theme-scroller.tsx')))return{url:'data:text/javascript,'+encodeURIComponent('export const Children={toArray:v=>Array.isArray(v)?v:[v]}; export const useCallback=f=>f,useState=v=>globalThis.__motionHooks.state(v),useRef=v=>globalThis.__motionHooks.ref(v),useEffect=(f,d)=>globalThis.__motionHooks.effect(f,d);'),shortCircuit:true};
  if(s==='next/image')return{url:'data:text/javascript,export default "img"',shortCircuit:true};
  if(s.endsWith('.module.css'))return{url:'data:text/javascript,export default {}',shortCircuit:true};
  if(s.startsWith('@/')||s.startsWith('.')){const b=s.startsWith('@/')?new URL('../src/'+s.slice(2),import.meta.url):new URL(s,c.parentURL);for(const ext of ['.ts','.tsx'])if(existsSync(new URL(b.href+ext)))return next(b.href+ext,c)}return next(s,c);
@@ -45,7 +45,7 @@ test('homepage quicklinks retain their SSR scroller and public theme keys beside
  const css=read('src/components/portal/theme-scroller.module.css');assert.match(css,/overflow-x: auto/);assert.match(css,/max-width: 640px/);assert.match(css,/flex-basis: 100%/);assert.match(css,/focus-visible/);
  const component=read('src/components/portal/theme-scroller.tsx');
  assert.doesNotMatch(component,/fetch\(|supabase|Math.random|Automatisch|aria-pressed|onClick=\{toggle\}/);
- assert.match(component,/!compact && <div className=\{styles.header\}/);
+ assert.match(component,/!compact && \(heading \|\| moreLink \|\| !edgeNavigation\) && <div className=\{styles.header\}/);
  assert.match(component,/\{heading\}[\s\S]*styles.controls[\s\S]*\{moreLink\}[\s\S]*zurück[\s\S]*weiter/);
  assert.match(css,/scrollbar-width: none/);assert.match(css,/::-webkit-scrollbar \{ display: none/);
  assert.match(css,/data-theme-image.*:is\(:hover, :focus-visible\)/);assert.match(css,/opacity: \.2/);assert.match(css,/opacity: \.55/);assert.match(css,/color: #071522/);assert.match(css,/background: rgb\(255 255 255 \/ 85%\)/);

@@ -69,7 +69,7 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
           }}>
           <title id="map-title">Unternehmensstandorte in Europa</title>
           <desc id="map-description">{locations.length} verifizierte Standorte öffentlicher Unternehmen und aktuell vertretener Werbekunden. Mit Plus und Minus zoomen, mit Pfeiltasten oder Ziehen verschieben, mit Pos1 zurücksetzen. Keine einzelnen Standortlinks.</desc>
-          <defs><g id={pinId} fill="#b5682b" stroke="#fff6e9" strokeWidth=".9">
+          <defs><g id={pinId} fill="var(--portal-orange)" stroke="#fff6e9" strokeWidth=".9">
             <path d="M0 0C-2.5-3.5-7-8-7-12a7 7 0 1 1 14 0C7-8 2.5-3.5 0 0Z" />
             <circle cx="0" cy="-12" r="2.4" fill="#fff6e9" stroke="none" />
           </g></defs>

@@ -1,9 +1,9 @@
 :root {
   color-scheme: light;
   --brand-primary: #13237f;
-  --brand-accent: #ef970c;
-  --brand-accent-hover: #d8860b;
-  --brand-accent-light: #f2a835;
+  --brand-accent: var(--portal-orange, #F7902F);
+  --brand-accent-hover: var(--portal-orange, #F7902F);
+  --brand-accent-light: var(--portal-light-orange, #FDF1E4);
   --category-blue: #769efc;
   --white: #ffffff;
   --surface: #f8f9fa;

@@ -16,7 +16,8 @@ export const autumnSelections = [
 ] as const;
 
 // Input is the existing public directory: approved/listed rows only. The season
-// and curated gallery IDs do not grant eligibility. Keep the four-card limit.
+// and curated gallery IDs do not grant eligibility. All eligible cards remain
+// reachable in the carousel; the viewport, not the selection, limits visibility.
 export function selectAutumnStays(publicListings: readonly Listing[]) {
   const seen = new Set<string>();
   const eligible = publicListings.filter(listing => {
@@ -33,5 +34,5 @@ export function selectAutumnStays(publicListings: readonly Listing[]) {
     const curated = selection && listing.images.find(row => row.id === selection.imageId && row.src && row.src !== listing.logo?.src);
     const image = curated ? { ...curated, alt: selection.alt } : providerCardImage(listing, 'travel');
     return image?.src && image.src !== listing.logo?.src ? [{ listing, image }] : [];
-  }).slice(0, 4);
+  });
 }
