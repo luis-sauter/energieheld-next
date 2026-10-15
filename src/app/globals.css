@@ -13,6 +13,10 @@
   --muted: #495057;
   --radius: 8px;
   --space-section: 56px;
+  --font-heading: var(--font-montserrat), Arial, Helvetica, sans-serif;
+  --font-body: var(--font-quicksand), Arial, Helvetica, sans-serif;
+  --font-heading-weight: 700;
+  --font-body-weight: 500;
 }
 * {
   box-sizing: border-box;
@@ -25,7 +29,8 @@ body {
   margin: 0;
   color: var(--text);
   background: var(--white);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  font-weight: var(--font-body-weight);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -35,8 +40,16 @@ a {
 }
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
+  font-family: var(--font-body);
+}
+:is(h1, h2, h3, h4, h5, h6, [role="heading"]), .eyebrow {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 button,
 a,
@@ -71,17 +84,17 @@ h3 {
 }
 h1 {
   font-size: clamp(1.9rem, 3vw, 2.65rem);
-  font-weight: 650;
+  font-weight: var(--font-heading-weight);
   margin-bottom: 24px;
 }
 h2 {
   font-size: clamp(1.45rem, 2.3vw, 1.85rem);
-  font-weight: 600;
+  font-weight: var(--font-heading-weight);
   margin-bottom: 16px;
 }
 h3 {
   font-size: 1.2rem;
-  font-weight: 650;
+  font-weight: var(--font-heading-weight);
 }
 p {
   color: var(--muted);
@@ -117,7 +130,7 @@ button {
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-size: 0.69rem;
-  font-weight: 750;
+  font-weight: var(--font-heading-weight);
   color: var(--brand-primary);
   margin-bottom: 18px;
   display: flex;
@@ -1916,7 +1929,7 @@ button {
 }
 .hero h1 {
   font-size: clamp(2rem, 3.3vw, 3.1rem);
-  font-weight: 400;
+  font-weight: var(--font-heading-weight);
   letter-spacing: -0.025em;
   line-height: 1.17;
 }
@@ -2000,7 +2013,7 @@ button {
 }
 .commercial-layout h2 {
   font-size: 1.7rem;
-  font-weight: 400;
+  font-weight: var(--font-heading-weight);
 }
 .trade-tiles {
   display: grid;
@@ -2030,7 +2043,7 @@ button {
   gap: 8px;
   margin: 0;
   padding: 17px 14px;
-  font-weight: 400;
+  font-weight: var(--font-heading-weight);
   letter-spacing: -0.02em;
   min-height: 66px;
 }
@@ -2491,7 +2504,7 @@ button {
   font-size: 12px;
 }
 .reference-intro h1 {
-  font-weight: 650;
+  font-weight: var(--font-heading-weight);
   font-size: clamp(1.9rem, 3vw, 2.65rem);
 }
 .reference-intro .reference-image {
@@ -2551,7 +2564,7 @@ button {
 .row-content h3 {
   margin: 0 0 7px;
   font-size: 17px;
-  font-weight: 650;
+  font-weight: var(--font-heading-weight);
   line-height: 1.25;
 }
 .row-content h3 a:hover,
@@ -3362,13 +3375,14 @@ h6 {
 .discovery-card-image img,
 .accommodation-card-image img { object-fit: cover; }
 .discovery-card-title {
+  font-family: var(--font-heading);
   display: flex;
   justify-content: space-between;
   gap: 10px;
   align-items: center;
   padding: 15px 17px;
   color: var(--portal-primary-deep);
-  font-weight: 750;
+  font-weight: var(--font-heading-weight);
 }
 .accommodation-grid {
   display: grid;
@@ -3399,7 +3413,7 @@ h6 {
 .motto-page .discovery-card:hover,
 .motto-page .discovery-card:focus-visible { box-shadow: 0 10px 24px rgba(30, 110, 130, .12); }
 .motto-page .discovery-card-image { aspect-ratio: 1.5; }
-.motto-page .discovery-card-title { padding: 20px 14px; font-size: 1.03rem; font-weight: 650; }
+.motto-page .discovery-card-title { padding: 20px 14px; font-size: 1.03rem; font-weight: var(--font-heading-weight); }
 .motto-page .discovery-card-title span { color: var(--portal-primary); }
 .discovery-detail-hero {
   position: relative;
@@ -3518,7 +3532,7 @@ h6 {
 .profile-discover-heading p { margin: 0; color: #536c7a; line-height: 1.65; }
 .profile-discover-facts { display: flex; flex-wrap: wrap; gap: 18px 32px; margin-bottom: 28px; }
 .profile-discover-facts:empty { display: none; }
-.profile-discover-facts h3 { margin: 0 0 10px; font-size: .8rem; font-weight: 600; color: #587180; }
+.profile-discover-facts h3 { margin: 0 0 10px; font-size: .8rem; font-weight: var(--font-heading-weight); color: #587180; }
 .profile-discover ul { padding: 0; margin: 0; list-style: none; }
 .profile-discover-facts ul { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-discover-facts a, .profile-discover-facts li > span { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px; background: #fff; border: 1px solid #dce8ed; border-radius: 999px; font-size: .9rem; text-decoration: none; }

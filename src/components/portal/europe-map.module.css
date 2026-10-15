@@ -1,6 +1,6 @@
 .section { padding: clamp(36px, 4vw, 64px) 0; background: #faf8f4; }
 .header { text-align: center; margin: 0 auto 28px; color: #12354b; }
-.header h2 { margin: 0 0 12px; font: 500 clamp(1.8rem, 3vw, 2.8rem)/1.15 Georgia, 'Times New Roman', serif; color: #12354b; }
+.header h2 { margin: 0 0 12px; font: var(--font-heading-weight) clamp(1.8rem, 3vw, 2.8rem)/1.15 var(--font-heading); color: #12354b; }
 .header p { margin: 0 0 16px; color: #566873; font-size: 1.05rem; }
 .link { color: #80512e; text-underline-offset: 4px; font-size: .9rem; }
 .link span { margin-left: 10px; }
