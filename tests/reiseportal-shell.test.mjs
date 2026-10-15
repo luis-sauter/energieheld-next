@@ -72,7 +72,41 @@ const { default: ThemeOverview } = await import("../src/app/(energieheld)/mottor
 const { default: DestinationOverview } = await import("../src/app/(energieheld)/reiseziele/page.tsx");
 const { PortalHeader, PortalFooter } = await import("../src/components/portal/chrome.tsx");
 const { headerNavigation } = await import("../src/components/portal/navigation-data.ts");
+const { portalIdentity } = await import("../src/config/portal-identity.ts");
 const { accountMenuGroups } = await import("../src/components/portal/account-menu.tsx");
+
+test("approved anniversary logo is shared by header, footer and metadata without alteration", async () => {
+  const { createHash } = await import('node:crypto');
+  const bytes = readFileSync(new URL('../public' + portalIdentity.logo.src, import.meta.url));
+  assert.equal(createHash('sha256').update(bytes).digest('hex'), 'cbb09865551e28b4ca9c69261b77eaa89389691ed141245d09326cf1f98250d3');
+  for (const component of [PortalHeader, PortalFooter]) {
+    const html = renderToStaticMarkup(createElement(component, { brand: reiseportal }));
+    assert.ok(html.includes(portalIdentity.logo.src));
+    assert.match(html, /width="1600" height="533"/);
+    assert.match(html, /alt="DAS-Reiseportal.com – 15 Jahre"/);
+    assert.doesNotMatch(html, /das-reiseportal-logo\.png/);
+    assert.match(html, /href="\/"/);
+  }
+});
+
+test("travel footer preserves service access and links to local legal pages without guessing an address", () => {
+  const html = renderToStaticMarkup(createElement(PortalFooter, { brand: reiseportal }));
+  for (const route of ['/reiseziele', '/mottoreisen', '/unterkuenfte-a-z', '/fuer-unternehmen', '/werbung', '/angebot-anfragen', '/impressum', '/datenschutz', '/login?next=/admin', '/designvorschau/unternehmensprofil']) assert.ok(html.includes('href="'+route+'"'));
+  assert.ok(html.includes('href="'+portalIdentity.phoneHref+'"'));
+  assert.ok(html.includes('href="mailto:'+portalIdentity.email+'"'));
+  assert.doesNotMatch(html, /Flurstraße|Am Haag|81266|livin-q/);
+});
+
+test("legal review routes stay noindex, disclose incomplete legal status and never redirect to foreign text", async () => {
+  for (const route of ['impressum', 'datenschutz']) {
+    const page = await import('../src/app/(energieheld)/'+route+'/page.tsx');
+    assert.equal(page.metadata.robots.index, false);
+    const html = renderToStaticMarkup(createElement(page.default));
+    assert.match(html, /Arbeitsfassung · rechtliche Freigabe ausstehend/);
+    assert.match(html, /href="\/impressum"/);assert.match(html, /href="\/datenschutz"/);
+    assert.doesNotMatch(html, /Am Haag|Flurstraße|81266|§ 5 TMG|§ 55|http-equiv="refresh"/);
+  }
+});
 const { loadReiseportalDirectory, loadReiseportalListingBySlug } =
   await import("../src/lib/reiseportal-directory.ts");
 const { default: LegacyExperts } = await import("../src/app/(energieheld)/experten/page.tsx");
@@ -104,7 +138,7 @@ test("public navigation has only the three travel entries and uses the untouched
     { label: "Unterkünfte A–Z", href: "/unterkuenfte-a-z" },
   ]);
   const html = renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal }));
-  assert.match(html, /src="\/brand\/das-reiseportal-logo\.png"/);
+  assert.match(html, /src="\/brand\/das-reiseportal-15-jahre\.jpeg"/);
   assert.doesNotMatch(html, /Gewerke|Experten A–Z|energieheld\.bayern|Sanieren mit Grips/);
   assert.equal((html.match(/href="\/reiseziele"/g) ?? []).length, 2);
   assert.equal((html.match(/href="\/mottoreisen"/g) ?? []).length, 2);
@@ -127,7 +161,7 @@ test("header dropdowns derive only existing theme and destination routes from th
   assert.equal((html.match(/aria-haspopup="menu"/g) ?? []).length, 2);
   assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 4); // Public header has only the four navigation triggers.
   assert.match(html, /href="\/angebot-anfragen"[^>]*>Angebot anfragen<\/a>/);
-  assert.match(html, /src="\/brand\/das-reiseportal-logo\.png"/);
+  assert.match(html, /src="\/brand\/das-reiseportal-15-jahre\.jpeg"/);
 });
 
 test("account button and dropdown groups use server-provided access without permanent header links", () => {

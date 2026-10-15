@@ -3149,8 +3149,6 @@ h6 {
   color: var(--portal-primary);
 }
 .reiseportal-shell .account-trigger { background: var(--portal-card); color: var(--portal-primary-deep); }
-.reiseportal-shell .site-footer { background: var(--portal-surface); }
-.reiseportal-shell .site-footer .footer-brand { color: var(--portal-primary-deep); }
 .reiseportal-shell .listing-row,
 .reiseportal-shell .listing-card,
 .reiseportal-shell .contact-card,
