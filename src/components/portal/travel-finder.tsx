@@ -12,6 +12,8 @@ import { Breadcrumbs } from "./breadcrumbs";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 
 import { travelSeason } from "@/lib/travel-seasons";
+import { useLiveTravelCount } from './use-live-travel-count';
+import type { LiveCountState } from '@/lib/live-travel-count';
 
 type Options = ReturnType<typeof availableTravelFilters>;
 type CompletedSearch = { values: TravelFilterValues; total: number; error?: string };
@@ -31,7 +33,7 @@ export function useTravelSearchPending(values: TravelFilterValues, origin: "home
 
 type FacetOptions = { slug: string; label: string }[];
 
-export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, banners = [], origin = "directory", completedSearch, profileTotal, profileLoading, searchPending = false, onSearchStart }: {
+export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, banners = [], origin = "directory", completedSearch, profileTotal, profileLoading, searchPending = false, onSearchStart, liveCount }: {
   mode: "home" | "directory" | "search";
   origin?: "home" | "directory";
   completedSearch?: CompletedSearch;
@@ -39,6 +41,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
   profileLoading?: boolean;
   searchPending?: boolean;
   onSearchStart?: () => void;
+  liveCount?: LiveCountState & {cancel?:()=>void};
   listings: Listing[];
   banners?: TravelSearchBanner[];
   options: Options;
@@ -49,7 +52,10 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
 }) {
   const portalQuery = values.query.trim();
   const completed = completedSearch && travelSearchUrl(values, origin) === travelSearchUrl(completedSearch.values, origin);
-  const querySummary = searchPending ? "Suche wird ausgeführt …" : completed ? completedSearch.error ?? accommodationResultSummary(completedSearch.total) : "Suche mit Enter oder dem Suchbutton starten";
+  const previewSummary = liveCount?.status === 'ready' ? accommodationResultSummary(liveCount.total!)
+    : liveCount?.status === 'error' ? 'Trefferzahl gerade nicht verfügbar. Die Suche bleibt möglich.'
+    : liveCount ? 'Unterkünfte werden gezählt …' : 'Suche mit Enter oder dem Suchbutton starten';
+  const querySummary = searchPending ? "Suche wird ausgeführt …" : completed ? completedSearch.error ?? accommodationResultSummary(completedSearch.total) : previewSummary;
   const filterValues = { ...values, query: "" };
   const matched = travelSearchResults(listings, banners, filterValues);
   const count = (profileTotal ?? matched.listings.length) + matched.advertisers.length;
@@ -72,7 +78,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
   const finder = <form className="reise-finder" role="search" aria-label="Reisefinder" aria-busy={searchPending || undefined} onSubmit={(event) => {
         event.preventDefault();
         if (searchPending) return;
-        if (portalQuery) { onSearchStart?.(); window.location.assign(travelSearchUrl(values, mode === "search" ? origin : mode)); return; }
+        if (portalQuery) { liveCount?.cancel?.(); onSearchStart?.(); window.location.assign(travelSearchUrl(values, mode === "search" ? origin : mode)); return; }
         if (count === 0 || error) return;
         if (mode === "home" || mode === "search") window.location.assign(travelFilterUrl(values));
         else document.getElementById("unterkunft-ergebnisse")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
@@ -128,6 +134,7 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
 export function HomeTravelFinder({ listings, terms, error, initialValues, banners }: { listings: Listing[]; terms: PublicTravelTerm[]; error?: string | null; initialValues: TravelFilterValues; banners?: TravelSearchBanner[] }) {
   const [values, setValues] = useState<TravelFilterValues>(initialValues);
   const pending = useTravelSearchPending(values, "home");
+  const liveCount = useLiveTravelCount(values);
   useEffect(() => {
     const url = travelSearchReturnUrl(values, 'home');
     if (`${window.location.pathname}${window.location.search}` !== url) window.history.replaceState(window.history.state, '', url);
@@ -138,13 +145,14 @@ export function HomeTravelFinder({ listings, terms, error, initialValues, banner
     return () => window.removeEventListener('popstate', restore);
   }, []);
   const options = useMemo(() => availableTravelFilters(listings, terms, banners?.flatMap(b => b.term_keys), banners?.flatMap(b => b.destination_slugs ?? [])), [listings, terms, banners]);
-  return <TravelFinder mode="home" {...pending} banners={banners} listings={listings} options={options}
+  return <TravelFinder mode="home" {...pending} liveCount={liveCount} banners={banners} listings={listings} options={options}
     values={values} onChange={setValues} error={error} />;
 }
 
 export function SearchTravelFinder({ listings, terms, initialValues, origin, error, completedSearch }: { completedSearch?: CompletedSearch; listings: Listing[]; terms: PublicTravelTerm[]; initialValues: TravelFilterValues; origin: "home" | "directory"; error?: string | null }) {
   const [values, setValues] = useState(initialValues);
   const pending = useTravelSearchPending(values, origin);
+  const liveCount = useLiveTravelCount(values, completedSearch);
   useEffect(() => {
     const restore = () => setValues(readTravelFilterValues(Object.fromEntries(new URLSearchParams(window.location.search))));
     window.addEventListener('popstate', restore);
@@ -152,5 +160,5 @@ export function SearchTravelFinder({ listings, terms, initialValues, origin, err
     return () => { window.removeEventListener('popstate', restore); window.removeEventListener('pageshow', restore); };
   }, []);
   const options = useMemo(() => availableTravelFilters(listings, terms), [listings, terms]);
-  return <TravelFinder mode="search" {...pending} origin={origin} completedSearch={completedSearch} listings={listings} options={options} values={values} onChange={setValues} error={error} />;
+  return <TravelFinder mode="search" {...pending} liveCount={liveCount} origin={origin} completedSearch={completedSearch} listings={listings} options={options} values={values} onChange={setValues} error={error} />;
 }

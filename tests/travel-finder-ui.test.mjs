@@ -221,3 +221,11 @@ test('submission marks pending once before navigation, while duplicate pending s
  formIn(TravelFinder({...props,searchPending:true})).props.onSubmit({preventDefault(){}});assert.deepEqual(calls,['pending','navigate']);
  }finally{globalThis.window=previous;}
 });
+
+test('live preview displays counts/loading/error while keeping the full search available',()=>{
+ const values=readTravelFilterValues({q:'B'});const html=extra=>renderToStaticMarkup(createElement(TravelFinder,{mode:'home',listings,options,values,onChange(){},...extra}));
+ assert.match(html({liveCount:{key:'q=B',status:'ready',total:51}}),/51 Unterkünfte gefunden/);assert.doesNotMatch(html({liveCount:{key:'q=B',status:'ready',total:51}}),/Suche mit Enter/);
+ const loading=html({liveCount:{key:'q=B',status:'loading'}});assert.match(loading,/Unterkünfte werden gezählt/);assert.doesNotMatch(loading,/type="submit" disabled/);
+ const failed=html({liveCount:{key:'q=B',status:'error'}});assert.match(failed,/Suche bleibt möglich/);assert.doesNotMatch(failed,/Keine Unterkünfte gefunden|type="submit" disabled/);
+ assert.match(html({liveCount:{key:'q=B',status:'ready',total:0}}),/Keine Unterkünfte gefunden/);
+});

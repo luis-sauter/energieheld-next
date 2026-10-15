@@ -23,6 +23,7 @@ import { ListingRow } from "./listing-row";
 import { SearchAdResults } from "@/components/advertising/search-ad-results";
 import { travelResultNoun, travelSearchResults, type TravelSearchBanner } from "@/lib/travel-search-banners";
 import { TravelFinder, useTravelSearchPending } from "./travel-finder";
+import { useLiveTravelCount } from './use-live-travel-count';
 import { DirectoryOrderEditor } from "@/components/admin/directory-order-editor";
 import { SidebarOrderEditor } from "@/components/admin/sidebar-order-editor";
 import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
@@ -51,6 +52,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   const [reviewFilter, setReviewFilter] = useState("");
   const [values, setValues] = useState(initialValues);
   const pending = useTravelSearchPending(values, 'directory');
+  const liveCount = useLiveTravelCount(values);
   const listings = useMemo(() => [...preview, ...database], [preview, database]);
   const options = useMemo(() => availableTravelFilters(database, terms, banners.flatMap(b => b.term_keys), banners.flatMap(b => b.destination_slugs ?? [])), [database, terms, banners]);
   const filterValues = { ...values, query: "" };
@@ -122,7 +124,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   }, []);
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`travel-directory-page ${styles.page} ${cardStyles.rows}`}>
-    <TravelFinder mode="directory" {...pending} profileTotal={pagination ? profileStream.total : undefined} profileLoading={Boolean(pagination && profileStream.loading && !profileStream.items.length)} banners={banners} listings={listings} options={options} values={values} onChange={setValues} error={error ?? bannerError} renderFinder={(finder) =>
+    <TravelFinder mode="directory" {...pending} liveCount={liveCount} profileTotal={pagination ? profileStream.total : undefined} profileLoading={Boolean(pagination && profileStream.loading && !profileStream.items.length)} banners={banners} listings={listings} options={options} values={values} onChange={setValues} error={error ?? bannerError} renderFinder={(finder) =>
     <div className="trade-page travel-directory-content">
       <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder} editorEnabled={editingAvailable} premiumInSidebar showEmptySlots={Boolean(bannerOptions)}
         sidebarContent={<aside className="commercial-sidebar advertising-rail" aria-label="Werbeanzeigen"><p className="advertising-rail-label">Anzeige</p>{advertisements}
