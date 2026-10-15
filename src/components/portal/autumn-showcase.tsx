@@ -2,7 +2,8 @@ import Image from 'next/image';
 import Link from './navigation-link';
 import { TravelSignals } from './travel-signals';
 import { TravelThemeIcon } from './travel-theme-icon';
-import { AUTUMN_HREF, AUTUMN_TERM, selectAutumnStays } from '@/lib/autumn-showcase';
+import { AUTUMN_HREF, selectAutumnStays } from '@/lib/autumn-showcase';
+import { SPECIAL_TOPIC_TERM } from '@/lib/travel-editorial';
 import type { Listing } from '@/types/portal';
 import styles from './autumn-showcase.module.css';
 
@@ -28,12 +29,12 @@ export function AutumnShowcase({ listings }: { listings: readonly Listing[] }) {
               <li><TravelThemeIcon slug="wanderurlaub" /> Wandern &amp; Natur</li>
               <li><TravelThemeIcon slug="urlaub-am-wasser" /> Wasser &amp; Ruhe</li>
             </ul>
-            <Link href={AUTUMN_HREF} className={styles.cta}>Alle Herbst-Unterkünfte <span aria-hidden="true">→</span></Link>
+            <Link href={AUTUMN_HREF} className={styles.cta}>Alle Unterkünfte entdecken <span aria-hidden="true">→</span></Link>
           </div>
           <small className={styles.caption}>KI-generiertes Symbolbild</small>
         </aside>
         <div className={styles.stays}>
-          {stays.map(({ listing, image }) => <article className={styles.card} key={listing.id} data-autumn-profile={listing.id} data-season={AUTUMN_TERM}>
+          {stays.map(({ listing, image }) => <article className={styles.card} key={listing.id} data-autumn-profile={listing.id} data-editorial-term={SPECIAL_TOPIC_TERM}>
             <Link href={`/unterkuenfte/${listing.slug}`} className={styles.cardLink} aria-label={`${listing.name} – Unternehmensprofil ansehen`}>
               <div className={styles.photo}><Image src={image.src} alt={image.alt} fill unoptimized={image.src.startsWith('http')} loading="lazy" sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" /></div>
               <div className={styles.copy}>

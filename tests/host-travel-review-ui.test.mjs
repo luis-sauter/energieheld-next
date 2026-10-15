@@ -24,6 +24,8 @@ const {TravelReviewProvider}=await import('../src/components/admin/travel-review
 const {TravelTaxonomyEditor}=await import('../src/components/admin/travel-taxonomy-editor.tsx');
 const {ReviewActions}=await import('../src/components/admin/review-actions.tsx');
 const {CompanyPublication}=await import('../src/components/auth/company-publication.tsx');
+const {filterTravelDiscovery}=await import('../src/lib/reiseportal-search.ts');
+const {travelFilterPreview}=await import('../src/lib/travel-review-state.ts');
 function render(key,component,props={}){active=key;cursor=0;if(!states.has(key))states.set(key,[]);return component(props)}
 function nodes(element,predicate){if(!element||typeof element!=='object')return [];if(Array.isArray(element))return element.flatMap(e=>nodes(e,predicate));return [...(predicate(element)?[element]:[]),...nodes(element.props?.children,predicate)]}
 function text(element){if(element==null||typeof element==='boolean')return '';if(typeof element==='string'||typeof element==='number')return String(element);if(Array.isArray(element))return element.map(text).join('');return text(element.props?.children)}
@@ -31,6 +33,34 @@ const terms=[{term_key:'theme:wanderurlaub',dimension:'theme',label:'Wandern'},{
 const snapshot={terms,assignedKeys:['theme:wanderurlaub'],proposedKeys:['accommodation:hotel'],revision:3};
 function reset(){states.clear();context=null;tasks.length=0;globalThis.__hostDecisions=[]}
 const button=(tree,label)=>nodes(tree,e=>e.type==='button'&&text(e)===label)[0];
+
+test('special topic checkbox uses full normal save/reload/reset/error cycle, independent seasons and historical assignments',async()=>{
+ reset();
+ const special='feature:sonderthema', autumn='theme:saison-herbst', retired='theme:tauchurlaub';
+ let stored={terms:[...terms,...[special,autumn,retired].map(k=>({term_key:k,dimension:k.split(':')[0],label:k===special?'Sonderthema':k===retired?'Tauchen':'Herbst'}))],assignedKeys:['theme:wanderurlaub',autumn,retired],proposedKeys:[],revision:4,seasonTeasers:{[autumn]:'Bestehender Kurztext.'}};
+ const calls=[];let fail=false;
+ const refresh=()=>{context=render('special-provider',TravelReviewProvider,{snapshot:stored,children:null,saveAction:async(...args)=>{calls.push(args);if(fail)return {error:'Konflikt'};stored={...stored,assignedKeys:args[0],revision:stored.revision+1,seasonTeasers:args[4]};return {...stored,success:'Gespeichert'};}}).props.value;return render('special-editor',TravelTaxonomyEditor,{compact:true});};
+ const checkbox=(tree,label)=>nodes(nodes(tree,e=>e.type==='label'&&text(e).startsWith(label))[0],e=>e.type==='input')[0];
+ let tree=refresh();assert.equal(checkbox(tree,'Sonderthema').props.checked,false);assert.equal(checkbox(tree,'Tauchen').props.disabled,true);
+ checkbox(tree,'Sonderthema').props.onChange();tree=refresh();assert.equal(calls.length,0);assert.equal(context.dirty,true);assert.equal(checkbox(tree,'Sonderthema').props.checked,true);
+ context.reset();tree=refresh();assert.equal(context.dirty,false);assert.equal(checkbox(tree,'Sonderthema').props.checked,false);
+ checkbox(tree,'Sonderthema').props.onChange();refresh();fail=true;await context.persist(undefined,false);tree=refresh();assert.equal(context.dirty,true);assert.equal(stored.assignedKeys.includes(special),false);assert.match(text(tree),/Konflikt/);
+ fail=false;await context.persist(undefined,false);tree=refresh();assert.equal(context.dirty,false);assert.deepEqual(stored.assignedKeys,['theme:wanderurlaub',autumn,retired,special]);assert.deepEqual(stored.seasonTeasers,{[autumn]:'Bestehender Kurztext.'});
+ states.clear();tree=refresh();assert.equal(checkbox(tree,'Sonderthema').props.checked,true);checkbox(tree,'Sonderthema').props.onChange();refresh();await context.persist(undefined,false);tree=refresh();assert.equal(checkbox(tree,'Sonderthema').props.checked,false);assert.deepEqual(stored.assignedKeys,['theme:wanderurlaub',autumn,retired]);
+ context.toggle(autumn);context.toggle(special);refresh();await context.persist(undefined,false);tree=refresh();assert.equal(checkbox(tree,'Herbst').props.checked,false);assert.equal(checkbox(tree,'Sonderthema').props.checked,true);
+ assert.ok(travelFilterPreview(stored.terms,stored.assignedKeys).filter(t=>[special,retired].includes(t.term_key)).every(t=>t.href===null));
+ stored={...stored,assignedKeys:[],revision:20};states.clear();tree=refresh();assert.equal(checkbox(tree,'Tauchen'),undefined);
+});
+
+test('regular categories survive save/reopen, affect the existing public filters, and disappear again only on explicit removal',async()=>{
+ for(const key of ['theme:nordic-walking','theme:radwandern','theme:wanderurlaub','theme:wellnessangebote','audience:mit-hund','audience:familie','accommodation:hotel']){
+  reset();let stored={terms:[...new Set([key,'feature:sonderthema','theme:saison-winter'])].map(k=>({term_key:k,dimension:k.split(':')[0],label:k})),assignedKeys:['feature:sonderthema','theme:saison-winter'],proposedKeys:[],revision:1};
+  const refresh=()=>{context=render('category',TravelReviewProvider,{snapshot:stored,children:null,saveAction:async(keys)=>{stored={...stored,assignedKeys:keys,revision:stored.revision+1};return {...stored,success:'Saved'};}}).props.value;};
+  const found=()=>{const [dimension,slug]=key.split(':');return filterTravelDiscovery([{id:'public',travelTermKeys:stored.assignedKeys}], '',dimension==='theme'?slug:'',dimension==='audience'?slug:'',dimension==='accommodation'?slug:'');};
+  refresh();assert.equal(found().length,0);context.toggle(key);refresh();assert.equal(found().length,0);await context.persist(undefined,false);states.clear();refresh();assert.ok(context.selected.includes(key));assert.equal(found().length,1);
+  context.toggle(key);refresh();await context.persist(undefined,false);states.clear();refresh();assert.equal(found().length,0);assert.deepEqual(context.selected,['feature:sonderthema','theme:saison-winter']);
+ }
+});
 
 test('season-only teaser edits use normal editor persistence, preserve ordinary keys, reload normalized text and cancel safely',async()=>{
  reset();

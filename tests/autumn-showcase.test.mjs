@@ -23,24 +23,29 @@ registerHooks({
   return next(url,context);
  }
 });
+const { SPECIAL_TOPIC_TERM } = await import('../src/lib/travel-editorial.ts');
 const { AUTUMN_TERM, AUTUMN_HREF, autumnSelections, selectAutumnStays } = await import('../src/lib/autumn-showcase.ts');
 const { AutumnShowcase } = await import('../src/components/portal/autumn-showcase.tsx');
 const fixtures = () => autumnSelections.map((entry,index) => ({
  id:entry.profileId,slug:'existing-'+index,name:'Echter Anbieter '+index,isDemo:false,isPreview:false,
- travelTermKeys:[AUTUMN_TERM,'theme:wellnessangebote'],seasonTeasers:{[AUTUMN_TERM]:'Gespeicherter saisonaler Kurztext.'},
+ travelTermKeys:[SPECIAL_TOPIC_TERM,'theme:wellnessangebote'],seasonTeasers:{[AUTUMN_TERM]:'Gespeicherter saisonaler Kurztext.'},
  location:{city:'Ort',country:'Österreich'},logo:{src:'/logo.png',alt:'Logo'},
  images:[{id:'unselected',src:'/other.jpg',alt:'Anderes Bild'},{id:entry.imageId,src:'/actual-'+index+'.jpg',alt:'Originalfoto'}]
  }));
 
-test('editorial selection requires current exact autumn assignment and selected existing gallery ID, without mutating media',()=>{
+test('special topic uses its own assignment, keeps curated images and never mutates media',()=>{
  const listings=fixtures(),before=JSON.stringify(listings);
  assert.equal(selectAutumnStays(listings).length,4);
  assert.equal(selectAutumnStays(listings)[0].image.src,'/actual-0.jpg');
  assert.equal(JSON.stringify(listings),before);
- for(const change of [row=>({...row,travelTermKeys:[]}),row=>({...row,travelTermKeys:['theme:natur-pur','theme:saison-sommer']}),row=>({...row,isDemo:true}),row=>({...row,isPreview:true}),row=>({...row,images:[]}),row=>({...row,images:[row.images[0]]}),row=>({...row,logo:row.images[1]})]) {
+ for(const change of [row=>({...row,travelTermKeys:[]}),row=>({...row,travelTermKeys:['theme:natur-pur','theme:saison-sommer']}),row=>({...row,isDemo:true}),row=>({...row,isPreview:true}),row=>({...row,images:[]}),row=>({...row,images:[row.images[1]],logo:row.images[1]})]) {
   assert.equal(selectAutumnStays([change(listings[0])]).length,0);
  }
- assert.equal(selectAutumnStays([{...listings[0],id:'unselected-pretty-profile'}]).length,0);
+ assert.equal(selectAutumnStays([{...listings[0],id:'new-editorially-selected-profile'}]).length,1);
+ assert.equal(selectAutumnStays([{...listings[0],travelTermKeys:[AUTUMN_TERM]}]).length,0);
+ assert.equal(selectAutumnStays([...listings,...listings]).length,4);
+ assert.equal(selectAutumnStays(Array.from({length:8},(_,i)=>({...listings[0],id:'selected-'+i}))).length,4);
+ assert.equal(selectAutumnStays([{...listings[0],images:[listings[0].images[0]]}])[0].image.src,'/other.jpg');
  assert.equal(selectAutumnStays([]).length,0);
 });
 
@@ -50,7 +55,8 @@ test('reference layout renders one declared AI editorial image, genuine linked c
  assert.equal((html.match(/src="\/reiseportal\/seasons\/herbst-auszeit.webp"/g)||[]).length,1);
  assert.match(html,/KI-generiertes Symbolbild/);
  assert.match(html,/Herbst-Auszeit mit Charakter/);
- assert.match(html,/Alle Herbst-Unterkünfte/);
+ assert.match(html,/Alle Unterkünfte entdecken/);
+ assert.doesNotMatch(html,/href="[^\"]*saison-/);
  assert.ok(html.includes('href="'+AUTUMN_HREF+'"'));
  for(const row of rows)assert.ok(html.includes('href="/unterkuenfte/'+row.slug+'"'));
  assert.doesNotMatch(html,/Gespeicherter saisonaler Kurztext/);

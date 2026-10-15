@@ -50,6 +50,7 @@ before(async()=>{
  const assignmentBefore=(await db.query('SELECT profile_id,term_key FROM company_profile_travel_terms ORDER BY profile_id,term_key')).rows;
  const freshnessBefore=(await db.query('SELECT * FROM profile_content_freshness ORDER BY profile_id')).rows;
  await apply('20261013160000_company_travel_seasons.sql');
+ await apply('20261015110000_special_topic_term.sql');
  assert.deepEqual((await db.query('SELECT to_jsonb(p) p FROM company_profiles p ORDER BY id')).rows,seasonBefore);
  assert.deepEqual((await db.query('SELECT profile_id,term_key FROM company_profile_travel_terms ORDER BY profile_id,term_key')).rows,assignmentBefore);
  assert.deepEqual((await db.query('SELECT * FROM profile_content_freshness ORDER BY profile_id')).rows,freshnessBefore);
@@ -64,6 +65,29 @@ const save=(s,keys=s.assignedKeys,id=own)=>db.query('SELECT save_profile_travel_
 
 const winter='theme:saison-winter',summer='theme:saison-sommer';
 const saveSeasons=async(s,keys,teasers,id=own)=>(await db.query('SELECT save_profile_travel_seasons($1,$2,$3,$4,$5,$6::jsonb) s',[id,keys,s.assignedKeys,s.proposedKeys,s.revision,JSON.stringify(teasers)])).rows[0].s;
+
+test('special topic uses existing authorized RPC, retains ordinary/season/historical keys and media/status, rejects owners and stale saves',async()=>{
+ const special='feature:sonderthema',historic='theme:tauchurlaub';
+ await actor(editor);let s=await snapshot();
+ await saveSeasons(s,[...s.assignedKeys,winter,historic,'accommodation:hotel','theme:radwandern'],{[winter]:'Winterruhe.'});s=await snapshot();
+ const baseline=s.assignedKeys;
+ await db.exec('RESET ROLE');
+ const before=(await db.query('SELECT to_jsonb(p) p FROM company_profiles p ORDER BY id')).rows;
+ const media=(await db.query('SELECT * FROM company_profile_images ORDER BY id')).rows;
+ await actor(editor);const added=await saveSeasons(s,[...baseline,special],s.seasonTeasers);
+ assert.deepEqual(new Set(added.assignedKeys),new Set([...baseline,special]));
+ assert.equal(added.assignedKeys.includes('theme:saison-herbst'),false);
+ assert.deepEqual((await snapshot()).assignedKeys,added.assignedKeys);
+ await denied(()=>saveSeasons(s,[...baseline,special],s.seasonTeasers),/changed/);
+ await actor(owner);await denied(()=>saveSeasons(added,baseline,s.seasonTeasers),/authorized/);
+ await actor(other);await denied(()=>saveSeasons(added,baseline,s.seasonTeasers),/authorized/);
+ await actor('','anon');await denied(()=>saveSeasons(added,baseline,s.seasonTeasers),/permission denied/);
+ await actor(editor);const removed=await saveSeasons(await snapshot(),baseline,s.seasonTeasers);
+ assert.deepEqual(new Set(removed.assignedKeys),new Set(baseline));assert.deepEqual(removed.seasonTeasers,s.seasonTeasers);
+ await db.exec('RESET ROLE');
+ assert.deepEqual((await db.query('SELECT to_jsonb(p) p FROM company_profiles p ORDER BY id')).rows,before);
+ assert.deepEqual((await db.query('SELECT * FROM company_profile_images ORDER BY id')).rows,media);
+});
 test('season save is admin-only, keeps status and old terms; teaser save increments revision and stale save rolls back',async()=>{
  await actor(editor);const initial=await snapshot(),keys=[...initial.assignedKeys,winter,summer];
  const saved=await saveSeasons(initial,keys,{[winter]:'Ruhige Auszeit im Spa.',[summer]:'Sommerliche Naturtage.'});

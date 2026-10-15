@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import './helpers/load-ts.mjs';
 const { selectHomeStays } = await import('../src/lib/home-stays.ts');
-const { autumnSelections, AUTUMN_TERM } = await import('../src/lib/autumn-showcase.ts');
+const { autumnSelections } = await import('../src/lib/autumn-showcase.ts');
+const { SPECIAL_TOPIC_TERM } = await import('../src/lib/travel-editorial.ts');
 const row = (id, overrides = {}) => ({ id, slug: 'real-'+id, name: 'Unterkunft '+id,
   location: { city: 'Ort', country: ['Deutschland','Österreich','Schweiz','Italien'][Number(id)%4] ?? 'Deutschland' },
   isDemo: false, images: [{id:'photo-'+id,src:'/real-'+id+'.jpg',alt:'Betreiberfoto'}], ...overrides });
@@ -24,7 +25,7 @@ test('demo, preview, missing photos, logo-only and incomplete cards never enter 
   assert.deepEqual(selectHomeStays([],'visit'),[]);
 });
 test('actually rendered autumn highlights are excluded, but a small real directory remains usable', () => {
-  const highlights=autumnSelections.map(s=>row(s.profileId,{travelTermKeys:[AUTUMN_TERM],images:[{id:s.imageId,src:'/real.jpg'}]}));
+  const highlights=autumnSelections.map(s=>row(s.profileId,{travelTermKeys:[SPECIAL_TOPIC_TERM],images:[{id:s.imageId,src:'/real.jpg'}]}));
   const additional=Array.from({length:8},(_,i)=>row(String(i)));
   assert.deepEqual(new Set(selectHomeStays([...highlights,...additional],'visit').map(p=>p.id)),new Set(additional.map(p=>p.id)));
   assert.equal(selectHomeStays(highlights,'visit').length,4);
