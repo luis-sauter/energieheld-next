@@ -5,28 +5,27 @@
   color: var(--portal-white);
   border-top: 3px solid var(--portal-orange);
 }
-.main { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 32px; padding-block: 48px 36px; }
-.logoSurface { display: inline-flex; max-width: 100%; padding: 10px; background: var(--portal-white); border-radius: 10px; }
+.main { --logo-surface: #f7f7f7; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 32px 64px; padding-block: 40px 32px; }
+.logoSurface { display: inline-flex; max-width: 100%; padding: 10px; background: var(--logo-surface); border-radius: 10px; }
 .logoSurface img { display: block; width: 240px; max-width: 100%; height: auto; }
 .footer .tagline { max-width: 280px; margin: 16px 0 0; color: var(--portal-white); font-size: .9rem; line-height: 1.65; }
 .footer .heading { margin: 0 0 16px; font-size: .82rem; line-height: 1.5; letter-spacing: .08em; text-transform: uppercase; color: var(--portal-white); }
 .heading::before { content: ""; display: block; width: 28px; height: 2px; margin-bottom: 12px; background: var(--portal-orange); }
-.links { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .footer a { color: var(--portal-white); text-decoration: none; text-underline-offset: 4px; overflow-wrap: anywhere; }
 .footer a:hover { color: var(--portal-white); text-decoration: underline; text-decoration-color: var(--portal-orange); }
 .footer:global(.site-footer) a:focus-visible { outline: 3px solid var(--portal-white); outline-offset: 4px; border-radius: 2px; }
-.links a, .contact a { display: inline-flex; align-items: center; min-height: 32px; font-size: .9rem; line-height: 1.5; }
+.contact a { display: inline-flex; align-items: center; min-height: 32px; font-size: .9rem; line-height: 1.5; }
 .contact { display: grid; gap: 8px; align-content: start; font-style: normal; line-height: 1.6; }
 .bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; padding-block: 24px; border-top: 1px solid rgb(255 255 255 / 35%); font-size: .8rem; }
 .legalLinks { display: flex; flex-wrap: wrap; gap: 8px 24px; }
 .legalLinks a { display: inline-flex; align-items: center; min-height: 32px; }
-@media (max-width: 1000px) { .main { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 700px) {
   .headerRow:global(.header-inner) { height: 82px; }
   .headerRow .brandLogo { width: 198px; max-width: 100%; }
   .main { padding-block: 32px; gap: 28px 20px; }
-  .brandBlock { grid-column: 1 / -1; }
-  .contactBlock { grid-column: 1 / -1; }
-  .links a, .contact a, .legalLinks a { min-height: 44px; }
+  .brandBlock, .contactBlock { width: 100%; }
+  .contact a, .legalLinks a { min-height: 44px; }
   .bottom { align-items: flex-start; flex-direction: column; }
 }
+/* Match the approved JPEG's measured, uniform corner/background pixels. */
+header.header:global(.site-header) { background: #f7f7f7; }

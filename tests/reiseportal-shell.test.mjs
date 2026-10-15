@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 registerHooks({
   resolve(specifier, context, next) {
+    if (specifier.endsWith('/weidner-legal-source.json')) return { url: 'data:text/javascript,export default '+encodeURIComponent(readFileSync(new URL('../src/data/weidner-legal-source.json',import.meta.url),'utf8')), shortCircuit: true };
     if(specifier.endsWith('/admin/mediathek/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function searchLibraryProfiles(){throw Error("Unexpected company lookup during public shell render")};export async function createLibraryCompany(){throw Error("Unexpected company creation")}'};
     if (specifier.endsWith("card-image-editor")) return {url:'data:text/javascript,export function CardImageEditor(){return null;}',shortCircuit:true};
     if (specifier.endsWith("profile-card-images")) return {url:'data:text/javascript,export async function loadCardEditing(){return false;}export async function withSavedCardImages(rows){return rows;}',shortCircuit:true};
@@ -89,22 +90,29 @@ test("approved anniversary logo is shared by header, footer and metadata without
   }
 });
 
-test("travel footer preserves service access and links to local legal pages without guessing an address", () => {
+test("travel footer contains only brand, contact and utility links, without discovery or service columns", () => {
   const html = renderToStaticMarkup(createElement(PortalFooter, { brand: reiseportal }));
-  for (const route of ['/reiseziele', '/mottoreisen', '/unterkuenfte-a-z', '/fuer-unternehmen', '/werbung', '/angebot-anfragen', '/impressum', '/datenschutz', '/login?next=/admin', '/designvorschau/unternehmensprofil']) assert.ok(html.includes('href="'+route+'"'));
+  for (const route of ['/impressum', '/datenschutz', '/login?next=/admin', '/designvorschau/unternehmensprofil']) assert.ok(html.includes('href="'+route+'"'));
+  assert.doesNotMatch(html,/Entdecken|Service|Reiseziele|Mottoreisen|Für Gastgeber|Angebot anfragen|Werbung im Reiseportal|href="\/unterkuenfte-a-z"/);
   assert.ok(html.includes('href="'+portalIdentity.phoneHref+'"'));
   assert.ok(html.includes('href="mailto:'+portalIdentity.email+'"'));
   assert.doesNotMatch(html, /Flurstraße|Am Haag|81266|livin-q/);
 });
 
-test("legal review routes stay noindex, disclose incomplete legal status and never redirect to foreign text", async () => {
+test("legal pages reproduce the sanitized original WEIDNER body verbatim without claiming a legal approval", async () => {
+  const sources=JSON.parse(readFileSync(new URL('../src/data/weidner-legal-source.json',import.meta.url),'utf8'));
+  const hashes={impressum:'85fef99096c165ea2173c65c0de8b220f217651cb59a9766105d44bf89ab7c72',datenschutz:'8e1468ee53bdd4654a2e9cc17efcd1a82b2a72471f41466319f5bbc247e7ca6a'};
   for (const route of ['impressum', 'datenschutz']) {
     const page = await import('../src/app/(energieheld)/'+route+'/page.tsx');
     assert.equal(page.metadata.robots.index, false);
     const html = renderToStaticMarkup(createElement(page.default));
-    assert.match(html, /Arbeitsfassung · rechtliche Freigabe ausstehend/);
+    assert.match(html, /Unveränderte Quellenübernahme/);
+    assert.match(html, /Eine rechtliche Prüfung für DAS-Reiseportal.com ist damit nicht erfolgt/);
+    assert.ok(html.includes(sources[route].html));
+    assert.equal(sources[route].textSha256,hashes[route]);
+    assert.doesNotMatch(sources[route].html,/<(?:script|style|iframe|img|form|input|button)\b|\son\w+=|\sstyle=|javascript:/i);
     assert.match(html, /href="\/impressum"/);assert.match(html, /href="\/datenschutz"/);
-    assert.doesNotMatch(html, /Am Haag|Flurstraße|81266|§ 5 TMG|§ 55|http-equiv="refresh"/);
+    assert.doesNotMatch(html, /http-equiv="refresh"/);
   }
 });
 const { loadReiseportalDirectory, loadReiseportalListingBySlug } =
@@ -187,7 +195,7 @@ test("account button and dropdown groups use server-provided access without perm
 
   assert.match(footer("unauthenticated"), /DAS-Reiseportal.com.*Neue Lieblingsorte entdecken/s);
   assert.match(footer("unauthenticated"), /Redaktion \/ Login/);
-  assert.match(footer("forbidden"), /href="\/angebot-anfragen"/);
+  assert.doesNotMatch(footer("forbidden"), /href="\/angebot-anfragen"/);
 });
 
 test("homepage uses the supplied MP4 as the hero background with search above it", () => {

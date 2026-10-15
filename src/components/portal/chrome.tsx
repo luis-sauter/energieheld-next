@@ -16,7 +16,7 @@ export function PortalHeader({ brand, access = "unauthenticated", identity, hasC
   const navigation = headerNavigation(brand);
   return (
     <>
-      <header className="site-header">
+      <header className={`site-header ${brand.id === "reiseportal" ? styles.header : ""}`}>
         <div className={`container header-inner ${brand.id === "reiseportal" ? styles.headerRow : ""}`}>
           <Link
             href="/"
@@ -52,14 +52,6 @@ export function PortalFooter({ brand }: { brand: BrandConfig }) {
         </Link>
         <p className={styles.tagline}>{brand.tagline}</p>
       </div>
-      <nav aria-label="Reiseportal entdecken"><h2 className={styles.heading}>Entdecken</h2><ul className={styles.links}>
-        {brand.navigation.map(item => <li key={item.href}><Link href={item.href} prefetch={false}>{item.label}</Link></li>)}
-      </ul></nav>
-      <nav aria-label="Service"><h2 className={styles.heading}>Service</h2><ul className={styles.links}>
-        <li><Link href="/fuer-unternehmen" prefetch={false}>Für Gastgeber</Link></li>
-        <li><Link href="/werbung" prefetch={false}>Werbung im Reiseportal</Link></li>
-        <li><Link href="/angebot-anfragen" prefetch={false}>Angebot anfragen</Link></li>
-      </ul></nav>
       <div className={styles.contactBlock}><h2 className={styles.heading}>Kontakt</h2><address className={styles.contact}>
         <strong>{portalIdentity.businessName}</strong>
         <a href={portalIdentity.phoneHref}>{portalIdentity.phone}</a>
