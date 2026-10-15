@@ -48,7 +48,7 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
     <div className="container">
       <header className={styles.header}>
         <h2 id="locations-title">Unsere Unterkünfte im Überblick</h2>
-        <p>Entdecken Sie unsere Unterkünfte und ihre Standorte in Europa.</p>
+        <p>Entdecken Sie unsere Unterkünfte und ihre Standorte in Deutschland, Österreich, der Schweiz und Südtirol.</p>
         <a href="/unterkuenfte-a-z" className={styles.link}>Alle Unterkünfte entdecken <span aria-hidden="true">→</span></a>
       </header>
       <div className={styles.frame}>
