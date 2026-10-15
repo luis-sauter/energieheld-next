@@ -68,7 +68,7 @@ test('rendered homepage preserves the exact autumn component and removes only th
  const {autumnSelections}=await import('../src/lib/autumn-showcase.ts');
  const {AutumnShowcase}=await import('../src/components/portal/autumn-showcase.tsx');
  const rows=autumnSelections.map((entry,index)=>({...profiles[0],id:entry.profileId,slug:'real-autumn-'+index,
-  travelTermKeys:['theme:saison-herbst','theme:wellnessangebote'],images:[{id:entry.imageId,src:'/real-'+index+'.jpg',alt:'Originalbild'}]}));
+  travelTermKeys:['feature:sonderthema','theme:saison-herbst','theme:wellnessangebote'],images:[{id:entry.imageId,src:'/real-'+index+'.jpg',alt:'Originalbild'}]}));
  const original=globalThis.homeFixture.profiles;
  try {
   globalThis.homeFixture.profiles=[...profiles,...rows];
