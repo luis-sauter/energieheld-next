@@ -420,7 +420,7 @@ test("public Reiseportal header uses the original logo without a false global de
   );
   assert.match(
     renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal })),
-    /\/brand\/das-reiseportal-logo\.png/,
+    /\/brand\/das-reiseportal-15-jahre\.jpeg/,
   );
   assert.doesNotMatch(
     renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal })),

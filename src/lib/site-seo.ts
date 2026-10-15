@@ -1,5 +1,6 @@
 import "server-only";
 import { reiseportal } from "@/config/reiseportal";
+import { portalIdentity } from "@/config/portal-identity";
 
 type SeoEnvironment = Record<string, string | undefined>;
 
@@ -31,7 +32,7 @@ export function siteSeo(env: SeoEnvironment = process.env) {
     defaultDescription: "Reiseinspiration, Reiseziele und Mottoreisen entdecken. Lernen Sie reale Unterkünfte und Reiseanbieter mit Standort und Kontakt im DAS-Reiseportal.com kennen.",
     locale: "de_DE",
     language: "de",
-    defaultImage: "/brand/das-reiseportal-logo.png",
+    defaultImage: portalIdentity.logo.src,
   };
 }
 

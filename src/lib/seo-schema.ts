@@ -4,6 +4,7 @@ import type { PublicTravelTerm } from "./reiseportal-filter-options";
 import type { BreadcrumbItem } from "./breadcrumbs";
 import { siteSeo, siteUrl, type SiteSeo } from "./site-seo";
 import { indexableProfile, plainSeoText, profileDescription } from "./seo";
+import { portalIdentity } from "@/config/portal-identity";
 
 type Schema = Record<string, unknown>;
 function clean(value: unknown): unknown {
@@ -38,7 +39,7 @@ export function websiteSchema(config: SiteSeo = siteSeo()): Schema[] {
   const url = siteUrl("/", config);
   return [
     { "@type": "Organization", "@id": url ? `${url}#organization` : undefined,
-      name: config.organizationName, url, logo: siteUrl("/brand/das-reiseportal-logo.png", config) },
+      name: config.organizationName, url, logo: siteUrl(portalIdentity.logo.src, config) },
     { "@type": "WebSite", "@id": url ? `${url}#website` : undefined, name: config.siteName,
       url, inLanguage: config.language, description: config.defaultDescription,
       publisher: url ? { "@id": `${url}#organization` } : undefined },
