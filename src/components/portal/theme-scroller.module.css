@@ -19,12 +19,11 @@
 .rail::-webkit-scrollbar { display: none; }
 .scroller[data-page-size="4"] { align-self: start; }
 .scroller[data-page-size="4"] .rail > .page { flex-basis: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, auto); gap: 20px; align-content: start; }
-.scroller[data-page-size="4"] .imageRail .edgeControls { top: calc(4px + (100cqw - 28px) / 6.4); }
+.scroller[data-page-size="4"] .imageRail .edgeControls { top: 50%; }
 .edgeControls button:disabled { opacity: .4; cursor: default; }
 @media (max-width: 600px) {
   .scroller[data-page-size="4"] .rail > .page { display: contents; }
   .scroller[data-page-size="4"] .page > * { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; }
-  .scroller[data-page-size="4"] .imageRail .edgeControls { top: calc(4px + (100cqw - 8px) / 3.2); }
 }
 .rail > * { flex: 0 0 calc((100% - 36px) / 3); min-width: 0; scroll-snap-align: start; }
 .rail :global(.discovery-card) { border-radius: 16px; }
