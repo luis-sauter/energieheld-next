@@ -457,7 +457,7 @@ test("homepage shows real travel cards and distributes only homepage ads without
   const html = renderToStaticMarkup(await HomePage({ searchParams: Promise.resolve({}) }));
   assert.match(html, /Bayerischer Wald/);
   assert.match(html, /Reisen beginnt mit einer guten Idee/);
-  assert.match(html, /\d+ (?:Unterkunft|Unterkünfte) anzeigen/);
+  assert.match(html, /\d+ (?:Ergebnis|Ergebnisse) anzeigen/);
   assert.match(html, /hero-loop\.mp4/);
   assert.doesNotMatch(html, /poster=|hero\.jpg/);
   assert.match(html, /name="q"/);

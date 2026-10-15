@@ -24,7 +24,6 @@
 .page :global(.reise-finder-grid .reise-finder-submit) { grid-column: span 3; }
 .page :global(.reise-finder-submit) { background: var(--portal-button); color: var(--portal-button-text); min-height: 44px; border: 1px solid var(--portal-button); border-radius: 8px; }
 .page :global(.reise-finder-submit:hover:not(:disabled)) { background: var(--portal-button-hover); }
-.page :global(.reise-finder-summary) { font-size: .85rem; margin-top: 12px; color: var(--portal-basalt); }
 .page :global(#reise-finder-hint) { font-size: .8rem; line-height: 1.5; margin: 6px 0 0; color: var(--portal-basalt); }
 .page :global(.travel-directory-content) { padding-top: 0; }
 .page :global(.commercial-layout) { margin-top: 0; }

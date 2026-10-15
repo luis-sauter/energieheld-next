@@ -103,7 +103,7 @@ test('A–Z layout is scoped, reserves square images, stacks rail on mobile and 
 });
 test('structured zero state is honest while free text still submits globally without matching accommodations',()=>{
   const html=directory([listing('only',true)],{ziel:'erfunden',q:'Nordic Walking'});
-  assert.match(html,/Für diese Kombination/);assert.match(html,/Im Reiseportal suchen/);assert.doesNotMatch(html,/type="submit" disabled/);
+  assert.match(html,/Für diese Kombination/);assert.match(html,/Ergebnisse werden gezählt/);assert.doesNotMatch(html,/type="submit" disabled/);
   assert.doesNotMatch(html,/name="ort"/);assert.match(html,/name="q"/);
 });
 

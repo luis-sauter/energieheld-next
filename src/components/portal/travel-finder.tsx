@@ -6,8 +6,8 @@ import type { Listing } from "@/types/portal";
 import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, type TravelFilterValues } from "@/lib/reiseportal-filter-options";
 import { travelFacetCount, travelFilterParams, travelFilterUrl, type TravelFacet } from "@/lib/reiseportal-facets";
 import { travelSearchUrl, travelSearchReturnUrl } from "@/lib/travel-search-intent";
-import { travelResultNoun, travelSearchResults, travelSearchAdvertisers, type TravelSearchBanner } from "@/lib/travel-search-banners";
-import { accommodationResultSummary, SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
+import { travelSearchResults, travelSearchAdvertisers, type TravelSearchBanner } from "@/lib/travel-search-banners";
+import { SEARCH_QUERY_LIMIT } from "@/lib/portal-search-values";
 import { Breadcrumbs } from "./breadcrumbs";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 
@@ -16,7 +16,7 @@ import { useLiveTravelCount } from './use-live-travel-count';
 import type { LiveCountState } from '@/lib/live-travel-count';
 
 type Options = ReturnType<typeof availableTravelFilters>;
-type CompletedSearch = { values: TravelFilterValues; total: number; error?: string };
+type CompletedSearch = { values: TravelFilterValues; total?: number; error?: string };
 
 // A URL/form draft is not an executed search. Only submission marks a pending
 // request; completedSearch remains the server-authoritative result snapshot.
@@ -52,14 +52,16 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
 }) {
   const portalQuery = values.query.trim();
   const completed = completedSearch && travelSearchUrl(values, origin) === travelSearchUrl(completedSearch.values, origin);
-  const previewSummary = liveCount?.status === 'ready' ? accommodationResultSummary(liveCount.total!)
-    : liveCount?.status === 'error' ? 'Trefferzahl gerade nicht verfügbar. Die Suche bleibt möglich.'
-    : liveCount ? 'Unterkünfte werden gezählt …' : 'Suche mit Enter oder dem Suchbutton starten';
-  const querySummary = searchPending ? "Suche wird ausgeführt …" : completed ? completedSearch.error ?? accommodationResultSummary(completedSearch.total) : previewSummary;
   const filterValues = { ...values, query: "" };
   const matched = travelSearchResults(listings, banners, filterValues);
   const count = (profileTotal ?? matched.listings.length) + matched.advertisers.length;
-  const resultNoun = travelResultNoun(count, matched.advertisers.length);
+  const queryTotal = completed && !completedSearch.error && completedSearch.total !== undefined ? completedSearch.total
+    : liveCount?.status === 'ready' ? liveCount.total : undefined;
+  const queryError = Boolean(completed && completedSearch.error || liveCount?.status === 'error');
+  const resultLabel = (total:number) => `${total} ${total === 1 ? 'Ergebnis' : 'Ergebnisse'} anzeigen`;
+  const buttonLabel = searchPending ? 'Suche läuft …' : portalQuery
+    ? queryTotal !== undefined ? resultLabel(queryTotal) : queryError ? 'Ergebnisse anzeigen' : 'Ergebnisse werden gezählt …'
+    : profileLoading ? 'Ergebnisse werden geladen …' : resultLabel(count);
   const update = (key: keyof TravelFilterValues, value: string) => onChange({ ...values, [key]: value });
   const facets: { key: TravelFacet; label: string; all: string; entries: FacetOptions }[] = [
     { key: "destination", label: "Wohin?", all: "Alle Reiseziele", entries: options.destinations },
@@ -102,12 +104,12 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
             <input name="q" type="search" value={values.query} onChange={(event) => update("query", event.target.value)}
               maxLength={SEARCH_QUERY_LIMIT} placeholder="Name, Ort oder Reisethema" aria-describedby="reise-finder-hint" />
           </label>
-          <button className="button button-primary reise-finder-submit" type="submit" disabled={searchPending || !portalQuery && (profileLoading || count === 0 || Boolean(error))}>
-            {searchPending ? "Suche läuft …" : portalQuery ? "Im Reiseportal suchen" : profileLoading ? "Unterkünfte werden geladen …" : count === 0 ? "Keine passenden Ergebnisse" : `${count} ${resultNoun} anzeigen`}
+          <button className="button button-primary reise-finder-submit" type="submit" aria-live="polite" aria-atomic="true"
+            aria-busy={searchPending || Boolean(portalQuery && queryTotal === undefined && !queryError) || undefined}
+            title={queryError ? 'Die Live-Trefferzahl ist gerade nicht verfügbar. Die Suche bleibt möglich.' : undefined}
+            disabled={searchPending || !portalQuery && (profileLoading || count === 0 || Boolean(error))}>
+            {buttonLabel}
           </button>
-        </div>
-        <div className="reise-finder-summary" aria-live="polite" aria-atomic="true">
-          {portalQuery ? querySummary : error ?? (profileLoading ? "Unterkünfte werden geladen …" : accommodationResultSummary(profileTotal ?? matched.listings.length))}
         </div>
         <p id="reise-finder-hint">{portalQuery ? "Freitext durchsucht das gesamte Portal. Gewählte Reisefilter grenzen die Suche auf Unterkünfte ein." : "Mit einem Suchbegriff finden Sie auch Reiseziele, Mottoreisen und weitere Inhalte im gesamten Portal."}</p>
         {active.length > 0 && <div className="reise-finder-active" aria-label="Aktive Filter">
