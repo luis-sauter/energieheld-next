@@ -15,6 +15,7 @@ export function SearchResultStream({ initial, context, facts, travelLabels, seas
     url: (cursor: SearchCursor) => {
       const params = new URLSearchParams(context); params.set('kind', 'search');
       params.set('profiles', String(cursor.profiles)); params.set('other', String(cursor.other));
+      if(cursor.token)params.set('cursor',cursor.token);
       return `/api/portal-results?${params}`;
     } });
   return <><SearchResults hits={stream.items.map(item => item.hit)} listings={stream.items.flatMap(item => item.listing ? [item.listing] : [])}

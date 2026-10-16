@@ -28,6 +28,10 @@ import { hubDescriptions, indexableProfile } from "@/lib/seo";
 import {loadPublicDirectoryIndex,directoryWindows,hydrateDirectoryWindow,hydrateBannerWindow} from "@/lib/public-result-pages";
 import { travelFilterUrl } from "@/lib/reiseportal-facets";
 import { filterTravelListings } from "@/lib/reiseportal-facets";
+import {basicIntegrationEnabled} from '@/lib/basic-public-search';
+import {loadBasicDirectoryWindow} from '@/lib/public-result-pages';
+import {isBasicContact} from '@/lib/basic-contact';
+import type {Listing} from '@/types/portal';
 
 export async function DirectoryPage({ searchParams, trade, mode = "energy", canReorder = false,
   saveOrder, saveSidebarOrder, adminClient }: {
@@ -45,7 +49,7 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
     const loaded=await (async()=>{
       const [index,terms,sidebarOrder]=await Promise.all([loadPublicDirectoryIndex(),loadPublicTravelTerms(),loadPublicSidebarOrder()]);
       const windows=directoryWindows(index,initialValues);
-      const [profiles,advertisements]=await Promise.all([hydrateDirectoryWindow(windows.profiles,index.facts),hydrateBannerWindow(windows.advertisements)]);
+      const [profiles,advertisements]=await Promise.all([basicIntegrationEnabled()?loadBasicDirectoryWindow(initialValues):hydrateDirectoryWindow(windows.profiles,index.facts),hydrateBannerWindow(windows.advertisements)]);
       return {index,terms,sidebarOrder,profiles,advertisements};
     })().catch(()=>null);
     if(!loaded) {
@@ -54,10 +58,11 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
         ads={[]} sidebarOrder={[]} canReorder={false} hiddenOrderKeys={[]} />;
     }
     const {index,terms,sidebarOrder,profiles,advertisements}=loaded;
-    return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Unterkünfte A–Z","/unterkuenfte-a-z")),collectionSchema({name:"Unterkünfte A–Z",description:hubDescriptions.directory,path:"/unterkuenfte-a-z",items:profiles.items.filter(indexableProfile).map(row=>({name:row.name,path:'/unterkuenfte/'+row.slug}))})])}/>
+    const publicProfiles:Listing[]=profiles.items.flatMap(row=>isBasicContact(row)?[]:[row]);
+    return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Unterkünfte A–Z","/unterkuenfte-a-z")),collectionSchema({name:"Unterkünfte A–Z",description:hubDescriptions.directory,path:"/unterkuenfte-a-z",items:publicProfiles.filter(indexableProfile).map(row=>({name:row.name,path:'/unterkuenfte/'+row.slug}))})])}/>
         <TravelDirectory initialValues={initialValues} database={index.facts} preview={[]} terms={mergePublicTravelTerms(terms,index.terms)} banners={index.banners}
           error={null} bannerError={index.error} ads={advertisements.items} sidebarOrder={sidebarOrder} canReorder={false} hiddenOrderKeys={[]}
-          pagination={{key:travelFilterUrl({...initialValues,query:""}),profiles,banners:advertisements}} /></>;
+          basicEnabled={basicIntegrationEnabled()} pagination={{key:travelFilterUrl({...initialValues,query:""}),profiles,banners:advertisements}} /></>;
   }
   if (mode === "travel") {
     const [loaded, terms, ads, sidebarOrder, bannerOptions, searchBanners] = await Promise.all([
@@ -68,13 +73,14 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
       [...loaded.database, ...loaded.preview].map(listing => listing.id)) : undefined;
     const importedProfileIds = adminClient ? [...(await loadProfileImports(adminClient, loaded.database.map(listing => listing.id))).keys()] : undefined;
     const initialValues = readTravelFilterValues(params);
+    const basicPagination=basicIntegrationEnabled()?await loadBasicDirectoryWindow(initialValues,'',true).catch(()=>null):undefined;
     const shown = filterTravelListings(loaded.database, { ...initialValues, query: "" }).filter(indexableProfile);
     return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Unterkünfte A–Z", "/unterkuenfte-a-z")),
       collectionSchema({ name: "Unterkünfte A–Z", description: hubDescriptions.directory, path: "/unterkuenfte-a-z",
         items: shown.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <TravelDirectory initialValues={initialValues} database={loaded.database}
-      preview={loaded.preview} terms={mergePublicTravelTerms(terms,searchBanners.terms)} banners={searchBanners.banners} bannerError={searchBanners.error} error={loaded.error} ads={ads} sidebarOrder={sidebarOrder}
-      canReorder={canReorder} freshnessStatuses={freshnessStatuses} importedProfileIds={importedProfileIds} hiddenOrderKeys={loaded.hiddenOrderKeys}
+      preview={loaded.preview} terms={mergePublicTravelTerms(terms,searchBanners.terms)} banners={searchBanners.banners} bannerError={searchBanners.error} error={loaded.error??(basicPagination===null?'Die Basic-Unterkünfte konnten nicht geladen werden.':null)} ads={ads} sidebarOrder={sidebarOrder}
+      basicEnabled={basicIntegrationEnabled()} basicPagination={basicPagination??undefined} canReorder={canReorder} freshnessStatuses={freshnessStatuses} importedProfileIds={importedProfileIds} hiddenOrderKeys={loaded.hiddenOrderKeys}
       saveOrder={saveOrder} saveSidebarOrder={saveSidebarOrder} bannerOptions={bannerOptions} /></>;
   }
 

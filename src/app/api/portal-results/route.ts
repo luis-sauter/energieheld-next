@@ -1,22 +1,26 @@
 import { readTravelFilterValues } from '@/lib/reiseportal-filter-options';
 import { readSearchCursor } from '@/lib/portal-search-values';
 import { loadPublicDirectoryIndex, loadPublicDirectoryFacts, directoryWindows, hydrateDirectoryWindow, hydrateBannerWindow, loadSearchBatch } from '@/lib/public-result-pages';
+import {loadBasicDirectoryWindow} from '@/lib/public-result-pages';
+import {basicIntegrationEnabled} from '@/lib/basic-public-search';
 
 export const dynamic = 'force-dynamic';
 const headers = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' };
 export async function GET(request: Request) {
   const query = new URL(request.url).searchParams;
   const params = Object.fromEntries(query);
+  if((params.cursor?.length??0)>4096)return Response.json({error:'Ungültige Folgeseite.'},{status:400,headers});
   if (!['directory', 'search'].includes(params.kind) ||
       ['offset', 'profiles', 'other'].some(key => query.has(key) && (!/^(0|[1-9]\d{0,4})$/.test(query.get(key)!) || Number(query.get(key))>10000)))
     return Response.json({ error: 'Ungültige Folgeseite.' }, { status: 400, headers });
   const values = readTravelFilterValues(params);
   try {
     if (params.kind === 'search') {
-      const loaded = await loadSearchBatch(params, values, readSearchCursor(params.profiles ?? 0, params.other ?? 0));
+      const loaded = await loadSearchBatch(params, values, {...readSearchCursor(params.profiles ?? 0, params.other ?? 0),...(params.cursor?{token:params.cursor}:{})},undefined,request.signal);
       return Response.json(loaded.batch, { headers });
     }
-    if (!['profiles', 'banners'].includes(params.stream)) return Response.json({ error: 'Ungültiger Datenstrom.' }, { status: 400, headers });
+    if (!(basicIntegrationEnabled()?['profiles','banners','basics']:['profiles','banners']).includes(params.stream)) return Response.json({ error: 'Ungültiger Datenstrom.' }, { status: 400, headers });
+    if(basicIntegrationEnabled()&&['profiles','basics'].includes(params.stream))return Response.json(await loadBasicDirectoryWindow(values,params.cursor,params.stream==='basics',request.signal),{headers});
     const offset = Number(params.offset ?? 0);
     if (offset > 10000) return Response.json({ error: 'Ungültige Folgeseite.' }, { status: 400, headers });
     const index = params.stream==='banners'?await loadPublicDirectoryIndex(false):{facts:await loadPublicDirectoryFacts(),ads:[],banners:[],terms:[],error:null};

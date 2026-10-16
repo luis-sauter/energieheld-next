@@ -1,6 +1,6 @@
 export const searchTypes = { accommodation: 'Unterkunft', theme: 'Mottoreise', destination: 'Reiseziel', page: 'Seite', ad: 'Anzeige' } as const;
 export type SearchType = keyof typeof searchTypes;
-export type SearchHit = { id: string; type: SearchType; title: string; excerpt: string; url: string; rank: number; external?: boolean; context?: string };
+export type SearchHit = { id: string; type: SearchType; title: string; excerpt: string; url: string; rank: number; external?: boolean; context?: string; basic?: import('./basic-contact').BasicContact };
 export type SearchDocument = { id: string; type: SearchType; title: string; body: string; url: string; context?: string };
 export const SEARCH_QUERY_LIMIT = 160;
 export const SEARCH_PAGE_SIZE = 20;
@@ -55,7 +55,7 @@ export function accommodationResultSummary(total: number) {
 }
 
 
-export type SearchCursor = { profiles: number; other: number };
+export type SearchCursor = { profiles: number; other: number; token?:string };
 export function readSearchCursor(profiles: unknown, other: unknown): SearchCursor {
   const read = (value: unknown) => { const n=Number(value); return Number.isInteger(n)&&n>=0&&n<=10000?n:0; };
   return {profiles:read(profiles),other:read(other)};

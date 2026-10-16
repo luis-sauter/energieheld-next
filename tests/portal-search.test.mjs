@@ -60,14 +60,14 @@ test('legacy banners use actual public resolution, hiding, replacement and page-
   assert.ok(publicBannerSearch([], [], 'Natur pur').length > 0);
 });
 
-test('SSR search UI, noindex follow, ad links and bounded single-RPC provider retain independent finder', async () => {
+test('SSR search UI, noindex follow, ad links and gated bounded providers retain independent finder', async () => {
   const page = await readFile(new URL('../src/app/(energieheld)/suche/page.tsx', import.meta.url), 'utf8');
   const provider = await readFile(new URL('../src/lib/portal-search.ts', import.meta.url), 'utf8');
   assert.match(page, /pageMetadata\(\{[^\n]*noindex: true/); assert.match(page, /<SearchTravelFinder/);
   assert.doesNotMatch(page, /<form|portal-query/);
   assert.match(await readFile(new URL('../src/components/portal/search-results.tsx', import.meta.url), 'utf8'), /sponsored noopener noreferrer/);
   assert.match(page, /travelSearchReturnUrl/); assert.doesNotMatch(page, /use client|dangerouslySetInnerHTML/);
-  assert.equal((provider.match(/\.rpc\(/g) ?? []).length, 1); assert.doesNotMatch(provider, /signAdImages|loadReiseportalDirectory|createSigned/);
+  assert.equal((provider.match(/\.rpc\(/g) ?? []).length, 2); assert.match(provider,/if\(basicIntegrationEnabled\(\)\)/); assert.doesNotMatch(provider, /signAdImages|loadReiseportalDirectory|createSigned/);
 });
 
 test('type filters, deduplication and pagination retain global relevance and accurate totals', () => {

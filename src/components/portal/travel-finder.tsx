@@ -14,6 +14,8 @@ import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 import { travelSeason } from "@/lib/travel-seasons";
 import { useLiveTravelCount } from './use-live-travel-count';
 import type { LiveCountState } from '@/lib/live-travel-count';
+import {useAccommodationFacets,type AccommodationFacetState} from './use-accommodation-facets';
+import {destinations,travelThemes} from '@/data/reiseportal-discovery';
 
 type Options = ReturnType<typeof availableTravelFilters>;
 type CompletedSearch = { values: TravelFilterValues; total?: number; error?: string };
@@ -33,7 +35,9 @@ export function useTravelSearchPending(values: TravelFilterValues, origin: "home
 
 type FacetOptions = { slug: string; label: string }[];
 
-export function TravelFinder({ mode, listings, options, values, onChange, error, renderFinder, banners = [], origin = "directory", completedSearch, profileTotal, profileLoading, searchPending = false, onSearchStart, liveCount }: {
+export function TravelFinder({ mode, listings, options:existingOptions, values, onChange, error, renderFinder, banners = [], origin = "directory", completedSearch, profileTotal, profileLoading, searchPending = false, onSearchStart, liveCount,basicEnabled=false,terms=[],aggregate={loading:false,error:''} }: {
+  aggregate?:AccommodationFacetState;
+  basicEnabled?:boolean;terms?:PublicTravelTerm[];
   mode: "home" | "directory" | "search";
   origin?: "home" | "directory";
   completedSearch?: CompletedSearch;
@@ -50,18 +54,19 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
   error?: string | null;
   renderFinder?: (finder: ReactNode) => ReactNode;
 }) {
+  const options=basicEnabled?{...existingOptions,destinations:destinations.map(e=>({slug:e.slug,label:e.title})),themes:travelThemes.map(e=>({slug:e.slug,label:e.title})),audiences:terms.filter(t=>t.dimension==='audience').map(t=>({slug:t.slug,label:t.label})),accommodations:terms.filter(t=>t.dimension==='accommodation').map(t=>({slug:t.slug,label:t.label}))}:existingOptions;
   const portalQuery = values.query.trim();
   const completed = completedSearch && travelSearchUrl(values, origin) === travelSearchUrl(completedSearch.values, origin);
   const filterValues = { ...values, query: "" };
   const matched = travelSearchResults(listings, banners, filterValues);
-  const count = (profileTotal ?? matched.listings.length) + matched.advertisers.length;
+  const count = (aggregate.value?.total ?? profileTotal ?? matched.listings.length) + matched.advertisers.length;
   const queryTotal = completed && !completedSearch.error && completedSearch.total !== undefined ? completedSearch.total
     : liveCount?.status === 'ready' ? liveCount.total : undefined;
   const queryError = Boolean(completed && completedSearch.error || liveCount?.status === 'error');
   const resultLabel = (total:number) => `${total} ${total === 1 ? 'Ergebnis' : 'Ergebnisse'} anzeigen`;
   const buttonLabel = searchPending ? 'Suche läuft …' : portalQuery
     ? queryTotal !== undefined ? resultLabel(queryTotal) : queryError ? 'Ergebnisse anzeigen' : 'Ergebnisse werden gezählt …'
-    : profileLoading ? 'Ergebnisse werden geladen …' : resultLabel(count);
+    : profileLoading || basicEnabled&&!aggregate.value&&aggregate.loading ? 'Ergebnisse werden geladen …' : aggregate.error ? 'Ergebnisse anzeigen' : resultLabel(count);
   const update = (key: keyof TravelFilterValues, value: string) => onChange({ ...values, [key]: value });
   const facets: { key: TravelFacet; label: string; all: string; entries: FacetOptions }[] = [
     { key: "destination", label: "Wohin?", all: "Alle Reiseziele", entries: options.destinations },
@@ -93,9 +98,9 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
                 {values[key] && !entries.some((entry) => entry.slug === values[key]) &&
                   <option value={values[key]}>Nicht verfügbar (0)</option>}
                 {entries.map(({ slug, label: optionLabel }) => {
-                  const optionCount = travelFacetCount(listings, filterValues, key, slug) + travelSearchAdvertisers(banners, { ...filterValues, [key]: slug }).length;
-                  return <option key={slug} value={slug} disabled={optionCount === 0 && values[key] !== slug}>
-                    {optionLabel} ({optionCount})
+                  const optionCount = (aggregate.value ? aggregate.value.facets[`${key}:${slug}`]??0 : travelFacetCount(listings, filterValues, key, slug)) + travelSearchAdvertisers(banners, { ...filterValues, [key]: slug }).length;
+                  return <option key={slug} value={slug} disabled={optionCount === 0 && values[key] !== slug && (!basicEnabled || Boolean(aggregate.value))}>
+                    {optionLabel}{!basicEnabled||aggregate.value?` (${optionCount})`:''}
                   </option>;
                 })}
               </select>
@@ -133,8 +138,9 @@ export function TravelFinder({ mode, listings, options, values, onChange, error,
   </section>;
 }
 
-export function HomeTravelFinder({ listings, terms, error, initialValues, banners }: { listings: Listing[]; terms: PublicTravelTerm[]; error?: string | null; initialValues: TravelFilterValues; banners?: TravelSearchBanner[] }) {
+export function HomeTravelFinder({ listings, terms, error, initialValues, banners,basicEnabled=false }: { basicEnabled?:boolean;listings: Listing[]; terms: PublicTravelTerm[]; error?: string | null; initialValues: TravelFilterValues; banners?: TravelSearchBanner[] }) {
   const [values, setValues] = useState<TravelFilterValues>(initialValues);
+  const aggregate=useAccommodationFacets(values,basicEnabled);
   const pending = useTravelSearchPending(values, "home");
   const liveCount = useLiveTravelCount(values);
   useEffect(() => {
@@ -147,12 +153,13 @@ export function HomeTravelFinder({ listings, terms, error, initialValues, banner
     return () => window.removeEventListener('popstate', restore);
   }, []);
   const options = useMemo(() => availableTravelFilters(listings, terms, banners?.flatMap(b => b.term_keys), banners?.flatMap(b => b.destination_slugs ?? [])), [listings, terms, banners]);
-  return <TravelFinder mode="home" {...pending} liveCount={liveCount} banners={banners} listings={listings} options={options}
+  return <TravelFinder mode="home" basicEnabled={basicEnabled} terms={terms} aggregate={aggregate} {...pending} liveCount={liveCount} banners={banners} listings={listings} options={options}
     values={values} onChange={setValues} error={error} />;
 }
 
-export function SearchTravelFinder({ listings, terms, initialValues, origin, error, completedSearch }: { completedSearch?: CompletedSearch; listings: Listing[]; terms: PublicTravelTerm[]; initialValues: TravelFilterValues; origin: "home" | "directory"; error?: string | null }) {
+export function SearchTravelFinder({ listings, terms, initialValues, origin, error, completedSearch,basicEnabled=false }: { basicEnabled?:boolean;completedSearch?: CompletedSearch; listings: Listing[]; terms: PublicTravelTerm[]; initialValues: TravelFilterValues; origin: "home" | "directory"; error?: string | null }) {
   const [values, setValues] = useState(initialValues);
+  const aggregate=useAccommodationFacets(values,basicEnabled);
   const pending = useTravelSearchPending(values, origin);
   const liveCount = useLiveTravelCount(values, completedSearch);
   useEffect(() => {
@@ -162,5 +169,5 @@ export function SearchTravelFinder({ listings, terms, initialValues, origin, err
     return () => { window.removeEventListener('popstate', restore); window.removeEventListener('pageshow', restore); };
   }, []);
   const options = useMemo(() => availableTravelFilters(listings, terms), [listings, terms]);
-  return <TravelFinder mode="search" {...pending} liveCount={liveCount} origin={origin} completedSearch={completedSearch} listings={listings} options={options} values={values} onChange={setValues} error={error} />;
+  return <TravelFinder mode="search" basicEnabled={basicEnabled} terms={terms} aggregate={aggregate} {...pending} liveCount={liveCount} origin={origin} completedSearch={completedSearch} listings={listings} options={options} values={values} onChange={setValues} error={error} />;
 }

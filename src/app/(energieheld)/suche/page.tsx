@@ -10,6 +10,7 @@ import { SearchTravelFinder } from '@/components/portal/travel-finder';
 import { loadReiseportalFinderListings, loadReiseportalSearchListings } from '@/lib/reiseportal-directory';
 import { loadPublicTravelTerms } from '@/lib/public-travel-taxonomy';
 import { travelSearchReturnUrl, travelSearchUrl } from '@/lib/travel-search-intent';
+import {basicIntegrationEnabled} from '@/lib/basic-public-search';
 
 export const metadata = pageMetadata({ title: 'Suchergebnisse', description: 'Öffentliche Inhalte im DAS-Reiseportal.com durchsuchen und passende Seiten entdecken.', noindex: true });
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const [result, finder] = await Promise.all([searchPortal(params.q, { type: params.typ, cursor: {profiles:0,other:0}, filters: initialFilters }),
     Promise.all([loadReiseportalFinderListings(true), loadPublicTravelTerms()]).then(([listings, terms]) => ({ listings, terms, error: null as string | null }))
       .catch(() => ({ listings: [], terms: [], error: "Die Reisefilter sind gerade nicht verfügbar. Die Freitextsuche bleibt möglich." }))]);
-  const cards = await loadReiseportalSearchListings(result.hits.filter(hit => hit.type === 'accommodation').map(hit => hit.id), finder.listings)
+  const cards = await loadReiseportalSearchListings(result.hits.filter(hit => hit.type === 'accommodation'&&!hit.basic).map(hit => hit.id), finder.listings)
     .then(listings => ({ listings, error: null as string | null }))
     .catch(() => ({ listings: [], error: 'Die Vorschaubilder sind gerade nicht verfügbar. Ihre Suchtreffer bleiben erhalten.' }));
   const values = { ...readTravelFilterValues(params), query: result.query };
@@ -28,7 +29,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const context = new URLSearchParams(travelSearchUrl(values, origin).split('?')[1]);
   if (result.type) context.set('typ', result.type);
   return <main id="hauptinhalt">
-    <SearchTravelFinder key={JSON.stringify(values)} listings={finder.listings} terms={finder.terms} initialValues={values} origin={origin} error={finder.error} completedSearch={{ values, total: !filtered && result.type ? undefined : result.total, error: result.error }} />
+    <SearchTravelFinder basicEnabled={basicIntegrationEnabled()} key={JSON.stringify(values)} listings={finder.listings} terms={finder.terms} initialValues={values} origin={origin} error={finder.error} completedSearch={{ values, total: !filtered && result.type ? undefined : result.total, error: result.error }} />
     <div className={`container ${styles.page}`}>
     <Link className="text-link" href={travelSearchReturnUrl(values, origin)}>← Zur Suche zurück</Link>
     <p>{filtered ? 'Ihre Reisefilter grenzen die Suche auf passende Unterkünfte ein. Für Reiseziele und Mottoreisen entfernen Sie die Reisefilter.' : 'Ergebnisse aus dem gesamten Reiseportal: Unterkünfte, Reiseziele und Mottoreisen.'}</p>

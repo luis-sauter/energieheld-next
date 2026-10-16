@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 registerHooks({
   resolve(s,c,next){
+   if(s.endsWith('use-accommodation-facets'))return {url:'data:text/javascript,export function useAccommodationFacets(){return {value:undefined,loading:false,error:""}}',shortCircuit:true};
    if(s.endsWith('use-live-travel-count'))return {url:'data:text/javascript,export function useLiveTravelCount(){return {key:"",status:"idle"}}',shortCircuit:true};
    if(s==="./use-result-stream" && c.parentURL?.endsWith("/travel-directory.tsx"))return {url:'data:text/javascript,export function useResultStream({initial}){return {...initial,loading:false,error:"",load(){}}}',shortCircuit:true};
    if(s.endsWith('/admin/mediathek/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function searchLibraryProfiles(){throw Error("Unexpected company lookup during directory render")};export async function createLibraryCompany(){throw Error("Unexpected company creation")}'};
