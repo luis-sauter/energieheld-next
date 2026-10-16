@@ -30,6 +30,10 @@ Source-use summaries are derived from the current field evidence and five
 independent purposes, including licence expiry. They are not writable approval
 flags. Municipality-history references and current-value evidence types are
 validated; a Premium-customer claim needs a verified relationship observation.
+Source versions form a single chronological successor chain. A newer denial
+blocks old evidence, including an otherwise unchanged replay. Deferred private
+constraint checks use explicitly revoked, fixed-path, read-only owner-scoped
+trigger functions so COMMIT works without giving callers private table rights.
 Comparable prices require verified price/FX evidence, actual occupancy/nights
 and typed mandatory extras. SQL recomputes and checks the unrounded comparison
 value instead of accepting a caller-supplied budget result.

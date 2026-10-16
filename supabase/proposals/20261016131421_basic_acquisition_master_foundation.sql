@@ -41,6 +41,7 @@ CREATE TABLE acquisition.source_registry (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  source_key varchar(200) NOT NULL CHECK(length(btrim(source_key))>0),
  rule_version varchar(100) NOT NULL CHECK(length(btrim(rule_version))>0),
+ supersedes_id uuid UNIQUE,
  operator_name varchar(300) NOT NULL,
  dataset_name varchar(300) NOT NULL,
  coverage jsonb NOT NULL DEFAULT '{}' CHECK(jsonb_typeof(coverage)='object'),
@@ -65,11 +66,24 @@ CREATE TABLE acquisition.source_registry (
  created_at timestamptz NOT NULL DEFAULT now(),
  UNIQUE(source_key,rule_version),
  UNIQUE(id,source_key),
+ FOREIGN KEY(supersedes_id,source_key) REFERENCES acquisition.source_registry(id,source_key),
+ CHECK(supersedes_id IS DISTINCT FROM id),
  CHECK(valid_until IS NULL OR valid_until>valid_from),
  CHECK((access_right='unknown' AND research_right='unknown' AND extraction_right='unknown'
   AND publication_right='unknown' AND acquisition_right='unknown')
   OR (reviewed_at IS NOT NULL AND length(btrim(rights_evidence))>0 AND rights_evidence IS NOT NULL))
 );
+CREATE UNIQUE INDEX source_registry_root_idx ON acquisition.source_registry(source_key) WHERE supersedes_id IS NULL;
+CREATE FUNCTION acquisition.validate_source_successor() RETURNS trigger LANGUAGE plpgsql SET search_path='' AS $$
+BEGIN
+ IF NEW.supersedes_id IS NOT NULL AND NOT EXISTS(SELECT FROM acquisition.source_registry previous
+  WHERE previous.id=NEW.supersedes_id AND previous.source_key=NEW.source_key AND previous.valid_from<=NEW.valid_from) THEN
+  RAISE EXCEPTION 'source successor requires same source and chronological validity' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END;
+$$;
+CREATE TRIGGER validate_source_successor BEFORE INSERT ON acquisition.source_registry FOR EACH ROW EXECUTE FUNCTION acquisition.validate_source_successor();
 
 CREATE TABLE acquisition.municipalities (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -94,7 +108,10 @@ CREATE TABLE acquisition.municipalities (
 );
 CREATE INDEX municipality_predecessor_idx ON acquisition.municipalities USING gin(predecessor_ids);
 CREATE INDEX municipality_successor_idx ON acquisition.municipalities USING gin(successor_ids);
-CREATE FUNCTION acquisition.validate_municipal_history() RETURNS trigger LANGUAGE plpgsql SET search_path='' AS $$
+-- Deferred checks run at COMMIT under the caller, outside a writer function's
+-- definer context. These private read-only constraint checks need owner access
+-- to the full graph; never solve this by granting table reads to worker/API roles.
+CREATE FUNCTION acquisition.validate_municipal_history() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 DECLARE affected uuid;
 BEGIN
  affected:=CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END;
@@ -464,6 +481,18 @@ END;
 $$;
 CREATE TRIGGER set_observation_source BEFORE INSERT ON acquisition.observations FOR EACH ROW EXECUTE FUNCTION acquisition.set_observation_source();
 
+CREATE FUNCTION acquisition.valid_category_evidence(p_id uuid,p_evidence jsonb) RETURNS boolean LANGUAGE sql STABLE SET search_path='' AS $$
+ SELECT NOT EXISTS(SELECT FROM jsonb_each_text(p_evidence) e WHERE NOT EXISTS(
+  SELECT FROM acquisition.observations o JOIN acquisition.source_registry s ON s.id=o.source_id
+  WHERE o.id=e.value::uuid AND o.accommodation_id=p_id AND o.fact_type='theme' AND o.term_key=e.key
+   AND o.review_status='verified' AND o.checked_at IS NOT NULL
+   AND s.research_right='allowed' AND s.extraction_right='allowed'
+   AND 'travel_categories'=ANY(s.allowed_fields) AND s.valid_from<=statement_timestamp()
+   AND (s.valid_until IS NULL OR s.valid_until>statement_timestamp())
+   AND NOT EXISTS(SELECT FROM acquisition.source_registry successor WHERE successor.supersedes_id=s.id AND successor.valid_from<=statement_timestamp())
+ ));
+$$;
+
 CREATE FUNCTION acquisition.guard_accommodation() RETURNS trigger LANGUAGE plpgsql SET search_path='' AS $$
 BEGIN
  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'retain canonical accommodation identity'; END IF;
@@ -486,14 +515,9 @@ BEGIN
   IF NOT acquisition.valid_category_state(NEW.automatic_theme_evidence,NEW.manual_theme_decisions) THEN
    RAISE EXCEPTION 'invalid category state' USING ERRCODE='22023';
   END IF;
-  IF EXISTS(SELECT FROM jsonb_each_text(NEW.automatic_theme_evidence) e WHERE NOT EXISTS(
-   SELECT FROM acquisition.observations o JOIN acquisition.source_registry s ON s.id=o.source_id
-   WHERE o.id=e.value::uuid AND o.accommodation_id=NEW.id AND o.fact_type='theme' AND o.term_key=e.key
-    AND o.review_status='verified' AND o.checked_at IS NOT NULL
-    AND s.research_right='allowed' AND s.extraction_right='allowed'
-    AND 'travel_categories'=ANY(s.allowed_fields) AND s.valid_from<=statement_timestamp()
-    AND (s.valid_until IS NULL OR s.valid_until>statement_timestamp())
-  )) THEN RAISE EXCEPTION 'category requires current permitted same-lodging evidence' USING ERRCODE='23514'; END IF;
+  IF NOT acquisition.valid_category_evidence(NEW.id,NEW.automatic_theme_evidence) THEN
+   RAISE EXCEPTION 'category requires current permitted same-lodging evidence' USING ERRCODE='23514';
+  END IF;
  END IF;
  NEW.updated_at:=clock_timestamp();
  IF NEW.had_profile_link THEN
@@ -507,7 +531,7 @@ END;
 $$;
 CREATE TRIGGER guard_accommodation BEFORE INSERT OR UPDATE OR DELETE ON acquisition.accommodations FOR EACH ROW EXECUTE FUNCTION acquisition.guard_accommodation();
 
-CREATE FUNCTION acquisition.validate_current_evidence() RETURNS trigger LANGUAGE plpgsql SET search_path='' AS $$
+CREATE FUNCTION acquisition.validate_current_evidence() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 DECLARE a acquisition.accommodations;
 BEGIN
  SELECT * INTO a FROM acquisition.accommodations WHERE id=NEW.id;
@@ -537,7 +561,7 @@ CREATE CONSTRAINT TRIGGER validate_current_evidence AFTER INSERT OR UPDATE ON ac
 -- Final transaction state must be a direct canonical link, never a chain.
 -- Multi-session identity merges still require the later ordered-lock procedure;
 -- there is deliberately no importer/merge privilege in this foundation.
-CREATE FUNCTION acquisition.check_canonical_link() RETURNS trigger LANGUAGE plpgsql SET search_path='' AS $$
+CREATE FUNCTION acquisition.check_canonical_link() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 BEGIN
  IF EXISTS(SELECT FROM acquisition.accommodations a
   JOIN acquisition.accommodations target ON target.id=a.canonical_accommodation_id
@@ -587,15 +611,19 @@ BEGIN
  ), evaluated AS (
   SELECT purpose.key,CASE
    WHEN rights.state='denied' THEN 3
-   WHEN o.id IS NULL OR o.review_status<>'verified' OR s.reviewed_at IS NULL
-    OR NOT(r.field_key=ANY(s.allowed_fields)) OR s.valid_from>statement_timestamp()
-    OR (s.valid_until IS NOT NULL AND s.valid_until<=statement_timestamp()) OR rights.state='unknown' THEN 2
+   WHEN o.id IS NULL OR o.review_status<>'verified' OR current_source.reviewed_at IS NULL OR s.id IS DISTINCT FROM current_source.id
+    OR NOT(r.field_key=ANY(current_source.allowed_fields)) OR current_source.valid_from>statement_timestamp()
+    OR (current_source.valid_until IS NOT NULL AND current_source.valid_until<=statement_timestamp()) OR rights.state='unknown' THEN 2
    WHEN rights.state='restricted' THEN 1 ELSE 0 END AS severity
   FROM required r LEFT JOIN acquisition.observations o ON o.id=r.observation_id AND o.accommodation_id=a.id
   LEFT JOIN acquisition.source_registry s ON s.id=o.source_id
+  LEFT JOIN LATERAL (SELECT candidate.* FROM acquisition.source_registry candidate
+   WHERE candidate.source_key=s.source_key AND candidate.valid_from<=statement_timestamp()
+    AND NOT EXISTS(SELECT FROM acquisition.source_registry newer WHERE newer.supersedes_id=candidate.id AND newer.valid_from<=statement_timestamp())
+   LIMIT 1) current_source ON true
   CROSS JOIN (VALUES('access'),('research'),('extraction'),('publication'),('acquisition')) purpose(key)
-  CROSS JOIN LATERAL (SELECT CASE purpose.key WHEN 'access' THEN s.access_right WHEN 'research' THEN s.research_right
-   WHEN 'extraction' THEN s.extraction_right WHEN 'publication' THEN s.publication_right ELSE s.acquisition_right END state) rights
+  CROSS JOIN LATERAL (SELECT CASE purpose.key WHEN 'access' THEN current_source.access_right WHEN 'research' THEN current_source.research_right
+   WHEN 'extraction' THEN current_source.extraction_right WHEN 'publication' THEN current_source.publication_right ELSE current_source.acquisition_right END state) rights
   WHERE CASE WHEN purpose.key='publication' THEN r.public_required ELSE r.present END
  ), grouped AS (SELECT key,max(severity) severity FROM evaluated GROUP BY key)
  SELECT jsonb_object_agg(key,CASE severity WHEN 3 THEN 'denied' WHEN 2 THEN 'unknown' WHEN 1 THEN 'restricted' ELSE 'allowed' END)
@@ -674,6 +702,9 @@ BEGIN
  SELECT * INTO a FROM acquisition.accommodations WHERE id=p_id FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'basic accommodation not found' USING ERRCODE='P0002'; END IF;
  IF a.revision<>p_expected_revision THEN RAISE EXCEPTION 'accommodation changed; reload' USING ERRCODE='40001'; END IF;
+ IF NOT acquisition.valid_category_evidence(p_id,p_evidence) THEN
+  RAISE EXCEPTION 'current permitted category evidence required' USING ERRCODE='23514';
+ END IF;
  IF a.automatic_theme_evidence=p_evidence THEN
   RETURN jsonb_build_object('id',a.id,'revision',a.revision,'assignedKeys',a.effective_theme_keys);
  END IF;
