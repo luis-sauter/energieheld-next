@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PGlite} from '@electric-sql/pglite';
 
-const sql=readFileSync(new URL('../supabase/proposals/20261016131421_basic_acquisition_master_foundation.sql',import.meta.url),'utf8');
+const sql=readFileSync(new URL('../supabase/migrations/20261016131421_basic_acquisition_master_foundation.sql',import.meta.url),'utf8');
 const a='10000000-0000-4000-8000-000000000001',b='10000000-0000-4000-8000-000000000002';
 const o='20000000-0000-4000-8000-000000000001',p='20000000-0000-4000-8000-000000000002';
 const source='30000000-0000-4000-8000-000000000001',run='40000000-0000-4000-8000-000000000001';

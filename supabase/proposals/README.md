@@ -1,49 +1,31 @@
-# Unapplied database proposals
+# Database proposals
 
-## Current foundation redesign
+## Applied current foundation
 
-`20261016131421_basic_acquisition_master_foundation.sql` is the new, local-only
-seven-table foundation draft. It is NOT approved for Cloud application. The
-previous `20261015225242` proposal below is superseded and retained only as a
-historical regression fixture: **do not apply it**.
+`20261016131421_basic_acquisition_master_foundation.sql` was explicitly approved
+and applied once to the confirmed Supabase project on 2026-10-16. Its unchanged
+SQL now lives in `supabase/migrations`; the SQL file's original draft-only header
+is preserved as part of the approved immutable bytes, not the current status.
+SHA256: `77c22581cfcce060f5fe990a745ef1f5b558ac5ff01b52b6f9f12bba0a623cb0`.
 
-The new draft separates street, house number, postal code and city for BOTH
-lodging and company addresses. Municipality is a separate reference. Unknown
-candidate fields remain NULL; a same-accommodation primary observation must be
-inserted in the same transaction. Source versions and observation history are
-immutable. No logins, API RPCs or active publication path are created.
-A NOLOGIN role with no application memberships can only refresh validated automatic
-category evidence through one private function; it has no table rights, manual
-decision access or CRM/Premium mutation rights. The public contact table is
-empty, deny-all and cannot be listed in this foundation. A later reviewed
-publication implementation is required.
-PostgreSQL can automatically give a non-superuser migration creator an
-administrative membership in its new role; this is not a worker/app assignment.
+The connector-created history version was normalized to `20261016131421` under
+explicit approval, without executing SQL again. Eight new tables are empty,
+RLS/FORCE and API privilege denials verified. The seven-table private foundation
+and closed contact projection activate no imports, publications, API wrappers,
+Admin UI or worker credentials. The restricted category role remains NOLOGIN
+without application/worker membership; the trusted migration creator has only
+its expected administrative membership (INHERIT/SET false).
 
-Categories now have separate automatic evidence, explicit manual include/exclude
-decisions and generated effective keys. Private Admin read/save building blocks
-check the existing portal Admin membership and auth.uid(), lock the accommodation,
-compare its revision and audit the verified actor and before/after values in the
-same transaction. They have no API-role grants or public wrappers yet. Replays
-and automatic source updates cannot overwrite manual decisions. This is backend
-preparation, not an implemented Admin screen or a Cloud rollout.
+Automatic evidence, durable manual category decisions and effective themes are
+separate. Private Admin helpers require the existing verified Admin identity,
+expected revision and atomic audit. Source rights, evidence, municipality history
+and price calculations are checked. No existing profile, media, campaign or
+publication data were changed. Local tests and native PostgreSQL checks passed;
+post-application metadata/API checks confirmed the closed Cloud state. Full
+search/Admin integration and publication remain separate later phases.
 
-Source-use summaries are derived from the current field evidence and five
-independent purposes, including licence expiry. They are not writable approval
-flags. Municipality-history references and current-value evidence types are
-validated; a Premium-customer claim needs a verified relationship observation.
-Source versions form a single chronological successor chain. A newer denial
-blocks old evidence, including an otherwise unchanged replay. Deferred private
-constraint checks use explicitly revoked, fixed-path, read-only owner-scoped
-trigger functions so COMMIT works without giving callers private table rights.
-Comparable prices require verified price/FX evidence, actual occupancy/nights
-and typed mandatory extras. SQL recomputes and checks the unrounded comparison
-value instead of accepting a caller-supplied budget result.
-
-Phase A local constraint/ACL tests are not proof of a deployed database, real
-multi-session concurrency, source rights or search performance. Do not promote
-this draft until its remaining real-PostgreSQL and current-Cloud-preflight gates
-are documented. Existing public application routes are unchanged.
+The earlier proposal below is superseded and must never be applied. Never run a
+general database push to apply unrelated files.
 
 ## Historical proposal (superseded)
 
