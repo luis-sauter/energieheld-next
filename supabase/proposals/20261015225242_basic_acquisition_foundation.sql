@@ -1,3 +1,5 @@
+-- SUPERSEDED. Historical local-test fixture only; DO NOT APPLY.
+-- Replaced by the seven-table master foundation proposal. No Cloud approval.
 -- PROPOSAL ONLY. Not in supabase/migrations and not approved for Cloud use.
 -- Foundation, not a complete search/publication rollout. No seed or existing-row changes.
 BEGIN;
