@@ -12,6 +12,29 @@ A later rollout needs separate approval, a current schema/API-exposure review,
 source-use clearance, the search/count/filter integration, transactional identity
 locking and a controlled publication step. No acquisition UI is provided.
 
+Phase 2A preflight refinements (still unapplied): contact people/roles require a
+same-identity source FK; partial private addresses accept NULL but no arbitrary
+fields; comparison prices require a known basis and verified extras. Existing
+profile deletion uses SET NULL, preserving the private identity and keeping its
+withdrawn Basic draft hidden. Publication locks the identity row against upgrades
+and withdrawal. Short transaction-local lock/statement budgets fail on contention.
+Final ACL assertions abort the transaction if unexpected privileges survive.
+
+Application requires explicit approval of this exact file and its SHA256. Use a
+single targeted migration and history entry, never a general database push. Stop
+on pre-existing objects; CREATE is intentionally one-time, not overwrite/upsert.
+The schema is empty; no seed/import/publication is included. Its two trigger
+functions require the reviewed BYPASSRLS migration owner. They are private,
+non-callable by API roles and use an empty search_path. A later writer role and
+publication/search workflow require a separate review.
+
+Before commit, any failure rolls the complete transaction back. After commit,
+withdraw public column grants first if containment is needed. A full withdrawal
+must verify all nine tables are empty and remove only this proposal's objects in
+dependency order without CASCADE; stop on any data or unexpected dependency.
+Never use a reset or remove existing profiles/taxonomy/other migrations. Rollback
+and history reconciliation are separate controlled actions, not automatic retries.
+
 Local checks:
 
 ```text

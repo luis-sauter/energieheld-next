@@ -8,7 +8,10 @@ const address={country:'DE',region:'Bayern',city:'Beispielort',postalCode:'84364
 before(async()=>{
  db=new PGlite();
  await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role BYPASSRLS;CREATE ROLE portal_editor;GRANT authenticated TO portal_editor;
- CREATE TABLE public.company_profiles(id uuid PRIMARY KEY,display_name text,status text);INSERT INTO public.company_profiles VALUES('${premium}','Existing Premium','approved');
+ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon,authenticated,service_role;
+ CREATE TABLE public.companies(id uuid PRIMARY KEY);INSERT INTO public.companies VALUES('${premium}');
+ CREATE TABLE public.company_profiles(id uuid PRIMARY KEY,display_name text,status text,company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE);INSERT INTO public.company_profiles VALUES('${premium}','Existing Premium','approved','${premium}');
+ CREATE TABLE public.company_profile_public_visibility(profile_id uuid PRIMARY KEY REFERENCES public.company_profiles(id) ON DELETE CASCADE,is_listed boolean);INSERT INTO public.company_profile_public_visibility VALUES('${premium}',true);
  CREATE TABLE public.travel_terms(term_key text PRIMARY KEY);INSERT INTO public.travel_terms VALUES('theme:wellnessangebote');`);
  await db.exec(readFileSync(new URL('../supabase/proposals/20261015225242_basic_acquisition_foundation.sql',import.meta.url),'utf8'));
  await db.exec(`INSERT INTO acquisition.municipalities VALUES('DE:AGS:sample','DE','sample','Beispielort','Bayern','https://example.invalid/municipality');
@@ -57,6 +60,60 @@ test('foreign currency requires actual rate and timestamp before an EUR comparis
  await db.exec(`INSERT INTO acquisition.research_runs VALUES('${premium}','DE:AGS:sample',now(),'[]',2,2,'[]','sample',null);
  INSERT INTO acquisition.sources(id,identity_id,run_id,provider,url,checked_at,claim) VALUES('${premium}','${one}','${premium}','official','https://example.invalid',now(),'Factual source');`);
  await denied(`INSERT INTO acquisition.price_observations(id,identity_id,source_id,original_amount,currency,price_basis,eur_per_person_night,checked_at) VALUES($1,$2,$1,120,'CHF','person_night',120,now())`,[premium,one]);
+});
+
+test('contact people require a source belonging to the same lodging, not another house of its operator',async()=>{
+ await db.exec(`INSERT INTO acquisition.research_runs VALUES('${premium}','DE:AGS:sample',now(),'[]',2,2,'[]','sample',null);
+ INSERT INTO acquisition.sources(id,identity_id,run_id,provider,url,checked_at,claim) VALUES('${premium}','${one}','${premium}','official','https://example.invalid',now(),'Synthetic contact source');`);
+ const insert=`INSERT INTO acquisition.research_details(identity_id,contact_person,contact_source_id,retention_review_at,checked_at,payload_fingerprint) VALUES($1,'Synthetic Person',$2,now(),now(),repeat('a',64))`;
+ await denied(insert,[one,null]);await denied(insert,[two,premium]);
+ await db.query(insert,[one,premium]);
+});
+
+test('unknown private address fields may be NULL but nested contacts or invalid types are rejected',async()=>{
+ await db.query('UPDATE acquisition.accommodation_identities SET address=NULL WHERE id=$1',[two]);
+ await db.query('UPDATE acquisition.accommodation_identities SET address=$1 WHERE id=$2',[JSON.stringify({country:'DE',addressLine:null}),two]);
+ await denied('UPDATE acquisition.accommodation_identities SET address=$1 WHERE id=$2',[JSON.stringify({country:'DE',website:'private'}),two]);
+ await denied('UPDATE acquisition.accommodation_identities SET address=$1 WHERE id=$2',[JSON.stringify({country:'DE',postalCode:12345}),two]);
+});
+
+test('profile archival, direct deletion and cascading company deletion remain possible without republishing Basic',async()=>{
+ await db.query('UPDATE acquisition.accommodation_identities SET existing_profile_id=$1 WHERE id=$2',[premium,one]);
+ await db.query('UPDATE public.company_profile_public_visibility SET is_listed=false WHERE profile_id=$1',[premium]);
+ assert.equal((await db.query('SELECT existing_profile_id FROM acquisition.accommodation_identities WHERE id=$1',[one])).rows[0].existing_profile_id,premium);
+ await db.exec('SAVEPOINT direct_delete');await db.query('DELETE FROM public.company_profiles WHERE id=$1',[premium]);
+ assert.equal((await db.query('SELECT existing_profile_id FROM acquisition.accommodation_identities WHERE id=$1',[one])).rows[0].existing_profile_id,null);
+ assert.equal((await db.query('SELECT is_listed FROM public.basic_accommodation_contacts WHERE id=$1',[one])).rows[0].is_listed,false);
+ await db.exec('ROLLBACK TO SAVEPOINT direct_delete');await db.query('DELETE FROM public.companies WHERE id=$1',[premium]);
+ assert.equal((await db.query('SELECT count(*)::int n FROM public.company_profiles')).rows[0].n,0);
+ assert.equal((await db.query('SELECT count(*)::int n FROM acquisition.accommodation_identities')).rows[0].n,2);
+ assert.equal((await db.query('SELECT is_listed FROM public.basic_accommodation_contacts WHERE id=$1',[one])).rows[0].is_listed,false);
+});
+
+test('comparison prices cannot bypass basis, occupancy, nights or verified extras requirements',async()=>{
+ await db.exec(`INSERT INTO acquisition.research_runs VALUES('${premium}','DE:AGS:sample',now(),'[]',2,2,'[]','sample',null);
+ INSERT INTO acquisition.sources(id,identity_id,run_id,provider,url,checked_at,claim) VALUES('${premium}','${one}','${premium}','official','https://example.invalid',now(),'Synthetic price source');`);
+ for(const [basis,occupancy,nights,extras] of [['unknown',null,null,true],['unit_night',null,null,true],['stay',2,null,true],['person_night',null,null,false]]){
+ await denied(`INSERT INTO acquisition.price_observations(id,identity_id,source_id,original_amount,currency,price_basis,occupancy,nights,travel_period,board,extras_verified,eur_per_person_night,checked_at) VALUES($1,$2,$1,120,'EUR',$3,$4,$5,'2026','breakfast',$6,120,now())`,[premium,one,basis,occupancy,nights,extras]);
+ }
+ await db.query(`INSERT INTO acquisition.price_observations(id,identity_id,source_id,original_amount,currency,price_basis,extras_verified,eur_per_person_night,checked_at) VALUES($1,$2,$1,120,'EUR','unknown',false,NULL,now())`,[premium,one]);
+ await denied("UPDATE acquisition.price_observations SET original_amount='NaN' WHERE id=$1",[premium]);
+ await denied("UPDATE acquisition.price_observations SET exchange_rate='Infinity' WHERE id=$1",[premium]);
+});
+
+test('migration fails on partial or repeated application and a failed transaction leaves no foundation',async()=>{
+ const isolated=new PGlite();
+ try{
+ await isolated.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;CREATE TABLE public.company_profiles(id uuid PRIMARY KEY);CREATE TABLE public.travel_terms(term_key text PRIMARY KEY);CREATE SCHEMA acquisition;`);
+ const sql=readFileSync(new URL('../supabase/proposals/20261015225242_basic_acquisition_foundation.sql',import.meta.url),'utf8');
+ await assert.rejects(isolated.exec(sql));await isolated.exec('ROLLBACK');
+ assert.equal((await isolated.query("SELECT to_regclass('public.basic_accommodation_contacts')::text t")).rows[0].t,null);
+ await isolated.exec('DROP SCHEMA acquisition');
+ await assert.rejects(isolated.exec(sql.replace(/COMMIT;\s*$/,"SELECT 1/0; COMMIT;")));await isolated.exec('ROLLBACK');
+ assert.equal((await isolated.query("SELECT to_regnamespace('acquisition')::text n")).rows[0].n,null);
+ await isolated.exec(sql);await assert.rejects(isolated.exec(sql));await isolated.exec('ROLLBACK');
+ assert.equal((await isolated.query('SELECT count(*)::int n FROM public.basic_accommodation_contacts')).rows[0].n,0);
+ }finally{await isolated.close();}
 });
 test('stable pagination and a text index are prepared without touching existing search functions',async()=>{
  await db.query("UPDATE public.basic_accommodation_contacts SET status='approved',is_listed=true WHERE id=$1",[two]);
