@@ -175,6 +175,13 @@ test('category importer has exactly one non-login capability and cannot write Ad
  await db.exec('RESET ROLE');
 });
 
+test('deferred private constraint checks are owner-scoped read-only triggers with no API or worker execute grant',async()=>{
+ const rows=(await db.query(`SELECT p.proname,p.prosecdef,p.proconfig,has_function_privilege('acquisition_category_importer',p.oid,'EXECUTE') worker_execute,
+ has_function_privilege('authenticated',p.oid,'EXECUTE') api_execute FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+ WHERE n.nspname='acquisition' AND p.proname IN('check_canonical_link','validate_current_evidence','validate_municipal_history')`)).rows;
+ assert.equal(rows.length,3);assert.ok(rows.every(r=>r.prosecdef&&!r.worker_execute&&!r.api_execute&&r.proconfig.includes('search_path=""')));
+});
+
 test('invalid categories, malformed evidence, duplicate choices and missing reasons are rejected',async()=>{
  await categoryFixture();await authenticate();
  for(const selected of [['theme:tauchurlaub'],['theme:saison-herbst'],['feature:sonderthema'],['theme:invented'],['theme:natur-pur','theme:natur-pur'],[null]])
@@ -198,13 +205,28 @@ test('interleaved Admin and import revisions never silently overwrite a newer de
 test('a new source version cannot restore an explicitly excluded category',async()=>{
  await categoryFixture();await basis({'theme:natur-pur':natureProof});await authenticate();await saveCategories([]);
  const nextSource='82000000-0000-4000-8000-000000000001',nextProof='92000000-0000-4000-8000-000000000001';
- await db.query(`INSERT INTO acquisition.source_registry(id,source_key,rule_version,operator_name,dataset_name,access_method,terms_url,valid_from,
+ await db.query(`INSERT INTO acquisition.source_registry(id,source_key,rule_version,supersedes_id,operator_name,dataset_name,access_method,terms_url,valid_from,
  request_budget,byte_budget,research_right,extraction_right,allowed_fields,reviewed_at,rights_evidence)
- VALUES($1,'category-fixture','v2','Synthetic','Synthetic','api','https://example.invalid/terms',now()-interval '1 day',100,10485760,'allowed','allowed',ARRAY['travel_categories'],now(),'New synthetic permission')`,[nextSource]);
+ VALUES($1,'category-fixture','v2',$2,'Synthetic','Synthetic','api','https://example.invalid/terms',now()-interval '1 day',100,10485760,'allowed','allowed',ARRAY['travel_categories'],now(),'New synthetic permission')`,[nextSource,categorySource]);
  await db.query(`INSERT INTO acquisition.observations(id,accommodation_id,source_id,run_id,fact_type,term_key,url,facts,review_status,observed_at,checked_at,fingerprint)
  VALUES($1,$2,$3,$4,'theme','theme:natur-pur','https://example.invalid/v2','{}','verified',now(),now(),repeat('f',64))`,[nextProof,a,nextSource,run]);
  const refreshed=await basis({'theme:natur-pur':nextProof});assert.deepEqual(refreshed.assignedKeys,[]);
  assert.deepEqual((await db.query('SELECT manual_theme_decisions value FROM acquisition.accommodations WHERE id=$1',[a])).rows[0].value,{'theme:natur-pur':false});
+});
+
+test('new denied source terms invalidate old evidence even on an identical replay',async()=>{
+ await categoryFixture();await basis({'theme:natur-pur':natureProof});const before=await revision();
+ const successor='84000000-0000-4000-8000-000000000001';
+ await db.query(`INSERT INTO acquisition.source_registry(id,source_key,rule_version,supersedes_id,operator_name,dataset_name,access_method,terms_url,valid_from,
+ request_budget,byte_budget,research_right,extraction_right,publication_right,reviewed_at,rights_evidence)
+ VALUES($1,'category-fixture','v2',$2,'Synthetic','Synthetic','api','https://example.invalid/revoked',now(),100,10485760,'denied','denied','denied',now(),'Synthetic revocation')`,[successor,categorySource]);
+ assert.equal((await db.query('SELECT acquisition.source_use_summary($1) value',[a])).rows[0].value.publication,'denied');
+ await denied('SELECT acquisition.refresh_basic_category_basis($1,$2,$3,$4)',[a,before,JSON.stringify({'theme:natur-pur':natureProof}),run]);
+ assert.equal(await revision(),before);
+ await denied(`INSERT INTO acquisition.source_registry(source_key,rule_version,operator_name,dataset_name,access_method,terms_url,valid_from,request_budget,byte_budget)
+ VALUES('category-fixture','fork','Synthetic','Synthetic','manual','https://example.invalid',now(),100,1)`);
+ await denied(`INSERT INTO acquisition.source_registry(source_key,rule_version,supersedes_id,operator_name,dataset_name,access_method,terms_url,valid_from,request_budget,byte_budget)
+ VALUES('another-source','bad-parent',$1,'Synthetic','Synthetic','manual','https://example.invalid',now(),100,1)`,[categorySource]);
 });
 
 test('purpose-specific source summaries are derived, field-limited and never imply publication from public access',async()=>{
@@ -423,8 +445,8 @@ test('source bindings, replay fingerprints and run budgets have strict limits',a
  const q=`INSERT INTO acquisition.observations(accommodation_id,source_id,run_id,fact_type,external_key,url,facts,observed_at,fingerprint)
  VALUES($1,$2,$3,'identity_binding','source-record-1','https://example.invalid','{}',now(),repeat('b',64))`;
  await db.query(q,[a,source,run]);await denied(q,[a,source,run]);await denied(q,[b,source,run]);
- await db.query(`INSERT INTO acquisition.source_registry(id,source_key,rule_version,operator_name,dataset_name,access_method,terms_url,valid_from,request_budget,byte_budget)
- VALUES('30000000-0000-4000-8000-000000000002','synthetic','v2','Synthetic source','Test data','manual','https://example.invalid/terms',now(),100,10485760)`);
+ await db.query(`INSERT INTO acquisition.source_registry(id,source_key,rule_version,supersedes_id,operator_name,dataset_name,access_method,terms_url,valid_from,request_budget,byte_budget)
+ VALUES('30000000-0000-4000-8000-000000000002','synthetic','v2','${source}','Synthetic source','Test data','manual','https://example.invalid/terms',now(),100,10485760)`);
  await denied(q,[b,'30000000-0000-4000-8000-000000000002',run]);
 });
 
