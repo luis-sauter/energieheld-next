@@ -12,11 +12,13 @@ lodging and company addresses. Municipality is a separate reference. Unknown
 candidate fields remain NULL; a same-accommodation primary observation must be
 inserted in the same transaction. Source versions and observation history are
 immutable. No logins, API RPCs or active publication path are created.
-A NOLOGIN role with no memberships can only refresh validated automatic
+A NOLOGIN role with no application memberships can only refresh validated automatic
 category evidence through one private function; it has no table rights, manual
 decision access or CRM/Premium mutation rights. The public contact table is
 empty, deny-all and cannot be listed in this foundation. A later reviewed
 publication implementation is required.
+PostgreSQL can automatically give a non-superuser migration creator an
+administrative membership in its new role; this is not a worker/app assignment.
 
 Categories now have separate automatic evidence, explicit manual include/exclude
 decisions and generated effective keys. Private Admin read/save building blocks
