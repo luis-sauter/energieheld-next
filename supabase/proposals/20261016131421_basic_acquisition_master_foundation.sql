@@ -1,6 +1,7 @@
 -- LOCAL FOUNDATION DRAFT ONLY. Not approved; never db push this directory.
 -- Seven private tables; empty, closed public projection. No seeds or jobs.
--- Publication, least-privilege worker capabilities and search are later phases.
+-- Publication and search stay inactive. The sole NOLOGIN worker capability
+-- can update validated category evidence only; no login or membership is added.
 BEGIN;
 SET LOCAL lock_timeout='2s';
 SET LOCAL statement_timeout='15s';
@@ -14,6 +15,27 @@ REVOKE ALL ON SCHEMA acquisition FROM PUBLIC,anon,authenticated,service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA acquisition REVOKE ALL ON TABLES FROM PUBLIC,anon,authenticated,service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA acquisition REVOKE ALL ON SEQUENCES FROM PUBLIC,anon,authenticated,service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA acquisition REVOKE ALL ON FUNCTIONS FROM PUBLIC,anon,authenticated,service_role;
+
+CREATE ROLE acquisition_category_importer NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS;
+
+CREATE FUNCTION acquisition.basic_theme_keys() RETURNS text[] LANGUAGE sql IMMUTABLE SET search_path='' AS $$
+ SELECT ARRAY['theme:natur-pur','theme:nordic-walking','theme:radwandern','theme:wanderurlaub',
+ 'theme:familienurlaub','theme:golfurlaub','theme:urlaub-am-wasser','theme:campingurlaub',
+ 'theme:romantik-zu-zweit','theme:wellnessangebote','theme:geschaeftsreisen']::text[];
+$$;
+CREATE FUNCTION acquisition.valid_category_state(automatic jsonb,manual jsonb) RETURNS boolean
+ LANGUAGE sql IMMUTABLE SET search_path='' AS $$
+ SELECT CASE WHEN jsonb_typeof(automatic)<>'object' OR jsonb_typeof(manual)<>'object' THEN false ELSE
+  NOT EXISTS(SELECT FROM jsonb_each(automatic) e WHERE NOT(e.key=ANY(acquisition.basic_theme_keys()))
+   OR jsonb_typeof(e.value)<>'string' OR (e.value#>>'{}') !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+  AND NOT EXISTS(SELECT FROM jsonb_each(manual) e WHERE NOT(e.key=ANY(acquisition.basic_theme_keys()))
+   OR jsonb_typeof(e.value)<>'boolean') END;
+$$;
+CREATE FUNCTION acquisition.effective_category_keys(automatic jsonb,manual jsonb) RETURNS text[]
+ LANGUAGE sql IMMUTABLE SET search_path='' AS $$
+ SELECT coalesce(array_agg(k ORDER BY k),'{}'::text[]) FROM unnest(acquisition.basic_theme_keys()) k
+ WHERE CASE WHEN manual ? k THEN manual->k='true'::jsonb ELSE automatic ? k END;
+$$;
 
 CREATE TABLE acquisition.source_registry (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -70,6 +92,29 @@ CREATE TABLE acquisition.municipalities (
   OR (country='CH' AND code_system='BFS' AND official_code ~ '^[0-9]{1,4}$')
   OR (country='IT' AND code_system='ISTAT' AND official_code ~ '^021[0-9]{3}$'))
 );
+CREATE INDEX municipality_predecessor_idx ON acquisition.municipalities USING gin(predecessor_ids);
+CREATE INDEX municipality_successor_idx ON acquisition.municipalities USING gin(successor_ids);
+CREATE FUNCTION acquisition.validate_municipal_history() RETURNS trigger LANGUAGE plpgsql SET search_path='' AS $$
+DECLARE affected uuid;
+BEGIN
+ affected:=CASE WHEN TG_OP='DELETE' THEN OLD.id ELSE NEW.id END;
+ IF EXISTS(SELECT FROM acquisition.municipalities m
+  WHERE (m.id=affected OR m.predecessor_ids @> ARRAY[affected] OR m.successor_ids @> ARRAY[affected])
+  AND (cardinality(m.predecessor_ids)>100 OR cardinality(m.successor_ids)>100
+   OR cardinality(m.predecessor_ids)<>(SELECT count(DISTINCT id) FROM unnest(m.predecessor_ids) id)
+   OR cardinality(m.successor_ids)<>(SELECT count(DISTINCT id) FROM unnest(m.successor_ids) id)
+   OR EXISTS(SELECT FROM unnest(m.predecessor_ids) e(predecessor) WHERE NOT EXISTS(
+    SELECT FROM acquisition.municipalities p WHERE p.id=e.predecessor AND p.country=m.country
+     AND p.valid_from<m.valid_from AND p.valid_until IS NOT NULL AND p.valid_until<=m.valid_from))
+   OR EXISTS(SELECT FROM unnest(m.successor_ids) e(successor) WHERE NOT EXISTS(
+    SELECT FROM acquisition.municipalities s WHERE s.id=e.successor AND s.country=m.country
+     AND m.valid_until IS NOT NULL AND s.valid_from>m.valid_from AND s.valid_from>=m.valid_until))
+  )) THEN RAISE EXCEPTION 'invalid municipality history reference' USING ERRCODE='23514'; END IF;
+ RETURN NULL;
+END;
+$$;
+CREATE CONSTRAINT TRIGGER validate_municipal_history AFTER INSERT OR UPDATE OR DELETE ON acquisition.municipalities
+ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION acquisition.validate_municipal_history();
 
 CREATE TABLE acquisition.processing_runs (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -144,6 +189,11 @@ CREATE TABLE acquisition.accommodations (
  email_observation_id uuid,
  website_observation_id uuid,
  person_observation_id uuid,
+ automatic_theme_evidence jsonb NOT NULL DEFAULT '{}', -- term -> same-lodging observation UUID
+ manual_theme_decisions jsonb NOT NULL DEFAULT '{}', -- term -> explicit true / false; missing = automatic
+ effective_theme_keys text[] GENERATED ALWAYS AS
+  (acquisition.effective_category_keys(automatic_theme_evidence,manual_theme_decisions)) STORED,
+ CHECK(acquisition.valid_category_state(automatic_theme_evidence,manual_theme_decisions)),
  acquisition_status text NOT NULL DEFAULT 'new' CHECK(acquisition_status IN
   ('new','contact_planned','contacted','response_received','interested','not_interested','premium_customer')),
  acquisition_note varchar(4000),
@@ -223,7 +273,7 @@ CREATE TABLE acquisition.observations (
  external_key varchar(500),
  -- The current binding is unique; historic versions remain ordinary facts.
  fact_type text NOT NULL CHECK(fact_type IN('identity_binding','identity','location','phone','operator','company_address',
-  'acquisition_phone','email','website','person','business_relationship','theme','filter','activity','price','correction')),
+  'acquisition_phone','email','website','person','business_relationship','theme','filter','activity','price','exchange_rate','correction')),
  term_key text REFERENCES public.travel_terms(term_key),
  url text NOT NULL CHECK(url ~ '^https?://[^[:space:]]+$'),
  facts jsonb NOT NULL CHECK(jsonb_typeof(facts)='object' AND octet_length(facts::text)<=8192),
@@ -293,12 +343,65 @@ CREATE INDEX price_accommodation_idx ON acquisition.price_observations(accommoda
 CREATE INDEX price_observation_idx ON acquisition.price_observations(observation_id,accommodation_id);
 CREATE INDEX price_exchange_idx ON acquisition.price_observations(exchange_rate_observation_id,accommodation_id) WHERE exchange_rate_observation_id IS NOT NULL;
 
+CREATE FUNCTION acquisition.calculate_price_eur(amount numeric,currency text,basis text,occupancy integer,nights integer,extras jsonb,fx numeric)
+ RETURNS numeric LANGUAGE plpgsql IMMUTABLE SET search_path='' AS $$
+DECLARE result numeric; fee record; rate numeric;
+BEGIN
+ IF amount IS NULL OR amount<=0 OR amount>='Infinity'::numeric OR jsonb_typeof(extras) IS DISTINCT FROM 'object'
+  OR currency IS NULL OR currency !~ '^[A-Z]{3}$' THEN RAISE EXCEPTION 'invalid price input' USING ERRCODE='22023'; END IF;
+ rate:=CASE WHEN currency='EUR' THEN 1 ELSE fx END;
+ IF rate IS NULL OR rate<=0 OR rate>='Infinity'::numeric THEN RAISE EXCEPTION 'verified positive exchange rate required' USING ERRCODE='22023'; END IF;
+ IF basis IS NULL OR basis NOT IN('person_night','unit_night','person_stay','unit_stay')
+  OR (basis IN('unit_night','unit_stay') AND (occupancy IS NULL OR occupancy<=0))
+  OR (basis IN('person_stay','unit_stay') AND (nights IS NULL OR nights<=0)) THEN
+  RAISE EXCEPTION 'known price basis and required occupancy/nights required' USING ERRCODE='22023';
+ END IF;
+ result:=amount / CASE WHEN basis IN('unit_night','unit_stay') THEN occupancy ELSE 1 END
+  / CASE WHEN basis IN('person_stay','unit_stay') THEN nights ELSE 1 END;
+ FOR fee IN SELECT * FROM jsonb_each(extras) LOOP
+  IF fee.key NOT IN('person_night','unit_night','person_stay','unit_stay') OR jsonb_typeof(fee.value)<>'number'
+   OR (fee.value#>>'{}')::numeric<0 OR (fee.value#>>'{}')::numeric>='Infinity'::numeric
+   OR (fee.key IN('unit_night','unit_stay') AND (occupancy IS NULL OR occupancy<=0))
+   OR (fee.key IN('person_stay','unit_stay') AND (nights IS NULL OR nights<=0)) THEN
+   RAISE EXCEPTION 'mandatory extras require numeric amounts and their actual price basis' USING ERRCODE='22023';
+  END IF;
+  result:=result+(fee.value#>>'{}')::numeric
+   / CASE WHEN fee.key IN('unit_night','unit_stay') THEN occupancy ELSE 1 END
+   / CASE WHEN fee.key IN('person_stay','unit_stay') THEN nights ELSE 1 END;
+ END LOOP;
+ -- Preserve the unrounded comparison value: rounding must not make 200.004
+ -- appear to qualify for the inclusive 200 EUR rule.
+ RETURN result*rate;
+END;
+$$;
+CREATE FUNCTION acquisition.validate_price_comparison() RETURNS trigger LANGUAGE plpgsql SET search_path='' AS $$
+DECLARE calculated numeric;
+BEGIN
+ IF NOT EXISTS(SELECT FROM acquisition.observations o WHERE o.id=NEW.observation_id
+  AND o.accommodation_id=NEW.accommodation_id AND o.fact_type='price') THEN
+  RAISE EXCEPTION 'price observation requires price evidence' USING ERRCODE='23514';
+ END IF;
+ IF NEW.eur_per_person_night IS NOT NULL THEN
+  IF NOT EXISTS(SELECT FROM acquisition.observations o WHERE o.id=NEW.observation_id AND o.review_status='verified')
+   OR (NEW.currency<>'EUR' AND NOT EXISTS(SELECT FROM acquisition.observations o WHERE o.id=NEW.exchange_rate_observation_id
+    AND o.accommodation_id=NEW.accommodation_id AND o.fact_type='exchange_rate' AND o.review_status='verified')) THEN
+   RAISE EXCEPTION 'comparison requires verified price and exchange evidence' USING ERRCODE='23514';
+  END IF;
+  calculated:=acquisition.calculate_price_eur(NEW.original_amount,NEW.currency,NEW.basis,NEW.occupancy,NEW.nights,NEW.mandatory_extras,NEW.exchange_rate);
+  IF NEW.eur_per_person_night<>calculated THEN RAISE EXCEPTION 'comparison does not match original price and mandatory extras' USING ERRCODE='23514'; END IF;
+ END IF;
+ RETURN NEW;
+END;
+$$;
+CREATE TRIGGER validate_price_comparison BEFORE INSERT ON acquisition.price_observations FOR EACH ROW EXECUTE FUNCTION acquisition.validate_price_comparison();
+
 CREATE TABLE acquisition.audit_events (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  accommodation_id uuid REFERENCES acquisition.accommodations(id),
  candidate_reference varchar(500),
  run_id uuid REFERENCES acquisition.processing_runs(id),
  actor text NOT NULL CHECK(length(btrim(actor))>0),
+ actor_user_id uuid, -- obtained from verified auth.uid(), not caller input; survives account deletion
  event_type varchar(100) NOT NULL,
  changed_fields text[] NOT NULL DEFAULT '{}',
  old_revision bigint CHECK(old_revision>0),
@@ -306,6 +409,8 @@ CREATE TABLE acquisition.audit_events (
  reason varchar(4000),
  rule_version varchar(100),
  fingerprint text CHECK(fingerprint ~ '^[a-f0-9]{64}$'),
+ before_values jsonb CHECK(before_values IS NULL OR (jsonb_typeof(before_values)='object' AND octet_length(before_values::text)<=8192)),
+ after_values jsonb CHECK(after_values IS NULL OR (jsonb_typeof(after_values)='object' AND octet_length(after_values::text)<=8192)),
  happened_at timestamptz NOT NULL DEFAULT now(),
  UNIQUE(id,accommodation_id),
  CHECK(accommodation_id IS NOT NULL OR candidate_reference IS NOT NULL),
@@ -377,6 +482,19 @@ BEGIN
   NEW.created_at:=clock_timestamp();
   NEW.had_profile_link:=NEW.existing_profile_id IS NOT NULL;
  END IF;
+ IF TG_OP='INSERT' OR NEW.automatic_theme_evidence IS DISTINCT FROM OLD.automatic_theme_evidence THEN
+  IF NOT acquisition.valid_category_state(NEW.automatic_theme_evidence,NEW.manual_theme_decisions) THEN
+   RAISE EXCEPTION 'invalid category state' USING ERRCODE='22023';
+  END IF;
+  IF EXISTS(SELECT FROM jsonb_each_text(NEW.automatic_theme_evidence) e WHERE NOT EXISTS(
+   SELECT FROM acquisition.observations o JOIN acquisition.source_registry s ON s.id=o.source_id
+   WHERE o.id=e.value::uuid AND o.accommodation_id=NEW.id AND o.fact_type='theme' AND o.term_key=e.key
+    AND o.review_status='verified' AND o.checked_at IS NOT NULL
+    AND s.research_right='allowed' AND s.extraction_right='allowed'
+    AND 'travel_categories'=ANY(s.allowed_fields) AND s.valid_from<=statement_timestamp()
+    AND (s.valid_until IS NULL OR s.valid_until>statement_timestamp())
+  )) THEN RAISE EXCEPTION 'category requires current permitted same-lodging evidence' USING ERRCODE='23514'; END IF;
+ END IF;
  NEW.updated_at:=clock_timestamp();
  IF NEW.had_profile_link THEN
   IF TG_OP='UPDATE' THEN NEW.publication_block:=coalesce(OLD.publication_block,NEW.publication_block,'profile_link');
@@ -388,6 +506,33 @@ BEGIN
 END;
 $$;
 CREATE TRIGGER guard_accommodation BEFORE INSERT OR UPDATE OR DELETE ON acquisition.accommodations FOR EACH ROW EXECUTE FUNCTION acquisition.guard_accommodation();
+
+CREATE FUNCTION acquisition.validate_current_evidence() RETURNS trigger LANGUAGE plpgsql SET search_path='' AS $$
+DECLARE a acquisition.accommodations;
+BEGIN
+ SELECT * INTO a FROM acquisition.accommodations WHERE id=NEW.id;
+ IF NOT FOUND THEN RETURN NULL; END IF;
+ IF EXISTS(SELECT FROM (VALUES
+  (a.location_observation_id,'location'),(a.phone_observation_id,'phone'),(a.operator_observation_id,'operator'),
+  (a.company_address_observation_id,'company_address'),(a.acquisition_phone_observation_id,'acquisition_phone'),
+  (a.email_observation_id,'email'),(a.website_observation_id,'website'),(a.person_observation_id,'person'),
+  (a.business_relationship_observation_id,'business_relationship')) expected(observation_id,fact_type)
+  WHERE expected.observation_id IS NOT NULL AND NOT EXISTS(
+   SELECT FROM acquisition.observations o WHERE o.id=expected.observation_id AND o.accommodation_id=a.id AND o.fact_type=expected.fact_type
+  )) THEN RAISE EXCEPTION 'current value requires matching evidence type' USING ERRCODE='23514'; END IF;
+ IF a.acquisition_status='premium_customer' AND NOT EXISTS(
+  SELECT FROM acquisition.observations o WHERE o.id=a.business_relationship_observation_id AND o.accommodation_id=a.id
+   AND o.fact_type='business_relationship' AND o.review_status='verified' AND o.facts->'confirmed'='true'::jsonb
+ ) THEN RAISE EXCEPTION 'confirmed business relationship required' USING ERRCODE='23514'; END IF;
+ IF a.last_import_run_id IS NOT NULL AND NOT EXISTS(SELECT FROM acquisition.processing_runs r WHERE r.id=a.last_import_run_id
+  AND r.run_type IN('import','refresh') AND r.status IN('succeeded','partial') AND r.imported>0
+  AND a.last_import_at>=r.started_at AND a.last_import_at<=r.finished_at)
+ THEN RAISE EXCEPTION 'actual successful import run required' USING ERRCODE='23514'; END IF;
+ RETURN NULL;
+END;
+$$;
+CREATE CONSTRAINT TRIGGER validate_current_evidence AFTER INSERT OR UPDATE ON acquisition.accommodations
+ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION acquisition.validate_current_evidence();
 
 -- Final transaction state must be a direct canonical link, never a chain.
 -- Multi-session identity merges still require the later ordered-lock procedure;
@@ -417,8 +562,134 @@ END;
 $$;
 CREATE TRIGGER audit_accommodation AFTER INSERT OR UPDATE ON acquisition.accommodations FOR EACH ROW EXECUTE FUNCTION acquisition.audit_accommodation();
 
+-- Derived on demand so expiry and a change in current evidence cannot leave a
+-- stale writable licence-summary column behind. No public grants or projection.
+CREATE FUNCTION acquisition.source_use_summary(p_id uuid) RETURNS jsonb
+ LANGUAGE plpgsql STABLE SET search_path='' AS $$
+DECLARE a acquisition.accommodations; summary jsonb;
+BEGIN
+ SELECT * INTO a FROM acquisition.accommodations WHERE id=p_id;
+ IF NOT FOUND THEN RAISE EXCEPTION 'accommodation not found' USING ERRCODE='P0002'; END IF;
+ WITH required AS (
+  SELECT * FROM (VALUES
+   ('name',a.primary_observation_id,true,true),('location',a.location_observation_id,true,
+    a.city IS NOT NULL OR a.street IS NOT NULL OR a.house_number IS NOT NULL OR a.postal_code IS NOT NULL OR a.country IS NOT NULL
+    OR a.region_code IS NOT NULL OR a.region_name IS NOT NULL OR a.municipality_id IS NOT NULL),
+   ('phone',a.phone_observation_id,true,a.phone IS NOT NULL),('operator_name',a.operator_observation_id,false,a.operator_name IS NOT NULL),
+   ('company_address',a.company_address_observation_id,false,a.company_address_observation_id IS NOT NULL),
+   ('acquisition_phone',a.acquisition_phone_observation_id,false,a.acquisition_phone IS NOT NULL),
+   ('business_email',a.email_observation_id,false,a.business_email IS NOT NULL),
+   ('official_website',a.website_observation_id,false,a.official_website IS NOT NULL),
+   ('contact_person',a.person_observation_id,false,a.contact_person IS NOT NULL OR a.contact_role IS NOT NULL),
+   ('business_relationship',a.business_relationship_observation_id,false,a.acquisition_status='premium_customer')
+  ) r(field_key,observation_id,public_required,present)
+  UNION ALL SELECT 'travel_categories',e.value::uuid,e.key=ANY(a.effective_theme_keys),true FROM jsonb_each_text(a.automatic_theme_evidence) e
+ ), evaluated AS (
+  SELECT purpose.key,CASE
+   WHEN rights.state='denied' THEN 3
+   WHEN o.id IS NULL OR o.review_status<>'verified' OR s.reviewed_at IS NULL
+    OR NOT(r.field_key=ANY(s.allowed_fields)) OR s.valid_from>statement_timestamp()
+    OR (s.valid_until IS NOT NULL AND s.valid_until<=statement_timestamp()) OR rights.state='unknown' THEN 2
+   WHEN rights.state='restricted' THEN 1 ELSE 0 END AS severity
+  FROM required r LEFT JOIN acquisition.observations o ON o.id=r.observation_id AND o.accommodation_id=a.id
+  LEFT JOIN acquisition.source_registry s ON s.id=o.source_id
+  CROSS JOIN (VALUES('access'),('research'),('extraction'),('publication'),('acquisition')) purpose(key)
+  CROSS JOIN LATERAL (SELECT CASE purpose.key WHEN 'access' THEN s.access_right WHEN 'research' THEN s.research_right
+   WHEN 'extraction' THEN s.extraction_right WHEN 'publication' THEN s.publication_right ELSE s.acquisition_right END state) rights
+  WHERE CASE WHEN purpose.key='publication' THEN r.public_required ELSE r.present END
+ ), grouped AS (SELECT key,max(severity) severity FROM evaluated GROUP BY key)
+ SELECT jsonb_object_agg(key,CASE severity WHEN 3 THEN 'denied' WHEN 2 THEN 'unknown' WHEN 1 THEN 'restricted' ELSE 'allowed' END)
+ INTO summary FROM grouped;
+ RETURN summary;
+END;
+$$;
+
+-- Private building blocks for the later Admin integration. No API-role grants,
+-- wrappers or UI in this proposal. A database-owner call is still admin-checked.
+CREATE FUNCTION acquisition.read_basic_categories(p_id uuid) RETURNS jsonb
+ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path='' AS $$
+DECLARE a acquisition.accommodations;
+BEGIN
+ IF auth.uid() IS NULL OR NOT public.can_review_travel_profiles() THEN
+  RAISE EXCEPTION 'not authorized' USING ERRCODE='42501';
+ END IF;
+ SELECT * INTO a FROM acquisition.accommodations WHERE id=p_id;
+ IF NOT FOUND THEN RAISE EXCEPTION 'basic accommodation not found' USING ERRCODE='P0002'; END IF;
+ RETURN jsonb_build_object('id',a.id,'name',a.name,'city',a.city,'country',a.country,'revision',a.revision,
+  'assignedKeys',a.effective_theme_keys,'manualDecisions',a.manual_theme_decisions,
+  'automaticKeys',ARRAY(SELECT jsonb_object_keys(a.automatic_theme_evidence) ORDER BY 1),
+  'terms',coalesce((SELECT jsonb_agg(jsonb_build_object('term_key',term_key,'label',label,'dimension',dimension) ORDER BY label,term_key)
+   FROM public.travel_terms WHERE term_key=ANY(acquisition.basic_theme_keys()) AND dimension='theme'),'[]'::jsonb));
+END;
+$$;
+
+CREATE FUNCTION acquisition.save_basic_categories(p_id uuid,p_expected_revision bigint,p_selected text[],p_reason text)
+ RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE a acquisition.accommodations; selected text[]; decisions jsonb; category_key text; actor_id uuid;
+BEGIN
+ actor_id:=auth.uid();
+ IF actor_id IS NULL OR NOT public.can_review_travel_profiles() THEN
+  RAISE EXCEPTION 'not authorized' USING ERRCODE='42501';
+ END IF;
+ IF p_expected_revision IS NULL OR p_expected_revision<1 OR p_selected IS NULL OR cardinality(p_selected)>11
+  OR array_ndims(p_selected)>1 OR EXISTS(SELECT FROM unnest(p_selected) k WHERE k IS NULL OR NOT(k=ANY(acquisition.basic_theme_keys())))
+  OR EXISTS(SELECT FROM unnest(p_selected) k WHERE NOT EXISTS(SELECT FROM public.travel_terms WHERE term_key=k AND dimension='theme'))
+  OR (SELECT count(*) FROM unnest(p_selected))<>(SELECT count(DISTINCT k) FROM unnest(p_selected) k)
+ THEN RAISE EXCEPTION 'invalid category selection' USING ERRCODE='22023'; END IF;
+ SELECT * INTO a FROM acquisition.accommodations WHERE id=p_id FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'basic accommodation not found' USING ERRCODE='P0002'; END IF;
+ IF a.revision<>p_expected_revision THEN RAISE EXCEPTION 'accommodation changed; reload' USING ERRCODE='40001'; END IF;
+ SELECT coalesce(array_agg(k ORDER BY k),'{}'::text[]) INTO selected FROM unnest(p_selected) k;
+ IF a.effective_theme_keys=selected THEN RETURN acquisition.read_basic_categories(p_id); END IF;
+ IF p_reason IS NULL OR length(btrim(p_reason)) NOT BETWEEN 1 AND 1000 THEN
+  RAISE EXCEPTION 'category decision requires reason' USING ERRCODE='22023';
+ END IF;
+ decisions:=a.manual_theme_decisions;
+ FOREACH category_key IN ARRAY acquisition.basic_theme_keys() LOOP
+  IF (category_key=ANY(selected)) IS DISTINCT FROM (category_key=ANY(a.effective_theme_keys)) THEN
+   decisions:=decisions||jsonb_build_object(category_key,category_key=ANY(selected));
+  END IF;
+ END LOOP;
+ UPDATE acquisition.accommodations SET manual_theme_decisions=decisions WHERE id=p_id;
+ INSERT INTO acquisition.audit_events(accommodation_id,actor,actor_user_id,event_type,changed_fields,old_revision,new_revision,reason,before_values,after_values)
+ VALUES(p_id,'portal_admin',actor_id,'basic_categories_admin',ARRAY['manual_theme_decisions','effective_theme_keys'],a.revision,a.revision+1,btrim(p_reason),
+  jsonb_build_object('manual',a.manual_theme_decisions,'effective',a.effective_theme_keys),
+  jsonb_build_object('manual',decisions,'effective',acquisition.effective_category_keys(a.automatic_theme_evidence,decisions)));
+ RETURN acquisition.read_basic_categories(p_id);
+END;
+$$;
+
+CREATE FUNCTION acquisition.refresh_basic_category_basis(p_id uuid,p_expected_revision bigint,p_evidence jsonb,p_run_id uuid)
+ RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE a acquisition.accommodations; worker_run acquisition.processing_runs;
+BEGIN
+ IF p_expected_revision IS NULL OR p_expected_revision<1 OR p_evidence IS NULL
+  OR NOT acquisition.valid_category_state(p_evidence,'{}') THEN
+  RAISE EXCEPTION 'invalid automatic category basis' USING ERRCODE='22023';
+ END IF;
+ SELECT * INTO worker_run FROM acquisition.processing_runs WHERE id=p_run_id;
+ IF NOT FOUND OR worker_run.status<>'running' OR worker_run.run_type NOT IN('import','refresh') THEN
+  RAISE EXCEPTION 'active import or refresh run required' USING ERRCODE='22023';
+ END IF;
+ SELECT * INTO a FROM acquisition.accommodations WHERE id=p_id FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'basic accommodation not found' USING ERRCODE='P0002'; END IF;
+ IF a.revision<>p_expected_revision THEN RAISE EXCEPTION 'accommodation changed; reload' USING ERRCODE='40001'; END IF;
+ IF a.automatic_theme_evidence=p_evidence THEN
+  RETURN jsonb_build_object('id',a.id,'revision',a.revision,'assignedKeys',a.effective_theme_keys);
+ END IF;
+ UPDATE acquisition.accommodations SET automatic_theme_evidence=p_evidence WHERE id=p_id;
+ INSERT INTO acquisition.audit_events(accommodation_id,run_id,actor,event_type,changed_fields,old_revision,new_revision,before_values,after_values)
+ VALUES(p_id,p_run_id,session_user,'basic_categories_automatic',ARRAY['automatic_theme_evidence','effective_theme_keys'],a.revision,a.revision+1,
+  jsonb_build_object('automatic',a.automatic_theme_evidence,'effective',a.effective_theme_keys),
+  jsonb_build_object('automatic',p_evidence,'effective',acquisition.effective_category_keys(p_evidence,a.manual_theme_decisions)));
+ RETURN jsonb_build_object('id',p_id,'revision',a.revision+1,'assignedKeys',acquisition.effective_category_keys(p_evidence,a.manual_theme_decisions));
+END;
+$$;
+
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA acquisition FROM PUBLIC,anon,authenticated,service_role;
 REVOKE ALL ON ALL TABLES IN SCHEMA acquisition FROM PUBLIC,anon,authenticated,service_role;
+GRANT USAGE ON SCHEMA acquisition TO acquisition_category_importer;
+GRANT EXECUTE ON FUNCTION acquisition.refresh_basic_category_basis(uuid,bigint,jsonb,uuid) TO acquisition_category_importer;
 DO $$ DECLARE t text; r text; BEGIN
  FOREACH t IN ARRAY ARRAY['accommodations','source_registry','observations','price_observations','municipalities','processing_runs','audit_events'] LOOP
   EXECUTE format('ALTER TABLE acquisition.%I ENABLE ROW LEVEL SECURITY',t);
@@ -442,5 +713,10 @@ DO $$ DECLARE t text; r text; BEGIN
    RAISE EXCEPTION 'unexpected projection or function privilege';
   END IF;
  END LOOP;
+ IF EXISTS(SELECT FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+  WHERE n.nspname='acquisition' AND (has_function_privilege('anon',p.oid,'EXECUTE')
+   OR has_function_privilege('authenticated',p.oid,'EXECUTE') OR has_function_privilege('service_role',p.oid,'EXECUTE'))) THEN
+  RAISE EXCEPTION 'unexpected acquisition function grant';
+ END IF;
 END $$;
 COMMIT;
