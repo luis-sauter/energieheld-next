@@ -10,7 +10,7 @@ export const fixture=()=>({version:'reviewed-basic-pilot-v1',runId:crypto.random
  theme:{key:'theme:wellnessangebote',fact:'Synthetic spa evidence'},price:{amount:85,tax:3.4,start:'2026-02-01',end:'2027-01-06',board:'Frühstück'}
 }]});
 let db;
-beforeEach(async()=>{db=await createBasicIntegrationDatabase();await db.exec("insert into travel_terms select k,'theme',k,split_part(k,':',2) from unnest(acquisition.basic_theme_keys())k;insert into travel_terms values('accommodation:hotel','accommodation','Hotel','hotel');");await db.exec(await readFile(new URL('../supabase/proposals/20261016154647_basic_reviewed_pilot_publication.sql',import.meta.url),'utf8'));});
+beforeEach(async()=>{db=await createBasicIntegrationDatabase();await db.exec("insert into travel_terms select k,'theme',k,split_part(k,':',2) from unnest(acquisition.basic_theme_keys())k;insert into travel_terms values('accommodation:hotel','accommodation','Hotel','hotel');");await db.exec(await readFile(new URL('../supabase/migrations/20261016154647_basic_reviewed_pilot_publication.sql',import.meta.url),'utf8'));});
 afterEach(async()=>db?.close());
 test('reviewed pilot publishes one contact, keeps separated address fields, replay preserves manual decisions and never republishes',async()=>{
  const manifest=fixture(),sql=reviewedPilotSql(manifest),id=manifest.records[0].id;

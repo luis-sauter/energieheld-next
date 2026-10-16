@@ -16,7 +16,7 @@ export async function basicIntegrationSchema(){
  CREATE TABLE public.company_profile_imports(profile_id uuid PRIMARY KEY,imported_at timestamptz);
  CREATE VIEW public.portal_search_documents AS SELECT id,display_name title,'/unterkuenfte/'||slug url,city location,''::text terms,''::text headings,''::text body,to_tsvector('german',display_name||' '||city) document FROM public.company_profiles WHERE status='approved';
  ${search.slice(search.indexOf('CREATE FUNCTION public.portal_search_normalize'),search.indexOf('-- Useful row-level'))}
- `+await read('migrations/20261016131421_basic_acquisition_master_foundation.sql')+await read('proposals/'+integrationFile);
+ `+await read('migrations/20261016131421_basic_acquisition_master_foundation.sql')+await read('migrations/'+integrationFile);
 }
 export async function createBasicIntegrationDatabase(){const db=new PGlite();await db.exec(await basicIntegrationSchema());return db;}
 export async function addSyntheticBasic(db,{id=crypto.randomUUID(),name='Testpension',city='Testort',country='DE',keys=['theme:wellnessangebote'],listed=true}={}){
