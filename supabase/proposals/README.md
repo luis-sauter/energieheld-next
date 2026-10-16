@@ -1,5 +1,27 @@
 # Unapplied database proposals
 
+## Current foundation redesign
+
+`20261016131421_basic_acquisition_master_foundation.sql` is the new, local-only
+seven-table foundation draft. It is NOT approved for Cloud application. The
+previous `20261015225242` proposal below is superseded and retained only as a
+historical regression fixture: **do not apply it**.
+
+The new draft separates street, house number, postal code and city for BOTH
+lodging and company addresses. Municipality is a separate reference. Unknown
+candidate fields remain NULL; a same-accommodation primary observation must be
+inserted in the same transaction. Source versions and observation history are
+immutable. No worker roles, logins, API RPCs or active publication path are
+created. The public contact table is empty, deny-all and cannot be listed in
+this foundation. A later reviewed publication implementation is required.
+
+Phase A local constraint/ACL tests are not proof of a deployed database, real
+multi-session concurrency, source rights or search performance. Do not promote
+this draft until its remaining real-PostgreSQL and current-Cloud-preflight gates
+are documented. Existing public application routes are unchanged.
+
+## Historical proposal (superseded)
+
 Files here are reviewed locally and are deliberately outside `supabase/migrations`.
 They must not be included in a database push or treated as an approved rollout.
 
