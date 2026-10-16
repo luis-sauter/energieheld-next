@@ -1,7 +1,8 @@
 -- LOCAL FOUNDATION DRAFT ONLY. Not approved; never db push this directory.
 -- Seven private tables; empty, closed public projection. No seeds or jobs.
 -- Publication and search stay inactive. The sole NOLOGIN worker capability
--- can update validated category evidence only; no login or membership is added.
+-- can update validated category evidence only; no application login/membership.
+-- PostgreSQL may grant the trusted migration creator administrative membership.
 BEGIN;
 SET LOCAL lock_timeout='2s';
 SET LOCAL statement_timeout='15s';
