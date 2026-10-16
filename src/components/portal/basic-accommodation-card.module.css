@@ -1,4 +1,62 @@
-.card { min-width: 0; display: grid; gap: 8px; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--white); overflow-wrap: anywhere; }
-.card h3, .card p { margin: 0; }
-.card h3 { font-size: clamp(1.15rem, 2vw, 1.4rem); line-height: 1.3; }
-.card a { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: 3px; }
+/* Public contact projection only; mirrors the canonical company row without
+   adding profile behaviour or changing the existing company-row selectors. */
+.card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) minmax(220px, 30%);
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--white);
+  box-shadow: 0 5px 20px rgb(31 74 99 / 4%);
+  overflow-wrap: anywhere;
+}
+.home {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: var(--portal-light-blue, #edf7fc);
+  color: var(--portal-blue, var(--brand-primary));
+}
+.name {
+  min-width: 0;
+  margin: 0;
+  padding: 6px 16px;
+  color: var(--portal-blue, var(--brand-primary));
+  font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+  font-weight: var(--font-heading-weight);
+  line-height: 1.3;
+}
+.contact {
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 14px 8px 16px;
+  border-left: 1px solid var(--line);
+  color: var(--portal-basalt, var(--muted));
+  font-size: .8rem;
+  line-height: 1.5;
+}
+.address, .phone {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0;
+}
+.contact svg { flex: 0 0 auto; margin-top: 2px; color: var(--portal-blue, var(--brand-primary)); }
+.phone { align-items: center; align-self: flex-start; min-height: 44px; color: inherit; text-underline-offset: 3px; }
+.phone svg { margin-top: 0; }
+.phone:hover { text-decoration: underline; }
+.phone:focus-visible { outline: 2px solid var(--portal-blue, var(--brand-primary)); outline-offset: 3px; border-radius: 3px; }
+@media (max-width: 700px) {
+  .card { grid-template-columns: 64px minmax(0, 1fr); }
+  .home { width: 64px; }
+  .name { padding: 6px 12px; }
+  .contact { grid-column: 1 / -1; margin: 10px 6px 0; padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+}
