@@ -28,6 +28,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 }
 
 export const dynamic = "force-dynamic";
+import {basicIntegrationEnabled} from '@/lib/basic-public-search';
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const initialValues = readTravelFilterValues(await searchParams);
@@ -41,7 +42,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
-    <HomeTravelFinder banners={searchBanners.banners} listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={mergePublicTravelTerms(terms,searchBanners.terms)} error={directory.error ?? searchBanners.error} />
+    <HomeTravelFinder basicEnabled={basicIntegrationEnabled()} banners={searchBanners.banners} listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={mergePublicTravelTerms(terms,searchBanners.terms)} error={directory.error ?? searchBanners.error} />
 
     <TravelQuicklinks className={`container ${styles.quicklinks}`} />
 

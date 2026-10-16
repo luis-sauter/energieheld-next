@@ -5,6 +5,7 @@ import { portalSearchCatalog } from './portal-search-catalog';
 import { legacySearchCatalog, publicBannerSearch, type SearchAdSource, type SearchPresentation, type BannerSearchData } from './portal-search-banners';
 import { searchResultBatch, type SearchCursor, searchResultPage, searchExcerpt, searchQuery, searchType, SEARCH_PAGE_SIZE, queryWords, type SearchHit, type SearchType } from './portal-search-values';
 import type { TravelFilterValues } from './reiseportal-filter-options';
+import {basicIntegrationEnabled,searchMixedAccommodations} from './basic-public-search';
 
 import { portalSearchFilters, accommodationSearchOnly } from './portal-search-filters';
 export { portalSearchFilters, accommodationSearchOnly } from './portal-search-filters';
@@ -13,6 +14,13 @@ type SearchResponse = { total: number; hits: Omit<SearchHit, 'type'>[]; catalog_
 export type SearchResult = { query: string; type?: SearchType; page: number; total: number; accommodationTotal: number; hits: SearchHit[]; nextCursor?: SearchCursor | null; error?: string };
 // Provider boundary: the server page consumes only SearchResult, never Supabase rows.
 export async function searchPortal(value: unknown, options: { type?: unknown; page?: unknown; filters?: TravelFilterValues; cursor?: SearchCursor; countOnly?: boolean; signal?: AbortSignal } = {}): Promise<SearchResult> {
+  if(basicIntegrationEnabled())return searchMixedAccommodations(value,options,async()=>{
+    const request=createPublicClient().rpc('search_public_portal_v2',{p_query:searchQuery(value),p_limit:1,p_offset:0,p_areas:portalAdSections.flatMap(s=>s.areas.map(a=>a.key)),p_catalog:[...portalSearchCatalog(),...legacySearchCatalog()],p_filters:portalSearchFilters(options.filters)});
+    const {data,error}=await(options.signal?request.abortSignal(options.signal):request);
+    if(error||!data)throw Error('Public catalog unavailable');
+    const result=data as SearchResponse;
+    return [...result.catalog_hits.filter(h=>h.type!=='ad'),...publicBannerSearch(result.ads,result.presentations,searchQuery(value),result.catalog_hits,result.banner_metadata)];
+  });
   const filtered = accommodationSearchOnly(options.filters);
   const query = searchQuery(value), type = filtered ? 'accommodation' : searchType(options.type);
   const requestedPage = Number(options.page);

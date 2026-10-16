@@ -17,6 +17,24 @@ import type { Listing } from '@/types/portal';
 import {compactResultCard} from './portal-search-values';
 export {compactResultCard} from './portal-search-values';
 import type { SearchCursor, SearchHit } from './portal-search-values';
+import {loadAccommodationPage,readAccommodationCursor} from './basic-public-search';
+import type {DirectoryEntry} from './basic-contact';
+
+export async function loadBasicDirectoryWindow(values:TravelFilterValues,cursor='',basicsOnly=false,signal?:AbortSignal){
+  const page=await loadAccommodationPage('',values,readAccommodationCursor(cursor),{basicsOnly,signal});
+  const ids=page.items.flatMap(row=>row.entry.kind==='profile'?[row.entry.id]:[]);
+  const assignments=ids.length?await createPublicClient().from('company_profile_travel_terms').select('profile_id,term_key,seasonal_teaser').in('profile_id',ids):{data:[],error:null};
+  if(assignments.error)throw Error('Travel assignments unavailable');
+  const cards=await loadReiseportalSearchListings(ids,[]);
+  const byId=new Map(cards.map(card=>[card.id,card]));
+  const items:DirectoryEntry[]=page.items.map(({entry})=>{
+    if(entry.kind==='basic')return entry;
+    const original=byId.get(entry.id),card=original&&entry.url==='/unterkuenfte/demo-gmbh'?publicDemo(original):original;if(!card)throw Error('Public profile changed; reload');
+    const terms=(assignments.data??[]).filter(t=>t.profile_id===card.id);
+    return compactResultCard({...card,travelTermKeys:terms.map(t=>t.term_key),seasonTeasers:Object.fromEntries(terms.filter(t=>t.seasonal_teaser).map(t=>[t.term_key,t.seasonal_teaser!]))});
+  });
+  return {items,total:page.total,nextCursor:page.hasMore&&page.items.length?JSON.stringify(page.items.at(-1)!.after):null};
+}
 
 export type SearchItem = { hit: SearchHit; listing?: Listing };
 export const RESULT_BATCH_SIZE = 20;
@@ -82,13 +100,13 @@ export async function hydrateBannerWindow(window: ReturnType<typeof resultWindow
   return { ...window, items: window.items.map(row => byId.get(row.id) ?? row).filter(row => row.imageUrl && row.imageUrl !== 'public-creative') };
 }
 
-export async function loadSearchBatch(params: Record<string, string | string[] | undefined>, values: TravelFilterValues, cursor: SearchCursor, facts?: Listing[]) {
+export async function loadSearchBatch(params: Record<string, string | string[] | undefined>, values: TravelFilterValues, cursor: SearchCursor, facts?: Listing[],signal?:AbortSignal) {
   const {searchPortal}=await import("./portal-search");
-  const result = await searchPortal(params.q, { type: params.typ, filters: values, cursor });
+  const result = await searchPortal(params.q, { type: params.typ, filters: values, cursor,signal });
   if (result.error) throw new Error(result.error);
-  const ids=result.hits.filter(hit=>hit.type==='accommodation').map(hit=>hit.id);
+  const ids=result.hits.filter(hit=>hit.type==='accommodation'&&!hit.basic).map(hit=>hit.id);
   const metadata = facts ?? (ids.length ? await loadReiseportalFinderListings(true) : []);
-  const cards = await loadReiseportalSearchListings(result.hits.filter(hit => hit.type === 'accommodation').map(hit => hit.id), metadata);
+  const cards = await loadReiseportalSearchListings(ids, metadata);
   const byId = new Map(cards.map(card => [card.id, card]));
   return { result, batch: { items: result.hits.map(hit => ({ hit, listing: byId.has(hit.id)?compactResultCard(byId.get(hit.id)!):undefined })), total: result.total, nextCursor: result.nextCursor ?? null } };
 }

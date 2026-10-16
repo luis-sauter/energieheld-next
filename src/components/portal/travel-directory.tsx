@@ -28,10 +28,15 @@ import { DirectoryOrderEditor } from "@/components/admin/directory-order-editor"
 import { SidebarOrderEditor } from "@/components/admin/sidebar-order-editor";
 import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
 import type { InlineBannerOptions } from "@/lib/inline-ad-context";
+import {isBasicContact,type DirectoryEntry} from '@/lib/basic-contact';
+import {BasicAccommodationCard} from './basic-accommodation-card';
+import {useAccommodationFacets} from './use-accommodation-facets';
 
 export function TravelDirectory({ initialValues, database, preview, terms, error, ads, sidebarOrder,
-  canReorder, freshnessStatuses, importedProfileIds, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions, banners = [], bannerError, pagination }: {
-  pagination?: {key:string;profiles:ResultBatch<Listing,number>;banners:ResultBatch<ActiveAd,number>};
+  canReorder, freshnessStatuses, importedProfileIds, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions, banners = [], bannerError, pagination,basicEnabled=false,basicPagination }: {
+  basicPagination?:ResultBatch<DirectoryEntry,string|number>;
+  basicEnabled?:boolean;
+  pagination?: {key:string;profiles:ResultBatch<DirectoryEntry,string|number>;banners:ResultBatch<ActiveAd,number>};
   initialValues: TravelFilterValues;
   database: Listing[];
   preview: Listing[];
@@ -51,6 +56,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
 }) {
   const [reviewFilter, setReviewFilter] = useState("");
   const [values, setValues] = useState(initialValues);
+  const aggregate=useAccommodationFacets(values,basicEnabled);
   const pending = useTravelSearchPending(values, 'directory');
   const liveCount = useLiveTravelCount(values);
   const listings = useMemo(() => [...preview, ...database], [preview, database]);
@@ -69,12 +75,14 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
 
   const identity=travelFilterUrl({...values,query:"",location:""});
   const pageUrl=(stream:string,offset:number)=>{const params=new URLSearchParams(identity.split('?')[1]);params.set('kind','directory');params.set('stream',stream);params.set('offset',String(offset));return '/api/portal-results?'+params;};
-  const noProfiles:ResultBatch<Listing,number>={items:[],total:0,nextCursor:null};
+  const noProfiles:ResultBatch<DirectoryEntry,string|number>={items:[],total:0,nextCursor:null};
   const noBanners:ResultBatch<ActiveAd,number>={items:[],total:0,nextCursor:null};
-  const profileStream=useResultStream({identity,initialIdentity:pagination?.key??identity,initial:pagination?.profiles??noProfiles,firstCursor:0,url:(offset:number)=>pageUrl('profiles',offset),itemKey:(row:Listing)=>row.id});
+  const profileStream=useResultStream({identity,initialIdentity:pagination?.key??identity,initial:pagination?.profiles??noProfiles,firstCursor:basicEnabled?'':0,url:(cursor:string|number)=>basicEnabled?pageUrl('profiles',0)+'&cursor='+encodeURIComponent(String(cursor)):pageUrl('profiles',Number(cursor)),itemKey:(row:DirectoryEntry)=>row.id});
+  const basicStream=useResultStream({identity,initialIdentity:basicPagination?travelFilterUrl({...initialValues,query:'',location:''}):identity,initial:basicPagination??noProfiles,firstCursor:'',url:(cursor:string|number)=>pageUrl('basics',0)+'&cursor='+encodeURIComponent(String(cursor)),itemKey:(row:DirectoryEntry)=>row.id});
   const bannerStream=useResultStream({identity,initialIdentity:pagination?.key??identity,initial:pagination?.banners??noBanners,firstCursor:0,url:(offset:number)=>pageUrl('banners',offset),itemKey:(row:ActiveAd)=>row.id});
-  const shownResults=pagination?profileStream.items:results;
-  const count = (pagination ? profileStream.total : results.length) + matched.banners.length;
+  const extraBasics=basicPagination&&!reviewFilter?basicStream.items:[];
+  const shownResults=pagination?profileStream.items:[...results,...extraBasics];
+  const count = (pagination ? profileStream.total : results.length+(basicPagination&&!reviewFilter?basicStream.total:0)) + matched.banners.length;
   const [samples, setSamples] = useState<CreativeSamples>({});
   const bannerPool = useMemo(() => directoryBannerPool(pagination?bannerStream.items:[...ads, ...matched.advertisers.map(banner => banner.ad)], samples), [ads, matched.advertisers, samples, pagination, bannerStream.items]);
   function recordCreative(ad: ActiveAd, image: HTMLImageElement) {
@@ -91,7 +99,9 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     return <SearchAdResults banners={[asBanner(ad)]} filtered={false} compact directory canEdit={Boolean(bannerOptions)} onCreativeLoaded={recordCreative} />;
   }
 
-  function renderResults(ordered: Listing[]) {
+  function renderResults(entries: DirectoryEntry[]) {
+    const ordered=entries.filter((row):row is Listing=>!isBasicContact(row));
+    const basicContacts=entries.filter(isBasicContact);
     const grouped = [...ordered.filter(row => row.directoryPackage === "premium"), ...ordered.filter(row => row.directoryPackage !== "premium")];
     const premium = grouped.filter(row => row.directoryPackage === "premium");
     const basic = grouped.filter(row => row.directoryPackage !== "premium");
@@ -108,6 +118,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
       {basic.length > 0 && <section className="travel-package-group" aria-labelledby="basic-title">
         <header className="travel-package-heading"><h2 id="basic-title">Weitere Unterkünfte</h2><p>Weitere Gastgeber aus dem Reiseportal – kompakt und übersichtlich.</p></header>{render(basic)}
       </section>}
+      {basicContacts.length>0&&<section className="travel-package-group" aria-labelledby="basic-contacts-title"><header className="travel-package-heading"><h2 id="basic-contacts-title">Basic-Unterkünfte</h2></header><div className="listing-rows">{basicContacts.map(entry=><BasicAccommodationCard key={entry.id} entry={entry}/>)}</div></section>}
     </>;
   }
   const advertisements = <><SearchAdResults banners={bannerPool.map(asBanner)} filtered={false} compact directory canEdit={Boolean(bannerOptions)} onCreativeLoaded={recordCreative} />{pagination && <AutoLoad hasMore={bannerStream.nextCursor!==null} loading={bannerStream.loading} error={bannerStream.error} load={bannerStream.load} />}</>;
@@ -124,7 +135,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   }, []);
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`travel-directory-page ${styles.page} ${cardStyles.rows}`}>
-    <TravelFinder mode="directory" {...pending} liveCount={liveCount} profileTotal={pagination ? profileStream.total : undefined} profileLoading={Boolean(pagination && profileStream.loading && !profileStream.items.length)} banners={banners} listings={listings} options={options} values={values} onChange={setValues} error={error ?? bannerError} renderFinder={(finder) =>
+    <TravelFinder mode="directory" basicEnabled={basicEnabled} terms={terms} aggregate={aggregate} {...pending} liveCount={liveCount} profileTotal={pagination ? profileStream.total : undefined} profileLoading={Boolean(pagination && profileStream.loading && !profileStream.items.length||basicPagination&&basicStream.loading)} banners={banners} listings={listings} options={options} values={values} onChange={setValues} error={error ?? bannerError} renderFinder={(finder) =>
     <div className="trade-page travel-directory-content">
       <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder} editorEnabled={editingAvailable} premiumInSidebar showEmptySlots={Boolean(bannerOptions)}
         sidebarContent={<aside className="commercial-sidebar advertising-rail" aria-label="Werbeanzeigen"><p className="advertising-rail-label">Anzeige</p>{advertisements}
@@ -172,13 +183,14 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
           {error && <div className="empty-state" role="alert"><p>{error}</p></div>}
           {!error && editingAvailable && saveOrder && databaseResults.length > 0 ? <>
             <DirectoryOrderEditor listings={databaseResults} hiddenDemoKeys={hiddenOrderKeys} saveOrder={saveOrder}
-              categories={[]} basePath="/unterkuenfte" showVerification={false} premiumFirst travelLabels={travelLabels} freshnessStatuses={freshnessStatuses ?? undefined} renderResults={ordered => renderResults([...ordered, ...previewResults])}
+              categories={[]} basePath="/unterkuenfte" showVerification={false} premiumFirst travelLabels={travelLabels} freshnessStatuses={freshnessStatuses ?? undefined} renderResults={ordered => renderResults([...ordered, ...previewResults,...extraBasics])}
               editingExtras={<div className="listing-rows">{previewResults.map(listing => <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} season={values.theme} />)}</div>} />
           </> : !error && count > 0 ? renderResults(shownResults) : !error && <div className="empty-state" role="status">
               <p>Für diese Kombination haben wir aktuell keine passende Unterkunft.</p>
               <button type="button" className="button" onClick={() => { setValues(readTravelFilterValues({})); setReviewFilter(""); }}>Alle Filter zurücksetzen</button>
             </div>}
           {pagination && <AutoLoad hasMore={profileStream.nextCursor!==null} loading={profileStream.loading} showLoading={profileStream.items.length>0} error={profileStream.error} load={profileStream.load} />}
+          {basicPagination&&!reviewFilter&&<AutoLoad hasMore={basicStream.nextCursor!==null} loading={basicStream.loading} showLoading={basicStream.items.length>0} error={basicStream.error} load={basicStream.load}/>}
           {!error && !results.length && <div className="directory-mobile-banner">{advertisements}</div>}
         </section>
       </AdvertisingLayout>

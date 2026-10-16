@@ -6,6 +6,7 @@ import { searchTypes, type SearchHit } from '@/lib/portal-search-values';
 import type { Listing } from '@/types/portal';
 import styles from '@/app/(energieheld)/suche/search.module.css';
 import cardStyles from './directory-listing-rows.module.css';
+import {BasicAccommodationCard} from './basic-accommodation-card';
 
 export function SearchResults({ hits, listings, facts, travelLabels, season }: {
   hits: SearchHit[]; listings: Listing[]; facts: Listing[]; travelLabels: Record<string, string>; season?: string;
@@ -19,7 +20,7 @@ export function SearchResults({ hits, listings, facts, travelLabels, season }: {
     return <li key={`${hit.type}:${hit.id}`} data-search-result={hit.type} data-search-id={hit.id}
       className={entry ? styles.discoveryResult : styles.wideResult}>
       {hit.type !== 'ad' && hit.type !== 'accommodation' && <p className={styles.resultType}>{searchTypes[hit.type]}</p>}
-      {hit.type === 'accommodation' ? <ListingRow listing={listing ?? {
+      {hit.basic ? <BasicAccommodationCard entry={hit.basic}/> : hit.type === 'accommodation' ? <ListingRow listing={listing ?? {
         id: hit.id, slug: hit.url.split('/').pop() ?? '', name: hit.title,
         initials: hit.title.slice(0, 2), tagline: '', description: hit.excerpt,
         categoryIds: [], services: [], images: [], isDemo: false,

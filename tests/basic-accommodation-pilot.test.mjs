@@ -78,7 +78,7 @@ test('public visibility requires approval AND listing; no pilot can publish',()=
  assert.deepEqual(visibleBasicContact({...contact(),status:'approved',isListed:true}),publicBasicFields(contact()));
  assert.equal(prepareBasicPilot([record()],[]).canPublish,false);
 });
-test('pilot is not wired into existing search, pagination, routes or administration',()=>{
- for(const file of ['src/lib/portal-search.ts','src/lib/public-result-pages.ts','src/components/portal/travel-directory.tsx','src/components/portal/search-results.tsx'])assert.doesNotMatch(readFileSync(new URL('../'+file,import.meta.url),'utf8'),/basic-accommodation|acquisition/);
+test('offline legacy preparation is not a runtime importer or public data source',()=>{
+ for(const file of ['src/lib/portal-search.ts','src/lib/public-result-pages.ts','src/components/portal/travel-directory.tsx','src/components/portal/search-results.tsx'])assert.doesNotMatch(readFileSync(new URL('../'+file,import.meta.url),'utf8'),/from\s+['"][^'"]*basic-accommodation-pilot/);
  const script=readFileSync(new URL('../scripts/prepare-basic-accommodations.mjs',import.meta.url),'utf8');assert.doesNotMatch(script,/fetch\(|createClient\(|apply_migration|process\.env/);assert.match(script,/Private research output must stay outside/);
 });
