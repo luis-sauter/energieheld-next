@@ -30,6 +30,7 @@ import { InlineBannerProvider } from "@/components/advertising/inline-banner-edi
 import type { InlineBannerOptions } from "@/lib/inline-ad-context";
 import {isBasicContact,type DirectoryEntry} from '@/lib/basic-contact';
 import {BasicAccommodationCard} from './basic-accommodation-card';
+import {BasicSourceCredit} from './basic-source-credit';
 import {useAccommodationFacets} from './use-accommodation-facets';
 
 export function TravelDirectory({ initialValues, database, preview, terms, error, ads, sidebarOrder,
@@ -118,7 +119,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
       {basic.length > 0 && <section className="travel-package-group" aria-labelledby="basic-title">
         <header className="travel-package-heading"><h2 id="basic-title">Weitere Unterkünfte</h2><p>Weitere Gastgeber aus dem Reiseportal – kompakt und übersichtlich.</p></header>{render(basic)}
       </section>}
-      {basicContacts.length>0&&<section className="travel-package-group" aria-labelledby="basic-contacts-title"><header className="travel-package-heading"><h2 id="basic-contacts-title">Basic-Unterkünfte</h2></header><div className="listing-rows">{basicContacts.map(entry=><BasicAccommodationCard key={entry.id} entry={entry}/>)}</div></section>}
+      {basicContacts.length>0&&<section className="travel-package-group" aria-labelledby="basic-contacts-title"><header className="travel-package-heading"><h2 id="basic-contacts-title">Basic-Unterkünfte</h2></header><div className="listing-rows">{basicContacts.map(entry=><BasicAccommodationCard key={entry.id} entry={entry}/>)}</div><BasicSourceCredit/></section>}
     </>;
   }
   const advertisements = <><SearchAdResults banners={bannerPool.map(asBanner)} filtered={false} compact directory canEdit={Boolean(bannerOptions)} onCreativeLoaded={recordCreative} />{pagination && <AutoLoad hasMore={bannerStream.nextCursor!==null} loading={bannerStream.loading} error={bannerStream.error} load={bannerStream.load} />}</>;
