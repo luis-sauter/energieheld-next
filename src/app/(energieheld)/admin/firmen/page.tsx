@@ -7,13 +7,20 @@ import { requireAdminAccess, formatSubmission } from "@/lib/admin";
 import styles from "@/components/admin/admin.module.css";
 import {basicIntegrationEnabled} from '@/lib/basic-public-search';
 import {BasicAccommodationList} from '@/components/admin/basic-accommodation-list';
+import {BasicWithdrawal} from '@/components/admin/basic-withdrawal';
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Firmenverwaltung", robots: { index: false, follow: false } };
 type Row = { id: string; display_name: string; legal_name: string; city: string | null; status: string; is_listed: boolean; imported: boolean; slug: string | null; submitted_at: string | null };
-export default async function CompaniesPage({ searchParams }: { searchParams: Promise<{ ansicht?: string; q?: string; seite?: string; sort?: string;cursor?:string }> }) {
+export default async function CompaniesPage({ searchParams }: { searchParams: Promise<{ ansicht?: string; q?: string; seite?: string; sort?: string;cursor?:string;preisgruppe?:string }> }) {
   const params = await searchParams, client = await createClient();
   requireAdminAccess(await checkAdmin(client));
-  if(params.ansicht==='basic'&&basicIntegrationEnabled())return <main id="hauptinhalt" className={`container ${styles.page}`}><Link href="/admin">Zur Redaktion</Link><h1>Unterkunftsverwaltung · Basic</h1><nav className={styles.actions}><Link className="button" href="/admin/firmen">Unternehmensprofile</Link><Link className="button" aria-current="page" href="/admin/firmen?ansicht=basic">Basic-Unterkünfte</Link></nav><form className={styles.managementSearch} method="get"><input type="hidden" name="ansicht" value="basic"/><label>Unterkunftsname oder Ort<input name="q" defaultValue={(params.q??'').slice(0,200)} maxLength={200} type="search"/></label><button className="button" type="submit">Suchen</button></form><BasicAccommodationList client={client} query={(params.q??'').trim().slice(0,200)} cursor={params.cursor}/></main>;
+  if(params.ansicht==='basic'&&basicIntegrationEnabled()){
+    const priceGroup=['A','B','C','D'].includes(params.preisgruppe??'')?params.preisgruppe!:'';
+    return <main id="hauptinhalt" className={`container ${styles.page}`}><Link href="/admin">Zur Redaktion</Link><h1>Unterkunftsverwaltung · Basic</h1><nav className={styles.actions}><Link className="button" href="/admin/firmen">Unternehmensprofile</Link><Link className="button" aria-current="page" href="/admin/firmen?ansicht=basic">Basic-Unterkünfte</Link></nav>
+    <form className={styles.managementSearch} method="get"><input type="hidden" name="ansicht" value="basic"/><label>Unterkunftsname oder Ort<input name="q" defaultValue={(params.q??'').slice(0,200)} maxLength={200} type="search"/></label><label>Preisbewertung<select name="preisgruppe" defaultValue={priceGroup}><option value="">Alle Preisgruppen</option><option value="A">A · Nachgewiesen bis 200 €</option><option value="B">B · Belegte Schätzung</option><option value="C">C · Unbekannt / erneut prüfen</option><option value="D">D · Nachgewiesen ungeeignet</option></select></label><button className="button" type="submit">Suchen</button></form>
+    <BasicAccommodationList client={client} query={(params.q??'').trim().slice(0,200)} cursor={params.cursor} priceGroup={priceGroup}/>
+    {priceGroup&&<><p>Die Sammelrücknahme betrifft alle öffentlichen Basics der Preisgruppe {priceGroup}, unabhängig vom Suchbegriff. Die genaue Auswahl wird vor der Bestätigung angezeigt.</p><BasicWithdrawal key={priceGroup} filter={{priceGroup}}/></>}</main>;
+  }
   const views = [...adminProfileViews.map(v => ({...v, filter: v.key === 'veroeffentlicht' ? 'published' : 'all'})), ...importCompanyViews];
   const view = views.find(v => v.key === params.ansicht) ?? views[0];
   const rawPage = Number(params.seite), page = Number.isSafeInteger(rawPage) && rawPage > 0 && rawPage <= 100000 ? rawPage : 1;
