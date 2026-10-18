@@ -1,0 +1,584 @@
+{
+  "licence": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "attribution": "© OpenStreetMap contributors; contact facts checked on official accommodation websites. Municipal names/codes: Statistische Ämter des Bundes und der Länder, Anschriftenverzeichnis2026.",
+  "source": "https://www.openstreetmap.org/copyright",
+  "municipalitySource": "https://www.statistikportal.de/de/veroeffentlichungen/anschriftenverzeichnis",
+  "checkedAt": "2026-10-18T00:12:17.429Z",
+  "entries": [
+    {
+      "id": "312f8b79-8f46-8ab8-9e65-fee3f5be5f4e",
+      "name": "Landhaus Flottbek",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Baron-Voght-Straße",
+        "country": "DE",
+        "postalCode": "22607",
+        "houseNumber": "179"
+      },
+      "phone": "+49408227410"
+    },
+    {
+      "id": "43b5c5c0-1102-8c05-b487-52c431f774c3",
+      "name": "Urban Heaven",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "country": "DE"
+      },
+      "phone": "+4917672725282"
+    },
+    {
+      "id": "5fc8b589-5d57-8f3b-a03f-93504e14df8a",
+      "name": "Hotel am Museum",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "country": "DE"
+      },
+      "phone": "+494044809414"
+    },
+    {
+      "id": "6d3352e3-b839-87af-90c9-a3677ea28c52",
+      "name": "Schlaflounge",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Vereinsstraße",
+        "country": "DE",
+        "postalCode": "20357",
+        "houseNumber": "54b"
+      },
+      "phone": "+494038688357"
+    },
+    {
+      "id": "7c10687a-ca07-8fac-842a-7edfa8088da1",
+      "name": "Gästehaus an der Messe",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Grindelallee",
+        "country": "DE",
+        "postalCode": "20146",
+        "houseNumber": "43"
+      },
+      "phone": "+491785059793"
+    },
+    {
+      "id": "85bec352-104f-405a-a89c-71b4c4c93ac3",
+      "name": "Hotel Chrysantihof",
+      "address": {
+        "city": "Bad Birnbach",
+        "region": "Bayern",
+        "street": "Brunnaderstraße",
+        "country": "DE",
+        "postalCode": "84364",
+        "houseNumber": "7"
+      },
+      "phone": "+4985632990"
+    },
+    {
+      "id": "8d409c4f-086a-8937-82c5-69f38405e191",
+      "name": "OBERDECK Studio Apartments",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Museumstraße",
+        "country": "DE",
+        "postalCode": "22765",
+        "houseNumber": "37"
+      },
+      "phone": "+4940303775511"
+    },
+    {
+      "id": "8e27a88a-9dcb-8f7b-af46-bd31ffc42dd3",
+      "name": "NYX Hotel Hamburg",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Frankenstraße",
+        "country": "DE",
+        "postalCode": "20097",
+        "houseNumber": "16"
+      },
+      "phone": "+49401821230"
+    },
+    {
+      "id": "c28aab1a-86b9-8042-90e0-d162cfefddb9",
+      "name": "Boardinghouse St. Pauli",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Königstraße",
+        "country": "DE",
+        "postalCode": "22767",
+        "houseNumber": "7"
+      },
+      "phone": "+494031772413"
+    },
+    {
+      "id": "c5403df9-d865-8c53-80d4-2f598ea7799f",
+      "name": "Relexa Bellevue",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "An der Alster",
+        "country": "DE",
+        "postalCode": "20099",
+        "houseNumber": "14"
+      },
+      "phone": "+4940284440"
+    },
+    {
+      "id": "dc3c8956-e24c-82e0-8f38-5f117e4b0801",
+      "name": "Mövenpick",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Sternschanze",
+        "country": "DE",
+        "postalCode": "20357",
+        "houseNumber": "6"
+      },
+      "phone": "+49403344110"
+    },
+    {
+      "id": "df5c4064-c3f5-8e10-b87e-c830ef99c103",
+      "name": "Die Inselpension",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Am Veringhof",
+        "country": "DE",
+        "postalCode": "21107",
+        "houseNumber": "21"
+      },
+      "phone": "+491632434910"
+    },
+    {
+      "id": "fc7a14c7-8da5-40d3-a4c2-cfd0e145f3f9",
+      "name": "Landhaus Cornelia",
+      "address": {
+        "city": "Bad Birnbach",
+        "region": "Bayern",
+        "street": "Hoftstraße",
+        "country": "DE",
+        "postalCode": "84364",
+        "houseNumber": "10"
+      },
+      "phone": "+498563818"
+    },
+    {
+      "id": "8aa246da-45ea-8f49-b1b4-bc40daae4de1",
+      "name": "Trail Hotel",
+      "address": {
+        "street": "Bürgermeister-Hertlein-Str.",
+        "houseNumber": "1",
+        "postalCode": "87534",
+        "city": "Oberstaufen",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983867073010"
+    },
+    {
+      "id": "27936410-202e-80b6-8fbe-5fe1b5327544",
+      "name": "Haus Alpenrose",
+      "address": {
+        "street": "Sonnenweg",
+        "houseNumber": "1",
+        "postalCode": "87645",
+        "city": "Schwangau",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983629395772"
+    },
+    {
+      "id": "d5584526-aa63-88d9-8881-67a0b6e8a3f3",
+      "name": "smart Motel",
+      "address": {
+        "street": "Edisonstraße",
+        "houseNumber": "4",
+        "postalCode": "87437",
+        "city": "Kempten (Allgäu)",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+49831200600"
+    },
+    {
+      "id": "0434f9ee-abd4-865c-a5ca-b5f988838fc6",
+      "name": "Hotel Allgäu Sonne",
+      "address": {
+        "street": "Stießberg",
+        "houseNumber": "1",
+        "postalCode": "87534",
+        "city": "Oberstaufen",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983867020"
+    },
+    {
+      "id": "3ce30256-bb65-8331-a0d7-a3a45b3881ae",
+      "name": "Hotel am Gleis 1",
+      "address": {
+        "street": "Bahnhofsplatz",
+        "houseNumber": "7",
+        "postalCode": "87527",
+        "city": "Sonthofen",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983217871440"
+    },
+    {
+      "id": "e9496558-6036-8f01-81b8-8ea15ade7bbb",
+      "name": "Haus Bergland",
+      "address": {
+        "street": "Faulenseestraße",
+        "houseNumber": "9",
+        "postalCode": "87669",
+        "city": "Rieden am Forggensee",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983621822"
+    },
+    {
+      "id": "a92a7420-5733-8732-8962-21d8e52ed7c6",
+      "name": "Dorf Suites",
+      "address": {
+        "street": "Ludwigstraße",
+        "houseNumber": "26",
+        "postalCode": "87561",
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+491756022951"
+    },
+    {
+      "id": "da2c3501-5807-839c-9bab-2a7a74294243",
+      "name": "Hotel-Cafe Frohsinn GmbH",
+      "address": {
+        "street": "Wiesenweg",
+        "houseNumber": "4+6",
+        "postalCode": "87538",
+        "city": "Fischen im Allgäu",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+498326384930"
+    },
+    {
+      "id": "5f30a8d9-50a9-8a13-aab4-8a1e54e1336b",
+      "name": "Pension Silberdistel",
+      "address": {
+        "street": "Aggensteinstraße",
+        "houseNumber": "8",
+        "postalCode": "87484",
+        "city": "Nesselwang",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983613358"
+    },
+    {
+      "id": "f819157a-470f-8e44-9a03-df45b5c257b5",
+      "name": "Alpenloft Allgäu",
+      "address": {
+        "street": "Stich",
+        "houseNumber": "11",
+        "postalCode": "87466",
+        "city": "Oy-Mittelberg",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983619225999"
+    },
+    {
+      "id": "081ce5c4-b507-8700-8a65-62ce22e4977a",
+      "name": "Brunnenhof",
+      "address": {
+        "street": "Rohrmooser Straße",
+        "houseNumber": "10",
+        "postalCode": "87561",
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+49832296870"
+    },
+    {
+      "id": "9341a9f3-6087-82e2-b20c-0466b7f7d647",
+      "name": "Schloss Hopferau",
+      "address": {
+        "street": "Schloßstraße",
+        "houseNumber": "9-11",
+        "postalCode": "87659",
+        "city": "Hopferau",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+498364984890"
+    },
+    {
+      "id": "852df89e-85b9-8aaa-a879-744c6749ce29",
+      "name": "Auerberghaus - Bed & Breakfast",
+      "address": {
+        "street": "Auerbergweg",
+        "houseNumber": "12",
+        "postalCode": "86983",
+        "city": "Lechbruck",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+498862932720"
+    },
+    {
+      "id": "e5d1c589-3cb9-84f3-ae0c-fa70c22b951f",
+      "name": "Haus Römerweg",
+      "address": {
+        "street": "Römerweg-Süd",
+        "houseNumber": "8",
+        "postalCode": "87459",
+        "city": "Pfronten",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983635213"
+    },
+    {
+      "id": "de4b7bb3-afd9-8262-93ab-edebd589e69e",
+      "name": "Bergkristall",
+      "address": {
+        "street": "Willis",
+        "houseNumber": "8",
+        "postalCode": "87534",
+        "city": "Oberstaufen",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983869110"
+    },
+    {
+      "id": "20c874f8-bed5-8c41-983c-754ca1e22de4",
+      "name": "Gasthof Löwen",
+      "address": {
+        "street": "Tiroler Straße",
+        "houseNumber": "112",
+        "postalCode": "87459",
+        "city": "Pfronten",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+498363927729"
+    },
+    {
+      "id": "acb8f760-fdd0-8b74-ae6b-51f2d8c72a6a",
+      "name": "Fewo Löwenzahn",
+      "address": {
+        "postalCode": "87534",
+        "city": "Oberstaufen",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4915153717740"
+    },
+    {
+      "id": "8aa1e1cf-7577-8664-963f-d5515f621d55",
+      "name": "Weinklause",
+      "address": {
+        "street": "Prinzenstraße",
+        "houseNumber": "10",
+        "postalCode": "87561",
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+49832296930"
+    },
+    {
+      "id": "45d186a0-af4b-801b-8ecd-9ccc18fb2a99",
+      "name": "Pension Carina",
+      "address": {
+        "street": "Seeweg",
+        "houseNumber": "2",
+        "postalCode": "87629",
+        "city": "Füssen",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983629392895"
+    },
+    {
+      "id": "77064a54-2e4e-866b-80be-99e1d941877f",
+      "name": "Landhaus am Kienberg",
+      "address": {
+        "street": "Kienbergstraße",
+        "houseNumber": "40",
+        "postalCode": "87459",
+        "city": "Pfronten",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4971519390090"
+    },
+    {
+      "id": "48802998-5121-8d6d-acc8-3878385b0bcf",
+      "name": "Allgäu-Hotel Elbsee",
+      "address": {
+        "street": "Am Elbsee",
+        "houseNumber": "3",
+        "postalCode": "87648",
+        "city": "Aitrang",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+498343248"
+    },
+    {
+      "id": "7eba0582-c656-86f4-9ac6-b54d807bce54",
+      "name": "Ferienhof Aufmuth",
+      "address": {
+        "street": "Bergmangstraße",
+        "houseNumber": "18",
+        "postalCode": "87674",
+        "city": "Ruderatshofen",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983432696004"
+    },
+    {
+      "id": "589ec805-ff0e-8a84-b855-37c0840fcbc3",
+      "name": "Alpwelt",
+      "address": {
+        "street": "Fuggerstraße",
+        "houseNumber": "14",
+        "postalCode": "87561",
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983227172"
+    },
+    {
+      "id": "e30b44d7-49c5-80d1-ba2b-9b7e238d0be2",
+      "name": "Pension Berghof",
+      "address": {
+        "street": "Falkenstraße",
+        "houseNumber": "16",
+        "postalCode": "87561",
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983223657"
+    },
+    {
+      "id": "6581cb04-123f-850d-b392-df10e68b9f5e",
+      "name": "Ferienwohnung Hirtenbichel",
+      "address": {
+        "street": "Hirtenbichel",
+        "houseNumber": "15",
+        "postalCode": "87509",
+        "city": "Immenstadt im Allgäu",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983239683374"
+    },
+    {
+      "id": "6e3a3234-f387-81a0-a8e0-850ea3e38ab5",
+      "name": "Pension Seerose",
+      "address": {
+        "street": "Burgratzerstrasse",
+        "houseNumber": "4",
+        "postalCode": "87477",
+        "city": "Sulzberg",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+498376287"
+    },
+    {
+      "id": "6a222643-ff70-883e-8a4f-d78ab23aead0",
+      "name": "Forggenhof - Freizeithaus",
+      "address": {
+        "street": "Ussenburg",
+        "houseNumber": "73",
+        "postalCode": "87672",
+        "city": "Roßhaupten",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983678649310"
+    },
+    {
+      "id": "f822d3b8-49f9-8856-8233-faf060dc4d0c",
+      "name": "Beim Landhannes",
+      "address": {
+        "street": "Am Lechrain",
+        "houseNumber": "22",
+        "postalCode": "87645",
+        "city": "Schwangau",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983628349"
+    },
+    {
+      "id": "8ad0fd60-4136-86f9-b32c-223f13645883",
+      "name": "Dreimäderlhaus",
+      "address": {
+        "street": "Pfrontener Straße",
+        "houseNumber": "43",
+        "postalCode": "87629",
+        "city": "Füssen",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+49836291900"
+    },
+    {
+      "id": "adf17399-fd99-8708-9472-ee497a0656ae",
+      "name": "Pension Moser",
+      "address": {
+        "postalCode": "87659",
+        "city": "Hopferau",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+49836237192"
+    },
+    {
+      "id": "dcb331c2-8350-8372-b76e-0ace7ba1d72d",
+      "name": "Ferienhaus Berger",
+      "address": {
+        "street": "Ringweg",
+        "houseNumber": "3",
+        "postalCode": "87629",
+        "city": "Füssen",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+498362941288"
+    },
+    {
+      "id": "01a187fa-e356-83cf-9ca0-dccf78eca41f",
+      "name": "Pension Sabine",
+      "address": {
+        "street": "Konstanzer",
+        "houseNumber": "46",
+        "postalCode": "87534",
+        "city": "Oberstaufen",
+        "region": "Bayern",
+        "country": "DE"
+      },
+      "phone": "+4983251391"
+    }
+  ]
+}
