@@ -550,9 +550,9 @@ test('country banner expansion keeps complete creatives, excludes invalid/hidden
  const sameLegacy={...local,id:'different-legacy',target_url:'https://example.org/'};
  const pool=[row(extra,'campaign:extra'),row({...extra,imageUrl:'/wrong-duplicate.webp'},'campaign:extra'),row(sameLegacy,'legacy:https://example.org/'),row({...extra,id:'hidden',suppressed:true},'campaign:hidden'),row({...extra,id:'invalid',target_url:'javascript:alert(1)'},'campaign:invalid'),row({...extra,id:'missing',imageUrl:''},'campaign:missing')];
  const original=JSON.stringify({local,pool});
- assert.deepEqual(destinationBanners([local],pool),[local,extra]);
+ assert.deepEqual(destinationBanners([local],pool),[extra]);
  assert.equal(JSON.stringify({local,pool}),original);
- assert.deepEqual(destinationBanners([local],[]),[local]);
+ assert.deepEqual(destinationBanners([local],[]),[]);
  assert.deepEqual(destinationBanners([{...extra,suppressed:true}],pool.filter(item=>item.ad.id!=='different-legacy')),[]);
 });
 
@@ -585,11 +585,11 @@ test('destination details reuse premium motto rows and end directly with country
 
 test('homepage selects exactly five unique banners per row while keeping assigned creatives and immutable public sources',async()=>{
  const {homeBannerRows}=await import('../src/lib/home-banner-selection.ts');
- const slots=['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sidebar_05','sidebar_06'];
+ const slots=['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sidebar_05','sidebar_06','sidebar_07','sidebar_08','sidebar_09','sidebar_10'];
  const local=slots.map((placement,i)=>({id:'home-'+i,placement,source:'campaign',imageUrl:'/home-'+i+'.webp',headline:'Home '+i,target_url:'https://example.org/'+i}));
  const pool=Array.from({length:8},(_,i)=>({banner_key:'campaign:pool-'+i,ad:{id:'pool-'+i,placement:'sidebar_top',source:'campaign',imageUrl:'/pool-'+i+'.webp',headline:'Pool '+i,target_url:'https://pool.example/'+i}}));
- const before=JSON.stringify({local,pool});const rows=homeBannerRows(local,pool);
+ const before=JSON.stringify({local,pool});const rows=homeBannerRows(local);
  assert.deepEqual(rows.map(row=>row.length),[5,5]);assert.equal(new Set(rows.flat().map(ad=>ad.id)).size,10);
- assert.deepEqual(rows[0].slice(0,3),local.slice(0,3));assert.deepEqual(rows[1].slice(0,3),local.slice(3));
- assert.equal(JSON.stringify({local,pool}),before);assert.deepEqual(homeBannerRows([],[]),[[],[]]);
+ assert.deepEqual(rows[0].slice(0,3),local.slice(0,3));assert.deepEqual(rows[1].slice(0,3),local.slice(3,6));
+ assert.equal(JSON.stringify({local,pool}),before);assert.deepEqual(homeBannerRows([]),[[],[]]);
 });

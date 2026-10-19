@@ -42,7 +42,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     basicIntegrationEnabled() ? loadBasicMapLocations() : Promise.resolve([]),
   ]);
   const featured = selectHomeStays(directory.database, randomUUID());
-  const bannerRows = homeBannerRows(ads, searchBanners.banners);
+  const bannerRows = homeBannerRows(ads);
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
@@ -50,7 +50,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <TravelQuicklinks className={`container ${styles.quicklinks}`} />
 
-    <HomeBannerGroup ads={ads} placements={["sidebar_top", "sidebar_middle", "sidebar_bottom"]} sliderAds={bannerRows[0]} label="Anzeigen vor den Themenwelten" />
+    <HomeBannerGroup ads={ads} placements={["sidebar_top", "sidebar_middle", "sidebar_bottom", "sidebar_07", "sidebar_08"]} sliderAds={bannerRows[0]} label="Anzeigen vor den Themenwelten" />
 
     <TravelNews />
 
@@ -60,7 +60,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <EuropeMap locations={[...companyMapLocations(directory.database, searchBanners.banners), ...basicLocations]} />
 
-    <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06"]} sliderAds={bannerRows[1]} label="Anzeigen nach den Reisezielen" />
+    <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06", "sidebar_09", "sidebar_10"]} sliderAds={bannerRows[1]} label="Anzeigen nach den Reisezielen" />
 
     <section className={`section container ${styles.stays}`} aria-labelledby="stays-title">
       <div className="section-heading"><div><p className="eyebrow">Ein guter Ort zum Ankommen</p><h2 id="stays-title">Ausgewählte Unterkünfte</h2></div>

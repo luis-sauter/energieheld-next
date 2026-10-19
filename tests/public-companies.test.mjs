@@ -386,7 +386,7 @@ test("profile ordering stays intact while old global banner order cannot move fi
   const html = renderToStaticMarkup(await DirectoryPage({ searchParams: Promise.resolve({}) }));
   assert.ok(html.indexOf(demos[1].name) < html.indexOf("Actual Firma"));
   const placements = [...html.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]);
-  assert.deepEqual(placements.slice(0, 4), ["top_banner", "sidebar_top", "sidebar_middle", "sidebar_bottom"]);
+  assert.deepEqual(placements, [], "retired static inventory cannot appear without managed campaigns");
   api([real], false, [], order, sidebar);
   assert.throws(
     () => TradePage({ params: Promise.resolve({ slug: "daemmung" }), searchParams: Promise.resolve({}) }),
@@ -395,7 +395,7 @@ test("profile ordering stays intact while old global banner order cannot move fi
   api([real], false, [], order, sidebar);
   const travel = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({}) }));
   const travelPlacements = [...travel.matchAll(/data-placement="([^"]+)"/g)].map((match) => match[1]);
-  assert.deepEqual(travelPlacements.slice(0, 4), ["sidebar_top", "sidebar_middle", "sidebar_bottom", "sidebar_04"]);
+  assert.deepEqual(travelPlacements, []);
   assert.ok(!travelPlacements.includes("top_banner"), "A–Z does not invent an empty public Premium above the finder");
 });
 
@@ -415,7 +415,7 @@ test("public persisted legacy deletion survives loading and cannot resurrect on 
   api([row], false, [], [], null, [], [{ placement: "sidebar_top",size: "small",legacy_hidden: true,legacy_target_url: null }]);
   const loaded = await loadPublicAds(undefined, "homepage");
   assert.equal(sidebarCreative("sidebar_top",loaded), undefined);
-  assert.equal(sidebarCreative("sidebar_middle",loaded).id, "haus-salzburg");
+  assert.equal(sidebarCreative("sidebar_middle",loaded), undefined);
   const workingFetch=globalThis.fetch;
   globalThis.fetch=(input,init)=>new URL(input).pathname.endsWith("ad_slot_presentations")
     ? Promise.resolve(new Response(JSON.stringify({message:"denied",code:"42501"}),{status:403})) : workingFetch(input,init);
@@ -450,7 +450,8 @@ test("public loader retries its existing columns when anon has no street grant",
 test("homepage shows real travel cards and distributes only homepage ads without changing their fixed slots", async () => {
   const basic = { ...row, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", slug: "basic-home", display_name: "Basic Home", package_type: "basic" };
   const premium = { ...row, id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", slug: "premium-home", display_name: "Premium Home", package_type: "premium" };
-  const requests = api([premium, basic, legacyRows[0]], false, [], [
+  const homeAds=['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sidebar_05','sidebar_06','sidebar_07','sidebar_08','sidebar_09','sidebar_10'].map((placement,i)=>({id:'home-'+i,placement,headline:'Current '+i,target_url:'https://example.org/'+i,image_path:'campaigns/home-'+i+'/creative/test.png'}));
+  const requests = api([premium, basic, legacyRows[0]], false, homeAds, [
     { profile_id: basic.id, sort_order: 0 },
     { profile_id: premium.id, sort_order: 1 },
   ]);
@@ -604,8 +605,8 @@ test("admin sees both inline order entries and the compact sidebar rail", async 
   }));
   assert.match(html, /Firmenreihenfolge bearbeiten/);
   assert.match(html, /Banner-Reihenfolge bearbeiten/);
-  assert.equal((html.match(/Freier Werbeplatz/g) ?? []).length, 1);
-  assert.equal((html.match(/data-sidebar-slot=/g) ?? []).length, 10);
+  assert.equal((html.match(/Freier Werbeplatz/g) ?? []).length, 0);
+  assert.equal((html.match(/data-sidebar-slot=/g) ?? []).length, 0, "retired legacy slots are not invented by reorder controls");
   assert.match(html, /Beispielprofil/);
   assert.doesNotMatch(html, /Banner-Bearbeitung aktiv|Firma .* nach oben/);
   api([row]);
@@ -669,7 +670,7 @@ test("public ads use one anonymous RPC and one signing batch; real cards are lab
   const empty = renderToStaticMarkup(
     await DirectoryPage({ searchParams: Promise.resolve({}) }),
   );
-  assert.match(empty, /Freier Werbeplatz/);
+  assert.doesNotMatch(empty, /Freier Werbeplatz|images\/legacy-ads/);
   assert.doesNotMatch(empty, /Demobanner/);
 });
 for (const status of ["approved", "draft", "pending", "rejected"])

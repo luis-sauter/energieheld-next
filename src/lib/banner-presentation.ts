@@ -42,15 +42,15 @@ export function legacyCreative(placement: AdPlacementId, source: AdPlacementId =
     banner_size: creative.size, image_width: creative.width, image_height: creative.height, legacy_source: source, mobile_image: creative.mobile };
 }
 // One resolver for public delivery and the admin's actual visible occupancy.
-export function presentedBanners(ads: ActiveAd[], presentations: BannerPresentation[], path = "/"): ActiveAd[] {
+export function presentedBanners(ads: ActiveAd[], presentations: BannerPresentation[], path = "/", allowLegacy = true): ActiveAd[] {
   const slots = ["top_banner", ...defaultSidebarOrder] as AdPlacementId[];
   const contents = slots.flatMap<ActiveAd>((placement) => {
     const setting = presentations.find((item) => item.placement === placement);
     const live = ads.find((ad) => ad.placement === placement);
     if (live?.image_path && !live.imageUrl) return [{ ...live, suppressed: true }];
     if (live) return [{ ...live, source: "campaign" as const, banner_size: setting?.size }];
-    if (setting?.legacy_hidden) return [{ id: `hidden:${placement}`, placement, headline: "", body_text: null,
-      target_url: "", image_path: null, suppressed: true, source: "hidden" as const, banner_size: setting.size }];
+    if (setting?.legacy_hidden || !allowLegacy) return [{ id: `hidden:${placement}`, placement, headline: "", body_text: null,
+      target_url: "", image_path: null, suppressed: true, source: "hidden" as const, banner_size: setting?.size }];
     const legacy = legacyCreative(placement, setting?.legacy_placement ?? placement, path);
     return legacy ? [{ ...legacy, banner_size: setting?.size ?? legacy.banner_size,
       target_url: setting?.legacy_target_url || legacy.target_url }]

@@ -67,26 +67,11 @@ test('reuse rejects a deleted source, an unknown ID and active sources requested
  }
 });
 
-test('curated legacy banner reuses real local image bytes and canonical target without accepting submitted source URLs',async()=>{
- const db=client({reuseId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'});
- const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:'legacy:/:top_banner',reuse_origin:'existing',confirmed:'yes',placement:'sidebar_12',source_url:'http://127.0.0.1/private'}));
- assert.ok(result.success,result.error);assert.equal(result.ad.status,'approved');assert.equal(result.ad.target_url,'https://www.neue-schaenke.de/');
- assert.ok(db.calls.some(c=>c.upload));assert.ok(!db.calls.some(c=>c.rpc==='admin_ad_lifecycle'));
-});
-
-test('hosted legacy reuse reads only curated assets from the pinned HTTPS Netlify deploy with bounded fetch',async()=>{
- const originalFetch=globalThis.fetch, old=process.env.BANNER_ASSET_ORIGIN;const requests=[];
- try {
- process.env.BANNER_ASSET_ORIGIN='https://exact-deploy--portal.netlify.app';
- const bytes=await (await import('node:fs/promises')).readFile('public/images/legacy-ads/reconciled/367.jpg');
- globalThis.fetch=async(url,options)=>{requests.push([String(url),options]);return new Response(bytes,{headers:{'content-length':String(bytes.length)}});};
- const db=client({reuseId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'});
- assert.ok((await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:'legacy:/:top_banner',confirmed:'yes',placement:'sidebar_12'}))).success);
- assert.equal(requests[0][0],'https://exact-deploy--portal.netlify.app/images/legacy-ads/reconciled/367.jpg');assert.equal(requests[0][1].redirect,'error');assert.ok(requests[0][1].signal);
- process.env.BANNER_ASSET_ORIGIN='http://127.0.0.1';const bad=client();
- assert.ok((await reuseInlineAd(bad,'/reiseziele/schweiz',form({archived_id:'legacy:/:top_banner',confirmed:'yes',placement:'sidebar_12'}))).error);
- assert.equal(requests.length,1);assert.ok(!bad.calls.some(c=>c.rpc==='create_editorial_ad_campaign'));
- } finally {globalThis.fetch=originalFetch;if(old===undefined)delete process.env.BANNER_ASSET_ORIGIN;else process.env.BANNER_ASSET_ORIGIN=old;}
+test('retired static banner IDs are rejected before any source fetch, upload or campaign creation',async()=>{
+ for(const archived_id of ['legacy:/:top_banner','legacy:/mottoreisen/natur-pur:sidebar_top']) {
+ const db=client();const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id,confirmed:'yes',placement:'sidebar_12'}));
+ assert.ok(result.error);assert.ok(!db.calls.some(c=>c.rpc==='create_editorial_ad_campaign'||c.upload||c.download));
+ }
 });
 
 test('shared/company metadata edits use only the admin metadata RPC after page/source authorization', async()=>{

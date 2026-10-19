@@ -18,7 +18,7 @@ function row(id,status,archived_at=null){return {id,status,archived_at,is_editor
 function setup(rows){globalThis.inlineLifecycleAdmin=true;globalThis.inlineLifecycleSigned=[];globalThis.inlineLifecycleClient={from(){return {select(){return this},order:async()=>({data:rows,error:null})}},rpc:async()=>({data:[],error:null})};}
 test('archived approved and pending banners do not occupy inline slots after reload or receive media URLs',async()=>{
  setup([row('archived-approved','approved','2026-10-06'),row('archived-pending','pending','2026-10-06')]);
- const options=await loadInlineBannerOptions('/reiseziele/schweiz');assert.ok(options);assert.equal(options.error,undefined);assert.deepEqual(options.banners.filter(b=>b.source==='campaign'),[]);assert.equal(options.availability.sidebar_12,undefined);assert.deepEqual(globalThis.inlineLifecycleSigned,[]);assert.ok(options.banners.some(b=>b.source==='legacy'),'historic fallback remains available');
+ const options=await loadInlineBannerOptions('/reiseziele/schweiz');assert.ok(options);assert.equal(options.error,undefined);assert.deepEqual(options.banners.filter(b=>b.source==='campaign'),[]);assert.equal(options.availability.sidebar_12,undefined);assert.deepEqual(globalThis.inlineLifecycleSigned,[]);assert.ok(!options.banners.some(b=>b.source==='legacy'),'retired fallback never returns');
  assert.deepEqual(options.archived.map(b=>b.id),['archived-approved','archived-pending']);assert.equal(typeof options.archive,'function');assert.equal(typeof options.reuse,'function');
 });
 test('current approved and editable draft banners retain the existing inline behavior; non-admin gets no controls',async()=>{

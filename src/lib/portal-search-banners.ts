@@ -13,10 +13,7 @@ export function bannerSearchIdentity(ad: Pick<ActiveAd, 'source' | 'id' | 'targe
   return ad.source === 'legacy' ? legacyBannerKey(ad.target_url) : `campaign:${ad.id}`;
 }
 export function legacySearchCatalog(): SearchDocument[] {
-  return Object.entries(legacyBannerPages).flatMap(([path, banners]) => banners.map(banner => ({
-    id: bannerSearchIdentity({ source: 'legacy', id: banner.id, target_url: banner.targetUrl }),
-    type: 'ad', title: banner.alt, body: inlineAdContext(path)?.label ?? '', url: banner.targetUrl, context: path,
-  })));
+  return [];
 }
 // Public search and travel results share delivery resolution and canonical identity.
 export function publicBannerCreatives(ads: SearchAdSource[], presentations: SearchPresentation[], metadata?: BannerSearchData[]) {
@@ -25,7 +22,7 @@ export function publicBannerCreatives(ads: SearchAdSource[], presentations: Sear
     const context = inlineAdContext(path, true);
     if (!context) return [];
     const sources = ads.filter(ad => ad.path === path).map(ad => ({ ...ad, imageUrl: ad.image_path && ad.image_available !== false ? ad.imageUrl ?? 'public-creative' : undefined }));
-    return presentedBanners(sources, presentations.filter(row => row.path === path), path).flatMap(ad => {
+    return presentedBanners(sources, presentations.filter(row => row.path === path), path, false).flatMap(ad => {
       if (ad.suppressed || !ad.headline.trim() || !/^https?:\/\//i.test(ad.target_url)) return [];
       const original = ad.source === 'legacy' ? legacyBannerPages[path]?.find(row => row.id === ad.id)?.targetUrl : undefined;
       const identity = bannerSearchIdentity({ ...ad, target_url: original ?? ad.target_url });

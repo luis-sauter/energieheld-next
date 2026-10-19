@@ -42,7 +42,7 @@ export async function loadInlineBannerOptions(path: string): Promise<InlineBanne
     const pageCampaigns = signed.flatMap((row) => row.targets.filter((target) => matchesInlineAdContext(target, context))
       .map((target) => ({ ...row, placement: target.placement })))
       .sort((a, b) => Number(b.status === "approved") - Number(a.status === "approved"));
-    const visible = presentedBanners(pageCampaigns.filter((row) => row.status === "approved"), settings.rows, path);
+    const visible = presentedBanners(pageCampaigns.filter((row) => row.status === "approved"), settings.rows, path, false);
     const legacy = visible.filter((row) => row.source === "legacy");
     const legacyKey = (id: string) => legacyBannerKey(legacyBannerPages[path].find(row => row.id === id)!.targetUrl);
     const metadata = await loadBannerMetadata(client, [...rows.map(row => `campaign:${row.id}`), ...legacy.map(row => legacyKey(row.id))]);

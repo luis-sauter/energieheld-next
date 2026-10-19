@@ -22,6 +22,15 @@ vm.runInNewContext(transpileModule(file,{compilerOptions:{module:ModuleKind.Comm
  throw Error(name);
 }});
 const render=(ads,placements,adminOnly=false)=>renderToStaticMarkup(createElement(loaded.exports.HomeBannerGroup,{ads,placements,adminOnly,label:'Existing banners'}));
+
+test('admin retains an add action for an emptied fifth slider slot without resurrecting static banners',()=>{
+ const placements=['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_07','sidebar_08'];const ads=placements.slice(0,4).map(slot=>ad(slot));
+ inline={overrides:{}};
+ let html=renderToStaticMarkup(createElement(loaded.exports.HomeBannerGroup,{ads,placements,sliderAds:ads,label:'Managed row'}));
+ assert.equal((html.match(/data-placement=/g)||[]).length,5);assert.match(html,/Admin empty slot/);
+ inline=null;html=renderToStaticMarkup(createElement(loaded.exports.HomeBannerGroup,{ads,placements,sliderAds:ads,label:'Managed row'}));
+ assert.equal((html.match(/data-placement=/g)||[]).length,4);assert.doesNotMatch(html,/Admin empty slot/);
+});
 test('empty or suppressed public groups produce no container, placeholder or whitespace section',()=>{
  inline=null;assert.equal(render([],slots.slice(0,3)),'');assert.equal(render([{...ad(slots[0]),suppressed:true}],slots.slice(0,3)),'');assert.equal(render([],['top_banner']),'');
 });

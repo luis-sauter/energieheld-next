@@ -8,13 +8,14 @@ const { searchQuery, normalizeSearch, matchSearchDocument, mergeSearchHits, sear
 const { publicBannerSearch } = await import('../src/lib/portal-search-banners.ts');
 const { legacyBannerPages } = await import('../src/data/legacy-banner-pages.ts');
 
-test('central banner metadata uses DB FTS, deduplicates shared legacy identity and preserves URL overrides',()=>{
- const key='legacy:https://city-apart-dresden.de/';
+test('central banner metadata uses DB FTS and deduplicates shared managed campaigns without historical fallback',()=>{
+ const key='campaign:managed';
  const metadata=['/','/unterkuenfte-a-z'].map(path=>({banner_key:key,name:'Öffentlicher neuer Name',body:'Reisekontext',postal_code:'80331',city:'München',categories:'Wellness Familie',path,target_url:'https://city-apart-dresden.de/',rank:150}));
  const settings=[{path:'/',placement:'sidebar_top',size:'large',legacy_hidden:false,legacy_target_url:'https://city-apart-dresden.de/new'}];
- const hits=mergeSearchHits(publicBannerSearch([],settings,'80331 München',[],metadata));
+ const ads=['/','/unterkuenfte-a-z'].map(path=>({id:'managed',path,placement:'sidebar_top',headline:'Current',body_text:'',target_url:'https://current.example/',image_path:'campaigns/managed/creative/current.png',imageUrl:'https://media.example/current.png',rank:150}));
+ const hits=mergeSearchHits(publicBannerSearch(ads,settings,'80331 München',[],metadata));
  assert.equal(hits.length,1);assert.equal(hits[0].title,'Öffentlicher neuer Name');assert.match(hits[0].excerpt,/München/);
- assert.deepEqual(publicBannerSearch([],settings,'Old name',[],metadata.map(row=>({...row,rank:0}))),[]);
+ assert.deepEqual(publicBannerSearch(ads,settings,'Old name',[],metadata.map(row=>({...row,rank:0}))),[]);
  assert.deepEqual(publicBannerSearch([],settings,'City Apart',[],[]),[],'no stale static name leaks when DB says not visible');
 });
 
@@ -45,10 +46,10 @@ test('generated editorial catalog follows actual JSX rather than independently m
   for (const entry of [...travelThemes, ...destinations]) assert.ok(matchSearchDocument({ id: entry.slug, title: entry.title, body: entry.intro, url: entry.slug, type: 'page' }, entry.title));
 });
 
-test('legacy banners use actual public resolution, hiding, replacement and page-specific display mappings', () => {
+test('retired legacy banners stay absent even with old metadata, overrides or page-specific display mappings', () => {
   const rows = [];
   const results = mergeSearchHits(publicBannerSearch([], rows, 'City Apart Dresden'));
-  assert.equal(results.length, 1); assert.equal(results[0].type, 'ad'); assert.equal(results[0].external, true);
+  assert.equal(results.length, 0);
   const all = Object.entries(legacyBannerPages).flatMap(([path, banners]) => banners.filter(b => b.alt.includes('City Apart')).map(b => ({ path, placement: b.placement, size: b.size, legacy_hidden: true, legacy_target_url: null })));
   assert.deepEqual(publicBannerSearch([], all, 'City Apart Dresden'), []);
   const path = '/';
@@ -56,8 +57,8 @@ test('legacy banners use actual public resolution, hiding, replacement and page-
   const campaign = { id: 'existing', path, placement: 'sidebar_top', headline: 'Neue Schänke', body_text: null, target_url: 'https://www.neue-schaenke.de/', image_path: null, rank: 0 };
   const replacements = legacyBannerPages[path].filter(banner => banner.alt.includes('City Apart')).map(banner => ({ ...campaign, id: banner.id, placement: banner.placement }));
   assert.deepEqual(publicBannerSearch(replacements, settings, 'City Apart Dresden'), []);
-  assert.ok(mergeSearchHits(publicBannerSearch([], [], 'Neue Schänke')).length > 0);
-  assert.ok(publicBannerSearch([], [], 'Natur pur').length > 0);
+  assert.deepEqual(publicBannerSearch([], [], 'Neue Schänke'), []);
+  assert.deepEqual(publicBannerSearch([], [], 'Natur pur'), []);
 });
 
 test('SSR search UI, noindex follow, ad links and gated bounded providers retain independent finder', async () => {
