@@ -280,7 +280,7 @@ export function useInlineAdminMedia({ saveAction, media, rows, profileName, init
               objectPosition: `${crop.focus_x}% ${crop.focus_y}%`, transform: `scale(${crop.zoom})`,
               transformOrigin: `${crop.focus_x}% ${crop.focus_y}%` }} />
           </div>
-          <label>Zoom {Math.round(crop.zoom * 100)} %<input type="range" min="1" max="3" step="0.05" value={crop.zoom}
+          <label>Zoom {Math.round(crop.zoom * 100)} %<input type="range" min="1" max="3" step="0.01" value={crop.zoom}
             onChange={(event) => setCrop((old) => ({ ...old, zoom: Number(event.target.value) }))} /></label>
           <button type="button" className="button" onClick={() => setCrop({ ...DEFAULT_IMAGE_CROP })}>Ausschnitt zurücksetzen</button>
         </div>}

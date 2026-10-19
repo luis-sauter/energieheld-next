@@ -54,13 +54,15 @@ export function ImageCropControls({ crop, setCrop, ratio, alt, disabled = false,
       </div>
       <div className={styles.cropZoom} role="group" aria-label="Zoom">
         <button type="button" className="button" aria-label="Zoom verringern" disabled={disabled || crop.zoom <= 1}
-          onClick={() => setCrop((old) => zoomImageCrop(old, -0.1))}>Zoom −</button>
+          onClick={() => setCrop((old) => zoomImageCrop(old, -0.01))}>Zoom −</button>
         <label>Zoom {Math.round(crop.zoom * 100)} %
-          <input type="range" min="1" max="3" step="0.05" value={crop.zoom} disabled={disabled}
+          <input type="range" min="1" max="3" step="0.01" value={crop.zoom} disabled={disabled}
             aria-label="Bildzoom" onChange={(event) => setCrop((old) => ({ ...old, zoom: Number(event.target.value) }))} />
         </label>
+        <label>Zoom in Prozent<input type="number" min="100" max="300" step="1" value={Math.round(crop.zoom * 100)} disabled={disabled}
+          onChange={event => { const value = event.target.valueAsNumber; if (Number.isInteger(value) && value >= 100 && value <= 300) setCrop(old => ({ ...old, zoom: value / 100 })); }} /></label>
         <button type="button" className="button" aria-label="Zoom erhöhen" disabled={disabled || crop.zoom >= 3}
-          onClick={() => setCrop((old) => zoomImageCrop(old, 0.1))}>Zoom +</button>
+          onClick={() => setCrop((old) => zoomImageCrop(old, 0.01))}>Zoom +</button>
       </div>
       <button type="button" className="button" disabled={disabled}
         onClick={() => setCrop(centerImageCrop)}>Zentrieren</button>

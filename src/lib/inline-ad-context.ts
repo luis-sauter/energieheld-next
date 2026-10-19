@@ -61,6 +61,7 @@ export type InlineBannerOptions = {
   error?: string;
   terms?: import('./banner-search-metadata').BannerSearchTerm[];
   archived?: { id: string; name: string }[];
+  reusable?: { id: string; name: string; archived: boolean }[];
   archive?: (form: FormData) => Promise<InlineBannerResult>;
   reuse?: (form: FormData) => Promise<InlineBannerResult>;
   saveCrop?: (form: FormData) => Promise<InlineBannerResult>;

@@ -28,10 +28,65 @@ test('archive insertion copies existing media independently, selects only this n
  const copyId='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
  const db=client({reuseId:copyId,metadata:{postal_code:'12345',city:'QA Ort',term_keys:['theme:wellnessangebote']},campaign:{archived_at:'2026-10-06',lifecycle_group_id:null,is_editorial:true,targets:[target(),target('reiseziele/deutschland','sidebar_top')]}}),before=structuredClone(db.row);
  const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:id,confirmed:'yes',placement:'sidebar_12',size:'small'}));
- assert.ok(result.success,result.error);assert.equal(result.ad.id,copyId);assert.equal(result.ad.placement,'sidebar_12');assert.deepEqual(db.calls.find(c=>c.original).original,before);
+ assert.ok(result.success,result.error);assert.equal(result.ad.status,'approved');assert.equal(result.ad.id,copyId);assert.equal(result.ad.placement,'sidebar_12');assert.deepEqual(db.calls.find(c=>c.original).original,before);
  const saves=db.calls.filter(c=>c.rpc==='save_ad_campaign');assert.ok(saves.length);for(const save of saves){assert.equal(save.data.p_campaign_id,copyId);assert.deepEqual(save.data.p_data.targets,[target('reiseziele/schweiz','sidebar_12')]);assert.equal(save.data.p_data.requested_start_date,berlinToday());}
  assert.ok(db.calls.find(c=>c.upload).upload.startsWith(`campaigns/${copyId}/creative/`));assert.equal(db.calls.find(c=>c.upload).upsert,false);assert.ok(!db.calls.some(c=>c.remove));
  const metadataSave=db.calls.find(c=>c.rpc==='save_ad_banner_search_assignment');assert.equal(metadataSave.data.p_postal_code,'12345');assert.equal(metadataSave.data.p_city,'QA Ort');assert.deepEqual(metadataSave.data.p_term_keys,['theme:wellnessangebote']);assert.equal(result.metadata.city,'QA Ort');
+});
+
+test('existing active creative can be inserted repeatedly on another page without archiving or altering its booking',async()=>{
+ for(let i=0;i<2;i++) {
+ const db=client({reuseId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',campaign:{is_editorial:false,archived_at:null}}), before=structuredClone(db.row);
+ const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:id,reuse_origin:'existing',confirmed:'yes',placement:'sidebar_12',size:'small'}));
+ assert.ok(result.success,result.error);assert.equal(result.ad.status,'approved');assert.deepEqual(db.calls.find(c=>c.original).original,before);
+ assert.ok(!db.calls.some(c=>c.rpc==='admin_ad_lifecycle'));assert.equal(db.row.is_editorial,true);
+ }
+});
+
+test('copy publication failure is an error with a recoverable draft ID, never a false success or source archive',async()=>{
+ const copyId='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+ const db=client({reuseId:copyId,reviewError:'conflict'});
+ const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:id,confirmed:'yes',placement:'sidebar_12'}));
+ assert.ok(result.error);assert.equal(result.success,undefined);assert.equal(result.campaignId,copyId);
+ assert.ok(!db.calls.some(c=>c.rpc==='admin_ad_lifecycle'));
+});
+
+test('reuse binds a persisted source crop to the independent copied media reference',async()=>{
+ const crop={focus_x:25,focus_y:75,zoom:1.02};
+ const db=client({reuseId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',settings:[{placement:'top_banner',legacy_hidden:true,size:'small',crop_reference:`campaign:${id}:${image}`,...crop}]});
+ const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:id,confirmed:'yes',placement:'sidebar_12'}));
+ assert.ok(result.success,result.error);assert.deepEqual(result.ad.crop,crop);
+ const rpc=db.calls.find(c=>c.rpc==='save_inline_ad_crop');assert.equal(rpc.data.p_zoom,1.02);assert.match(rpc.data.p_reference,/^campaign:cccccccc-cccc-4ccc-8ccc-cccccccccccc:/);
+ assert.ok(db.calls.some(c=>c.table==='company_ad_campaigns'&&c.columns.includes('targets:company_ad_campaign_targets')));
+});
+
+test('reuse rejects a deleted source, an unknown ID and active sources requested as archives before creating anything',async()=>{
+ for(const [campaign,values] of [[{deletion_requested_at:'2026-10-19'},{}],[{},{archived_id:'unknown'}],[{},{reuse_origin:'archive'}]]) {
+ const db=client({campaign});const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:id,confirmed:'yes',placement:'sidebar_12',...values}));
+ assert.ok(result.error);assert.ok(!db.calls.some(c=>c.rpc==='create_editorial_ad_campaign'));
+ }
+});
+
+test('curated legacy banner reuses real local image bytes and canonical target without accepting submitted source URLs',async()=>{
+ const db=client({reuseId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'});
+ const result=await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:'legacy:/:top_banner',reuse_origin:'existing',confirmed:'yes',placement:'sidebar_12',source_url:'http://127.0.0.1/private'}));
+ assert.ok(result.success,result.error);assert.equal(result.ad.status,'approved');assert.equal(result.ad.target_url,'https://www.neue-schaenke.de/');
+ assert.ok(db.calls.some(c=>c.upload));assert.ok(!db.calls.some(c=>c.rpc==='admin_ad_lifecycle'));
+});
+
+test('hosted legacy reuse reads only curated assets from the pinned HTTPS Netlify deploy with bounded fetch',async()=>{
+ const originalFetch=globalThis.fetch, old=process.env.BANNER_ASSET_ORIGIN;const requests=[];
+ try {
+ process.env.BANNER_ASSET_ORIGIN='https://exact-deploy--portal.netlify.app';
+ const bytes=await (await import('node:fs/promises')).readFile('public/images/legacy-ads/reconciled/367.jpg');
+ globalThis.fetch=async(url,options)=>{requests.push([String(url),options]);return new Response(bytes,{headers:{'content-length':String(bytes.length)}});};
+ const db=client({reuseId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'});
+ assert.ok((await reuseInlineAd(db,'/reiseziele/schweiz',form({archived_id:'legacy:/:top_banner',confirmed:'yes',placement:'sidebar_12'}))).success);
+ assert.equal(requests[0][0],'https://exact-deploy--portal.netlify.app/images/legacy-ads/reconciled/367.jpg');assert.equal(requests[0][1].redirect,'error');assert.ok(requests[0][1].signal);
+ process.env.BANNER_ASSET_ORIGIN='http://127.0.0.1';const bad=client();
+ assert.ok((await reuseInlineAd(bad,'/reiseziele/schweiz',form({archived_id:'legacy:/:top_banner',confirmed:'yes',placement:'sidebar_12'}))).error);
+ assert.equal(requests.length,1);assert.ok(!bad.calls.some(c=>c.rpc==='create_editorial_ad_campaign'));
+ } finally {globalThis.fetch=originalFetch;if(old===undefined)delete process.env.BANNER_ASSET_ORIGIN;else process.env.BANNER_ASSET_ORIGIN=old;}
 });
 
 test('shared/company metadata edits use only the admin metadata RPC after page/source authorization', async()=>{
@@ -83,6 +138,7 @@ const form = (values = {}) => {
 
 function client({ authenticated = true, admin = true, campaign = {}, saveError = null, reviewError = null, removeError = null, settings = [], active = [], reuseId = null, metadata = null } = {}) {
   const calls = [];
+  const uploadedFiles = new Map();
   const row = { id, is_editorial: false, profile_id: "existing-company", status: "approved", image_path: image,
     internal_name: "Existing", headline: "Existing image alt", body_text: "Existing text", target_url: "https://example.org/old",
     requested_start_date: "2026-09-01", requested_end_date: "2026-12-31", approved_start_date: "2026-09-01", approved_end_date: "2026-12-31",
@@ -94,7 +150,7 @@ function client({ authenticated = true, admin = true, campaign = {}, saveError =
       return { select(columns) { call.columns = columns; return this; }, eq(key, value) { call.filters.push([key,value]); return this; },
         is(key,value) { call.filters.push([key,value]); return this; },
         not(key,operator,value) { call.filters.push([key,operator,value]); return this; },in(key,value) { call.filters.push([key,value]); return this; },order(){return this;},
-        then(resolve) { const data=table==='ad_slot_presentations'?settings:metadata&&table==='ad_banner_search_metadata'?[{banner_key:`campaign:${reuseId}`,postal_code:metadata.postal_code,city:metadata.city}]:metadata&&table==='ad_banner_search_terms'?metadata.term_keys.map(term_key=>({banner_key:`campaign:${reuseId}`,term_key})):[];return Promise.resolve({ data, error: null }).then(resolve); },
+        then(resolve) { const data=table==='ad_slot_presentations'?settings:metadata&&table==='ad_banner_search_metadata'?[{banner_key:`campaign:${id}`,postal_code:metadata.postal_code,city:metadata.city}]:metadata&&table==='ad_banner_search_terms'?metadata.term_keys.map(term_key=>({banner_key:`campaign:${id}`,term_key})):[];return Promise.resolve({ data, error: null }).then(resolve); },
         async maybeSingle() { return { data: table === "portal_admins" ? admin ? { user_id: "verified-admin" } : null : structuredClone(row), error: null }; } };
     },
     async rpc(name, data) {
@@ -113,10 +169,11 @@ function client({ authenticated = true, admin = true, campaign = {}, saveError =
         return { data: previous, error: null };
       }
       if (name === "create_editorial_ad_campaign") {
+        if(reuseId){calls.push({original:structuredClone(row)});row.id=reuseId;row.archived_at=null;}
         Object.assign(row, { is_editorial: true, profile_id: null, status: "draft", image_path: null, internal_name: "", headline: "",
           requested_start_date: berlinToday(), requested_end_date: berlinToday(), approved_start_date: null, approved_end_date: null,
           targets: [{ target_type: data.p_target_type, target_key: data.p_target_key, category_id: null, placement: data.p_placement }] });
-        return { data: id, error: null };
+        return { data: reuseId ?? id, error: null };
       }
       if (name === "save_ad_campaign") {
         if (saveError) return { error: saveError };
@@ -131,9 +188,9 @@ function client({ authenticated = true, admin = true, campaign = {}, saveError =
     storage: { from(bucket) {
       calls.push({ bucket });
       return {
-        async download(path) { calls.push({ download: path }); return { data: new Blob([Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jv1EAAAAASUVORK5CYII=", "base64")], { type: "image/png" }), error: null }; },
+        async download(path) { calls.push({ download: path }); return { data: uploadedFiles.get(path) ?? new Blob([Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jv1EAAAAASUVORK5CYII=", "base64")], { type: "image/png" }), error: null }; },
         async remove(paths) { calls.push({ remove: paths }); return { error: null }; },
-        async upload(path,blob,options) {calls.push({upload:path,upsert:options.upsert});return {error:null};},
+        async upload(path,blob,options) {uploadedFiles.set(path,blob);calls.push({upload:path,upsert:options.upsert});return {error:null};},
         async createSignedUrls(paths) { calls.push({ sign: paths }); return { data: paths.map((path) => ({ path, signedUrl: `https://private.example.org/${path}` })), error: null }; },
       };
     } },

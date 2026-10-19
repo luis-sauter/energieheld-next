@@ -43,7 +43,7 @@ test('archive choice replaces new-upload fields and inserts chosen archived bann
  const select=find(tree,n=>n.type==='select'&&n.props.required);select.props.onChange({target:{value:'original'}});
  tree=render(props);assert.equal(find(tree,n=>n.type==='input'&&n.props.type==='checkbox'),undefined);
  await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});
- assert.deepEqual(calls,[{archived_id:'original',placement:'sidebar_12',size:'large',confirmed:'yes'}]);assert.equal(inserted.ad.id,'copy');assert.equal(inserted.metadata.city,'Ort');
+ assert.deepEqual(calls,[{archived_id:'original',placement:'sidebar_12',size:'large',confirmed:'yes',reuse_origin:'archive'}]);assert.equal(inserted.ad.id,'copy');assert.equal(inserted.metadata.city,'Ort');
 });
 test('legacy archive copies only verified displayed media via existing upload/save/crop then existing archive action',async()=>{
  states=[];const calls=[],originalFetch=globalThis.fetch;
@@ -57,6 +57,18 @@ test('legacy archive copies only verified displayed media via existing upload/sa
  const confirmation=new FormData();confirmation.set('confirmed','yes');assert.ok((await action(confirmation)).success);
  assert.deepEqual(calls.map(c=>c[0]),['fetch','prepare','upload','save','crop','archive']);assert.equal(calls[1][1].legacy_id,'legacy-source');assert.equal(calls[2][3],false);assert.equal(calls.at(-1)[1].campaign_id,'copy');assert.equal(calls.at(-1)[1].legacy_id,undefined);assert.equal(calls.at(-2)[1].focus_x,'20');
  }finally{globalThis.fetch=originalFetch;delete globalThis.inlineArchiveMedia;}
+});
+
+test('existing-banner picker uses the same insertion action and exposes a recoverable draft without duplicating on retry',async()=>{
+ states=[];const calls=[];
+ const props={selected:{placement:'sidebar_12'},options:{label:'Schweiz',availability:{},reusable:[{id:'existing',name:'Vorhandenes Banner',archived:false}],reuse:async form=>{calls.push(Object.fromEntries(form));return {error:'Veröffentlichung fehlgeschlagen',campaignId:'saved-copy'};}},onSaved(){throw Error('No false success');},onClose(){}};
+ let tree=render(props);nodes(tree).filter(n=>n.type==='input'&&n.props.type==='radio')[2].props.onChange();
+ tree=render(props);find(tree,n=>n.type==='select'&&n.props.required).props.onChange({target:{value:'existing'}});
+ await find(render(props),n=>n.type==='form').props.onSubmit({preventDefault(){}});
+ assert.equal(calls[0].reuse_origin,'existing');assert.equal(calls[0].archived_id,'existing');
+ tree=render(props);assert.equal(find(tree,n=>n.props?.href==='/admin/werbung/saved-copy').props.children,'Gespeicherten Entwurf öffnen');
+ assert.equal(find(tree,n=>n.type==='button'&&n.props.type==='submit').props.disabled,true);
+ await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});assert.equal(calls.length,1);
 });
 test('categories start collapsed, count selected values, retain multiple choices through closing/re-render/reload',()=>{
  const terms=Array.from({length:50},(_,i)=>({term_key:'theme:t'+i,label:'Thema '+i,dimension:'theme'}));
@@ -80,9 +92,12 @@ test('shared profile/banner crop controls execute pan, arrows, zoom, center and 
  frame.props.onPointerDown({pointerType:'touch',pointerId:1,clientX:0,clientY:0,currentTarget:target,preventDefault(){}});
  frame.props.onPointerMove({pointerId:1,clientX:35,clientY:-12,currentTarget:target});assert.equal(crop.focus_x,30);assert.equal(crop.focus_y,70);
  frame.props.onPointerUp({pointerId:1,clientX:35,clientY:-12,currentTarget:target});
- tree=render();find(tree,n=>n.props?.['aria-label']==='Zoom erhöhen').props.onClick();assert.equal(crop.zoom,1.1);
- tree=render();find(tree,n=>n.type==='button'&&n.props.children==='Zentrieren').props.onClick();assert.deepEqual(crop,{focus_x:50,focus_y:50,zoom:1.1});
+ tree=render();find(tree,n=>n.props?.['aria-label']==='Zoom erhöhen').props.onClick();assert.equal(crop.zoom,1.01);
+ tree=render();find(tree,n=>n.type==='button'&&n.props.children==='Zentrieren').props.onClick();assert.deepEqual(crop,{focus_x:50,focus_y:50,zoom:1.01});
  tree=render();find(tree,n=>n.props?.['aria-label']==='Bild nach rechts').props.onClick();assert.equal(crop.focus_x,45);
+ tree=render();find(tree,n=>n.type==='input'&&n.props.type==='number').props.onChange({target:{valueAsNumber:103}});assert.equal(crop.zoom,1.03);
+ find(render(),n=>n.type==='input'&&n.props.type==='number').props.onChange({target:{valueAsNumber:301}});assert.equal(crop.zoom,1.03);
+ assert.equal(find(render(),n=>n.type==='input'&&n.props.type==='range').props.step,'0.01');
  tree=render();find(tree,n=>n.type==='button'&&n.props.children==='Zurücksetzen').props.onClick();assert.deepEqual(crop,{focus_x:50,focus_y:50,zoom:1});
  assert.ok(nodes(render(true)).filter(n=>n.type==='button').every(n=>n.props.disabled));
 });
@@ -141,13 +156,13 @@ test('crop save failure reports error and does not close or claim success',async
 });
 
 
-test('loaded draft exposes truthful status, ordinary save preserves it, explicit publish uses existing save; cancel writes nothing',async()=>{
+test('editorial draft save publishes via existing guarded save; cancel writes nothing',async()=>{
  states=[];const calls=[];let saved,closed=false;
  const banner={id:'existing',source:'campaign',placement:'sidebar_top',imageUrl:'/existing.png',target_url:'https://example.org',size:'small',shared:false,editorial:true,status:'draft',requested_start_date:'2026-10-10',requested_end_date:'9999-12-31',updated_at:'saved-version',metadata:{name:'Höflehner',postal_code:'',city:'',term_keys:['theme:natur']}};
  const props={selected:{placement:banner.placement,banner},options:{label:'Startseite',banners:[banner],availability:{},saveMetadata:async form=>{calls.push({metadata:Object.fromEntries(form)});return{success:'ok'};},save:async form=>{calls.push({save:Object.fromEntries(form)});return{success:'ok',ad:{...banner,status:'approved'}};}},onSaved:ad=>saved=ad,onMetadataSaved(){},onClose(){closed=true;}};
  let tree=render(props);assert.match(renderToStaticMarkup(tree),/Entwurf – nicht öffentlich/);
  const publish=find(tree,n=>n.type==='button'&&n.props.value==='publish');assert.ok(publish);
- await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});assert.ok(calls[0].metadata);assert.equal(calls[0].metadata.intent,undefined);
+ await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});assert.equal(calls[0].save.intent,'publish');assert.equal(saved.status,'approved');
  await find(render(props),n=>n.type==='form').props.onSubmit({preventDefault(){},nativeEvent:{submitter:{value:'publish'}}});
  assert.equal(calls[1].save.intent,'publish');assert.equal(calls[1].save.expected_updated_at,'saved-version');assert.equal(saved.status,'approved');
  const before=calls.length;find(render(props),n=>n.type==='button'&&n.props.children==='Abbrechen').props.onClick();assert.equal(closed,true);assert.equal(calls.length,before);

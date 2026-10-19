@@ -109,6 +109,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
   const [notice, setNotice] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [archiveMode, setArchiveMode] = useState(false);
+  const [reuseMode, setReuseMode] = useState(false);
   const [archivedId, setArchivedId] = useState('');
   const [metadata, setMetadata] = useState<BannerSearchMetadata>(selected.banner?.metadata ?? { name: '', postal_code: '', city: '', term_keys: [] });
   const metadataOnly = Boolean(selected.banner?.source === 'campaign' && selected.banner.shared);
@@ -131,12 +132,14 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busyRef.current || blocked || options.error) return;
-    if (archiveMode) {
+    if (archiveMode || reuseMode) {
+      if (campaignId) { setError('Bitte öffnen Sie den bereits gespeicherten Entwurf, statt eine weitere Kopie anzulegen.'); return; }
       busyRef.current = true; setBusy(true); setError('');
       try {
         const form = new FormData(); form.set('archived_id', archivedId); form.set('placement', placement); form.set('size', size); form.set('confirmed', 'yes');
+        form.set('reuse_origin', archiveMode ? 'archive' : 'existing');
         const result = await options.reuse?.(form);
-        if (!result?.success || !result.ad) { setError(result?.error || 'Der Banner konnte nicht eingesetzt werden.'); return; }
+        if (!result?.success || !result.ad) { setError(result?.error || 'Der Banner konnte nicht eingesetzt werden.'); if (result?.campaignId) { setCampaignId(result.campaignId); setNotice(`Der Entwurf bleibt in der Bannerverwaltung erhalten.`); } return; }
         onSaved(result.ad, result.metadata ?? { name: result.ad.headline, postal_code: '', city: '', term_keys: [] });
       } catch { setError('Der Banner konnte gerade nicht eingesetzt werden.'); }
       finally { busyRef.current = false; setBusy(false); }
@@ -150,7 +153,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
     try {
       const form = mutationForm();
       const submitter = (event.nativeEvent as SubmitEvent | undefined)?.submitter as HTMLButtonElement | null | undefined;
-      const publishing = submitter?.value === 'publish';
+      const publishing = submitter?.value === 'publish' || Boolean(selected.banner?.editorial && ['draft', 'rejected'].includes(selected.banner.status ?? ''));
       if (publishing) form.set('intent', 'publish');
       if (!publishing && (metadataOnly || (selected.banner && !file && url === selected.banner.target_url && size === (selected.banner.size ?? 'large')))) {
         if (!cropDirty || metadataOnly || !metadataUnchanged) {
@@ -279,22 +282,24 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
       <h2 id="inline-banner-title">{selected.banner ? "Banner bearbeiten" : "Banner hinzufügen"}</h2>
       <p>{options.label}</p>
       {!selected.banner && <fieldset disabled={busy} className={styles.fields}><legend>Banner auswählen</legend>
-        <label className={styles.choice}><input type="radio" name="banner_origin" checked={!archiveMode} onChange={() => setArchiveMode(false)} /> Neues Banner</label>
-        <label className={styles.choice}><input type="radio" name="banner_origin" checked={archiveMode} onChange={() => setArchiveMode(true)} /> Banner aus Archiv</label>
+        <label className={styles.choice}><input type="radio" name="banner_origin" checked={!archiveMode && !reuseMode} onChange={() => { setArchiveMode(false); setReuseMode(false); setArchivedId(''); }} /> Neues Banner</label>
+        <label className={styles.choice}><input type="radio" name="banner_origin" checked={archiveMode} onChange={() => { setArchiveMode(true); setReuseMode(false); setArchivedId(''); }} /> Banner aus Archiv</label>
+        <label className={styles.choice}><input type="radio" name="banner_origin" checked={reuseMode} onChange={() => { setArchiveMode(false); setReuseMode(true); setArchivedId(''); }} /> Bestehendes Banner erneut einfügen</label>
       </fieldset>}
-      {archiveMode ? <>
-        <p>Das archivierte Original bleibt erhalten. Eine unabhängige Kopie wird auf dieser Seite eingesetzt.</p>
+      {archiveMode || reuseMode ? <>
+        <p>Das Original bleibt unverändert erhalten. Eine unabhängige Kopie wird auf diesem Platz sofort veröffentlicht.</p>
         <fieldset disabled={busy} className={styles.fields}>
-          <label>Archivierter Banner<select value={archivedId} required onChange={event => setArchivedId(event.target.value)}>
-            <option value="">Bitte wählen</option>{(options.archived ?? []).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+          <label>{archiveMode ? 'Archiviertes Banner' : 'Bestehendes Banner'}<select value={archivedId} required onChange={event => setArchivedId(event.target.value)}>
+            <option value="">Bitte wählen</option>{(archiveMode ? options.archived ?? [] : (options.reusable ?? []).filter(row => !row.archived)).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select></label>
-          {!(options.archived?.length) && <p>Es sind noch keine archivierten Banner vorhanden.</p>}
+          {archiveMode && !(options.archived?.length) && <p>Es sind noch keine archivierten Banner vorhanden.</p>}
           <label>Bannergröße<select value={size} onChange={event => setSize(event.target.value as BannerSize)}>{Object.entries(bannerSizes).map(([key,label]) => <option key={key} value={key}>{label}</option>)}</select></label>
           <p>{adPlacements[placement]}</p>
 
         </fieldset>
         {error && <p role="alert">{error}</p>}
-        <div className={styles.actions}><button type="submit" className="button button-primary" disabled={busy || blocked || !archivedId || Boolean(options.error)}>{busy ? 'Setzt ein …' : 'Banner einsetzen'}</button><button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button></div>
+        {campaignId && <Link href={`/admin/werbung/${campaignId}`}>Gespeicherten Entwurf öffnen</Link>}
+        <div className={styles.actions}><button type="submit" className="button button-primary" disabled={busy || blocked || !archivedId || Boolean(campaignId) || Boolean(options.error)}>{busy ? 'Setzt ein …' : 'Banner einsetzen'}</button><button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button></div>
       </> : <>
       {!selected.banner && <p className={styles.hint}>Das Banner erscheint ab sofort, bis Sie es entfernen.</p>}
       {selected.banner?.status && <p role="status" className={styles.hint}>

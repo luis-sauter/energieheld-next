@@ -98,7 +98,7 @@ export function CampaignSlot({
       {showLabel && <div className={styles.label}>Anzeige{preview ? " · Vorschau" : ""}</div>}
       {inline && !preview && !reordering && (inline.canCreate !== false || ad?.imageUrl || inline.hasBanner?.(placement)) && <div className={styles.inlineControls}>
         <strong>{adPlacements[placement]}</strong>
-        <button type="button" className="button" onClick={() => inline.open(placement, ad?.id)}>
+        <button type="button" className="button" onClick={() => inline.open(placement, ad?.suppressed ? undefined : ad?.id)}>
           {ad?.imageUrl || inline.hasBanner?.(placement) ? "Banner bearbeiten" : "Banner hinzufügen"}
         </button>
       </div>}

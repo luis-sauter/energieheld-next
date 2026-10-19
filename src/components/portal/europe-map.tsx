@@ -85,7 +85,6 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
       </div>
       <div className={styles.footnote}>
         <p>Mit + / − zoomen und die Karte ziehen. Am Computer auch mit Strg + Mausrad.</p>
-        {locations.some(location => location.precision === 'street') && <p>Einzelne Pins zeigen die geprüfte Straßenlage statt einer Gebäudekoordinate.</p>}
         <button className={styles.touchButton} type="button" aria-pressed={touchActive} onClick={() => setTouchActive(active => !active)}>
           {touchActive ? "Seitenscrollen aktivieren" : "Karte per Touch verschieben"}
         </button>

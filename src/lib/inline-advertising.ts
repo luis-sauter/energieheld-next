@@ -9,6 +9,10 @@ import { bannerSizes, bannerCropReference, displaySource, displayPlacement, lega
 import { loadBannerPresentations } from "./banner-presentation-loader";
 import { legacyBannerKey, saveBannerMetadata, validateBannerMetadata, loadBannerMetadata } from './banner-search-metadata';
 import { changeAdLifecycle } from './ad-lifecycle';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { legacyBannerPages } from '../data/legacy-banner-pages';
+import { validateMediaFile } from './company-media';
 
 const denied = "Dieses Banner kann auf dieser Seite nicht bearbeitet werden. Bitte laden Sie die Seite neu.";
 
@@ -247,7 +251,7 @@ export const reuseInlineAd = (client: SupabaseClient, path: string, form: FormDa
   const context = inlineAdContext(path, true), placement = input.get('placement');
   if (context?.target_type === 'experts_directory') return { error: 'Unterkünfte A–Z ist kein neu buchbarer Werbebereich.' };
   const size = sizeValue(input), id = input.get('archived_id');
-  if (!context || !size || !isProfileId(id) || typeof placement !== 'string' || !Object.hasOwn(adPlacements, placement) || input.get('confirmed') !== 'yes')
+  if (!context || !size || typeof id !== 'string' || typeof placement !== 'string' || !Object.hasOwn(adPlacements, placement) || input.get('confirmed') !== 'yes')
     return { error: 'Bitte wählen und bestätigen Sie einen archivierten Banner und einen freien Platz.' };
   const [availability, settings, active] = await Promise.all([
     client.rpc('get_ad_slot_availability', { p_start: berlinToday(), p_end: '9999-12-31', p_exclude_campaign_id: null }),
@@ -260,15 +264,62 @@ export const reuseInlineAd = (client: SupabaseClient, path: string, form: FormDa
     (active.data ?? []).some((row: { placement: string }) => row.placement === placement) ||
     (!setting?.legacy_hidden && legacyCreative(placement as AdPlacementId, setting?.legacy_placement ?? placement as AdPlacementId, path)))
     return { error: 'Dieser Bannerplatz ist bereits belegt. Bitte wählen Sie einen freien Platz.' };
-  const reuse = new FormData(); reuse.set('campaign_id', id); reuse.set('action', 'reuse'); reuse.set('confirmed', 'yes');
-  const copied = await changeAdLifecycle(client, reuse);
-  if (!copied.success || !copied.redirectTo) return { error: copied.error ?? 'Der Banner konnte nicht übernommen werden.' };
-  const copyId = copied.redirectTo.split('/').at(-1);
-  if (!isProfileId(copyId)) return { error: 'Der neue Entwurf konnte nicht geladen werden.' };
-  const { data: copy, error } = await client.from('company_ad_campaigns').select('*').eq('id', copyId).maybeSingle();
-  if (error || !copy) return { error: 'Der neue Entwurf konnte nicht geladen werden.' };
-  const metadata = await loadBannerMetadata(client, [`campaign:${copyId}`]);
-  const copiedMetadata = metadata.values.get(`campaign:${copyId}`);
+  // Insertion creates an independent editorial copy; never consumes an archive,
+  // changes a source campaign's booking, or attaches its private media path directly.
+  const legacy = Object.entries(legacyBannerPages).flatMap(([path, rows]) => rows.map(row => ({ ...row, key: `legacy:${path}:${row.placement}` }))).find(row => row.key === id);
+  const original = isProfileId(id) ? await client.from('company_ad_campaigns')
+    .select('*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement)').eq('id', id).maybeSingle() : null;
+  const source = original?.data as AdCampaign | null;
+  if ((!legacy && (!source || original?.error || source.deletion_requested_at || !source.image_path)) ||
+    (input.get('reuse_origin') === 'archive' && !source?.archived_at)) return { error: 'Dieses Banner steht nicht mehr zur Verfügung.' };
+  const copy = source ?? { headline: legacy!.alt, internal_name: legacy!.alt, body_text: '', target_url: legacy!.targetUrl };
+  const sourceKey = source ? `campaign:${id}` : legacyBannerKey(legacy!.targetUrl);
+  const metadata = await loadBannerMetadata(client, [sourceKey]);
+  const copiedMetadata = metadata.values.get(sourceKey);
+  const sourceTarget = source?.targets?.[0];
+  // A crop belongs to a particular source placement, not to the shared image.
+  const legacyPath = legacy ? id.slice('legacy:'.length, id.lastIndexOf(':')) : undefined;
+  const sourceContext = sourceTarget?.target_type === 'homepage' ? inlineAdContext('/') : sourceTarget?.target_type === 'portal_area'
+    ? inlineAdContext(`/${sourceTarget.target_key}`, true) : legacyPath ? inlineAdContext(legacyPath, true) : null;
+  const sourceSettings = sourceContext ? await loadBannerPresentations(client, sourceContext) : null;
+  if (sourceSettings?.error) return { error: 'Der vorhandene Bildausschnitt konnte nicht geladen werden.' };
+  const sourceSetting = sourceSettings?.rows.find(row => row.placement === (sourceTarget?.placement ?? legacy?.placement) &&
+    row.crop_reference === (source ? `campaign:${id}:${source.image_path}` : `legacy:${legacy!.id}`));
+  const sourceCrop = sourceSetting ? parseImageCrop(String(sourceSetting.focus_x), String(sourceSetting.focus_y), String(sourceSetting.zoom)) : null;
+  let bytes: Blob;
+  if (source) {
+    if (!source.image_path?.startsWith(`campaigns/${id}/creative/`)) return { error: 'Das Bild gehört nicht zu diesem Banner.' };
+    const downloaded = await client.storage.from('ad-media').download(source.image_path);
+    if (downloaded.error || !downloaded.data) return { error: 'Das vorhandene Bannerbild konnte nicht geladen werden.' };
+    bytes = downloaded.data;
+  } else {
+    // Only bundled, curated local assets. No submitted URL, arbitrary file or SSRF.
+    if (!/^\/images\/legacy-ads\/[a-zA-Z0-9_./-]+\.(jpg|png|webp)$/.test(legacy!.imageUrl) || legacy!.imageUrl.includes('..')) return { error: 'Das Bestandsbild ist nicht verfügbar.' };
+    const deploy = process.env.BANNER_ASSET_ORIGIN;
+    if (deploy) {
+      const origin = new URL(deploy);
+      if (origin.protocol !== 'https:' || !origin.hostname.endsWith('.netlify.app')) return { error: 'Das Bestandsbild ist nicht verfügbar.' };
+      const response = await fetch(new URL(legacy!.imageUrl, origin), { signal: AbortSignal.timeout(10000), redirect: 'error' });
+      if (!response.ok || Number(response.headers.get('content-length')) > 5242880) return { error: 'Das Bestandsbild konnte nicht geladen werden.' };
+      const reader = response.body?.getReader();
+      if (!reader) return { error: 'Das Bestandsbild konnte nicht geladen werden.' };
+      const chunks: Uint8Array<ArrayBuffer>[] = []; let length = 0;
+      for (;;) { const { done, value } = await reader.read(); if (done) break; length += value.length;
+        if (length > 5242880) { await reader.cancel(); return { error: 'Das Bestandsbild ist zu groß.' }; } chunks.push(value); }
+      bytes = new Blob(chunks);
+    } else bytes = new Blob([await readFile(join(process.cwd(), 'public', legacy!.imageUrl))]);
+  }
+  const extension = (source?.image_path ?? legacy!.imageUrl).split('.').pop()!;
+  const mime = extension === 'jpg' ? 'image/jpeg' : extension === 'png' ? 'image/png' : 'image/webp';
+  const file = new File([bytes], `creative.${extension}`, { type: mime });
+  if ((await validateMediaFile(file)).error) return { error: 'Das vorhandene Bannerbild konnte nicht geprüft werden.' };
+  const created = await client.rpc('create_editorial_ad_campaign', { p_target_type: context.target_type, p_target_key: context.target_key, p_placement: placement });
+  const copyId = created.data;
+  if (created.error || !isProfileId(copyId)) return { error: 'Die Bannerkopie konnte nicht angelegt werden.' };
+  try {
+  const uploadedPath = `campaigns/${copyId}/creative/${crypto.randomUUID()}.${extension}`;
+  const uploaded = await client.storage.from('ad-media').upload(uploadedPath, file, { contentType: mime, upsert: false });
+  if (uploaded.error) return { error: 'Das Bild konnte nicht kopiert werden. Der Entwurf bleibt in der Bannerverwaltung erreichbar.', campaignId: copyId };
   const save = new FormData();
   for (const [key, value] of Object.entries({ campaign_id: copyId, internal_name: copy.internal_name || `Banner · ${context.label}`,
     headline: copy.headline || 'Anzeige', body_text: copy.body_text || '', target_url: copy.target_url, placement,
@@ -278,13 +329,23 @@ export const reuseInlineAd = (client: SupabaseClient, path: string, form: FormDa
   save.set('banner_city', copiedMetadata?.city ?? '');
   copiedMetadata?.term_keys.forEach(key => save.append('banner_terms', key));
   if(copiedMetadata) appendBannerSearchAssignment(save,copiedMetadata);
+  save.set('uploaded_path', uploadedPath);
   save.append('targets', adTargetFormValue({ target_type: context.target_type, target_key: context.target_key, category_id: null, placement: placement as AdPlacementId }));
   const bound = await saveOwnAd(client, save, true);
   if (!bound.success) return { error: bound.error, campaignId: copyId };
   save.set('size', size);
+  save.set('intent', 'publish');
   const saved = await saveInlineAdAtSource(client, path, save);
   if (!saved.success || !saved.ad) return { ...saved, campaignId: copyId };
-  return { ...saved, campaignId: copyId, metadata: { ...(metadata.values.get(`campaign:${copyId}`) ?? { postal_code: '', city: '', term_keys: [] }), name: saved.ad.headline } };
+  if (sourceCrop) {
+    const cropResult = await client.rpc('save_inline_ad_crop', { p_target_type: context.target_type, p_target_key: context.target_key,
+      p_placement: placement, p_campaign_id: copyId, p_reference: bannerCropReference(saved.ad),
+      p_focus_x: sourceCrop.focus_x, p_focus_y: sourceCrop.focus_y, p_zoom: sourceCrop.zoom });
+    if (cropResult.error) return { error: 'Das Banner ist veröffentlicht, der Ausschnitt konnte nicht übernommen werden. Bitte öffnen Sie es erneut.', campaignId: copyId };
+    saved.ad.crop = sourceCrop;
+  }
+  return { ...saved, campaignId: copyId, metadata: { ...(copiedMetadata ?? { postal_code: '', city: '', term_keys: [] }), name: saved.ad.headline } };
+  } catch { return { error: 'Die Kopie konnte nicht fertiggestellt werden. Bitte öffnen Sie den gespeicherten Entwurf in der Bannerverwaltung.', campaignId: copyId }; }
 });
 
 // Shared/company creatives can change public search copy without touching contracts,

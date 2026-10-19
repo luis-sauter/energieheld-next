@@ -14,7 +14,7 @@ const mocks = {
 registerHooks({resolve(s,c,next){if(c.parentURL?.endsWith('/inline-advertising-loader.ts')&&Object.hasOwn(mocks,s))return {shortCircuit:true,url:'data:text/javascript,'+encodeURIComponent(mocks[s])};return next(s,c);}});
 const {loadInlineBannerOptions}=await import('../src/lib/inline-advertising-loader.ts');
 const target={target_type:'portal_area',target_key:'reiseziele/schweiz',category_id:null,placement:'sidebar_12'};
-function row(id,status,archived_at=null){return {id,status,archived_at,is_editorial:true,targets:[target],headline:id,target_url:'https://example.org/',approved_start_date:'2000-01-01',approved_end_date:'9999-12-31'};}
+function row(id,status,archived_at=null){return {id,status,archived_at,is_editorial:true,targets:[target],image_path:'campaigns/'+id+'/creative/image.png',headline:id,target_url:'https://example.org/',approved_start_date:'2000-01-01',approved_end_date:'9999-12-31'};}
 function setup(rows){globalThis.inlineLifecycleAdmin=true;globalThis.inlineLifecycleSigned=[];globalThis.inlineLifecycleClient={from(){return {select(){return this},order:async()=>({data:rows,error:null})}},rpc:async()=>({data:[],error:null})};}
 test('archived approved and pending banners do not occupy inline slots after reload or receive media URLs',async()=>{
  setup([row('archived-approved','approved','2026-10-06'),row('archived-pending','pending','2026-10-06')]);
