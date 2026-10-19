@@ -2,6 +2,7 @@ import Link from "@/components/portal/navigation-link";
 import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
 import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
 import { HomeBannerGroup } from "@/components/advertising/home-banner-group";
+import { homeBannerRows } from '@/lib/home-banner-selection';
 import { randomUUID } from "node:crypto";
 import { selectHomeStays } from "@/lib/home-stays";
 import { MottoRow } from "@/components/portal/motto-row";
@@ -9,6 +10,7 @@ import { AccommodationCard } from "@/components/portal/discovery-detail";
 import { AutumnShowcase } from "@/components/portal/autumn-showcase";
 import { EuropeMap } from "@/components/portal/europe-map";
 import { companyMapLocations } from "@/lib/company-map-locations";
+import { loadBasicMapLocations } from '@/lib/basic-map-locations';
 import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
 import { TravelQuicklinks } from "@/components/portal/travel-quicklinks";
@@ -32,13 +34,15 @@ import {basicIntegrationEnabled} from '@/lib/basic-public-search';
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const initialValues = readTravelFilterValues(await searchParams);
-  const [ads, directory, terms, bannerOptions, searchBanners] = await Promise.all([
+  const [ads, directory, terms, bannerOptions, searchBanners, basicLocations] = await Promise.all([
     loadPublicAds(undefined, "homepage"),
     loadReiseportalDirectory(),
     loadPublicTravelTerms(),
     loadInlineBannerOptions("/"), loadTravelSearchBanners(),
+    basicIntegrationEnabled() ? loadBasicMapLocations() : Promise.resolve([]),
   ]);
   const featured = selectHomeStays(directory.database, randomUUID());
+  const bannerRows = homeBannerRows(ads, searchBanners.banners);
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
@@ -46,7 +50,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <TravelQuicklinks className={`container ${styles.quicklinks}`} />
 
-    <HomeBannerGroup ads={ads} placements={["sidebar_top", "sidebar_middle", "sidebar_bottom"]} label="Anzeigen vor den Themenwelten" />
+    <HomeBannerGroup ads={ads} placements={["sidebar_top", "sidebar_middle", "sidebar_bottom"]} sliderAds={bannerRows[0]} label="Anzeigen vor den Themenwelten" />
 
     <TravelNews />
 
@@ -54,9 +58,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <AutumnShowcase listings={directory.database} />
 
-    <EuropeMap locations={companyMapLocations(directory.database, searchBanners.banners)} />
+    <EuropeMap locations={[...companyMapLocations(directory.database, searchBanners.banners), ...basicLocations]} />
 
-    <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06"]} label="Anzeigen nach den Reisezielen" />
+    <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06"]} sliderAds={bannerRows[1]} label="Anzeigen nach den Reisezielen" />
 
     <section className={`section container ${styles.stays}`} aria-labelledby="stays-title">
       <div className="section-heading"><div><p className="eyebrow">Ein guter Ort zum Ankommen</p><h2 id="stays-title">Ausgewählte Unterkünfte</h2></div>

@@ -1,4 +1,4 @@
-export type MapLocation = { id: string; lat: number; lon: number };
+export type MapLocation = { id: string; lat: number; lon: number; precision?: string };
 export type MapView = { x: number; y: number; width: number; height: number };
 export const MAP_WIDTH = 1400;
 export const MAP_HEIGHT = 620;
@@ -52,5 +52,5 @@ export function publicMapLocations(locations: MapLocation[], publicIds: Readonly
         !Number.isFinite(location.lon) || location.lat < 34 || location.lat > 72 || location.lon < -25 || location.lon > 45) return false;
     seen.add(location.id);
     return true;
-  }).map(({ id, lat, lon }) => ({ id, lat, lon }));
+  }).map(({ id, lat, lon, precision }) => ({ id, lat, lon, ...(precision === 'street' ? { precision } : {}) }));
 }

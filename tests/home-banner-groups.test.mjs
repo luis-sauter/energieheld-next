@@ -16,6 +16,7 @@ vm.runInNewContext(transpileModule(file,{compilerOptions:{module:ModuleKind.Comm
  if(name==='react/jsx-runtime')return jsx;
  if(name==='./inline-banner-context')return {useInlineBanners:()=>inline};
  if(name==='./campaign-view')return {CampaignSlot};
+ if(name==='../portal/motto-row')return {MottoRow:({children,label})=>createElement('div',{role:'region','aria-label':label},children)};
  if(name==='./advertising-rail')return {AdvertisingRail:({visibleSlots,ads})=>createElement('div',{},visibleSlots.filter(slot=>inline||ads.some(row=>row.placement===slot&&!row.suppressed)).map(slot=>createElement(CampaignSlot,{key:slot,placement:slot,ad:ads.find(row=>row.placement===slot)})))};
  if(name.endsWith('.module.css'))return {default:{partners:'partners'}};
  throw Error(name);

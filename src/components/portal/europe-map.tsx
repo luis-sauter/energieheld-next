@@ -68,7 +68,7 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
             }
           }}>
           <title id="map-title">Unternehmensstandorte in Europa</title>
-          <desc id="map-description">{locations.length} verifizierte Standorte öffentlicher Unternehmen und aktuell vertretener Werbekunden. Mit Plus und Minus zoomen, mit Pfeiltasten oder Ziehen verschieben, mit Pos1 zurücksetzen. Keine einzelnen Standortlinks.</desc>
+          <desc id="map-description">{locations.length} belegte Standorte veröffentlichter Unterkünfte und aktuell vertretener Werbekunden. Mit Plus und Minus zoomen, mit Pfeiltasten oder Ziehen verschieben, mit Pos1 zurücksetzen. Keine einzelnen Standortlinks.</desc>
           <defs><g id={pinId} fill="var(--portal-orange)" stroke="#fff6e9" strokeWidth=".9">
             <path d="M0 0C-2.5-3.5-7-8-7-12a7 7 0 1 1 14 0C7-8 2.5-3.5 0 0Z" />
             <circle cx="0" cy="-12" r="2.4" fill="#fff6e9" stroke="none" />
@@ -85,10 +85,11 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
       </div>
       <div className={styles.footnote}>
         <p>Mit + / − zoomen und die Karte ziehen. Am Computer auch mit Strg + Mausrad.</p>
+        {locations.some(location => location.precision === 'street') && <p>Einzelne Pins zeigen die geprüfte Straßenlage statt einer Gebäudekoordinate.</p>}
         <button className={styles.touchButton} type="button" aria-pressed={touchActive} onClick={() => setTouchActive(active => !active)}>
           {touchActive ? "Seitenscrollen aktivieren" : "Karte per Touch verschieben"}
         </button>
-        <p className={styles.credit}>Karte: <a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noopener noreferrer">Natural Earth</a> · Standorte: Betreiberangaben / © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap-Mitwirkende</a></p>
+        <p className={styles.credit}>Karte: <a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noopener noreferrer">Natural Earth</a> · Standorte: Betreiberangaben, Bad Birnbach Tourismus, © swisstopo / © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap-Mitwirkende</a></p>
       </div>
     </div>
   </section>;

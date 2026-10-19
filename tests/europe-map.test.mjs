@@ -8,6 +8,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createHash } from 'node:crypto';
 registerHooks({
  resolve(specifier,context,next) {
+  if(specifier==='server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
+  if(specifier==='./supabase/public')return {url:'data:text/javascript,export function createPublicClient(){return {async rpc(name,args){globalThis.__mapCalls.push({name,args});return globalThis.__mapPages.shift()??{data:[],error:null}}}}',shortCircuit:true};
   if(specifier.endsWith('.css')) return {url:'data:text/javascript,export default {}',shortCircuit:true};
   if(specifier.startsWith('@/')||specifier.startsWith('.')) {
    const base=specifier.startsWith('@/')?new URL('../src/'+specifier.slice(2),import.meta.url):new URL(specifier,context.parentURL);
@@ -47,7 +49,7 @@ test('public points require published ID, valid coordinates and unique ID; co-lo
  assert.deepEqual(geo.publicMapLocations(input,new Set(['public','same-address','missing'])),input.slice(0,1).concat(input[2]));
  assert.equal(new Set(locations.map(x=>x.id)).size,locations.length);
  assert.ok(locations.length>0);
- assert.ok(locations.every(x=>Object.keys(x).sort().join(',')==='id,lat,lon'));
+ assert.ok(locations.every(x=>Object.keys(x).filter(k=>k!=='precision').sort().join(',')==='id,lat,lon'));
 });
 test('a stale local snapshot cannot expose an unpublished or moved public profile',()=>{
  assert.deepEqual(companyMapLocations([]),[]);
@@ -69,7 +71,7 @@ test('map SSR includes exact public point count, accessible controls and no poin
 });
 test('homepage adds only map immediately after the unchanged seasonal component',()=>{
  const home=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
- assert.match(home,/<AutumnShowcase listings=\{directory.database\} \/>\s*<EuropeMap locations=\{companyMapLocations\(directory.database, searchBanners.banners\)\} \/>/);
+ assert.match(home,/<AutumnShowcase listings=\{directory.database\} \/>\s*<EuropeMap locations=\{\[\.\.\.companyMapLocations\(directory.database, searchBanners.banners\), \.\.\.basicLocations\]\} \/>/);
  assert.equal((home.match(/<EuropeMap/g)||[]).length,1);
  const component=readFileSync(new URL('../src/components/portal/europe-map.tsx',import.meta.url),'utf8');
  assert.doesNotMatch(component,/fetch\(|supabase|setInterval/);
@@ -79,7 +81,7 @@ test('homepage adds only map immediately after the unchanged seasonal component'
 
 test('all original 95 verified positions remain byte-for-byte unchanged',()=>{
  assert.equal(createHash('sha256').update(JSON.stringify(locations.slice(0,95))).digest('hex'),'82fc31f099b83a83dface35f899c53054764916b33448457806a2b40ed9d5688');
- assert.equal(locations.length,104);
+ assert.equal(locations.length,106);
 });
 test('only public active campaign identities qualify an advertiser without a profile; duplicate campaigns share one site',()=>{
  const register=[{locationId:'advertiser:verified-site',advertiserKey:'domain:example.test',campaignIds:['one','two']}];
@@ -103,9 +105,26 @@ test('shared teardrop marker tip remains the exact projected position and reset 
  const [x,y]=geo.projectLocation(locations[0].lat,locations[0].lon);
  assert.equal(geo.pinTransform(locations[0],geo.INITIAL_MAP_VIEW),`translate(${x} ${y}) scale(0.8)`);
  const html=renderToStaticMarkup(createElement(EuropeMap,{locations}));
- assert.equal((html.match(/<use /g)||[]).length,104);
+ assert.equal((html.match(/<use /g)||[]).length,106);
  assert.match(html,/d="M0 0C-2.5-3.5-7-8-7-12a7 7 0 1 1 14 0C7-8 2.5-3.5 0 0Z"/);
  assert.match(html,/cx="0" cy="-12" r="2.4"/);
  assert.match(html,/viewBox="140 62 1120 496"/);
  assert.match(html,/data-zoom="125"/);
+});
+
+
+test('all published Basic coordinates are minimal and live visibility/address guards fail closed',async()=>{
+ const {loadBasicMapLocations,basicMapFingerprint}=await import('../src/lib/basic-map-locations.ts');
+ const points=JSON.parse(readFileSync(new URL('../src/data/basic-map-locations.json',import.meta.url),'utf8'));
+ assert.equal(points.length,1282);assert.equal(new Set(points.map(r=>r.id)).size,1282);
+ for(const row of points){assert.deepEqual(Object.keys(row).sort(),['address_fingerprint','id','lat','lon']);assert.ok(Number.isFinite(row.lat)&&Number.isFinite(row.lon));}
+ const snapshot=JSON.parse(readFileSync(new URL('../public/reiseportal/data/basic-contacts-20261018-austria-switzerland.json',import.meta.url),'utf8'));
+ const contacts=new Map(snapshot.entries.map(r=>[r.id,r]));
+ for(const row of points)assert.equal(basicMapFingerprint(contacts.get(row.id).address),row.address_fingerprint);
+ globalThis.__mapCalls=[];globalThis.__mapPages=[{data:points.slice(0,2).map(r=>({id:r.id,address:contacts.get(r.id).address})),error:null}];
+ const shown=await loadBasicMapLocations();assert.equal(shown.length,2);assert.deepEqual(Object.keys(shown[0]).sort(),['id','lat','lon']);
+ globalThis.__mapPages=[{data:[{id:points[0].id,address:{city:'Moved'}}],error:null}];assert.deepEqual(await loadBasicMapLocations(),[]);
+ globalThis.__mapPages=[{data:null,error:{message:'Unavailable'}}];assert.deepEqual(await loadBasicMapLocations(),[]);
+ globalThis.__mapPages=[{data:[],error:null}];assert.deepEqual(await loadBasicMapLocations(),[]);
+ assert.ok(globalThis.__mapCalls.every(r=>r.name==='public_basic_map_contacts'));
 });

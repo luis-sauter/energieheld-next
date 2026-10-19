@@ -170,13 +170,14 @@ test('homepage ad grid preserves stored size and crop renderer and shared vertic
  assert.doesNotMatch(read('src/app/(energieheld)/page.tsx'),/update\(|delete\(|insert\(|company_ad_campaign_targets/);
 });
 
-test('only Premium and A–F ads appear publicly while stored G–J campaigns stay intact', async () => {
+test('homepage has two five-banner rows plus unchanged Premium slot without mutating campaigns', async () => {
  const original=globalThis.homeFixture.ads;
  try {
-  globalThis.homeFixture.ads=[{id:'premium',placement:'top_banner',imageUrl:'/premium.jpg'},...['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sidebar_05','sidebar_06','sidebar_07','sidebar_08','sidebar_09','sidebar_10'].map((placement,i)=>({id:'legacy-'+i,placement,imageUrl:'/existing.jpg'}))];
+  globalThis.homeFixture.ads=[{id:'premium',placement:'top_banner',imageUrl:'/premium.jpg',target_url:'https://example.org/premium'},...['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sidebar_05','sidebar_06','sidebar_07','sidebar_08','sidebar_09','sidebar_10'].map((placement,i)=>({id:'legacy-'+i,placement,imageUrl:'/existing.jpg',target_url:'https://example.org/'+i}))];
   const before=JSON.stringify(globalThis.homeFixture.ads);
   const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
-  assert.equal((html.match(/data-ad-count="3"/g)||[]).length,2);assert.doesNotMatch(html,/data-ad-count="4"|Weitere Banner verwalten/);
+  assert.equal((html.match(/data-placement="sidebar_/g)||[]).length,10);assert.doesNotMatch(html,/Weitere Banner verwalten/);
+  assert.equal((html.match(/data-speed="22"/g)||[]).length,2);
   assert.equal((html.match(/data-placement="top_banner"/g)||[]).length,1);
   assert.equal(JSON.stringify(globalThis.homeFixture.ads),before);
  } finally {globalThis.homeFixture.ads=original;}

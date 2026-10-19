@@ -581,3 +581,15 @@ test('destination details reuse premium motto rows and end directly with country
  const route=readFileSync(new URL('../src/app/(energieheld)/reiseziele/[slug]/page.tsx',import.meta.url),'utf8');
  assert.match(route,/loadReiseportalDestination\(entry.slug\)/);assert.match(route,/kind="destination"/);assert.doesNotMatch(route,/entry.previewSlugs|loadReiseportalFeatured|rotateProfiles/);
 });
+
+
+test('homepage selects exactly five unique banners per row while keeping assigned creatives and immutable public sources',async()=>{
+ const {homeBannerRows}=await import('../src/lib/home-banner-selection.ts');
+ const slots=['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sidebar_05','sidebar_06'];
+ const local=slots.map((placement,i)=>({id:'home-'+i,placement,source:'campaign',imageUrl:'/home-'+i+'.webp',headline:'Home '+i,target_url:'https://example.org/'+i}));
+ const pool=Array.from({length:8},(_,i)=>({banner_key:'campaign:pool-'+i,ad:{id:'pool-'+i,placement:'sidebar_top',source:'campaign',imageUrl:'/pool-'+i+'.webp',headline:'Pool '+i,target_url:'https://pool.example/'+i}}));
+ const before=JSON.stringify({local,pool});const rows=homeBannerRows(local,pool);
+ assert.deepEqual(rows.map(row=>row.length),[5,5]);assert.equal(new Set(rows.flat().map(ad=>ad.id)).size,10);
+ assert.deepEqual(rows[0].slice(0,3),local.slice(0,3));assert.deepEqual(rows[1].slice(0,3),local.slice(3));
+ assert.equal(JSON.stringify({local,pool}),before);assert.deepEqual(homeBannerRows([],[]),[[],[]]);
+});
