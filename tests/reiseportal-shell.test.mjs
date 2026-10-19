@@ -542,14 +542,16 @@ test("old public energy routes redirect to travel or home", async () => {
   assert.throws(() => LegacyTrades(), /REDIRECT:\//);
 });
 
-test('destination details share six-card rotation, country links and the rubric layout',()=>{
- const html=renderToStaticMarkup(createElement(DiscoveryDetail,{entry:destinations[0],title:'Reiseziele',basePath:'/reiseziele',listings:reiseportalPreview,rotateProfiles:true,advertising:{ads:[],sidebarOrder:[],options:undefined}}));
- assert.match(html,/ziel=deutschland/);assert.doesNotMatch(html,/thema=deutschland/);
- assert.ok(html.indexOf('discovery-intro')<html.indexOf('commercial-columns'));
- assert.ok(html.indexOf('id="related-stays"')<html.indexOf('commercial-columns'));
+test('destination details reuse premium motto rows, preserve every country link and themed recommendations',async()=>{
+ const {MottoDetail}=await import('../src/components/portal/motto-detail.tsx');
+ for(const entry of destinations){
+  const html=renderToStaticMarkup(createElement(MottoDetail,{entry,kind:'destination',listings:reiseportalPreview.map(listing=>({...listing,travelTermKeys:['theme:natur-pur']})),seed:'country-test',advertising:{ads:[],sidebarOrder:[],options:undefined}}));
+  assert.match(html,new RegExp('ziel='+entry.slug));assert.doesNotMatch(html,new RegExp('thema='+entry.slug));
+  assert.match(html,new RegExp('destination-editorial/'+entry.slug+'.webp'));
+  assert.doesNotMatch(html,/Automatischen Wechsel pausieren|commercial-columns|data-basic-contact/);
+  assert.equal((html.match(/class="accommodation-card"/g)||[]).length,reiseportalPreview.length);
+  assert.equal((html.match(/<h1\b/g)||[]).length,1);
+ }
  const route=readFileSync(new URL('../src/app/(energieheld)/reiseziele/[slug]/page.tsx',import.meta.url),'utf8');
- assert.match(route,/loadReiseportalDestination\(entry.slug\)/);assert.match(route,/rotateProfiles/);assert.doesNotMatch(route,/entry.previewSlugs|loadReiseportalFeatured/);
- const css=readFileSync(new URL('../src/components/advertising/advertising.module.css',import.meta.url),'utf8');
- assert.match(css,/\.imageCreative \{[^}]*border-radius: var\(--radius\)[^}]*overflow: hidden[^}]*box-shadow:/);
- assert.match(css,/object-fit: contain/);
+ assert.match(route,/loadReiseportalDestination\(entry.slug\)/);assert.match(route,/kind="destination"/);assert.doesNotMatch(route,/entry.previewSlugs|loadReiseportalFeatured|rotateProfiles/);
 });

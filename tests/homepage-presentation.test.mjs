@@ -315,7 +315,7 @@ test('same accommodation presentation for home, themes and destinations; no phot
  assert.equal(ordinary,rotated);assert.match(ordinary,/Vorhandenes Foto/);
  const empty=renderToStaticMarkup(createElement(AccommodationCard,{listing:{...listing,travelImage:null,travelTermKeys:[]}}));
  assert.doesNotMatch(empty,/<img|data-travel-term=/);assert.match(empty,/accommodation-card-image--empty/);assert.match(empty,/Details ansehen/);
- assert.match(read('src/app/(energieheld)/reiseziele/[slug]/page.tsx'),/<DiscoveryDetail/);
+ assert.match(read('src/app/(energieheld)/reiseziele/[slug]/page.tsx'),/<MottoDetail[^]*kind="destination"/);
  assert.match(read('src/app/(energieheld)/mottoreisen/[slug]/page.tsx'),/<MottoDetail/);
  assert.match(read('src/components/portal/motto-detail.tsx'),/<AccommodationCard/);
 });

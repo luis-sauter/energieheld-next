@@ -11,28 +11,34 @@ import { Breadcrumbs } from './breadcrumbs';
 import { portalBreadcrumbs } from '@/lib/breadcrumbs';
 import { JsonLd } from './json-ld';
 import { breadcrumbSchema, collectionSchema, jsonLdGraph } from '@/lib/seo-schema';
+import { destinationEditorial } from '@/data/destination-editorial';
+import { relatedTravelPages } from '@/lib/travel-relations';
+import { TravelRelations } from './travel-relations';
 import { mottoEditorial } from '@/data/motto-editorial';
 import { mottoGroups, orderMottoItems, visibleMottoAds } from '@/lib/motto-rows';
 import { MottoRow } from './motto-row';
 import styles from './motto-detail.module.css';
 
-export function MottoDetail({ entry, listings, advertising, seed }: {
-  entry: DiscoveryEntry; listings: Listing[]; advertising?: DiscoveryAdvertisingData; seed: string;
+export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme' }: {
+  entry: DiscoveryEntry; listings: Listing[]; advertising?: DiscoveryAdvertisingData; seed: string; kind?: 'theme' | 'destination';
 }) {
-  const editorial = mottoEditorial[entry.slug];
+  const destination = kind === 'destination';
+  const basePath = destination ? '/reiseziele' : '/mottoreisen';
+  const sectionTitle = destination ? 'Reiseziele' : 'Mottoreisen';
+  const editorial = destination ? { ...entry, ...destinationEditorial[entry.slug] } : mottoEditorial[entry.slug];
   const companies = orderMottoItems(listings, listing => listing.id, seed + ':companies');
   const banners = orderMottoItems(visibleMottoAds(advertising?.ads ?? []), ad => ad.id, seed + ':banners');
   const companyRows = mottoGroups(companies, 3), bannerRows = mottoGroups(banners, 2);
-  const breadcrumbs = portalBreadcrumbs(entry.title, `/mottoreisen/${entry.slug}`, { name: 'Mottoreisen', path: '/mottoreisen' });
-  return <main id="hauptinhalt" className={styles.page} data-motto-detail={entry.slug}>
+  const breadcrumbs = portalBreadcrumbs(entry.title, `${basePath}/${entry.slug}`, { name: sectionTitle, path: basePath });
+  return <main id="hauptinhalt" className={styles.page} data-motto-detail={destination ? undefined : entry.slug} data-destination-detail={destination ? entry.slug : undefined}>
     <div className={styles.backdrop} aria-hidden="true"><Image src={editorial.image} alt="" fill sizes="100vw" preload /></div>
     <div className={`${styles.content} container`}>
       <JsonLd data={jsonLdGraph([breadcrumbSchema(breadcrumbs), collectionSchema({ name: entry.title,
-        description: editorial.intro, path: `/mottoreisen/${entry.slug}`,
-        about: { '@type': 'DefinedTerm', name: entry.title, termCode: `theme:${entry.slug}` },
+        description: editorial.intro, path: `${basePath}/${entry.slug}`,
+        about: destination ? { '@type': 'Place', name: entry.title } : { '@type': 'DefinedTerm', name: entry.title, termCode: `theme:${entry.slug}` },
         items: companies.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <Breadcrumbs items={breadcrumbs} />
-      <header className={styles.hero}><p className="eyebrow">Mottoreisen</p><h1>{entry.title}</h1><p>{editorial.intro}</p></header>
+      <header className={styles.hero}><p className="eyebrow">{sectionTitle}</p><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p>{editorial.intro}</p></header>
       <section className={styles.stays} aria-labelledby="motto-stays">
         <p className="eyebrow">Aus dem Reiseportal</p><h2 id="motto-stays">Passende Unterkünfte</h2>
         <p className={styles.count}>{companies.length} passende {companies.length === 1 ? 'Unterkunft' : 'Unterkünfte'} · Entdecken Sie Ihre Gastgeber</p>
@@ -51,9 +57,10 @@ export function MottoDetail({ entry, listings, advertising, seed }: {
             <AdvertisingLayout ads={advertising.ads} sidebarOrder={advertising.sidebarOrder} collapseEmpty showEmptySlots>{null}</AdvertisingLayout>
           </details>}
         </InlineBannerProvider>
-        {!!companies.length && <Link className="text-link" href={`/unterkuenfte-a-z?thema=${entry.slug}`}>Alle passenden Unterkünfte ansehen →</Link>}
+        {!!companies.length && <Link className="text-link" href={`/unterkuenfte-a-z?${destination ? 'ziel' : 'thema'}=${entry.slug}`}>Alle passenden Unterkünfte ansehen →</Link>}
       </section>
-      <Link className="text-link" href="/mottoreisen">← Alle Mottoreisen entdecken</Link>
+      {destination && <TravelRelations title="Reiseideen für Ihren Aufenthalt" intro="Entdecken Sie Reisethemen, die zu Ihren Plänen für diese Region passen." links={relatedTravelPages(listings).themes} />}
+      <Link className="text-link" href={basePath}>{destination ? '← Weitere Reiseziele entdecken' : '← Alle Mottoreisen entdecken'}</Link>
     </div>
   </main>;
 }
