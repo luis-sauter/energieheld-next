@@ -321,7 +321,7 @@ test('same accommodation presentation for home, themes and destinations; no phot
 });
 test('Carola styles are isolated, keep text untruncated and provide keyboard/touch/reduced-motion parity',()=>{
  const css=read('src/components/portal/accommodation-card.module.css');
- assert.match(css,/aspect-ratio: 35 \/ 32/);assert.match(css,/object-fit: cover/);assert.match(css,/linear-gradient\(to bottom/);
+ assert.match(css,/aspect-ratio: 35 \/ 32/);assert.match(css,/object-fit: cover/);assert.doesNotMatch(css,/gradient\(|\.card::after|\.motto::after/);
  assert.match(css,/\.card:focus-visible/);assert.match(css,/\.card:hover/);assert.match(css,/hover: none/);assert.match(css,/prefers-reduced-motion: reduce/);
  assert.match(css,/overflow-wrap: anywhere/);assert.doesNotMatch(css,/line-clamp|text-overflow: ellipsis/);
  const home=read('src/app/(energieheld)/page.tsx');assert.match(home,/<MottoRow label="Ausgewählte Unterkünfte" speed=\{18\}/);assert.doesNotMatch(home,/styles.featuredStay|styles.recommendations/);

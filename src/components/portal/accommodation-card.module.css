@@ -1,10 +1,9 @@
 .card { position: relative; isolation: isolate; display: flex; align-items: flex-end; width: 100%; height: 100%; min-height: 16rem; aspect-ratio: 35 / 32; overflow: hidden; border-radius: 9px; color: #fff; text-decoration: none; background: #172a32; box-shadow: 0 5px 18px #102b421c; outline: 2px solid transparent; outline-offset: -2px; transition: outline-color .18s ease, box-shadow .18s ease; }
-.image { position: absolute; inset: 0; z-index: -2; background: linear-gradient(145deg, #426a7c, #172a32); }
+.image { position: absolute; inset: 0; z-index: -2; background: #172a32; }
 .photo { position: absolute; inset: 0; transition: transform .35s ease; }
 .image img { object-fit: cover; }
-.card::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(to bottom, transparent 20%, rgb(9 17 21 / 20%) 40%, rgb(9 17 21 / 85%) 72%, #091115 100%); }
 .fallback { display: grid; height: 45%; place-items: center; color: #e7f3fa; font-size: 3rem; font-weight: 700; }
-.copy { width: 100%; min-width: 0; padding: clamp(16px, 2vw, 24px); overflow-wrap: anywhere; }
+.copy { width: 100%; min-width: 0; padding: clamp(16px, 2vw, 24px); overflow-wrap: anywhere; text-shadow: 0 1px 3px #000, 0 0 2px #000; }
 .copy h3 { margin: 0 0 .65rem; color: #fff; font-size: clamp(1.1rem, 1.5vw, 1.5rem); line-height: 1.2; font-weight: var(--font-heading-weight); }
 .location { margin: 0 0 .4rem; color: #e6edf0; font-size: .65rem; line-height: 1.45; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; }
 .copy .signals ul { gap: 5px; margin: .65rem 0 .9rem; }
@@ -19,7 +18,6 @@
 
 .edit { position: absolute; z-index: 2; top: 10px; right: 10px; min-width: 44px; min-height: 44px; border: 1px solid #fff; border-radius: 50%; color: #174761; background: #fff; cursor: pointer; }
 .motto { min-height: 0; aspect-ratio: 1.18; }
-.motto::after { background: linear-gradient(to bottom, transparent 42%, rgb(9 17 21 / 12%) 53%, rgb(9 17 21 / 83%) 78%, #10222af5 100%); }
 .motto .copy { padding: 14px 16px 10px; }
 .motto .copy h3 { font-size: 1.13rem; margin-bottom: 5px; }
 .motto .location { font-size: .6rem; margin-bottom: 4px; }
