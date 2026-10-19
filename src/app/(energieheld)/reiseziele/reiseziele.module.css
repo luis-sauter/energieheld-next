@@ -58,18 +58,6 @@
 .partnerContent > p:not(.eyebrow) { margin: 0 0 14px; max-width: 680px; color: var(--portal-ink); font-size: .96rem; line-height: 1.5; }
 .partner :global(.button) { gap: 18px; border-radius: 28px; }
 .page a:focus-visible { outline: 3px solid var(--portal-blue); outline-offset: 4px; }
-.advertising { margin-bottom: 0; }
-.advertising:has([data-placement]) { margin-bottom: 38px; }
-.advertising :global(.commercial-columns) { display: block; }
-.advertising :global(.commercial-content) { display: none; }
-.advertising :global(.commercial-sidebar) { width: 100%; max-width: none; }
-.advertising :global(.advertising-rail-creatives) { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 24px; }
-.advertising :global(.commercial-layout) { margin: 0; }
-.advertising [data-destination-promo] { padding: 20px; border-radius: 16px; background: linear-gradient(110deg, #fff5ec, #f2faff); }
-.advertising [data-destination-promo] [data-placement]:not([data-placement="top_banner"]) { max-width: 350px; margin-inline: auto; }
-.advertising [data-destination-banner-management] { margin-top: 16px; padding: 16px; border: 1px solid #e1eff6; border-radius: 12px; background: #f8fcff; }
-.advertising summary { cursor: pointer; color: var(--portal-blue); font-weight: 700; padding: 8px; }
-.advertising summary:focus-visible { outline: 3px solid var(--portal-blue); outline-offset: 3px; }
 @media (max-width: 1100px) {
   .quicklinks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .discover { font-size: 0; gap: 0; }
@@ -106,6 +94,5 @@
   .partnerContent { padding: 24px 18px 120px; }
   .partner::after { background: linear-gradient(180deg, #e5f4ff, rgb(235 247 255 / 94%) 65%, rgb(235 247 255 / 10%)); }
   .partner > img { object-position: 75% center; }
-  .advertising :global(.advertising-rail-creatives) { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { .countryPhoto img, .themePhoto img { transition: none; } .countryCard:hover img, .themeLink:hover img { transform: none; } }

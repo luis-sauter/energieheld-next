@@ -70,6 +70,7 @@ const { filterTravelDiscovery } = await import("../src/lib/reiseportal-search.ts
 const destinationRoute = await import("../src/app/(energieheld)/reiseziele/[slug]/page.tsx");
 const themeRoute = await import("../src/app/(energieheld)/mottoreisen/[slug]/page.tsx");
 const { default: ThemeOverview } = await import("../src/app/(energieheld)/mottoreisen/page.tsx");
+const { DiscoveryAdvertising } = await import("../src/components/advertising/discovery-advertising.tsx");
 const { default: DestinationOverview } = await import("../src/app/(energieheld)/reiseziele/page.tsx");
 const { PortalHeader, PortalFooter } = await import("../src/components/portal/chrome.tsx");
 const { headerNavigation } = await import("../src/components/portal/navigation-data.ts");
@@ -247,7 +248,7 @@ test("destination overview links countries, all themed country filters and real 
   globalThis.__discoveryAdvertising = undefined;
   globalThis.__discoveryAdPaths = [];
   const html = renderToStaticMarkup(await DestinationOverview());
-  assert.deepEqual(globalThis.__discoveryAdPaths, ["/reiseziele"]);
+  assert.deepEqual(globalThis.__discoveryAdPaths, []);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
   assert.match(html, /Vier Länder\.<br\s*\/>Viele Möglichkeiten\./);
   for (const destination of destinations) {
@@ -290,32 +291,27 @@ test('four destination pages use individual editorial intros and headings withou
  }
 });
 
-test("destination redesign retains real shared banner delivery and admin provider between editorial sections", async () => {
-  const data = { ads: [{ id: 'existing', placement: 'sidebar_top', imageUrl: '/known-banner.jpg', headline: 'Existing banner', target_url: 'https://example.org/', banner_size: 'small' }], sidebarOrder: [] };
-  globalThis.__discoveryAdvertising = data;
+test("destination overview omits all campaign output and does not request advertising for public or admin", async () => {
+  const data = { ads: [{ id: 'existing', placement: 'top_banner', imageUrl: '/known-banner.jpg', headline: 'Existing banner', target_url: 'https://example.org/' }], sidebarOrder: [] };
+  globalThis.__discoveryAdPaths = [];
   try {
-    const html = renderToStaticMarkup(await DestinationOverview());
-    assert.ok(html.indexOf('href="/reiseziele/suedtirol-italien"') < html.indexOf('data-placement="sidebar_top"'));
-    assert.ok(html.indexOf('data-placement="sidebar_top"') < html.indexOf('Reiseinspiration nach Art des Urlaubs'));
-    assert.match(html, /src="\/known-banner.jpg"/);
-    assert.match(html, /rel="sponsored noopener noreferrer"/);
-    assert.match(html, /target="_blank"/);
-    assert.doesNotMatch(html, /Banner hinzufügen|Banner bearbeiten/);
-    assert.deepEqual(data.ads.map(ad => ad.placement), ['sidebar_top']);
-    globalThis.__discoveryAdvertising = { ...data, options: { label: 'Reiseziele', availability: {}, banners: [], terms: [] } };
-    const admin = renderToStaticMarkup(await DestinationOverview());
-    assert.match(admin, /Banner hinzufügen/);
-    assert.match(admin, /data-placement="top_banner"/);
-    assert.match(admin, /<details data-destination-banner-management="true">/);
-    assert.match(admin, /Alle Bannerplätze verwalten/);
-    assert.doesNotMatch(admin, /<details[^>]*\bopen=/);
+    for (const options of [undefined, { label: 'Reiseziele', availability: {}, banners: [], terms: [] }]) {
+      globalThis.__discoveryAdvertising = { ...data, options };
+      const html = renderToStaticMarkup(await DestinationOverview());
+      assert.doesNotMatch(html, /data-placement=|known-banner.jpg|data-destination-promo|Banner hinzufügen|Alle Bannerplätze verwalten/);
+      assert.ok(html.indexOf('href="/reiseziele/suedtirol-italien"') < html.indexOf('Reiseinspiration nach Art des Urlaubs'));
+      for (const slug of ['oesterreich', 'schweiz', 'suedtirol-italien']) assert.ok(html.includes('/'+slug+'-overview-v2.webp'));
+      assert.match(html, /deutschland-kueste.webp/);
+    }
+    assert.deepEqual(globalThis.__discoveryAdPaths, []);
+    assert.equal(data.ads.length, 1, 'campaign data is not deleted');
   } finally {
     globalThis.__discoveryAdvertising = undefined;
     globalThis.__discoveryAdPaths = undefined;
   }
 });
 
-test("destination overview publicly displays at most one actual creative, Premium before fixed A–L", async () => {
+test("shared compact advertising elsewhere displays at most one actual creative, Premium before fixed A–L", async () => {
   const banner = (placement, name) => ({ id: name, placement, imageUrl: `/${name}.jpg`, headline: name, target_url: 'https://example.org/', banner_size: 'small' });
   const cases = [
     { ads: [banner('sidebar_bottom', 'C'), banner('sidebar_top', 'A'), banner('top_banner', 'Premium')], expected: 'Premium' },
@@ -328,7 +324,7 @@ test("destination overview publicly displays at most one actual creative, Premiu
     for (const { ads, expected } of cases) {
       const before = JSON.stringify(ads);
       globalThis.__discoveryAdvertising = { ads, sidebarOrder: [] };
-      const html = renderToStaticMarkup(await DestinationOverview());
+      const html = renderToStaticMarkup(createElement(DiscoveryAdvertising, { data: globalThis.__discoveryAdvertising, compact: true }, null));
       assert.equal((html.match(/data-placement=/g) ?? []).length, expected ? 1 : 0);
       if (expected) assert.ok(html.includes(`src="/${expected}.jpg"`));
       assert.doesNotMatch(html, /Freier Werbeplatz|Banner hinzufügen|Alle Bannerplätze verwalten/);
@@ -437,13 +433,13 @@ test("motto selection follows the current URL even when a same-page navigation r
 test("compact promo uses the campaign copy and editable image without changing ordinary image creatives", async () => {
   globalThis.__discoveryAdvertising = { ads: [{id:'promo',placement:'top_banner',imageUrl:'/promo.webp',headline:'Südtirol – Natur und Genuss',body_text:'Portal-eigene Reiseinspiration',target_url:'https://das-reiseportal.com/reiseziele/suedtirol-italien'}],sidebarOrder:[] };
   try {
-    const html = renderToStaticMarkup(await DestinationOverview());
+    const html = renderToStaticMarkup(createElement(DiscoveryAdvertising, { data: globalThis.__discoveryAdvertising, compact: true }, null));
     assert.match(html, /Reiseinspiration/);
     assert.match(html, /Portal-eigene Reiseinspiration/);
     assert.match(html, /href="\/reiseziele\/suedtirol-italien"/);
     assert.equal((html.match(/data-placement=/g) ?? []).length, 1);
     globalThis.__discoveryAdvertising.ads[0].target_url = 'https://example.com/holiday';
-    const commercial = renderToStaticMarkup(await DestinationOverview());
+    const commercial = renderToStaticMarkup(createElement(DiscoveryAdvertising, { data: globalThis.__discoveryAdvertising, compact: true }, null));
     assert.doesNotMatch(commercial, /Portal-eigene Reiseinspiration|Jetzt entdecken/);
     assert.match(commercial, /href="https:\/\/example.com\/holiday"/);
   } finally { globalThis.__discoveryAdvertising = undefined; }

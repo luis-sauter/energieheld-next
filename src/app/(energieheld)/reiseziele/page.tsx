@@ -1,10 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
 import { Icon } from "@/components/portal/icon";
 import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
 import { destinations } from "@/data/reiseportal-discovery";
-import { loadDiscoveryAdvertising } from "@/lib/discovery-advertising";
 import { pageMetadata, hubDescriptions } from "@/lib/seo";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 import { Breadcrumbs } from "@/components/portal/breadcrumbs";
@@ -14,8 +12,8 @@ import styles from "./reiseziele.module.css";
 
 const breadcrumbs = portalBreadcrumbs("Reiseziele", "/reiseziele");
 const imageRoot = "/reiseportal/redesign/reiseziele";
-const countryAlts = ["Dünen, Strand und Leuchtturm an einer deutschen Küstenlandschaft", "Sommerliche See- und Berglandschaft in Österreich",
-  "Schweizer Berglandschaft mit See", "Grüne Bergwiesen in Südtirol"];
+const countryAlts = ["Dünen, Strand und Leuchtturm an einer deutschen Küstenlandschaft", "Almhütte am See vor österreichischem Bergpanorama",
+  "Matterhorn über einem klaren Schweizer Alpensee", "Weinberge und Dorf mit Kirchturm vor den Dolomiten in Südtirol"];
 const countryTeasers = [
   "Von der Ostseeküste über Flusstäler bis an den Alpenrand.",
   "Alpentäler, Seen und Städte voller Geschichte.",
@@ -49,8 +47,7 @@ function Calendar() { return <svg viewBox="0 0 24 24" width="30" height="30" fil
 export const metadata = pageMetadata({ title: "Reiseziele – Vier Länder. Viele Möglichkeiten.", description: hubDescriptions.destinations,
   path: "/reiseziele", image: `${imageRoot}/hero.webp` });
 export const dynamic = "force-dynamic";
-export default async function DestinationsPage() {
-  const advertising = await loadDiscoveryAdvertising("/reiseziele");
+export default function DestinationsPage() {
   return <main id="hauptinhalt" className={styles.page}>
     <JsonLd data={jsonLdGraph([breadcrumbSchema(breadcrumbs), collectionSchema({ name: "Reiseziele", description: hubDescriptions.destinations,
       path: "/reiseziele", items: destinations.map(entry => ({ name: entry.title, path: `/reiseziele/${entry.slug}` })) })])} />
@@ -68,14 +65,13 @@ export default async function DestinationsPage() {
         <h2 id="countries-title" className={styles.srOnly}>Unsere vier Reiseziele</h2>
         <div className={styles.countryGrid}>
           {destinations.map((entry, index) => <Link className={styles.countryCard} key={entry.slug} href={`/reiseziele/${entry.slug}`}>
-            <div className={styles.countryPhoto}><Image src={`${imageRoot}/${entry.slug === "deutschland" ? "deutschland-kueste" : entry.slug}.webp`} alt={countryAlts[index]} fill
+            <div className={styles.countryPhoto}><Image src={`${imageRoot}/${entry.slug === "deutschland" ? "deutschland-kueste" : `${entry.slug}-overview-v2`}.webp`} style={entry.slug === "deutschland" ? undefined : { objectPosition: "center 25%" }} alt={countryAlts[index]} fill
               sizes="(max-width: 600px) calc(100vw - 32px), (max-width: 1336px) 45vw, 606px" /></div>
             <div className={styles.countryBody}><div><h3>{countryTitle(entry.slug, entry.title)}</h3><p>{countryTeasers[index]}</p></div>
               <span className={styles.discover}>Entdecken <Arrow /></span></div>
           </Link>)}
         </div>
       </section>
-      <div className={styles.advertising}><DiscoveryAdvertising data={advertising} compact>{null}</DiscoveryAdvertising></div>
     </div>
     <div className={styles.inspirationArea}>
       <div className="container">
