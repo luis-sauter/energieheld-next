@@ -1,37 +1,53 @@
-import { OfferRequestCta } from "@/components/portal/offer-request-cta";
 import Image from "next/image";
-import { EditorialImageCard } from "@/components/portal/editorial-image-card";
+import Link from "next/link";
 import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
+import { Icon } from "@/components/portal/icon";
+import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
 import { destinations } from "@/data/reiseportal-discovery";
 import { loadDiscoveryAdvertising } from "@/lib/discovery-advertising";
-import styles from "./reiseziele.module.css";
 import { pageMetadata, hubDescriptions } from "@/lib/seo";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 import { Breadcrumbs } from "@/components/portal/breadcrumbs";
 import { JsonLd } from "@/components/portal/json-ld";
 import { jsonLdGraph, breadcrumbSchema, collectionSchema } from "@/lib/seo-schema";
+import styles from "./reiseziele.module.css";
 
 const breadcrumbs = portalBreadcrumbs("Reiseziele", "/reiseziele");
-
 const imageRoot = "/reiseportal/redesign/reiseziele";
-const countryAlts = ["See und bewaldete Berghänge in Deutschland", "Sommerliche See- und Berglandschaft in Österreich",
+const countryAlts = ["Dünen, Strand und Leuchtturm an einer deutschen Küstenlandschaft", "Sommerliche See- und Berglandschaft in Österreich",
   "Schweizer Berglandschaft mit See", "Grüne Bergwiesen in Südtirol"];
-// Short editorial teasers refer to regions with verified public portal content.
 const countryTeasers = [
   "Von der Ostseeküste über Flusstäler bis an den Alpenrand.",
-  "Alpentäler, Seeufer und Städte voller Geschichte.",
+  "Alpentäler, Seen und Städte voller Geschichte.",
   "Bergdörfer, klare Seen und Wege mit weitem Blick.",
   "Dolomiten, Weinberge und die Seen Norditaliens.",
 ];
-const regions = [
-  { title: "Sächsische Schweiz", text: "Deutschland", query: "Sächsische Schweiz", image: "saechsische-schweiz", alt: "Sandsteinfelsen über einem bewaldeten Tal" },
-  { title: "Hochkönig", text: "Salzburger Land · Österreich", query: "Hochkönig", image: "hochkoenig", alt: "Grüne Alpenwiesen vor einem Kalksteinmassiv" },
-  { title: "Blausee", text: "Schweiz", query: "Blausee", image: "blausee", alt: "Klarer türkisfarbener See in einem Nadelwald" },
-  { title: "Gitschberg Jochtal", text: "Südtirol / Italien", query: "Gitschberg Jochtal", image: "gitschberg-jochtal", alt: "Südtiroler Almwiesen mit Bergblick" },
+const inspirations = [
+  { title: "Wellness", theme: "wellnessangebote", text: "Entspannen, genießen und neue Energie tanken.", alt: "Entspannung im Pool mit Blick auf See und Berge" },
+  { title: "Familie", theme: "familienurlaub", text: "Gemeinsam unvergessliche Momente erleben.", alt: "Familie am sonnigen Seeufer" },
+  { title: "Aktiv", theme: "wanderurlaub", text: "Wandern, neue Wege finden und die Natur entdecken.", alt: "Wandernde auf einem Bergweg über dem See" },
+  { title: "Genuss & Natur", theme: "natur-pur", text: "Zur Ruhe kommen und besondere Landschaften genießen.", alt: "Regionale Genussmomente auf einer Terrasse mit Weinbergen und Seeblick" },
 ];
+const quicklinks = [
+  { title: "Wellnessurlaub", icon: "wellnessangebote", href: "/mottoreisen/wellnessangebote" },
+  { title: "Wandern", icon: "wanderurlaub", href: "/mottoreisen/wanderurlaub" },
+  { title: "Seen & Berge", icon: "urlaub-am-wasser", href: "/mottoreisen/urlaub-am-wasser" },
+  // There is no duration facet: this entrance offers the existing directory.
+  { title: "Kurzurlaub", icon: "calendar", href: "/unterkuenfte-a-z" },
+  { title: "Mit Hund", icon: "mit-hund", href: "/unterkuenfte-a-z?zielgruppe=mit-hund" },
+  { title: "Familienzeit", icon: "familienurlaub", href: "/mottoreisen/familienurlaub" },
+];
+const benefits = [
+  { title: "Ausgewählte Reiseideen", icon: "globe", text: "Inspiration für Deutschland, Österreich, die Schweiz und Südtirol / Italien – übersichtlich zusammengestellt." },
+  { title: "Passende Gastgeber", icon: "home", text: "Von familiär geführten Hotels bis zu besonderen Unterkünften: Finden Sie Gastgeber für Ihre Auszeit." },
+  { title: "Direkte Anfrage", icon: "mail", text: "Bei Gastgebern mit Unternehmensprofil einfach und direkt anfragen – ohne Umwege." },
+];
+const countryTitle = (slug: string, title: string) => slug === "suedtirol-italien" ? "Südtirol / Italien" : title;
+function Arrow() { return <span className={styles.arrow} aria-hidden="true"><Icon name="arrow" /></span>; }
+function Calendar() { return <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 2v6m10-6v6M3 11h18" /></svg>; }
 
-export const metadata = pageMetadata({ title: "Reiseziele – Länder, Regionen und Gastgeber", description: hubDescriptions.destinations,
-  path: "/reiseziele", image: "/reiseportal/destinations/oesterreich.jpg" });
+export const metadata = pageMetadata({ title: "Reiseziele – Vier Länder. Viele Möglichkeiten.", description: hubDescriptions.destinations,
+  path: "/reiseziele", image: `${imageRoot}/hero.webp` });
 export const dynamic = "force-dynamic";
 export default async function DestinationsPage() {
   const advertising = await loadDiscoveryAdvertising("/reiseziele");
@@ -40,37 +56,68 @@ export default async function DestinationsPage() {
       path: "/reiseziele", items: destinations.map(entry => ({ name: entry.title, path: `/reiseziele/${entry.slug}` })) })])} />
     <section className={styles.hero} aria-labelledby="reiseziele-title">
       <Image className={styles.heroImage} src={`${imageRoot}/hero.webp`} alt="Blick über einen Alpensee mit zwei Wandernden am Aussichtspunkt"
-        fill sizes="(max-width: 600px) 1440px, 100vw" preload />
+        fill sizes="100vw" preload />
       <div className={`${styles.heroContent} container`}>
         <Breadcrumbs items={breadcrumbs} className={styles.breadcrumbs} />
-        <h1 id="reiseziele-title" className={styles.heading}>Reiseziele, die neugierig machen</h1>
-        <p>Manchmal beginnt die Reise mit einer Landschaft: einem See, einem Tal, einer Küste.
-          Entdecken Sie Deutschland, Österreich, die Schweiz und Südtirol / Italien – und Gastgeber für Ihre Zeit dort.</p>
+        <h1 id="reiseziele-title" className={styles.heading}>Vier Länder.<br />Viele Möglichkeiten.</h1>
+        <p>Entdecken Sie Deutschland, Österreich, die Schweiz und Südtirol / Italien – vier einzigartige Regionen mit atemberaubender Natur, faszinierenden Kulturen und unvergesslichen Erlebnissen.</p>
       </div>
     </section>
     <div className="container">
       <section className={styles.countries} aria-labelledby="countries-title">
-        <h2 id="countries-title" className={styles.sectionTitle}>Vier Länder, viele Reisewege</h2>
+        <h2 id="countries-title" className={styles.srOnly}>Unsere vier Reiseziele</h2>
         <div className={styles.countryGrid}>
-          {destinations.map((entry, index) => <EditorialImageCard key={entry.slug} title={entry.title}
-            sizes="(max-width: 600px) calc(100vw - 48px), (max-width: 1000px) 45vw, 290px"
-            text={countryTeasers[index]} href={`/reiseziele/${entry.slug}`} image={`${imageRoot}/${entry.slug}.webp`} alt={countryAlts[index]} />)}
+          {destinations.map((entry, index) => <Link className={styles.countryCard} key={entry.slug} href={`/reiseziele/${entry.slug}`}>
+            <div className={styles.countryPhoto}><Image src={`${imageRoot}/${entry.slug === "deutschland" ? "deutschland-kueste" : entry.slug}.webp`} alt={countryAlts[index]} fill
+              sizes="(max-width: 600px) calc(100vw - 32px), (max-width: 1336px) 45vw, 606px" /></div>
+            <div className={styles.countryBody}><div><h3>{countryTitle(entry.slug, entry.title)}</h3><p>{countryTeasers[index]}</p></div>
+              <span className={styles.discover}>Entdecken <Arrow /></span></div>
+          </Link>)}
         </div>
       </section>
-      <div className={styles.advertising}>
-        <DiscoveryAdvertising data={advertising} compact>{null}</DiscoveryAdvertising>
-      </div>
-      <section className={styles.regions} aria-labelledby="regions-title">
-        <div className={styles.sectionHeading}>
-          <h2 id="regions-title" className={styles.sectionTitle}>Orte für den nächsten Reiseplan</h2>
-          <p>Zwischen Sandsteinfelsen, stillen Seen und Almwiesen: Erkunden Sie diese Regionen und ihre Gastgeber.</p>
-        </div>
-        <div className={styles.regionGrid}>
-          {regions.map((region) => <EditorialImageCard key={region.image} compact title={region.title} text={region.text}
-            href={`/suche?q=${encodeURIComponent(region.query)}`} image={`${imageRoot}/${region.image}.webp`} alt={region.alt} />)}
-        </div>
-      </section>
+      <div className={styles.advertising}><DiscoveryAdvertising data={advertising} compact>{null}</DiscoveryAdvertising></div>
     </div>
-    <OfferRequestCta />
+    <div className={styles.inspirationArea}>
+      <div className="container">
+        <section className={styles.inspiration} aria-labelledby="inspiration-title">
+          <div className={styles.sectionHeading}><p className={styles.eyebrow}>Urlaub nach Ihren Wünschen</p>
+            <h2 id="inspiration-title">Reiseinspiration nach Art des Urlaubs</h2>
+            <p>Ob Entspannung, gemeinsame Zeit oder aktive Erlebnisse – finden Sie Ihren ganz persönlichen Urlaub in Deutschland, Österreich, der Schweiz oder Südtirol / Italien.</p></div>
+          <div className={styles.inspirationGrid}>
+            {inspirations.map(item => <article className={styles.inspirationCard} key={item.theme}>
+              <Link className={styles.themeLink} href={`/mottoreisen/${item.theme}`}>
+                <div className={styles.themePhoto}><Image src={item.theme === "natur-pur" ? `${imageRoot}/genuss-natur.webp` : `/reiseportal/redesign/mottoreisen/${item.theme}.webp`} alt={item.alt} fill
+                  sizes="(max-width: 600px) calc(100vw - 32px), (max-width: 1000px) 45vw, 295px" /></div>
+                <div className={styles.themeBody}><div><h3>{item.title}</h3><p>{item.text}</p></div><Arrow /></div>
+              </Link>
+              <ul className={styles.countryPills} aria-label={`${item.title} nach Reiseziel`}>
+                {destinations.map(country => <li key={country.slug}><Link href={`/unterkuenfte-a-z?ziel=${country.slug}&thema=${item.theme}`}
+                  aria-label={`${item.title} in ${countryTitle(country.slug, country.title)}`}>{countryTitle(country.slug, country.title)}</Link></li>)}
+              </ul>
+            </article>)}
+          </div>
+        </section>
+        <section className={styles.section} aria-labelledby="quicklinks-title">
+          <div className={styles.sectionHeading}><p className={styles.eyebrow}>Beliebte Einstiege</p>
+            <h2 id="quicklinks-title">So finden Sie schneller das passende Reiseziel</h2>
+            <p>Lassen Sie sich von beliebten Urlaubsthemen inspirieren und entdecken Sie passende Gastgeber in allen vier Ländern.</p></div>
+          <div className={styles.quicklinks}>{quicklinks.map(item => <Link className={styles.quicklink} key={item.title} href={item.href}>
+            <span className={styles.orangeIcon}>{item.icon === "calendar" ? <Calendar /> : <TravelThemeIcon slug={item.icon} />}</span>
+            <span>{item.title}</span><Arrow /></Link>)}</div>
+        </section>
+        <section className={styles.section} aria-labelledby="benefits-title">
+          <div className={styles.sectionHeading}><p className={styles.eyebrow}>Gut zu wissen</p><h2 id="benefits-title">Warum DAS-Reiseportal.com?</h2></div>
+          <div className={styles.benefits}>{benefits.map(item => <article className={styles.benefit} key={item.title}>
+            <span className={styles.orangeIcon}><Icon name={item.icon} size={38} /></span><div><h3>{item.title}</h3><p>{item.text}</p></div>
+          </article>)}</div>
+        </section>
+        <section className={styles.partner} aria-labelledby="partner-title">
+          <Image src={`${imageRoot}/partner-chalet.webp`} alt="" fill sizes="(max-width: 1336px) 100vw, 1240px" />
+          <div className={styles.partnerContent}><p className={styles.eyebrow}>Partner werden</p><h2 id="partner-title">Ihr Unternehmen auf DAS-Reiseportal.com</h2>
+            <p>Erreichen Sie neue Gäste und präsentieren Sie Ihre Unterkunft oder Ihr Angebot für Deutschland, Österreich, die Schweiz und Südtirol / Italien.</p>
+            <Link className="button button-primary" href="/angebot-anfragen">Angebot anfragen <Icon name="arrow" /></Link></div>
+        </section>
+      </div>
+    </div>
   </main>;
 }

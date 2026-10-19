@@ -243,33 +243,38 @@ test("discovery cards retain signed profile images without sending them to the N
   }
 });
 
-test("destination redesign keeps eight real server-rendered links, one H1 and nine optimized images", async () => {
+test("destination overview links countries, all themed country filters and real quick entrances", async () => {
   globalThis.__discoveryAdvertising = undefined;
   globalThis.__discoveryAdPaths = [];
   const html = renderToStaticMarkup(await DestinationOverview());
   assert.deepEqual(globalThis.__discoveryAdPaths, ["/reiseziele"]);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  assert.match(html, /Reiseziele, die neugierig machen/);
-  assert.equal((html.match(/<h3\b/g) ?? []).length, 8);
-  for (const destination of destinations) assert.ok(html.includes(`href="/reiseziele/${destination.slug}"`));
-  for (const region of ["Sächsische Schweiz", "Hochkönig", "Blausee", "Gitschberg Jochtal"])
-    assert.ok(html.includes(`href="/suche?q=${encodeURIComponent(region)}"`));
-  assert.doesNotMatch(html, /Bayerischer Wald|Salzkammergut|Wallis|Jetzt Südtirol entdecken|Freier Werbeplatz/);
-  const images = [...html.matchAll(/src="(\/reiseportal\/redesign\/reiseziele\/[^\"]+)"/g)];
-  assert.equal(images.length, 9);
-  for (const [, src] of images) {
-    const asset = readFileSync(new URL(`../public${src}`, import.meta.url));
-    assert.equal(asset.subarray(8, 12).toString(), "WEBP");
-    assert.ok(asset.length < 400_000, `${src} exceeds asset budget`);
+  assert.match(html, /Vier Länder\.<br\s*\/>Viele Möglichkeiten\./);
+  for (const destination of destinations) {
+    assert.ok(html.includes('href="/reiseziele/'+destination.slug+'"'));
+    for (const theme of ["wellnessangebote", "familienurlaub", "wanderurlaub", "natur-pur"])
+      assert.ok(html.includes('href="/unterkuenfte-a-z?ziel='+destination.slug+'&amp;thema='+theme+'"'));
   }
-  assert.equal((html.match(/loading="lazy"/g) ?? []).length, 8);
+  for (const theme of ["wellnessangebote", "familienurlaub", "wanderurlaub", "natur-pur", "urlaub-am-wasser"])
+    assert.ok(html.includes('href="/mottoreisen/'+theme+'"'));
+  assert.match(html, /href="\/unterkuenfte-a-z\?zielgruppe=mit-hund"/);
+  assert.match(html, /href="\/unterkuenfte-a-z"/);
+  assert.match(html, /href="\/angebot-anfragen"/);
+  assert.match(html, /Warum DAS-Reiseportal.com\?/);
+  assert.doesNotMatch(html, /href="#"|Bayerischer Wald|Orte für den nächsten Reiseplan/);
+  const images = [...html.matchAll(/src="(\/reiseportal\/redesign\/[^\"]+)"/g)];
+  assert.equal(images.length, 10);
+  for (const [, src] of images) {
+    const asset = readFileSync(new URL('../public'+src, import.meta.url));
+    assert.equal(asset.subarray(8, 12).toString(), "WEBP");
+    assert.ok(asset.length < 400_000, src+' exceeds asset budget');
+  }
   const css = readFileSync(new URL('../src/app/(energieheld)/reiseziele/reiseziele.module.css', import.meta.url), 'utf8');
-  assert.match(css, /\.countryGrid[^}]*repeat\(4, minmax\(0, 1fr\)\)/);
-  assert.match(css, /@media \(max-width: 1000px\)[\s\S]*\.countryGrid, \.regionGrid[^}]*repeat\(2, minmax\(0, 1fr\)\)/);
-  assert.match(css, /@media \(max-width: 600px\)[\s\S]*\.countryGrid, \.regionGrid[^}]*minmax\(0, 1fr\)/);
-  const cardCss = readFileSync(new URL('../src/components/portal/editorial-image-card.module.css', import.meta.url), 'utf8');
-  assert.match(cardCss, /:focus-visible/);
-  assert.match(cardCss, /prefers-reduced-motion: reduce/);
+  assert.match(css, /\.countryGrid[^}]*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(max-width: 1000px\)[\s\S]*\.inspirationGrid[^}]*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(max-width: 600px\)[\s\S]*\.countryGrid, \.inspirationGrid[^}]*minmax\(0, 1fr\)/);
+  assert.match(css, /:focus-visible/);
+  assert.match(css, /prefers-reduced-motion: reduce/);
 });
 
 test('four destination pages use individual editorial intros and headings without changing their identity or image',()=>{
@@ -291,7 +296,7 @@ test("destination redesign retains real shared banner delivery and admin provide
   try {
     const html = renderToStaticMarkup(await DestinationOverview());
     assert.ok(html.indexOf('href="/reiseziele/suedtirol-italien"') < html.indexOf('data-placement="sidebar_top"'));
-    assert.ok(html.indexOf('data-placement="sidebar_top"') < html.indexOf('Orte für den nächsten Reiseplan'));
+    assert.ok(html.indexOf('data-placement="sidebar_top"') < html.indexOf('Reiseinspiration nach Art des Urlaubs'));
     assert.match(html, /src="\/known-banner.jpg"/);
     assert.match(html, /rel="sponsored noopener noreferrer"/);
     assert.match(html, /target="_blank"/);
