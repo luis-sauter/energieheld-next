@@ -7,7 +7,6 @@ import { mottoGroup, mottoPresentation } from "@/lib/motto-presentation";
 import { travelThemes } from "@/data/reiseportal-discovery";
 import { DiscoveryAdvertising } from "@/components/advertising/discovery-advertising";
 import { loadDiscoveryAdvertising } from "@/lib/discovery-advertising";
-import destinationStyles from "../reiseziele/reiseziele.module.css";
 import styles from "./mottoreisen.module.css";
 import { pageMetadata, hubDescriptions, type SearchParameters } from "@/lib/seo";
 import { portalBreadcrumbs } from "@/lib/breadcrumbs";
@@ -32,15 +31,15 @@ export async function generateMetadata({ searchParams }: { searchParams?: Promis
 export const dynamic = "force-dynamic";
 export default async function MottoTravelPage({ searchParams }: { searchParams?: Promise<{ gruppe?: string }> } = {}) {
   const [advertising, params] = await Promise.all([loadDiscoveryAdvertising("/mottoreisen"), searchParams ?? Promise.resolve({ gruppe: undefined })]);
-  return <main id="hauptinhalt" className={`${destinationStyles.page} ${styles.page}`}>
+  return <main id="hauptinhalt" className={styles.page}>
     <JsonLd data={jsonLdGraph([breadcrumbSchema(breadcrumbs), collectionSchema({ name: "Mottoreisen", description: hubDescriptions.themes,
       path: "/mottoreisen", items: travelThemes.map(entry => ({ name: entry.title, path: `/mottoreisen/${entry.slug}` })) })])} />
-    <section className={destinationStyles.hero} aria-labelledby="motto-heading">
-      <Image className={destinationStyles.heroImage} src={`${imageRoot}/hero.webp`} alt="Zwei Reisende mit Blick über einen sonnigen Alpensee"
+    <section className={styles.hero} aria-labelledby="motto-heading">
+      <Image className={styles.heroImage} src={`${imageRoot}/hero.webp`} alt="Zwei Reisende mit Blick über einen sonnigen Alpensee"
         fill sizes="(max-width: 600px) 1440px, 100vw" preload />
-      <div className={`${destinationStyles.heroContent} container`}>
-        <Breadcrumbs items={breadcrumbs} className={destinationStyles.breadcrumbs} />
-        <h1 id="motto-heading" className={destinationStyles.heading}>Mottoreisen</h1>
+      <div className={`${styles.heroContent} container`}>
+        <Breadcrumbs items={breadcrumbs} className={styles.breadcrumbs} />
+        <h1 id="motto-heading" className={styles.heading}>Mottoreisen</h1>
         <p>Vielleicht geht es Ihnen aber gar nicht so sehr um ein bestimmtes Ziel, sondern Sie möchten eher einem speziellen Motto folgen? Auch damit kann DAS-Reiseportal.com dienen.</p>
         <p className={styles.introDetail}>Suchen Sie sich Ihr Traumziel unter den Golfreisen, den Wellnessangeboten, Geschäftsreisen oder unter den Reisen rund um das Wasser.</p>
       </div>
@@ -57,15 +56,15 @@ export default async function MottoTravelPage({ searchParams }: { searchParams?:
           </div>
         </MottoFilter>
       </section>
-      <div className={destinationStyles.advertising}>
+      <div className={styles.advertising}>
         <DiscoveryAdvertising data={advertising} compact>{null}</DiscoveryAdvertising>
       </div>
       <section aria-labelledby="inspiration-heading">
-        <div className={destinationStyles.sectionHeading}>
-          <h2 id="inspiration-heading" className={destinationStyles.sectionTitle}>Beliebte Reisemotive</h2>
+        <div className={styles.sectionHeading}>
+          <h2 id="inspiration-heading" className={styles.sectionTitle}>Beliebte Reisemotive</h2>
           <p>Lassen Sie sich von unseren vorhandenen Themen inspirieren.</p>
         </div>
-        <div className={destinationStyles.regionGrid}>
+        <div className={styles.regionGrid}>
           {inspirations.map(item => <EditorialImageCard key={item.group} compact title={item.title} text={item.text}
             href={`/mottoreisen?gruppe=${item.group}`} image={`${imageRoot}/${item.image}.webp`} alt={mottoPresentation[item.image].alt} />)}
         </div>

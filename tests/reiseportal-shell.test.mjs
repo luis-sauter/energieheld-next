@@ -594,3 +594,20 @@ test('homepage selects exactly five unique banners per row while keeping assigne
  assert.deepEqual(rows[0].slice(0,3),local.slice(0,3));assert.deepEqual(rows[1].slice(0,3),local.slice(3,6));
  assert.equal(JSON.stringify({local,pool}),before);assert.deepEqual(homeBannerRows([]),[[],[]]);
 });
+
+
+test('motto overview owns its preserved layout independently of destination redesigns', async () => {
+ const route=readFileSync(new URL('../src/app/(energieheld)/mottoreisen/page.tsx',import.meta.url),'utf8');
+ assert.doesNotMatch(route,/reiseziele\.module\.css|destinationStyles/);
+ const css=readFileSync(new URL('../src/app/(energieheld)/mottoreisen/mottoreisen.module.css',import.meta.url),'utf8');
+ assert.match(css,/\.regionGrid\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
+ assert.match(css,/@media \(max-width: 1000px\)[\s\S]*\.regionGrid\s*\{[^}]*repeat\(2, minmax\(0, 1fr\)\)/);
+ assert.match(css,/@media \(max-width: 600px\)[\s\S]*\.regionGrid\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/);
+ assert.match(css,/\.hero[^}]*min-height: 420px/);
+ assert.match(css,/\.advertising\s*:global\(\.commercial-columns\)/);
+ globalThis.__discoveryAdvertising=undefined;
+ const html=renderToStaticMarkup(await ThemeOverview());
+ for(const group of ['aktiv','erholung','familie','genuss']) assert.ok(html.includes('href="/mottoreisen?gruppe='+group+'"'));
+ assert.equal((html.match(/Beliebte Reisemotive/g)||[]).length,1);
+ assert.match(html,/Angebot anfragen/);
+});
