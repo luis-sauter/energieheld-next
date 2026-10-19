@@ -24,6 +24,6 @@ export default async function DestinationDetail({ params }: { params: Promise<{ 
   const { slug } = await params;
   const entry = destinations.find((item) => item.slug === slug);
   if (!entry) notFound();
-  const [listings, advertising] = await Promise.all([loadReiseportalDestination(entry.slug), loadDiscoveryAdvertising(`/reiseziele/${entry.slug}`)]);
+  const [listings, advertising] = await Promise.all([loadReiseportalDestination(entry.slug), loadDiscoveryAdvertising(`/reiseziele/${entry.slug}`, true)]);
   return <MottoDetail entry={entry} kind="destination" listings={listings} advertising={advertising} seed={randomUUID()} />;
 }

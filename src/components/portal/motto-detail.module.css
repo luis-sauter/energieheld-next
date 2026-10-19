@@ -32,3 +32,6 @@
 @media (max-width: 600px) { .content { padding-inline: 24px; } .hero { padding-top: 46px; } .track { grid-auto-columns: 100%; } .previous { left: -17px; } .next { right: -17px; } .arrow { width: 40px; height: 40px; } .backdrop { height: 850px; } .backdrop img { object-position: 60% 20%; } .editorial { margin-top: 34px; } }
 
 .titlePart { white-space: nowrap; hyphens: none; }
+.countryBannerRow :global([data-placement] > a) { width: 100%; aspect-ratio: 350 / 120; height: auto; overflow: hidden; }
+.countryBannerRow :global([data-placement] > a > span) { width: 100%; height: 100%; }
+.countryBannerRow :global([data-placement] img) { width: 100%; height: 100%; object-fit: contain; }

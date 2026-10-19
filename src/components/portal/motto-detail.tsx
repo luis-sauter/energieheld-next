@@ -12,8 +12,6 @@ import { portalBreadcrumbs } from '@/lib/breadcrumbs';
 import { JsonLd } from './json-ld';
 import { breadcrumbSchema, collectionSchema, jsonLdGraph } from '@/lib/seo-schema';
 import { destinationEditorial } from '@/data/destination-editorial';
-import { relatedTravelPages } from '@/lib/travel-relations';
-import { TravelRelations } from './travel-relations';
 import { mottoEditorial } from '@/data/motto-editorial';
 import { mottoGroups, orderMottoItems, visibleMottoAds } from '@/lib/motto-rows';
 import { MottoRow } from './motto-row';
@@ -27,7 +25,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
   const sectionTitle = destination ? 'Reiseziele' : 'Mottoreisen';
   const editorial = destination ? { ...entry, ...destinationEditorial[entry.slug] } : mottoEditorial[entry.slug];
   const companies = orderMottoItems(listings, listing => listing.id, seed + ':companies');
-  const banners = orderMottoItems(visibleMottoAds(advertising?.ads ?? []), ad => ad.id, seed + ':banners');
+  const banners = orderMottoItems(visibleMottoAds((destination ? advertising?.sliderAds : advertising?.ads) ?? advertising?.ads ?? []), ad => ad.id, seed + ':banners');
   const companyRows = mottoGroups(companies, 3), bannerRows = mottoGroups(banners, 2);
   const breadcrumbs = portalBreadcrumbs(entry.title, `${basePath}/${entry.slug}`, { name: sectionTitle, path: basePath });
   return <main id="hauptinhalt" className={styles.page} data-motto-detail={destination ? undefined : entry.slug} data-destination-detail={destination ? entry.slug : undefined}>
@@ -48,8 +46,9 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
               {companyRows[i].map(listing => <AccommodationCard key={listing.id} listing={listing} motto
                 cardEditing={Boolean(advertising?.options)} showImportMarker sizes="(max-width: 600px) 86vw, (max-width: 900px) 45vw, 360px" />)}
             </MottoRow>}
-            {bannerRows[i] && <div className={styles.bannerRow}><MottoRow label={`Banner, Reihe ${i + 1}`} speed={[22, 24][i]}>
-              {bannerRows[i].map(ad => <CampaignSlot key={ad.id} placement={ad.placement} ad={ad} />)}
+            {bannerRows[i] && <div className={`${styles.bannerRow}${destination ? ` ${styles.countryBannerRow}` : ''}`}><MottoRow label={`Banner, Reihe ${i + 1}`} speed={[22, 24][i]}>
+              {bannerRows[i].map(ad => <CampaignSlot key={ad.id} placement={ad.placement} ad={ad}
+                searchResult={destination && !advertising?.ads.some(local => local.id === ad.id)} />)}
             </MottoRow></div>}
           </div>)}
           {!companies.length && <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}
@@ -59,7 +58,6 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
         </InlineBannerProvider>
         {!!companies.length && <Link className="text-link" href={`/unterkuenfte-a-z?${destination ? 'ziel' : 'thema'}=${entry.slug}`}>Alle passenden Unterkünfte ansehen →</Link>}
       </section>
-      {destination && <TravelRelations title="Reiseideen für Ihren Aufenthalt" intro="Entdecken Sie Reisethemen, die zu Ihren Plänen für diese Region passen." links={relatedTravelPages(listings).themes} />}
       <Link className="text-link" href={basePath}>{destination ? '← Weitere Reiseziele entdecken' : '← Alle Mottoreisen entdecken'}</Link>
     </div>
   </main>;

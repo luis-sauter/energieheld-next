@@ -3,13 +3,16 @@ import { loadPublicAds } from "./public-ads";
 import { loadPublicSidebarOrder } from "./public-sidebar-order";
 import { loadInlineBannerOptions } from "./inline-advertising-loader";
 import { inlineAdContext } from "./inline-ad-context";
+import { loadTravelSearchBanners } from './public-travel-search-banners';
+import { destinationBanners } from './destination-banners';
 
-export async function loadDiscoveryAdvertising(path: string) {
+export async function loadDiscoveryAdvertising(path: string, allPublicBanners = false) {
   const context = inlineAdContext(path);
   if (!context || context.target_type !== "portal_area") return;
-  const [ads, sidebarOrder, options] = await Promise.all([
+  const [ads, sidebarOrder, options, pool] = await Promise.all([
     loadPublicAds(undefined, "portal_area", context.target_key!), loadPublicSidebarOrder(), loadInlineBannerOptions(path),
+    allPublicBanners && path.startsWith('/reiseziele/') ? loadTravelSearchBanners() : Promise.resolve(null),
   ]);
-  return { ads, sidebarOrder, options };
+  return { ads, sidebarOrder, options, sliderAds: pool ? destinationBanners(ads, pool.banners) : ads };
 }
 export type DiscoveryAdvertisingData = NonNullable<Awaited<ReturnType<typeof loadDiscoveryAdvertising>>>;

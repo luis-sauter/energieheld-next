@@ -542,13 +542,39 @@ test("old public energy routes redirect to travel or home", async () => {
   assert.throws(() => LegacyTrades(), /REDIRECT:\//);
 });
 
-test('destination details reuse premium motto rows, preserve every country link and themed recommendations',async()=>{
+test('country banner expansion keeps complete creatives, excludes invalid/hidden duplicates and respects local precedence',async()=>{
+ const {destinationBanners}=await import('../src/lib/destination-banners.ts');
+ const local={id:'local',placement:'sidebar_top',source:'legacy',target_url:'https://www.example.org/',imageUrl:'/local.webp',headline:'Local'};
+ const extra={id:'extra',placement:'sidebar_top',source:'campaign',target_url:'https://extra.example/',imageUrl:'/extra.webp',headline:'Extra'};
+ const row=(ad,banner_key)=>({ad,banner_key});
+ const sameLegacy={...local,id:'different-legacy',target_url:'https://example.org/'};
+ const pool=[row(extra,'campaign:extra'),row({...extra,imageUrl:'/wrong-duplicate.webp'},'campaign:extra'),row(sameLegacy,'legacy:https://example.org/'),row({...extra,id:'hidden',suppressed:true},'campaign:hidden'),row({...extra,id:'invalid',target_url:'javascript:alert(1)'},'campaign:invalid'),row({...extra,id:'missing',imageUrl:''},'campaign:missing')];
+ const original=JSON.stringify({local,pool});
+ assert.deepEqual(destinationBanners([local],pool),[local,extra]);
+ assert.equal(JSON.stringify({local,pool}),original);
+ assert.deepEqual(destinationBanners([local],[]),[local]);
+ assert.deepEqual(destinationBanners([{...extra,suppressed:true}],pool.filter(item=>item.ad.id!=='different-legacy')),[]);
+});
+
+test('expanded country sliders render every public creative once without duplicate fixed-slot ids or inline override collisions',async()=>{
+ const {MottoDetail}=await import('../src/components/portal/motto-detail.tsx');
+ const local={id:'local',placement:'sidebar_top',imageUrl:'/local.webp',target_url:'https://local.example/',headline:'Local'};
+ const extras=Array.from({length:23},(_,i)=>({...local,id:'extra-'+i,imageUrl:'/extra-'+i+'.webp',target_url:'https://extra.example/'+i,headline:'Extra '+i}));
+ const html=renderToStaticMarkup(createElement(MottoDetail,{entry:destinations[1],kind:'destination',listings:reiseportalPreview,seed:'expanded',advertising:{ads:[local],sliderAds:[local,...extras],sidebarOrder:[]}}));
+ assert.equal((html.match(/data-placement=/g)||[]).length,24);
+ assert.equal((html.match(/id="banner-sidebar_top"/g)||[]).length,1);
+ for(let i=0;i<23;i++)assert.equal((html.match(new RegExp('href="https://extra.example/'+i+'"','g'))||[]).length,1);
+ assert.doesNotMatch(html,/Reiseideen für Ihren Aufenthalt/);
+ assert.match(html,/ziel=oesterreich/);
+});
+
+test('destination details reuse premium motto rows and end directly with country links',async()=>{
  const {MottoDetail}=await import('../src/components/portal/motto-detail.tsx');
  for(const entry of destinations){
   const html=renderToStaticMarkup(createElement(MottoDetail,{entry,kind:'destination',listings:reiseportalPreview.map(listing=>({...listing,travelTermKeys:['theme:natur-pur']})),seed:'country-test',advertising:{ads:[],sidebarOrder:[],options:undefined}}));
   assert.match(html,new RegExp('ziel='+entry.slug));assert.doesNotMatch(html,new RegExp('thema='+entry.slug));
   assert.match(html,new RegExp('destination-editorial/'+entry.slug+'.webp'));
-  assert.doesNotMatch(html,/Automatischen Wechsel pausieren|commercial-columns|data-basic-contact/);
+  assert.doesNotMatch(html,/Automatischen Wechsel pausieren|commercial-columns|data-basic-contact|Reiseideen für Ihren Aufenthalt/);
   assert.equal((html.match(/class="accommodation-card"/g)||[]).length,reiseportalPreview.length);
   assert.equal((html.match(/<h1\b/g)||[]).length,1);
  }
