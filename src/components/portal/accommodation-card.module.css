@@ -9,11 +9,11 @@
 .copy .signals ul { gap: 5px; margin: .65rem 0 .9rem; }
 .copy .signals li { color: #fff; background: rgb(255 255 255 / 8%); border: 1px solid rgb(255 255 255 / 36%); padding: 4px 7px; font-size: .68rem; }
 .copy .signals svg { width: 15px; height: 15px; flex-basis: 15px; }
-.details { display: inline-flex; align-items: center; gap: .6rem; min-height: 44px; padding: .6rem .8rem; margin-left: 0; border-radius: 5px; color: #fff; font-size: .8rem; font-weight: 650; transition: background-color .18s ease; }
+.details { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 10px 16px; margin-left: 0; border-radius: 8px; color: #fff; font-size: .8rem; font-weight: 650; transition: background-color .18s ease; }
 .card.card:focus-visible { outline-color: #2394d5; outline-offset: 3px; box-shadow: 0 5px 20px #102b4230; }
-.card.card:focus-visible .details { background: #096aa9; margin-left: 0; }
-@media (hover: hover) and (pointer: fine) { .card:hover .photo { transform: scale(1.035); } .card:hover { outline-color: #2394d5; box-shadow: 0 5px 20px #102b4230; } .card:hover .details { background: #096aa9; margin-left: 0; } }
-@media (hover: none) { .details { background: #096aa9; margin-left: 0; } }
+.card.card:focus-visible .details { background: #096aa9; margin-left: 0; text-shadow: none; }
+@media (hover: hover) and (pointer: fine) { .card:hover .photo { transform: scale(1.035); } .card:hover { outline-color: #2394d5; box-shadow: 0 5px 20px #102b4230; } .card:hover .details { background: #096aa9; margin-left: 0; text-shadow: none; } }
+@media (hover: none) { .details { background: #096aa9; margin-left: 0; text-shadow: none; } }
 @media (prefers-reduced-motion: reduce) { .card, .details, .photo { transition: none; } .card:hover .photo { transform: none; } }
 
 .edit { position: absolute; z-index: 2; top: 10px; right: 10px; min-width: 44px; min-height: 44px; border: 1px solid #fff; border-radius: 50%; color: #174761; background: #fff; cursor: pointer; }
@@ -22,7 +22,7 @@
 .motto .copy h3 { font-size: 1.13rem; margin-bottom: 5px; }
 .motto .location { font-size: .6rem; margin-bottom: 4px; }
 .motto .copy .signals ul { margin: 7px 0 2px; }
-.motto .details { font-size: .75rem; padding: 6px 0; }
+.motto .details { font-size: .75rem; padding: 8px 16px; }
 .edit:focus-visible { outline: 3px solid #2394d5; outline-offset: 3px; }
 .importMarker { position: absolute; top: 12px; left: 12px; max-width: calc(100% - 80px); pointer-events: none; }
 .importMarker :global(.profile-import-badge) { color: #164a63; background: #f4fbffed; border-color: #ffffff80; font-size: .7rem; box-shadow: 0 1px 5px #102b421a; }
@@ -33,9 +33,7 @@
 .card[data-photo-fade="soft-light"]::after { background: linear-gradient(to top, rgb(255 255 255 / 90%) 0%, rgb(255 255 255 / 62%) 38%, transparent 80%); }
 .card[data-photo-fade="lighter-dark"]::after { background: linear-gradient(to top, rgb(0 0 0 / 40%) 0%, rgb(0 0 0 / 12%) 42%, transparent 72%); }
 .card[data-photo-fade="soft-light"] .copy { text-shadow: none; }
-.card[data-photo-fade="soft-light"] :is(.location, h3, .details) { color: var(--brand-primary); }
-.card[data-photo-fade="soft-light"] .copy .signals li { color: var(--brand-primary); background: rgb(255 255 255 / 65%); border-color: rgb(19 35 127 / 25%); }
-.card[data-photo-fade="soft-light"] .details { text-shadow: 0 0 3px #fff; }
-.card[data-photo-fade="soft-light"] .details:is(:hover, :focus) { color: var(--brand-primary); }
+.card[data-photo-fade="soft-light"] :is(.location, h3, .details) { color: var(--portal-basalt); }
+.card[data-photo-fade="soft-light"] .copy .signals li { color: var(--portal-basalt); background: rgb(255 255 255 / 65%); border-color: color-mix(in srgb, var(--portal-basalt) 25%, transparent); }
 .card[data-photo-fade="soft-light"]:is(:hover, :focus-visible) .details { color: #fff; text-shadow: none; }
 @media (hover: none) { .card[data-photo-fade="soft-light"] .details { color: #fff; text-shadow: none; } }
