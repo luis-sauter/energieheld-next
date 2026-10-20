@@ -21,6 +21,9 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
   entry: DiscoveryEntry; listings: Listing[]; advertising?: DiscoveryAdvertisingData; seed: string; kind?: 'theme' | 'destination';
 }) {
   const destination = kind === 'destination';
+  // Deliberately confined to this one theme for the visual comparison.
+  const comparisonFades = !destination && entry.slug === 'natur-pur'
+    ? ['soft-dark', 'soft-light', 'lighter-dark'] as const : [];
   const basePath = destination ? '/reiseziele' : '/mottoreisen';
   const sectionTitle = destination ? 'Reiseziele' : 'Mottoreisen';
   const editorial = destination ? { ...entry, ...destinationEditorial[entry.slug] } : mottoEditorial[entry.slug];
@@ -43,7 +46,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
         <InlineBannerProvider options={advertising?.options}>
           {Array.from({ length: Math.max(companyRows.length, bannerRows.length) }, (_, i) => <div key={i} className={styles.pair}>
             {companyRows[i] && <MottoRow label={`Unterkünfte, Reihe ${i + 1}`} speed={[18, 20, 17][i]}>
-              {companyRows[i].map(listing => <AccommodationCard key={listing.id} listing={listing} motto
+              {companyRows[i].map(listing => <AccommodationCard key={listing.id} listing={listing} motto fade={comparisonFades[i]}
                 cardEditing={Boolean(advertising?.options)} showImportMarker sizes="(max-width: 600px) 86vw, (max-width: 900px) 45vw, 360px" />)}
             </MottoRow>}
             {bannerRows[i] && <div className={`${styles.bannerRow}${destination ? ` ${styles.countryBannerRow}` : ''}`}><MottoRow label={`Banner, Reihe ${i + 1}`} speed={[22, 24][i]}>

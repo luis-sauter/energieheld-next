@@ -20,11 +20,12 @@ import cardStyles from './accommodation-card.module.css';
 import { ProfileImportBadge } from "@/components/admin/profile-import-badge";
 import { publicImportPresentation } from "@/config/import-presentation";
 
-export function AccommodationCard({ listing, rotating = false, sizes, cardEditing = false, showImportMarker = false, motto = false }: { listing: Listing; rotating?: boolean; sizes?: string; cardEditing?: boolean; showImportMarker?: boolean; motto?: boolean }) {
+export type AccommodationFade = 'soft-dark' | 'soft-light' | 'lighter-dark';
+export function AccommodationCard({ listing, rotating = false, sizes, cardEditing = false, showImportMarker = false, motto = false, fade }: { listing: Listing; rotating?: boolean; sizes?: string; cardEditing?: boolean; showImportMarker?: boolean; motto?: boolean; fade?: AccommodationFade }) {
   const image = providerCardImage(listing, 'travel');
   const content = <>
     <Link href={`/unterkuenfte/${listing.slug}`} className={`${cardStyles.card}${motto ? ` ${cardStyles.motto}` : ''}`}
-      aria-label={`${listing.name} – Details ansehen`}>
+      data-photo-fade={fade} aria-label={`${listing.name} – Details ansehen`}>
       <div className={`accommodation-card-image ${cardStyles.image}${image ? "" : " accommodation-card-image--empty"}`}>
         {image || cardEditing ? <div className={cardStyles.photo}>{cardEditing ? <CardImagePhoto image={image} initials={listing.initials} crop={listing.cardImageCrop} sizes={sizes} /> : image && <Image src={image.src} alt={image.alt} fill loading="lazy"
           style={listing.cardImageCrop ? imageCropStyle(listing.cardImageCrop) : undefined}

@@ -24,6 +24,8 @@ const stubs = {
 };
 stubs['./advertising-rail']=stubs['@/components/advertising/advertising-rail'];
 stubs['./campaign-view']=stubs['@/components/advertising/campaign-view'];
+stubs['../advertising/campaign-view']=stubs['@/components/advertising/campaign-view'];
+stubs['../advertising/inline-banner-editor']=stubs['@/components/advertising/inline-banner-editor'];
 registerHooks({
  resolve(specifier,context,next){
   if(specifier === 'server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
@@ -43,6 +45,7 @@ registerHooks({
 const {default:Home,generateMetadata:homeMetadata}=await import('../src/app/(energieheld)/page.tsx');
 const {DiscoveryCard}=await import('../src/components/portal/reise-overview.tsx');
 const {AccommodationCard}=await import('../src/components/portal/discovery-detail.tsx');
+const {MottoDetail}=await import('../src/components/portal/motto-detail.tsx');
 const {travelThemes,destinations}=await import('../src/data/reiseportal-discovery.ts');
 const {discoveryAudienceShortcuts,discoveryShortcutHref}=await import('../src/lib/discovery-shortcuts.ts');
 const {filterTravelListings}=await import('../src/lib/reiseportal-facets.ts');
@@ -322,12 +325,24 @@ test('same accommodation presentation for home, themes and destinations; no phot
 });
 test('Carola styles are isolated, keep text untruncated and provide keyboard/touch/reduced-motion parity',()=>{
  const css=read('src/components/portal/accommodation-card.module.css');
- assert.match(css,/aspect-ratio: 35 \/ 32/);assert.match(css,/object-fit: cover/);assert.doesNotMatch(css,/gradient\(|\.card::after|\.motto::after/);
+ assert.match(css,/aspect-ratio: 35 \/ 32/);assert.match(css,/object-fit: cover/);assert.doesNotMatch(css,/\.card::after|\.motto::after/);
+ for(const rule of css.matchAll(/([^{}]+)\{[^{}]*gradient\([^{}]*\}/g))assert.match(rule[1],/\[data-photo-fade=/);
  assert.match(css,/\.card:focus-visible/);assert.match(css,/\.card:hover/);assert.match(css,/hover: none/);assert.match(css,/prefers-reduced-motion: reduce/);
  assert.match(css,/overflow-wrap: anywhere/);assert.doesNotMatch(css,/line-clamp|text-overflow: ellipsis/);
  const home=read('src/app/(energieheld)/page.tsx');assert.match(home,/<MottoRow label="Ausgewählte Unterkünfte" speed=\{18\}/);assert.doesNotMatch(home,/styles.featuredStay|styles.recommendations/);
  const directory=read('src/components/portal/travel-directory.tsx');assert.match(directory,/<ListingRow/);assert.doesNotMatch(directory,/\bAccommodationCard\b/);
  const homeCss=read('src/app/(energieheld)/home.module.css');assert.doesNotMatch(homeCss,/accommodation-card-copy|accommodation-card-image/);
+});
+
+test('three fade variants are confined to Natur pur company rows, never other themes, destinations, home or banners',()=>{
+ const render=(entry,kind='theme')=>renderToStaticMarkup(createElement(MottoDetail,{entry,kind,listings:profiles,seed:'fade-check',advertising:{ads:[{id:'banner',placement:'sidebar_01',imageUrl:'/existing.jpg',target_url:'https://example.org'}]}}));
+ const nature=render(travelThemes.find(e=>e.slug==='natur-pur'));
+ assert.deepEqual([...nature.matchAll(/data-photo-fade="([^"]+)"/g)].map(m=>m[1]),['soft-dark','soft-dark','soft-light','lighter-dark']);
+ assert.equal((nature.match(/data-placement=/g)||[]).length,1);
+ for(const theme of travelThemes.filter(e=>e.slug!=='natur-pur'))assert.doesNotMatch(render(theme),/data-photo-fade/);
+ for(const destination of destinations)assert.doesNotMatch(render(destination,'destination'),/data-photo-fade/);
+ assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing:profiles[0],motto:true})),/data-photo-fade/);
+ assert.equal((nature.match(/href="\/unterkuenfte\//g)||[]).length,profiles.length);
 });
 
  test('shorter cards zoom only the photo, preserve focus geometry and honor reduced motion',()=>{

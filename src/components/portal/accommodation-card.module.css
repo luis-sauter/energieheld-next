@@ -26,3 +26,16 @@
 .edit:focus-visible { outline: 3px solid #2394d5; outline-offset: 3px; }
 .importMarker { position: absolute; top: 12px; left: 12px; max-width: calc(100% - 80px); pointer-events: none; }
 .importMarker :global(.profile-import-badge) { color: #164a63; background: #f4fbffed; border-color: #ffffff80; font-size: .7rem; box-shadow: 0 1px 5px #102b421a; }
+
+/* Opt-in comparison on Natur pur only; other cards have no overlay. */
+.card[data-photo-fade]::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.card[data-photo-fade="soft-dark"]::after { background: linear-gradient(to top, rgb(0 0 0 / 58%) 0%, rgb(0 0 0 / 18%) 45%, transparent 78%); }
+.card[data-photo-fade="soft-light"]::after { background: linear-gradient(to top, rgb(255 255 255 / 90%) 0%, rgb(255 255 255 / 62%) 38%, transparent 80%); }
+.card[data-photo-fade="lighter-dark"]::after { background: linear-gradient(to top, rgb(0 0 0 / 40%) 0%, rgb(0 0 0 / 12%) 42%, transparent 72%); }
+.card[data-photo-fade="soft-light"] .copy { text-shadow: none; }
+.card[data-photo-fade="soft-light"] :is(.location, h3, .details) { color: var(--brand-primary); }
+.card[data-photo-fade="soft-light"] .copy .signals li { color: var(--brand-primary); background: rgb(255 255 255 / 65%); border-color: rgb(19 35 127 / 25%); }
+.card[data-photo-fade="soft-light"] .details { text-shadow: 0 0 3px #fff; }
+.card[data-photo-fade="soft-light"] .details:is(:hover, :focus) { color: var(--brand-primary); }
+.card[data-photo-fade="soft-light"]:is(:hover, :focus-visible) .details { color: #fff; text-shadow: none; }
+@media (hover: none) { .card[data-photo-fade="soft-light"] .details { color: #fff; text-shadow: none; } }
