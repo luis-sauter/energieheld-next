@@ -184,7 +184,7 @@ function client({ authenticated = true, admin = true, campaign = {}, saveError =
 
 test("inline contexts retain historical targeting, including the retired diving rubric", () => {
   const paths = ["/", "/unterkuenfte-a-z", "/mottoreisen", "/reiseziele", "/mottoreisen/tauchurlaub", ...travelThemes.map((item) => `/mottoreisen/${item.slug}`), ...destinations.map((item) => `/reiseziele/${item.slug}`)];
-  assert.equal(paths.length, 20);
+  assert.equal(paths.length, 21);
   for (const path of paths) assert.equal(inlineAdContext(path)?.path, path);
   for (const path of ["/admin", "/experten/foo", "/mottoreisen/fake", "/reiseziele/fake", "/reiseziele/deutschland/", "/?page=admin"]) assert.equal(inlineAdContext(path), null);
   assert.equal(matchesInlineAdContext(target(), inlineAdContext("/mottoreisen/wellnessangebote")), true);

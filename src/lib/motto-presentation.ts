@@ -23,6 +23,7 @@ export const mottoPresentation: Record<string, { groups: MottoGroup[]; alt: stri
   "romantik-zu-zweit": { groups: ["genuss", "erholung"], alt: "Paar in warmer Abendstimmung am See" },
   wellnessangebote: { groups: ["erholung"], alt: "Entspannen im Pool mit Bergblick" },
   geschaeftsreisen: { groups: ["business"], alt: "Geschäftsreisender in einer hellen Flughafenlounge" },
+  skifahren: { groups: ["aktiv"], alt: "Skifahren auf einer sonnigen Piste in den Alpen" }
 };
 export function mottoGroup(value?: string): MottoGroup {
   return mottoGroups.some(group => group.id === value) ? value as MottoGroup : "alle";

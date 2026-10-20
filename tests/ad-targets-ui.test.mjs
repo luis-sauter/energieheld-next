@@ -207,7 +207,7 @@ test("request starts compact, adds each area once, and removes only its placemen
   assert.match(css, /\.requestForm \.placement\s*\{[^}]*min-height:\s*60px/);
 });
 test("portal picker derives real subpages and edits one nested target without affecting its siblings", () => {
-  assert.equal(portalAdSections.find((section) => section.id === "mottoreisen").areas.length, 13);
+  assert.equal(portalAdSections.find((section) => section.id === "mottoreisen").areas.length, 14);
   assert.equal(portalAdSections.find((section) => section.id === "reiseziele").areas.length, 5);
   const targets = [
     { target_type: "homepage", category_id: null, placement: "top_banner" },

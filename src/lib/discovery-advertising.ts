@@ -11,7 +11,7 @@ export async function loadDiscoveryAdvertising(path: string, allPublicBanners = 
   if (!context || context.target_type !== "portal_area") return;
   const [ads, sidebarOrder, options, pool] = await Promise.all([
     loadPublicAds(undefined, "portal_area", context.target_key!), loadPublicSidebarOrder(), loadInlineBannerOptions(path),
-    allPublicBanners && path.startsWith('/reiseziele/') ? loadTravelSearchBanners() : Promise.resolve(null),
+    allPublicBanners && (path.startsWith('/reiseziele/') || path === '/mottoreisen/skifahren') ? loadTravelSearchBanners() : Promise.resolve(null),
   ]);
   return { ads, sidebarOrder, options, sliderAds: pool ? destinationBanners(ads, pool.banners) : ads };
 }

@@ -1,4 +1,4 @@
-import { destinations, historicalTravelThemes } from "../data/reiseportal-discovery";
+import { destinations, historicalTravelThemes, travelThemes } from "../data/reiseportal-discovery";
 
 // These are the public editorial routes, not advertising-only categories.
 export const portalAdSections = [
@@ -7,7 +7,7 @@ export const portalAdSections = [
     label: "Mottoreisen",
     areas: [
       { key: "mottoreisen", label: "Gesamte Rubrik" },
-      ...historicalTravelThemes.map((theme) => ({ key: `mottoreisen/${theme.slug}`, label: theme.title })),
+      ...[...new Map([...historicalTravelThemes, ...travelThemes].map(theme => [theme.slug, theme])).values()].map((theme) => ({ key: `mottoreisen/${theme.slug}`, label: theme.title })),
     ],
   },
   {

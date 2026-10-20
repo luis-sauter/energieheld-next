@@ -55,5 +55,10 @@ export const mottoEditorial: Record<string, MottoEditorial> = {
     "image": "/reiseportal/motto-editorial-v2/geschaeftsreisen.webp",
     "alt": "Helle europäische Flusspromenade mit moderner Architektur und einem Reisenden mit Koffer",
     "intro": "Gut ankommen und zwischen Terminen einen klaren Kopf behalten: Auf Geschäftsreisen zählt ein sinnvoller Ausgangspunkt. Lage, Anreise und verlässliche Abläufe helfen, den Tag entspannt zu organisieren. Vergleichen Sie passende Gastgeber und klären Sie benötigte Arbeitsmöglichkeiten und Buchungsbedingungen anhand der jeweiligen Profilangaben."
+  },
+  "skifahren": {
+    image: "/reiseportal/motto-editorial-v2/skifahren.webp",
+    alt: "KI-Symbolbild: sonnige Skipiste mit verschneiten Tannen und Alpengipfeln",
+    intro: "Frischer Schnee, weite Abfahrten und Zeit in den Bergen machen Wintertage besonders. Entdecken Sie Gastgeber mit konkretem Skiangebot, kurzen Wegen zur Piste oder hilfreichem Service für Ihre Ausrüstung. Prüfen Sie vor der Anreise die aktuellen Liftzeiten, Schneebedingungen und enthaltenen Leistungen direkt beim Gastgeber."
   }
 };

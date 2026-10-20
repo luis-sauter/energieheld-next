@@ -52,7 +52,7 @@ const {filterTravelListings}=await import('../src/lib/reiseportal-facets.ts');
 const {readTravelFilterValues}=await import('../src/lib/reiseportal-filter-options.ts');
 
 test('all eleven public motto destinations and the audience exception use canonical slugs, independent of labels',()=>{
- const expected=['natur-pur','nordic-walking','radwandern','wanderurlaub','familienurlaub','golfurlaub','urlaub-am-wasser','campingurlaub','romantik-zu-zweit','wellnessangebote','geschaeftsreisen'];
+ const expected=['natur-pur','nordic-walking','radwandern','wanderurlaub','familienurlaub','golfurlaub','urlaub-am-wasser','campingurlaub','romantik-zu-zweit','wellnessangebote','geschaeftsreisen','skifahren'];
  assert.deepEqual(travelThemes.map(entry=>entry.slug),expected);
  for(const slug of expected)assert.equal(discoveryShortcutHref('theme',slug),'/mottoreisen/'+slug);
  assert.equal(discoveryShortcutHref('audience','paar'),'/mottoreisen/romantik-zu-zweit');

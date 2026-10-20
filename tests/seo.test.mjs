@@ -69,7 +69,7 @@ test('four destination and twelve topic metadata descriptions are unique, real a
  for(const [entries,kind,path]of [[destinations,'destination','reiseziele'],[travelThemes,'theme','mottoreisen']])for(const entry of entries){
   const meta=discoveryMetadata(entry,kind,production);assert.ok(meta.title.includes(entry.title));assert.ok(meta.description.length>30&&meta.description.length<=170);assert.equal(meta.alternates.canonical,`https://portal.example/${path}/${entry.slug}`);assert.equal(meta.robots.index,true);descriptions.push(meta.description);
  }
- assert.equal(new Set(descriptions).size,15);
+ assert.equal(new Set(descriptions).size,16);
 });
 
 test('A-Z queries are noindex/follow; single known theme/destination canonicalizes to stable landing page',()=>{
@@ -94,7 +94,7 @@ test('real profile metadata uses actual location and normalized sentence excerpt
 
 test('sitemap contains only real stable pages and approved eligible profiles, no invented dates',()=>{
  const entries=sitemapEntries([listing,listing,{...listing,slug:'demo-gmbh'},{...listing,isPreview:true}],production);
- assert.equal(entries.length,23);assert.ok(entries.some(e=>e.url.endsWith('/angebot-anfragen')));assert.ok(entries.some(e=>e.url.endsWith('/unterkuenfte/sonnenhof')));
+ assert.equal(entries.length,24);assert.ok(entries.some(e=>e.url.endsWith('/angebot-anfragen')));assert.ok(entries.some(e=>e.url.endsWith('/unterkuenfte/sonnenhof')));
  assert.equal(entries.some(e=>e.url.endsWith('/mottoreisen/tauchurlaub')),false);
  assert.ok(entries.every(e=>Object.keys(e).join()==='url'));assert.ok(entries.every(e=>!/[?]|\/suche|\/admin|\/firma|\/login|demo/.test(e.url)));
  assert.deepEqual(sitemapEntries([listing],siteSeo({})),[]);

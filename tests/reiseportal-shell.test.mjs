@@ -162,7 +162,7 @@ test("header dropdowns derive only existing theme and destination routes from th
     ({ label: title, href: `/mottoreisen/${slug}` })));
   assert.deepEqual(places.children, destinations.map(({ title, slug }) =>
     ({ label: title, href: `/reiseziele/${slug}` })));
-  assert.equal(themes.children.length, 11);
+  assert.equal(themes.children.length, 12);
   assert.equal(places.children.length, 4);
   assert.ok(existsSync(new URL("../src/app/(energieheld)/mottoreisen/[slug]/page.tsx", import.meta.url)));
   assert.ok(existsSync(new URL("../src/app/(energieheld)/reiseziele/[slug]/page.tsx", import.meta.url)));
@@ -341,9 +341,9 @@ test("four destinations and eleven active themes have sourced images, links and 
     orderRows: [],
   }, error: null };
   assert.deepEqual(destinations.map((item) => item.title), [...reiseziele]);
-  assert.deepEqual(travelThemes.map((item) => item.title), [...mottoreisen].filter(title => title !== "Tauchurlaub"));
+  assert.deepEqual(travelThemes.map((item) => item.title), [...mottoreisen].filter(title => title !== "Tauchurlaub").concat("Skiurlaub"));
   assert.equal(destinationRoute.generateStaticParams().length, 4);
-  assert.equal(themeRoute.generateStaticParams().length, 11);
+  assert.equal(themeRoute.generateStaticParams().length, 12);
   for (const [entries, basePath, title] of [[destinations, "/reiseziele", "Reiseziele"], [travelThemes, "/mottoreisen", "Mottoreisen"]]) {
     const html = renderToStaticMarkup(createElement(ReiseOverview, { title, intro: "Intro", entries, basePath }));
     assert.equal((html.match(/class="discovery-card"/g) ?? []).length, entries.length);

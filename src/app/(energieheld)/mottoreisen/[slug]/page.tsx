@@ -24,6 +24,6 @@ export default async function ThemeDetail({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const entry = travelThemes.find((item) => item.slug === slug);
   if (!entry) notFound();
-  const [listings, advertising] = await Promise.all([loadReiseportalTheme(entry.slug), loadDiscoveryAdvertising(`/mottoreisen/${entry.slug}`)]);
+  const [listings, advertising] = await Promise.all([loadReiseportalTheme(entry.slug), loadDiscoveryAdvertising(`/mottoreisen/${entry.slug}`, entry.slug === 'skifahren')]);
   return <MottoDetail entry={entry} listings={listings} advertising={advertising} seed={randomUUID()} />;
 }

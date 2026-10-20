@@ -33,7 +33,7 @@ test('profile closing retains its introduction and uses the identical homepage s
  const {TravelQuicklinks}=await import('../src/components/portal/travel-quicklinks.tsx');
  assert.match(html,/profile-discover/);assert.match(html,/Inspiration für Ihre Auszeit/);assert.match(html,/Hier beginnt Ihre nächste Reiseidee/);assert.match(html,/Diese Unterkunft hat Sie inspiriert\?/);assert.equal((html.match(/<h2/g)||[]).length,1);
  assert.ok(html.includes(renderToStaticMarkup(createElement(TravelQuicklinks))));
- assert.equal((html.match(/data-theme-image="true"/g)||[]).length,14);
+ assert.equal((html.match(/data-theme-image="true"/g)||[]).length,15);
  assert.match(html,/href="\/mottoreisen\/romantik-zu-zweit"/);assert.match(html,/href="\/unterkuenfte-a-z\?zielgruppe=mit-hund"/);assert.match(html,/href="\/unterkuenfte-a-z\?zielgruppe=familie"/);
  assert.doesNotMatch(html,/profile-discover-facts|profile-discover-ideas|Region entdecken|Reiseideen entdecken|href="\/reiseziele\/|tauchurlaub/);
  const rubric=renderToStaticMarkup(createElement(TravelRelations,props));assert.match(rubric,/travel-relations-grid/);assert.doesNotMatch(rubric,/profile-discover/);
@@ -42,6 +42,6 @@ test('profile closing retains its introduction and uses the identical homepage s
 test('every profile gets the shared strip even without assignments, without changing profile data or generic empty behavior',()=>{
  const props={title:'Reiseinformationen',links:[],facts:[],presentation:'profile'};
  const before=JSON.stringify(props),html=renderToStaticMarkup(createElement(TravelRelations,props));
- assert.match(html,/data-travel-quicklinks/);assert.equal((html.match(/data-theme-image="true"/g)||[]).length,14);assert.equal(JSON.stringify(props),before);
+ assert.match(html,/data-travel-quicklinks/);assert.equal((html.match(/data-theme-image="true"/g)||[]).length,15);assert.equal(JSON.stringify(props),before);
  assert.equal(renderToStaticMarkup(createElement(TravelRelations,{...props,presentation:undefined})), '');
 });

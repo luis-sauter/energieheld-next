@@ -24,7 +24,7 @@ test('only occupied valid banner creatives appear, campaign identity deduplicate
  assert.deepEqual(visibleMottoAds(source),[source[1]]);assert.equal(source[0].placement,'sidebar_bottom');
 });
 test('all eleven active themes have individual optimized art and editorial; historical diving targets remain valid',()=>{
- assert.equal(travelThemes.length,11);assert.equal(historicalTravelThemes.length,12);
+ assert.equal(travelThemes.length,12);assert.equal(historicalTravelThemes.length,12);
  assert.equal(portalAdSection('mottoreisen/tauchurlaub'),'mottoreisen');
  assert.equal(travelThemes.some(theme=>theme.slug==='tauchurlaub'),false);
  assert.deepEqual(Object.keys(mottoEditorial),travelThemes.map(theme=>theme.slug));
