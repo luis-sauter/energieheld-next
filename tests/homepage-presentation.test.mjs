@@ -97,12 +97,10 @@ test('homepage brand history is visible before the headline and finder, with mat
  assert.match(meta.description,/seit 2010/);assert.equal(meta.openGraph.description,meta.description);
 });
 test('public shared import badge is opt-in for discovery cards; protected homepage stays unchanged',async()=>{
- const {publicImportPresentation}=await import('../src/config/import-presentation.ts');
  const listing={...profiles[0],importedAt:'2026-10-11T00:00:00Z'};
  assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing})),/Neu importiert/);
  assert.match(renderToStaticMarkup(createElement(AccommodationCard,{listing,showImportMarker:true,cardEditing:true})),/Neu importiert/);
- try{publicImportPresentation.enabled=false;assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing,showImportMarker:true})),/Neu importiert/);}
- finally{publicImportPresentation.enabled=true;}
+ assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing,showImportMarker:true})),/Neu importiert/);
 });
 test('homepage composes existing search, public motto links and real featured profiles without the old season section',async()=>{
  globalThis.homeFixture.calls=[];

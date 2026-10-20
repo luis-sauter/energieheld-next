@@ -1,3 +1,3 @@
-// Disable at the explicitly approved public launch. Keep private provenance and
-// admin badges; publishing an individual profile never changes this switch.
-export const publicImportPresentation = { enabled: true };
+// Import provenance is editorial information, not a public label or sort option.
+// Admin badges remain independent of this public presentation switch.
+export const publicImportPresentation = { enabled: false };

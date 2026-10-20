@@ -18,7 +18,6 @@ import { providerCardImage } from '@/lib/provider-card-media';
 import { imageCropStyle } from "@/lib/image-crop";
 import cardStyles from './accommodation-card.module.css';
 import { ProfileImportBadge } from "@/components/admin/profile-import-badge";
-import { publicImportPresentation } from "@/config/import-presentation";
 
 export type AccommodationFade = 'soft-dark' | 'soft-light' | 'lighter-dark';
 export function AccommodationCard({ listing, rotating = false, sizes, cardEditing = false, showImportMarker = false, motto = false, fade }: { listing: Listing; rotating?: boolean; sizes?: string; cardEditing?: boolean; showImportMarker?: boolean; motto?: boolean; fade?: AccommodationFade }) {
@@ -34,7 +33,7 @@ export function AccommodationCard({ listing, rotating = false, sizes, cardEditin
             : "(max-width: 700px) calc(100vw - 48px), (max-width: 1100px) 45vw, 25vw")} />}</div>
           : <span className={cardStyles.fallback} aria-hidden="true">{listing.initials}</span>}
       </div>
-      {showImportMarker && publicImportPresentation.enabled && listing.importedAt && <span className={cardStyles.importMarker}><ProfileImportBadge imported /></span>}
+      {showImportMarker && cardEditing && listing.importedAt && <span className={cardStyles.importMarker}><ProfileImportBadge imported /></span>}
       <div className={`accommodation-card-copy ${cardStyles.copy}`}>
         <p className={cardStyles.location}>{[listing.location.city, listing.location.region, listing.location.country].filter(Boolean).filter((value, index, all) => all.indexOf(value) === index).join(" · ")}</p>
         <h3>{listing.name}</h3>

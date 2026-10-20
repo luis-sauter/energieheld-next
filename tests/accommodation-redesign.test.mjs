@@ -45,13 +45,12 @@ const source=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const listing=(id,premium=false,image=true)=>({id,slug:id,name:id,initials:'AB',tagline:'Originaler Teaser',description:'Originaltext',directoryPackage:premium?'premium':'basic',directoryImage:image?{src:'/reiseportal/original.jpg',alt:'Originales Anbieterbild'}:undefined,images:[],services:[],categoryIds:[],travelTermKeys:['theme:natur-pur','feature:unknown'],location:{city:'Berlin',country:'Deutschland',postalCode:'10115',region:''},contact:{phone:'+49 123',email:'public@example.com',website:'https://example.com'},isDemo:false});
 const terms=[{term_key:'theme:natur-pur',dimension:'theme',slug:'natur-pur',label:'Natur'}];
 const directory=(items,values={})=>renderToStaticMarkup(createElement(TravelDirectory,{initialValues:readTravelFilterValues(values),database:items,preview:[],terms,error:null,ads:[],sidebarOrder:[],canReorder:false,hiddenOrderKeys:[]}));
-test('public A–Z import marker and sort persist for published rows and disappear centrally at launch',async()=>{
+test('public A–Z omits import badges and sorting while the admin badge survives',async()=>{
  const {publicImportPresentation}=await import('../src/config/import-presentation.ts');
  const imported={...listing('imported',true),importedAt:'2026-10-11T00:00:00Z'};
- assert.match(directory([imported]),/Neu importiert/);
- assert.match(directory([imported]),/Neu importiert zuerst/);
- try{publicImportPresentation.enabled=false;assert.doesNotMatch(directory([imported]),/Neu importiert/);}
- finally{publicImportPresentation.enabled=true;}
+ assert.equal(publicImportPresentation.enabled,false);
+ assert.doesNotMatch(directory([imported]),/Neu importiert/);
+ assert.doesNotMatch(directory([imported],{sort:'imported'}),/Neu importiert/);
  const admin=renderToStaticMarkup(createElement(TravelDirectory,{initialValues:readTravelFilterValues({}),database:[imported],preview:[],terms,error:null,ads:[],sidebarOrder:[],canReorder:false,hiddenOrderKeys:[],importedProfileIds:['imported']}));
  assert.equal((admin.match(/class="profile-import-badge"/g)??[]).length,1);
 });

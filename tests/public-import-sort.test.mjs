@@ -9,6 +9,8 @@ const {publicImportPresentation}=await import('../src/config/import-presentation
 const item=(id,name,importedAt,country='Deutschland')=>({id,name,importedAt,categoryIds:[],services:[],description:'',tagline:'',slug:id,travelTermKeys:['theme:nordic-walking','audience:paare'],location:{city:'Berlin',postalCode:'10115',region:'',country}});
 const rows=[item('a','Alpha'),item('b','Beta','2026-10-10T00:00:00Z'),item('c','Gamma','2026-10-11T00:00:00Z'),item('d','Delta','2026-10-11T00:00:00Z','Österreich')];
 test('new-import sort uses persistent dates, stable name ties, existing filters and URL roundtrip',()=>{
+ const before=publicImportPresentation.enabled;
+ try{publicImportPresentation.enabled=true;
  const values=readTravelFilterValues({sort:'imported',thema:'nordic-walking',zielgruppe:'paare'});
  assert.deepEqual(filterTravelListings(rows,values).map(i=>i.id),['d','c','b','a']);
  assert.deepEqual(filterTravelListings(rows,{...values,destination:'deutschland'}).map(i=>i.id),['c','b','a']);
@@ -16,11 +18,11 @@ test('new-import sort uses persistent dates, stable name ties, existing filters 
  assert.ok(activeTravelFilterLabels(values,{themes:[],destinations:[],audiences:[],accommodations:[],features:[]}).includes('Sortierung: Neu importiert zuerst'));
  assert.deepEqual(filterTravelListings(rows,{...values,sort:'name'}).map(i=>i.id),['a','b','d','c']);
  assert.deepEqual(rows.map(i=>i.id),['a','b','c','d']);
+ }finally{publicImportPresentation.enabled=before;}
 });
-test('explicit launch switch retires public import sorting without deleting provenance',()=>{
- try{publicImportPresentation.enabled=false;
+test('public import sorting is disabled by default without deleting provenance',()=>{
+  assert.equal(publicImportPresentation.enabled,false);
   assert.equal(readTravelFilterValues({sort:'imported',ziel:'deutschland'}).sort,'');
   assert.deepEqual(filterTravelListings(rows,readTravelFilterValues({sort:'imported'})).map(i=>i.id),['a','b','c','d']);
   assert.ok(rows[1].importedAt);
- }finally{publicImportPresentation.enabled=true;}
 });
