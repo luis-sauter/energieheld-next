@@ -49,7 +49,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
               {companyRows[i].map(listing => <AccommodationCard key={listing.id} listing={listing} motto fade={comparisonFades[i]}
                 cardEditing={Boolean(advertising?.options)} showImportMarker sizes="(max-width: 600px) 86vw, (max-width: 900px) 45vw, 360px" />)}
             </MottoRow>}
-            {bannerRows[i] && <div className={`${styles.bannerRow}${destination ? ` ${styles.countryBannerRow}` : ''}`}><MottoRow label={`Banner, Reihe ${i + 1}`} speed={[22, 24][i]}>
+            {bannerRows[i] && <div className={`${styles.bannerRow}${destination || entry.slug === 'skifahren' ? ` ${styles.countryBannerRow}` : ''}`}><MottoRow label={`Banner, Reihe ${i + 1}`} speed={[22, 24][i]}>
               {bannerRows[i].map(ad => <CampaignSlot key={ad.id} placement={ad.placement} ad={ad}
                 searchResult={!advertising?.ads.some(local => local.id === ad.id)} />)}
             </MottoRow></div>}
