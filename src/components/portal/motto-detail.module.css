@@ -1,6 +1,7 @@
 .page { position: relative; isolation: isolate; background: #faf9f6; padding-bottom: 54px; }
 .backdrop { position: absolute; z-index: -1; inset: 0 0 auto; height: min(1100px, 125vw); min-height: 660px; overflow: hidden; }
 .backdrop img { object-fit: cover; object-position: 55% 30%; }
+.page[data-motto-detail] .backdrop img { opacity: .8; }
 .backdrop::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #faf9f640, #faf9f60a), linear-gradient(180deg, #faf9f62b 0%, #faf9f650 20%, #faf9f6c9 48%, #faf9f6f2 76%, #faf9f6 100%); }
 .content { position: relative; padding-top: 18px; }
 .hero { padding: clamp(50px, 8vw, 100px) 0 30px; max-width: 690px; }
