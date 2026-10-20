@@ -12,8 +12,9 @@ import styles from "./reiseziele.module.css";
 
 const breadcrumbs = portalBreadcrumbs("Reiseziele", "/reiseziele");
 const imageRoot = "/reiseportal/redesign/reiseziele";
-const countryAlts = ["Dünen, Strand und Leuchtturm an einer deutschen Küstenlandschaft", "Almhütte am See vor österreichischem Bergpanorama",
-  "Matterhorn über einem klaren Schweizer Alpensee", "Weinberge und Dorf mit Kirchturm vor den Dolomiten in Südtirol"];
+const countryImages = ["deutschland-kueste", "oesterreich-salzburg-v3", "schweiz-skipiste-v3", "suedtirol-altstadt-v3"];
+const countryAlts = ["Dünen, Strand und Leuchtturm an einer deutschen Küstenlandschaft", "KI-generierte Ansicht einer österreichischen Altstadt mit Festung und Fluss, inspiriert von Salzburg",
+  "KI-generierte Schweizer Skipiste vor verschneitem Alpenpanorama", "KI-generierte Südtiroler Altstadtgasse mit Laubengängen und Blumenschmuck"];
 const countryTeasers = [
   "Von der Ostseeküste über Flusstäler bis an den Alpenrand.",
   "Alpentäler, Seen und Städte voller Geschichte.",
@@ -45,14 +46,14 @@ function Arrow() { return <span className={styles.arrow} aria-hidden="true"><Ico
 function Calendar() { return <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 2v6m10-6v6M3 11h18" /></svg>; }
 
 export const metadata = pageMetadata({ title: "Reiseziele – Vier Länder. Viele Möglichkeiten.", description: hubDescriptions.destinations,
-  path: "/reiseziele", image: `${imageRoot}/hero.webp` });
+  path: "/reiseziele", image: `${imageRoot}/hero-flusstal-v3.webp` });
 export const dynamic = "force-dynamic";
 export default function DestinationsPage() {
   return <main id="hauptinhalt" className={styles.page}>
     <JsonLd data={jsonLdGraph([breadcrumbSchema(breadcrumbs), collectionSchema({ name: "Reiseziele", description: hubDescriptions.destinations,
       path: "/reiseziele", items: destinations.map(entry => ({ name: entry.title, path: `/reiseziele/${entry.slug}` })) })])} />
     <section className={styles.hero} aria-labelledby="reiseziele-title">
-      <Image className={styles.heroImage} src={`${imageRoot}/hero.webp`} alt="Blick über einen Alpensee mit zwei Wandernden am Aussichtspunkt"
+      <Image className={styles.heroImage} src={`${imageRoot}/hero-flusstal-v3.webp`} alt="KI-generiertes Panorama eines grünen Alpentals mit Fluss, Wiesen und Bergen"
         fill sizes="100vw" preload />
       <div className={`${styles.heroContent} container`}>
         <Breadcrumbs items={breadcrumbs} className={styles.breadcrumbs} />
@@ -65,7 +66,7 @@ export default function DestinationsPage() {
         <h2 id="countries-title" className={styles.srOnly}>Unsere vier Reiseziele</h2>
         <div className={styles.countryGrid}>
           {destinations.map((entry, index) => <Link className={styles.countryCard} key={entry.slug} href={`/reiseziele/${entry.slug}`}>
-            <div className={styles.countryPhoto}><Image src={`${imageRoot}/${entry.slug === "deutschland" ? "deutschland-kueste" : `${entry.slug}-overview-v2`}.webp`} style={entry.slug === "deutschland" ? undefined : { objectPosition: "center 25%" }} alt={countryAlts[index]} fill
+            <div className={styles.countryPhoto}><Image src={`${imageRoot}/${countryImages[index]}.webp`} alt={countryAlts[index]} fill
               sizes="(max-width: 600px) calc(100vw - 32px), (max-width: 1336px) 45vw, 606px" /></div>
             <div className={styles.countryBody}><div><h3>{countryTitle(entry.slug, entry.title)}</h3><p>{countryTeasers[index]}</p></div>
               <span className={styles.discover}>Entdecken <Arrow /></span></div>

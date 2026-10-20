@@ -300,7 +300,7 @@ test("destination overview omits all campaign output and does not request advert
       const html = renderToStaticMarkup(await DestinationOverview());
       assert.doesNotMatch(html, /data-placement=|known-banner.jpg|data-destination-promo|Banner hinzufügen|Alle Bannerplätze verwalten/);
       assert.ok(html.indexOf('href="/reiseziele/suedtirol-italien"') < html.indexOf('Reiseinspiration nach Art des Urlaubs'));
-      for (const slug of ['oesterreich', 'schweiz', 'suedtirol-italien']) assert.ok(html.includes('/'+slug+'-overview-v2.webp'));
+      for (const image of ['oesterreich-salzburg-v3', 'schweiz-skipiste-v3', 'suedtirol-altstadt-v3']) assert.ok(html.includes('/'+image+'.webp'));
       assert.match(html, /deutschland-kueste.webp/);
     }
     assert.deepEqual(globalThis.__discoveryAdPaths, []);
