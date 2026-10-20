@@ -1,0 +1,14 @@
+.location { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.9fr); gap: 26px; border: 1px solid #e8e4df; border-radius: 24px; padding: 18px; margin: 44px 0 24px; background: #fff9; color: #103f52; }
+.details { min-width: 0; padding: 16px; }
+.location .details h2 { color: #103f52; font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 1.35rem; line-height: 1.35; letter-spacing: -.025em; margin: 0 0 16px; overflow-wrap: anywhere; }
+.eyebrow { font-family: var(--font-heading); font-weight: var(--font-heading-weight); color: #527382; font-size: .8rem; text-transform: uppercase; letter-spacing: .18em; margin: 0 0 20px; }
+.location p:not(.eyebrow) { color: #6d7f87; font-size: .88rem; }
+.location iframe, .placeholder { display: block; width: 100%; min-width: 0; min-height: 290px; border: 0; border-radius: 18px; }
+.placeholder { display: grid; place-items: center; background: var(--surface); color: #527382; }
+.mapLink { display: inline-flex; gap: 12px; align-items: center; padding: 12px 18px; border: 1px solid #d3e4ed; border-radius: 28px; background: #f1f7fa; color: #1a5870; text-decoration: none; margin-top: 18px; }
+.mapLink svg { flex: 0 0 auto; width: 22px; height: 22px; }
+.mapLink:focus-visible { outline: 3px solid #2783a1; outline-offset: 3px; }
+@media (max-width: 760px) {
+  .location { grid-template-columns: minmax(0, 1fr); }
+  .location iframe, .placeholder { min-height: 260px; }
+}

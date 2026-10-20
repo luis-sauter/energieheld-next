@@ -94,15 +94,11 @@
 .company-profile .profile-head-grid { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(280px, 1fr); gap: 20px; align-items: stretch; margin-bottom: 24px; }
 .company-profile .profile-head-grid > * { min-width: 0; }
 .company-profile .profile-header-media { display: flex; flex-direction: column; min-height: clamp(320px, 33vw, 480px); margin: 0; }
-.company-profile .profile-location { margin-bottom: 40px; }
 .company-profile .profile-header-media .gallery { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; }
 .company-profile .profile-header-media .gallery-editor { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; }
 .company-profile .profile-header-media .gallery-empty { flex: 1; }
 .company-profile .profile-header-media .gallery-main { flex: 1; height: 100%; aspect-ratio: auto; max-width: none; max-height: none; min-height: 0; }
 .company-profile .profile-header-media .gallery-editor .gallery-main { flex: none; height: auto; min-height: clamp(320px, 33vw, 480px); aspect-ratio: 16 / 10; }
-.company-profile .profile-location .location-map { min-height: clamp(240px, 25vw, 340px); }
-.company-profile .profile-location > div:last-child { padding: 12px 18px; }
-.company-profile .profile-location h2 { font-size: 19px; margin-bottom: 6px; }
 .company-profile .profile-video { display: block; width: 100%; height: 100%; min-height: 300px; aspect-ratio: 2.2; object-fit: contain; background: #111; border-radius: 10px; }
 .company-profile .gallery-open { position: absolute; inset: 0; display: block; }
 .company-profile .gallery-open:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: -3px; z-index: 2; }
@@ -624,7 +620,6 @@
   }
 }
 @media (max-width: 600px) {
-  .company-profile .profile-location .location-map { min-height: 220px; }
   .company-profile .gallery-thumbs { max-width: calc(100% - 16px); bottom: 7px; }
   .company-profile .gallery-thumbs > button:not(.gallery-add-tile),
   .company-profile .gallery-thumbnail > button { width: 50px; height: 44px; flex-basis: 50px; }

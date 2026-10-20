@@ -15,6 +15,8 @@ registerHooks({resolve(s,c,next){
  if(s.startsWith('@/')||s.startsWith('.')){const b=s.startsWith('@/')?new URL('../src/'+s.slice(2),import.meta.url):new URL(s,c.parentURL);for(const ext of ['.ts','.tsx'])if(existsSync(new URL(b.href+ext)))return next(b.href+ext,c)}return next(s,c);
 },load(u,c,next){if(/\.tsx?$/.test(u))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(u),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX}}).outputText};return next(u,c)}});
 const {ProfileDesignPreview}=await import('../src/components/portal/profile-design-preview.tsx');
+const {ProfileLocation}=await import('../src/components/portal/profile-location.tsx');
+const {googleMapsLocation}=await import('../src/lib/listings.ts');
 const {metadata}=await import('../src/app/(energieheld)/designvorschau/unternehmensprofil/page.tsx');
 const {sitemapEntries}=await import('../src/lib/seo.ts');
 test('isolated preview preserves real text/media and exposes gallery, contact, Maps and existing motto links',()=>{
@@ -38,4 +40,16 @@ test('existing CMS text and original gallery pairing are rendered without changi
  const html=renderToStaticMarkup(createElement(ProfileDesignPreview,{listing:globalThis.previewFixture,blocks}));
  assert.match(html,/Bestehende redaktionelle Überschrift/);assert.match(html,/Vollständiger zusätzlicher CMS-Abschnitt/);assert.match(html,/Zweiter vollständiger Absatz/);assert.match(html,/src="\/pond.jpg"/);
  assert.equal(JSON.stringify({blocks,listing:globalThis.previewFixture}),before);
+});
+
+test('shared profile map follows the actual address and preserves honest city-only and empty fallbacks',()=>{
+ const location={street:'Neue Straße 7',postalCode:'10115',city:'Berlin',region:'Berlin',country:'Deutschland'};
+ const html=renderToStaticMarkup(createElement(ProfileLocation,{name:'Andere Unterkunft',location,map:googleMapsLocation(location)}));
+ assert.match(html,/Neue Straße 7/);assert.doesNotMatch(html,/Brunndobl|Bad Birnbach/);
+ assert.match(html,/loading="lazy"/);assert.match(html,/target="_blank" rel="noopener noreferrer"/);
+ const cityOnly={...location,street:undefined};
+ const cityHtml=renderToStaticMarkup(createElement(ProfileLocation,{name:'Andere Unterkunft',location:cityOnly,map:googleMapsLocation(cityOnly)}));
+ assert.match(cityHtml,/Ortsübersicht · keine genaue Firmenposition/);assert.doesNotMatch(cityHtml,/Kartenansicht zur angegebenen Unternehmensadresse/);
+ const empty=renderToStaticMarkup(createElement(ProfileLocation,{name:'Andere Unterkunft',location:{city:'',postalCode:'',region:'',country:''},map:null}));
+ assert.match(empty,/Standort noch nicht angegeben/);assert.doesNotMatch(empty,/<iframe|google.com/);
 });

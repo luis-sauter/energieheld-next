@@ -11,7 +11,7 @@
 .tags svg { width: 24px; height: 24px; }
 .subtitle { font-family: var(--font-body); font-size: clamp(1.25rem, 2vw, 1.85rem); color: #617782; margin: 0 0 12px; }
 .address { display: flex; align-items: flex-start; gap: 8px; color: #486675; line-height: 1.5; }
-.address svg, .contactDetails svg, .mapLink svg { flex: 0 0 auto; width: 22px; height: 22px; }
+.address svg, .contactDetails svg { flex: 0 0 auto; width: 22px; height: 22px; }
 .hero { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 .gallery { min-width: 0; }
 .gallery :global(.gallery-main) { aspect-ratio: auto; overflow: visible; background: transparent; }
@@ -33,13 +33,7 @@
 .contactDetails a { display: flex; align-items: flex-start; gap: 10px; text-decoration: none; overflow-wrap: anywhere; min-width: 0; }
 .contact :global(.button) { width: 100%; margin-top: 22px; justify-content: center; }
 .website { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 10px; padding: 12px; border: 1px solid #3e8fa9; border-radius: 10px; text-decoration: none; }
-.location { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.9fr); gap: 26px; border: 1px solid #e8e4df; border-radius: 24px; padding: 18px; margin: 44px 0 24px; background: #fff9; }
-.location > div { padding: 16px; }
 .eyebrow { font-family: var(--font-heading); font-weight: var(--font-heading-weight); color: #527382; font-size: .8rem; text-transform: uppercase; letter-spacing: .18em; margin: 0 0 20px; }
-.location h2 { font-size: 1.35rem; line-height: 1.35; }
-.location p:not(.eyebrow) { color: #6d7f87; font-size: .88rem; }
-.location iframe { width: 100%; min-height: 290px; border: 0; border-radius: 18px; }
-.mapLink { display: inline-flex; gap: 12px; align-items: center; padding: 12px 18px; border: 1px solid #d3e4ed; border-radius: 28px; background: #f1f7fa; text-decoration: none; margin-top: 18px; }
 .editorial { padding: clamp(24px, 4vw, 44px); border-radius: 24px; background: #fff9; border: 1px solid #eee8de; }
 .editorial h2 { font-size: clamp(1.8rem, 3.2vw, 2.8rem); line-height: 1.18; }
 .editorial p { color: #4b6774; line-height: 1.8; white-space: pre-wrap; }
@@ -69,6 +63,6 @@
 .preview :is(a, button, summary):focus-visible { outline: 3px solid #2783a1; outline-offset: 3px; }
 @media(max-width: 1000px) { .hero { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 18px; } .contact { padding: 20px; } }
 @media(max-width: 1100px) { .inspiration .themeCard { flex-basis: calc((100% - 36px) / 3); } .inspiration div:has(> button[aria-label="Reiseideen: weiter"]) { top: calc(4px + (100cqw - 44px) * 1.1 / 6); } }
-@media(max-width: 760px) { .hero, .location { grid-template-columns: minmax(0, 1fr); } .heading { padding-inline: 0; } .heading h1 { overflow-wrap: anywhere; } .contactDetails a { font-size: .95rem; } .location iframe { min-height: 260px; } .atmosphere { min-height: 290px; } .moreImages > div { grid-template-columns: minmax(0, 1fr); } .inspiration { margin-top: 32px; } }
+@media(max-width: 760px) { .hero { grid-template-columns: minmax(0, 1fr); } .heading { padding-inline: 0; } .heading h1 { overflow-wrap: anywhere; } .contactDetails a { font-size: .95rem; } .atmosphere { min-height: 290px; } .moreImages > div { grid-template-columns: minmax(0, 1fr); } .inspiration { margin-top: 32px; } }
 @media(max-width: 640px) { .inspiration .themeCard { flex-basis: 100%; } .inspiration div:has(> button[aria-label="Reiseideen: weiter"]) { top: calc(4px + (100cqw - 8px) * 1.1 / 2); } }
 @media(prefers-reduced-motion: reduce) { .preview * { scroll-behavior: auto; } }

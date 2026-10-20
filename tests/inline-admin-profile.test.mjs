@@ -562,8 +562,8 @@ test("description and business areas are separate editable sections below Maps w
     type: "heading", slot: "business_areas_heading", sort_order: 0,
     content: { text: "Unsere Tätigkeiten", hidden: true }, config: {} }];
   const publicHtml = await renderPage({ authenticated: false }, rows);
-  assert.ok(publicHtml.indexOf("Redaktionelle Firma</h1>") < publicHtml.indexOf("location-module"));
-  assert.ok(publicHtml.indexOf("location-module") < publicHtml.indexOf("Über das Haus"));
+  assert.ok(publicHtml.indexOf("Redaktionelle Firma</h1>") < publicHtml.indexOf("profile-location"));
+  assert.ok(publicHtml.indexOf("profile-location") < publicHtml.indexOf("Über das Haus"));
   assert.match(publicHtml, /style="width:50%;margin-left:50%;text-align:right"/);
   assert.match(publicHtml, /Weitere Empfehlung/);
   assert.doesNotMatch(publicHtml, /Unsere Tätigkeiten|Reiseberatung/);

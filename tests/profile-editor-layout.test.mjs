@@ -108,8 +108,8 @@ test("editor text follows live section alignment and paired columns stack on mob
   assert.match(profileCss, /\.profile-head-grid \{ display: grid; grid-template-columns: minmax\(0, 2\.1fr\) minmax\(280px, 1fr\);[^}]*align-items: stretch/);
   assert.match(profileCss, /@media \(max-width: 820px\)[\s\S]*\.profile-head-grid \{ grid-template-columns: minmax\(0, 1fr\)/);
   assert.match(profileCss, /\.profile-head-grid > \* \{ min-width: 0/);
-  assert.match(profileCss, /\.profile-location \.location-map \{ min-height: clamp\(240px, 25vw, 340px\)/);
-  assert.match(profileCss, /\.profile-location > div:last-child \{ padding: 12px 18px/);
+  assert.match(source("src/components/portal/profile-location.module.css"), /min-height: 290px/);
+  assert.match(source("src/components/portal/profile-location.module.css"), /\.details \{[^}]*padding: 16px/);
   assert.match(source("src/components/admin/inline-profile.module.css"), /\.adjacentPreview \{[^}]*grid-template-columns: repeat\(100, minmax\(0, 1fr\)\)/);
   assert.match(source("src/components/admin/inline-profile.module.css"), /@media \(max-width: 640px\)[\s\S]*\.adjacentPreviewText, \.adjacentPreviewImage \{ grid-column: 1 \/ -1 !important/);
   assert.match(profileCss, /\.profile-header-media \.gallery-main \{[^}]*height: 100%; aspect-ratio: auto/);
@@ -156,7 +156,7 @@ test("profile head stays wide and shallow across desktop and mobile breakpoints"
   assert.match(css, /\.profile-head-grid \{[^}]*align-items: stretch/);
   assert.match(css, /\.profile-header-media \.gallery-main \{[^}]*height: 100%; aspect-ratio: auto/);
   assert.match(css, /\.gallery-main img \{[^}]*object-fit: cover/);
-  assert.match(css, /\.profile-location \.location-map \{ min-height: clamp\(240px, 25vw, 340px\)/);
+  assert.match(source("src/components/portal/profile-location.module.css"), /@media \(max-width: 760px\)[\s\S]*min-height: 260px/);
   for (const viewport of [768, 390, 360]) assert.ok(viewport <= 820);
   assert.match(css, /@media \(max-width: 820px\)[\s\S]*\.profile-head-grid \{ grid-template-columns: minmax\(0, 1fr\)/);
 });

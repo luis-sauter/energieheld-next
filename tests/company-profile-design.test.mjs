@@ -280,7 +280,7 @@ test("editor gallery shares the public position and preserves contain logo and a
   assert.match(html, /Bildbeschreibung \(optional\)/);
   assert.ok(html.indexOf("profile-head-grid") < html.indexOf("Über Bauwerk"));
   assert.ok(html.indexOf("gallery-main") < html.indexOf("contact-card"));
-  assert.match(html, /aria-label="Standort"/);
+  assert.match(html, /aria-labelledby="profile-location-title"/);
   const publicHtml = renderToStaticMarkup(
     createElement(ListingDetail, {
       listing,
@@ -351,7 +351,7 @@ test("a real video source takes the profile-head slot; otherwise sorted gallery 
   assert.match(withVideo, /<video[^>]*real\.mp4/);
   assert.match(withVideo, /gallery-main/);
   assert.match(withVideo, /gallery-thumbs/);
-  assert.ok(withVideo.indexOf('aria-label="Standort"') < withVideo.indexOf('aria-label="Bildergalerie"'));
+  assert.ok(withVideo.indexOf('aria-labelledby="profile-location-title"') < withVideo.indexOf('aria-label="Bildergalerie"'));
 });
 test("only new or rejected profiles can request initial publication; pending and approved do not repeat review", () => {
   for (const status of ["draft", "rejected", "pending", "approved"]) {
@@ -617,15 +617,15 @@ test("profile contact and location precede description; no invented precise map 
   });
   assert.ok(
     real.indexOf('class="contact-card"') <
-      real.indexOf('class="location-module profile-location"'),
+      real.indexOf('class="profile-location"'),
   );
   assert.ok(
-    real.indexOf('class="location-module profile-location"') < real.indexOf("Über Bauwerk"),
+    real.indexOf('class="profile-location"') < real.indexOf("Über Bauwerk"),
   );
   assert.match(real, /google.com\/maps\/search/);
   assert.match(real, /Ortsübersicht · keine genaue Firmenposition/);
   assert.match(real, /<iframe[^>]+title="Google Maps – Ortsübersicht:/);
-  assert.match(real, /loading="eager"/);
+  assert.match(real, /loading="lazy"/);
   assert.match(real, /In Google Maps öffnen/);
   const demo = render({ ...listing, isDemo: true });
   assert.doesNotMatch(demo, /google.com\/maps/);

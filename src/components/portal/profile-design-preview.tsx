@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { ProfileLocation } from './profile-location';
 import Link from './navigation-link';
 import { ImageGallery } from './image-gallery';
 import { InquiryDialog } from '@/components/leads/inquiry-dialog';
@@ -58,10 +59,7 @@ export function ProfileDesignPreview({ listing, blocks = [] }: { listing: Listin
           {listing.contact.website && <a className={styles.website} href={listing.contact.website} target="_blank" rel="noopener noreferrer">Website besuchen <span aria-hidden="true">↗</span></a>}
         </aside>
       </div>
-      {map && <section className={styles.location} aria-labelledby="preview-location-title"><div>
-        <p className={styles.eyebrow}>Standort</p><h2 id="preview-location-title">{map.query}</h2><p>Kartenansicht zur angegebenen Unternehmensadresse.</p>
-        <a className={styles.mapLink} href={map.searchUrl} target="_blank" rel="noopener noreferrer"><Icon name="pin" />In Google Maps öffnen ↗</a>
-      </div><iframe title={`Google Maps – ${listing.name}`} src={map.embedUrl} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></section>}
+      {map && <ProfileLocation name={listing.name} location={listing.location} map={map} />}
       <section className={styles.editorial} aria-label="Unternehmensbeschreibung"><p className={styles.eyebrow}>Über die Unterkunft</p>
         {blocks.length ? <ProfileEditorialContent items={editorialItems} listing={listing} /> : <>
           <TextImageSection heading={<h2>{content.aboutHeading}</h2>}

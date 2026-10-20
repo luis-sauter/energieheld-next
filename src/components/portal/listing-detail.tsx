@@ -1,3 +1,4 @@
+import { ProfileLocation } from "./profile-location";
 import { TravelSignals } from "./travel-signals";
 import type { Category, Listing, Location } from "@/types/portal";
 import { formatLocation, googleMapsLocation } from "@/lib/listings";
@@ -255,72 +256,7 @@ export function ListingDetail({
           inlineFields={inlineFields}
         />
       </div>
-      <section className="location-module profile-location" aria-label="Standort">
-          {map ? (
-            <iframe
-              className="location-map"
-              title={`Google Maps – ${map.precise ? "Adresse" : "Ortsübersicht"}: ${map.query}`}
-              src={map.embedUrl}
-              loading="eager"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          ) : (
-            <div className="location-illustration" aria-hidden="true">
-              <Icon name="pin" size={44} />
-            </div>
-          )}
-          <div>
-            <p className="eyebrow">Standort</p>
-            <h2>
-              {map?.query ||
-                formatLocation(location) ||
-                "Standort noch nicht angegeben"}
-            </h2>
-            <p>
-              {map
-                ? map.precise
-                  ? "Kartenansicht zur angegebenen Unternehmensadresse."
-                  : "Ortsübersicht · keine genaue Firmenposition."
-                : listing.isDemo
-                  ? "Beispielstandort · keine genaue Firmenposition"
-                  : "Die angegebene Region des Unternehmens. Eine genaue Kartenposition ist hier nicht hinterlegt."}
-            </p>
-            {map ? (
-              <a
-                className="text-link"
-                href={map.searchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                In Google Maps öffnen ↗
-              </a>
-            ) : (
-              !listing.isDemo &&
-              location.city && (
-                <a
-                  className="text-link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={
-                    "https://www.google.com/maps/search/?api=1&query=" +
-                    encodeURIComponent(
-                      [
-                        location.postalCode,
-                        location.city,
-                        location.country,
-                      ]
-                        .filter(Boolean)
-                        .join(" "),
-                    )
-                  }
-                >
-                  Ort auf Google Maps ansehen ↗
-                </a>
-              )
-            )}
-          </div>
-      </section>
+      <ProfileLocation name={listing.name} location={location} map={map} isDemo={listing.isDemo} />
       {listing.video && (galleryEditor || listing.images.length > 0) && <section className="detail-section profile-image-gallery" aria-label="Bildergalerie">
         <h2>Bildergalerie</h2>
         {galleryEditor ?? <ImageGallery images={listing.images} isDemo={listing.isDemo && !originalDemoMedia} />}

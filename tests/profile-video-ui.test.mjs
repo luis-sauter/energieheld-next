@@ -61,8 +61,8 @@ test('public profile with hosted or external video retains independent gallery b
 });
 test('editing keeps separate video and gallery tools, including empty-gallery add action',()=>{
  const html=renderToStaticMarkup(createElement(ListingDetail,{listing:{...listing,video:{src:'/video.mp4'},images:[]},categories:[],showMap:true,videoEditor:createElement('button',null,'Video ersetzen'),galleryEditor:createElement('button',null,'Bild hinzufügen')}));
- assert.ok(html.indexOf('Video ersetzen')<html.indexOf('aria-label="Standort"'));
- assert.ok(html.indexOf('Bild hinzufügen')>html.indexOf('aria-label="Standort"'));
+ assert.ok(html.indexOf('Video ersetzen')<html.indexOf('aria-labelledby="profile-location-title"'));
+ assert.ok(html.indexOf('Bild hinzufügen')>html.indexOf('aria-labelledby="profile-location-title"'));
  assert.equal((html.match(/Bild hinzufügen/g)||[]).length,1);
 });
 test('no-video and no-image combinations retain existing header gallery or empty state',()=>{
