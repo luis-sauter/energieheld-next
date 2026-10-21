@@ -9,7 +9,7 @@ import {
   adPlacements,
   adScopeLabel,
   adStatus,
-  adTargetUrl,
+  adTargetHref,
   type ActiveAd,
   type AdCampaign,
   type AdPlacementId,
@@ -60,12 +60,10 @@ export function CampaignSlot({
   const ad = inline && !preview && !reordering && Object.hasOwn(inline.overrides, placement) ? inline.overrides[placement] ?? undefined : initialAd;
   if (!preview && !inline && ad?.suppressed) return null;
   const displayAd = !preview && (ad?.suppressed || !ad?.imageUrl) ? undefined : ad;
-  const destination = adTargetUrl(displayAd?.target_url ?? "");
-  const portalDestination = destination && new URL(destination).hostname === "das-reiseportal.com";
+  const destination = adTargetHref(displayAd?.target_url ?? "");
+  const href = destination ?? "#";
+  const portalDestination = href.startsWith("/");
   const promo = editorialPromo && portalDestination && displayAd?.imageUrl && displayAd.body_text;
-  // Portal-owned links stay on the current portal, including branch previews.
-  const href = portalDestination && destination
-    ? new URL(destination).pathname + new URL(destination).search + new URL(destination).hash : destination ?? "#";
   const crop = displayAd?.crop;
   const content = displayAd && (
     displayAd.imageUrl ? (

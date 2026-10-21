@@ -8,6 +8,7 @@ import styles from '@/app/(energieheld)/suche/search.module.css';
 import cardStyles from './directory-listing-rows.module.css';
 import {BasicAccommodationCard} from './basic-accommodation-card';
 import {BasicSourceCredit} from './basic-source-credit';
+import {adTargetHref} from '@/lib/ad-values';
 
 export function SearchResults({ hits, listings, facts, travelLabels, season }: {
   hits: SearchHit[]; listings: Listing[]; facts: Listing[]; travelLabels: Record<string, string>; season?: string;
@@ -18,6 +19,7 @@ export function SearchResults({ hits, listings, facts, travelLabels, season }: {
     const entry = hit.type === 'theme' ? travelThemes.find(entry => entry.slug === hit.id)
       : hit.type === 'destination' ? destinations.find(entry => entry.slug === hit.id) : undefined;
     const listing = cards.get(hit.id) ?? fallback.get(hit.id);
+    const externalHref = hit.external ? adTargetHref(hit.url) ?? '#' : undefined;
     return <li key={`${hit.type}:${hit.id}`} data-search-result={hit.type} data-search-id={hit.id}
       className={entry ? styles.discoveryResult : styles.wideResult}>
       {hit.type !== 'ad' && hit.type !== 'accommodation' && <p className={styles.resultType}>{searchTypes[hit.type]}</p>}
@@ -31,7 +33,7 @@ export function SearchResults({ hits, listings, facts, travelLabels, season }: {
         : entry ? <DiscoveryCard entry={entry} basePath={hit.type === 'theme' ? '/mottoreisen' : '/reiseziele'}
           sizes="(max-width: 700px) 100vw, 50vw" />
           : <article className={styles.textResult}><h3>{hit.external
-            ? <a href={hit.url} target="_blank" rel="sponsored noopener noreferrer">{hit.title} ↗</a>
+            ? <a href={externalHref} target={externalHref?.startsWith('/') ? undefined : '_blank'} rel="sponsored noopener noreferrer">{hit.title} ↗</a>
             : <Link href={hit.url}>{hit.title} →</Link>}</h3><p>{hit.excerpt}</p></article>}
     </li>;
   })}</ol>{hits.some(hit => hit.basic) && <BasicSourceCredit/>}</>;

@@ -25,6 +25,24 @@ const {TravelFinder}=await import('../src/components/portal/travel-finder.tsx');
 const {CampaignSlot}=await import('../src/components/advertising/campaign-view.tsx');
 const {InlineBannerContext}=await import('../src/components/advertising/inline-banner-context.tsx');
 const empty=readTravelFilterValues({});
+test('portal banner destinations stay on the current origin across slots and search cards',async()=>{
+ const {adTargetHref}=await import('../src/lib/ad-values.ts');
+ const {SearchAdCard}=await import('../src/components/advertising/search-ad-card.tsx');
+ for(const host of ['das-reiseportal.com','www.das-reiseportal.com']){
+  const target=`https://${host}/unterkuenfte/hotel?quelle=banner#kontakt`;
+  const href='/unterkuenfte/hotel?quelle=banner#kontakt';
+  assert.equal(adTargetHref(target),href);
+  assert.equal(new URL(adTargetHref(target),'https://preview.netlify.app').origin,'https://preview.netlify.app');
+  const ad={id:'internal',headline:'Hotel',imageUrl:'/existing.jpg',target_url:target,placement:'sidebar_top'};
+  for(const html of [renderToStaticMarkup(createElement(CampaignSlot,{placement:'sidebar_top',ad})),renderToStaticMarkup(createElement(SearchAdCard,{banner:{banner_key:'campaign:internal',ad}}))]){
+   assert.ok(html.includes(`href="${href}"`));assert.doesNotMatch(html,/target="_blank"/);
+  }
+ }
+ assert.equal(adTargetHref('https://external.example/hotel'),'https://external.example/hotel');
+ assert.equal(adTargetHref('https://das-reiseportal.com.evil.example/'),'https://das-reiseportal.com.evil.example/');
+ assert.equal(adTargetHref('https://das-reiseportal.com//evil.example/path'),'/evil.example/path');
+ for(const value of ['javascript:alert(1)','//evil.example/','https://user:secret@example.com/','invalid'])assert.equal(adTargetHref(value),null);
+});
 const banner=(key='campaign:a',extra={})=>({banner_key:key,profile_id:null,postal_code:'80331',city:'München',term_keys:['theme:wellnessangebote','audience:paar','accommodation:hotel','feature:sauna'],ad:{id:key,placement:'sidebar_top',headline:'Öffentlicher Banner',target_url:'https://example.org/',image_path:null,imageUrl:'/creative.png'},...extra});
 const listing=(id)=>({id,slug:id,name:id,categoryIds:[],services:[],location:{city:'Berlin',postalCode:'10115',region:'',country:'DE'},travelTermKeys:[],directoryPackage:'basic'});
 test('canonical identities dedupe pages/themes/slots and legacy but not distinct campaigns of one profile',()=>{

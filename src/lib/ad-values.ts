@@ -160,6 +160,15 @@ export function adTargetUrl(value: string): string | null {
     return null;
   }
 }
+// Keep portal destinations on the current origin, including feature previews.
+export function adTargetHref(value: string): string | null {
+  const destination = adTargetUrl(value);
+  if (!destination) return null;
+  const url = new URL(destination);
+  return ["das-reiseportal.com", "www.das-reiseportal.com"].includes(url.hostname)
+    ? "/" + url.pathname.replace(/^\/+/, "") + url.search + url.hash
+    : destination;
+}
 export function validateAdBooking(targets: AdTarget[], existing: AdTarget[] = []) {
   return targets.every(target => isNewAdTarget(target) || existing.some(saved =>
     saved.target_type === target.target_type && (saved.category_id ?? null) === (target.category_id ?? null) &&
