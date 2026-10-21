@@ -12,7 +12,7 @@ export async function loadDiscoveryAdvertising(path: string, allPublicBanners = 
   if (!context || context.target_type !== "portal_area") return;
   const [ads, sidebarOrder, options, pool] = await Promise.all([
     loadPublicAds(undefined, "portal_area", context.target_key!), loadPublicSidebarOrder(), loadInlineBannerOptions(path),
-    allPublicBanners && path.startsWith('/reiseziele/') || path.startsWith('/mottoreisen/') ? loadTravelSearchBanners() : Promise.resolve(null),
+    (allPublicBanners && path.startsWith('/reiseziele/')) || path === '/mottoreisen' || path.startsWith('/mottoreisen/') ? loadTravelSearchBanners() : Promise.resolve(null),
   ]);
   return { ads, sidebarOrder, options,
     premiumAds: staticPremiumAds(ads, pool?.banners.map(banner => banner.ad)),
