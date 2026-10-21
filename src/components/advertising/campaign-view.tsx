@@ -3,7 +3,7 @@
 import { imageCropStyle } from "@/lib/image-crop";
 import { bannerCropRatio } from "@/lib/banner-presentation";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useInlineBanners } from "./inline-banner-context";
 import {
   adPlacements,
@@ -18,10 +18,13 @@ import { offerRequestStatuses } from "@/lib/offer-requests";
 import styles from "./advertising.module.css";
 import { energieheld } from "@/config/energieheld";
 
-function CreativeImage({ src, alt, width, height, mobile, crop }: { src: string; alt: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"]; crop?: ActiveAd["crop"] }) {
+function CreativeImage({ src, alt, width, height, mobile, crop, onDimensions }: { src: string; alt: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"]; crop?: ActiveAd["crop"]; onDimensions?: (width: number, height: number) => void }) {
   // Signed uploads have unknown dimensions; the browser must use each image's intrinsic ratio.
   // eslint-disable-next-line @next/next/no-img-element
-  const image = <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" className={crop ? styles.cropImage : undefined} style={crop ? imageCropStyle(crop) : undefined} />;
+  const image = <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async"
+    ref={image => { if (image?.complete && image.naturalWidth && image.naturalHeight) onDimensions?.(image.naturalWidth, image.naturalHeight); }}
+    onLoad={event => onDimensions?.(event.currentTarget.naturalWidth, event.currentTarget.naturalHeight)}
+    className={crop ? styles.cropImage : undefined} style={crop ? imageCropStyle(crop) : undefined} />;
   return mobile ? <picture><source media="(max-width: 760px)" srcSet={mobile.imageUrl}
     width={mobile.width} height={mobile.height} />{image}</picture> : image;
 }
@@ -48,6 +51,9 @@ export function CampaignSlot({
   instanceId?: string;
 }) {
   const [naturalRatio, setNaturalRatio] = useState(initialAd?.image_width && initialAd.image_height ? initialAd.image_width / initialAd.image_height : 4);
+  const measureImage = useCallback((width: number, height: number) => {
+    if (width > 0 && height > 0) setNaturalRatio(width / height);
+  }, []);
   const compact = compactPremium && placement === "top_banner";
   const context = useInlineBanners();
   const inline = searchResult ? null : context;
@@ -72,6 +78,7 @@ export function CampaignSlot({
         width={displayAd.image_width}
         height={displayAd.image_height}
         mobile={displayAd.mobile_image}
+        onDimensions={compact ? measureImage : undefined}
       />
       {/* Fill the previous compact frame; never letterbox a banner creative. */}
       <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline} mobile={displayAd.mobile_image} crop={crop ?? { focus_x: 50, focus_y: 50, zoom: 1 }} />
@@ -91,10 +98,6 @@ export function CampaignSlot({
       id={!preview && !reordering && !searchResult ? `banner-${placement}${instanceId ? `-${instanceId}` : ''}` : undefined}
       data-placement={placement}
       data-compact-premium={compact || undefined}
-      onLoadCapture={compact ? event => {
-        const image = event.target as HTMLImageElement;
-        if (image.tagName === "IMG" && image.naturalWidth && image.naturalHeight) setNaturalRatio(image.naturalWidth / image.naturalHeight);
-      } : undefined}
       aria-label={`Anzeige – ${adPlacements[placement]}`}
     >
       {showLabel && <div className={styles.label}>Anzeige{preview ? " · Vorschau" : ""}</div>}

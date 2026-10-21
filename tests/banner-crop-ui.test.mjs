@@ -13,7 +13,7 @@ globalThis.__cropHooks={state(initial){const i=cursor++;if(!(i in states))states
 registerHooks({
  resolve(specifier,context,next){
   if(specifier.endsWith('/admin/mediathek/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function searchLibraryProfiles(){throw Error("Unexpected remote company search")};export async function createLibraryCompany(){throw Error("Unexpected company creation")}'};
-  if(specifier==='react' && context.parentURL?.endsWith('.tsx'))return{shortCircuit:true,url:'data:text/javascript,'+encodeURIComponent(`import * as R from ${JSON.stringify(reactUrl)};export const Children=R.Children,cloneElement=R.cloneElement,isValidElement=R.isValidElement,useId=R.useId,useMemo=R.useMemo,createContext=R.createContext,useContext=R.useContext,useActionState=R.useActionState;export const useState=v=>globalThis.__cropHooks.state(v),useRef=v=>({current:v}),useEffect=()=>{};`)};
+  if(specifier==='react' && context.parentURL?.endsWith('.tsx'))return{shortCircuit:true,url:'data:text/javascript,'+encodeURIComponent(`import * as R from ${JSON.stringify(reactUrl)};export const Children=R.Children,cloneElement=R.cloneElement,isValidElement=R.isValidElement,useId=R.useId,useMemo=R.useMemo,createContext=R.createContext,useContext=(...args)=>globalThis.__cropHooks.manualContext?null:R.useContext(...args),useActionState=R.useActionState;export const useCallback=v=>v,useState=v=>globalThis.__cropHooks.state(v),useRef=v=>({current:v}),useEffect=()=>{};`)};
   if(specifier.endsWith('/admin/werbung/actions'))return{shortCircuit:true,url:'data:text/javascript,export async function lifecycleCampaign(){throw Error("Unexpected lifecycle mutation during crop test")}'};
   if(specifier==='next/navigation')return{shortCircuit:true,url:'data:text/javascript,export function useRouter(){return {refresh(){}}}'};
   if(specifier==='next/link')return{shortCircuit:true,url:'data:text/javascript,export default "a"'};
@@ -144,6 +144,22 @@ test('public rendering uses crop only when explicit, retains natural legacy and 
  assert.match(cropped,/cropFrame/);assert.match(cropped,/object-position:25% 75%/);assert.match(cropped,/scale\(1.5\)/);assert.match(cropped,/alt="Banner name"/);
  assert.match(cropped,/rel="sponsored noopener noreferrer" target="_blank"/);assert.match(cropped,/private.example/);
  assert.match(cropped,/loading="lazy" decoding="async"/);
+});
+
+test('compact Premium measures images already cached before hydration and later loading without horizontal clipping',()=>{
+ globalThis.__cropHooks.manualContext=true;
+ try {
+ const ad={id:'wide',placement:'top_banner',imageUrl:'/wide.jpg',headline:'Wide banner',target_url:'https://example.org'};
+ const draw=()=>{cursor=0;return CampaignSlot({placement:'top_banner',ad,compactPremium:true});};
+ const ratio=tree=>find(tree,n=>n.props?.className==='cropFrame').props.style.aspectRatio;
+ const image=tree=>{const component=find(tree,n=>typeof n.type==='function'&&n.props.onDimensions);return component.type(component.props);};
+ states=[];let tree=draw();assert.equal(ratio(tree),5);
+ image(tree).props.ref({complete:true,naturalWidth:2172,naturalHeight:362});
+ assert.equal(ratio(draw()),7.5,'cached image must not wait for an onLoad event that already happened');
+ states=[];tree=draw();image(tree).props.ref({complete:false,naturalWidth:0,naturalHeight:0});assert.equal(ratio(draw()),5);
+ image(tree).props.onLoad({currentTarget:{naturalWidth:3000,naturalHeight:500}});assert.equal(ratio(draw()),7.5);
+ image(draw()).props.ref(null);assert.equal(ratio(draw()),7.5);
+ } finally { globalThis.__cropHooks.manualContext=false; }
 });
 
 test('crop save failure reports error and does not close or claim success',async()=>{
