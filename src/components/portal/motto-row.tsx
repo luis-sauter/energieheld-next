@@ -6,7 +6,9 @@ import { useRotationMotion } from './use-rotation-motion';
 import styles from './motto-detail.module.css';
 
 // Recycle unique keyed cards, without cloning links or fetching server data.
-export function MottoRow({ children, label, speed = 18 }: { children: ReactNode; label: string; speed?: number }) {
+export function MottoRow({ children, label, speed = 18, direction = 'left' }: {
+  children: ReactNode; label: string; speed?: number; direction?: 'left' | 'right';
+}) {
   const items = Children.toArray(children);
   const track = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
@@ -35,8 +37,11 @@ export function MottoRow({ children, label, speed = 18 }: { children: ReactNode;
     const tick = (now: number) => {
       const step = stride();
       if (last && now >= idleUntil.current && step > 0) {
-        position += Math.min(now - last, 50) * speed / 1000;
-        if (position >= step) {
+        position += Math.min(now - last, 50) * speed / 1000 * (direction === 'right' ? -1 : 1);
+        if (position < 0) {
+          flushSync(() => setOffset(value => (value - 1 + items.length) % items.length));
+          position += step; element.scrollLeft = position;
+        } else if (position >= step) {
           flushSync(() => setOffset(value => (value + 1) % items.length));
           position -= step; element.scrollLeft = position;
         } else element.scrollLeft = position;
@@ -45,14 +50,14 @@ export function MottoRow({ children, label, speed = 18 }: { children: ReactNode;
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [canPlay, overflowing, speed, items.length]);
+  }, [canPlay, overflowing, speed, items.length, direction]);
   function move(direction: number) {
     const element = track.current, step = stride();
     if (!element || !overflowing || !step) return;
     idleUntil.current = performance.now() + 5000; interact();
     rotate(direction); element.scrollLeft = 0;
   }
-  return <div ref={root} {...handlers} className={styles.row} role="region" aria-label={label} data-speed={speed}>
+  return <div ref={root} {...handlers} className={styles.row} role="region" aria-label={label} data-speed={speed} data-direction={direction}>
     <div ref={track} className={styles.track} tabIndex={0} onScroll={event => {
       if (!canPlay) idleUntil.current = performance.now() + 5000;
       const element = event.currentTarget, step = stride();
