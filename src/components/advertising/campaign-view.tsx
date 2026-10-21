@@ -3,6 +3,7 @@
 import { imageCropStyle } from "@/lib/image-crop";
 import { bannerCropRatio } from "@/lib/banner-presentation";
 import Link from "next/link";
+import { useState } from "react";
 import { useInlineBanners } from "./inline-banner-context";
 import {
   adPlacements,
@@ -17,10 +18,10 @@ import { offerRequestStatuses } from "@/lib/offer-requests";
 import styles from "./advertising.module.css";
 import { energieheld } from "@/config/energieheld";
 
-function CreativeImage({ src, alt, width, height, mobile, crop, preserveCreative = false }: { src: string; alt: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"]; crop?: ActiveAd["crop"]; preserveCreative?: boolean }) {
+function CreativeImage({ src, alt, width, height, mobile, crop }: { src: string; alt: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"]; crop?: ActiveAd["crop"] }) {
   // Signed uploads have unknown dimensions; the browser must use each image's intrinsic ratio.
   // eslint-disable-next-line @next/next/no-img-element
-  const image = <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" className={crop ? styles.cropImage : undefined} style={preserveCreative ? { objectFit: "contain", objectPosition: "center", transform: "none" } : crop ? imageCropStyle(crop) : undefined} />;
+  const image = <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" className={crop ? styles.cropImage : undefined} style={crop ? imageCropStyle(crop) : undefined} />;
   return mobile ? <picture><source media="(max-width: 760px)" srcSet={mobile.imageUrl}
     width={mobile.width} height={mobile.height} />{image}</picture> : image;
 }
@@ -46,6 +47,7 @@ export function CampaignSlot({
   compactPremium?: boolean;
   instanceId?: string;
 }) {
+  const [naturalRatio, setNaturalRatio] = useState(initialAd?.image_width && initialAd.image_height ? initialAd.image_width / initialAd.image_height : 4);
   const compact = compactPremium && placement === "top_banner";
   const context = useInlineBanners();
   const inline = searchResult ? null : context;
@@ -56,13 +58,13 @@ export function CampaignSlot({
   const portalDestination = destination && new URL(destination).hostname === "das-reiseportal.com";
   const promo = editorialPromo && portalDestination && displayAd?.imageUrl && displayAd.body_text;
   // Portal-owned links stay on the current portal, including branch previews.
-  const href = promo && destination
+  const href = portalDestination && destination
     ? new URL(destination).pathname + new URL(destination).search + new URL(destination).hash : destination ?? "#";
   const crop = displayAd?.crop;
   const content = displayAd && (
     displayAd.imageUrl ? (
       crop || compact ? <span className={styles.cropFrame}
-        style={compact ? { aspectRatio: 7.5 } : crop && placement !== "top_banner" ? {aspectRatio:bannerCropRatio(displayAd.banner_size ?? "large",placement)} : undefined}>
+        style={compact ? { aspectRatio: naturalRatio / 0.8 } : crop && placement !== "top_banner" ? {aspectRatio:bannerCropRatio(displayAd.banner_size ?? "large",placement)} : undefined}>
       <CreativeImage
         key={displayAd.imageUrl}
         src={displayAd.imageUrl}
@@ -71,8 +73,8 @@ export function CampaignSlot({
         height={displayAd.image_height}
         mobile={displayAd.mobile_image}
       />
-      {/* Compact placements preserve the whole approved creative, including embedded lettering. */}
-      <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline} mobile={displayAd.mobile_image} crop={crop ?? { focus_x: 50, focus_y: 50, zoom: 1 }} preserveCreative={compact} />
+      {/* Fill the previous compact frame; never letterbox a banner creative. */}
+      <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline} mobile={displayAd.mobile_image} crop={crop ?? { focus_x: 50, focus_y: 50, zoom: 1 }} />
       </span> : <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline}
         width={displayAd.image_width} height={displayAd.image_height} mobile={displayAd.mobile_image} />
     ) : (
@@ -89,6 +91,10 @@ export function CampaignSlot({
       id={!preview && !reordering && !searchResult ? `banner-${placement}${instanceId ? `-${instanceId}` : ''}` : undefined}
       data-placement={placement}
       data-compact-premium={compact || undefined}
+      onLoadCapture={compact ? event => {
+        const image = event.target as HTMLImageElement;
+        if (image.tagName === "IMG" && image.naturalWidth && image.naturalHeight) setNaturalRatio(image.naturalWidth / image.naturalHeight);
+      } : undefined}
       aria-label={`Anzeige – ${adPlacements[placement]}`}
     >
       {showLabel && <div className={styles.label}>Anzeige{preview ? " · Vorschau" : ""}</div>}
@@ -108,7 +114,7 @@ export function CampaignSlot({
             data-size={placement === "top_banner" ? undefined : displayAd.banner_size}
             href={href}
             rel="sponsored noopener noreferrer"
-            target="_blank"
+            target={portalDestination ? undefined : "_blank"}
           >
             {content}
             {promo && <div className={styles.promoCopy}>

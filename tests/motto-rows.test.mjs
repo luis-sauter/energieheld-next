@@ -29,6 +29,7 @@ test('static Premium selection prefers local campaigns, deduplicates creatives a
  const b={...a,id:'second',imageUrl:'/two.jpg',image_path:'campaigns/second/two.jpg'};
  assert.deepEqual(staticPremiumAds([a],[a,{...a,id:'duplicate'},b,{...b,id:'third',image_path:'third'}]),[a,b]);
  assert.deepEqual(staticPremiumAds([],[{...a,source:'legacy'},{...a,suppressed:true},{...a,imageUrl:''},{...a,placement:'sidebar_top'}]),[]);
+   assert.deepEqual(staticPremiumAds([],[{...a,id:'870c4024-25ec-4c13-9b8b-180599f145fe'},{...a,id:'7f1c06f6-9946-4f0e-90bc-7fb9499ed010'}]),[]);
 });
 test('all eleven active themes have individual optimized art and editorial; historical diving targets remain valid',()=>{
  assert.equal(travelThemes.length,12);assert.equal(historicalTravelThemes.length,12);

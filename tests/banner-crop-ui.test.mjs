@@ -181,9 +181,10 @@ test('image replacement keeps stored crop, targets and URL through the actual me
  delete globalThis.inlineArchiveMedia;
 });
 
-test('opt-in Premium banners share the homepage reference geometry without changing sidebar slots',()=>{
+test('compact Premium restores source-based geometry and fills its frame without letterboxing',()=>{
  const ad={id:'premium',placement:'top_banner',headline:'Premium',imageUrl:'/wide.png',target_url:'https://example.org',image_width:1000,image_height:400};
  states=[];cursor=0;const html=renderToStaticMarkup(createElement(CampaignSlot,{placement:'top_banner',ad,compactPremium:true}));
- assert.match(html,/aspect-ratio:7.5/);assert.match(html,/data-compact-premium="true"/);
+ assert.match(html,/aspect-ratio:3.125/);assert.match(html,/data-compact-premium="true"/);
+ assert.match(html,/object-fit:cover/);assert.doesNotMatch(html,/object-fit:contain/);
  states=[];cursor=0;const standard=renderToStaticMarkup(createElement(CampaignSlot,{placement:'sidebar_top',ad:{...ad,placement:'sidebar_top'},compactPremium:true}));assert.doesNotMatch(standard,/cropFrame|data-compact-premium/);
 });

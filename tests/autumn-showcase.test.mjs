@@ -24,7 +24,7 @@ registerHooks({
  }
 });
 const { SPECIAL_TOPIC_TERM } = await import('../src/lib/travel-editorial.ts');
-const { AUTUMN_TERM, AUTUMN_HREF, autumnSelections, selectAutumnStays } = await import('../src/lib/autumn-showcase.ts');
+const { AUTUMN_TERM, AUTUMN_HREF, autumnSelections, winterSelections, selectAutumnStays } = await import('../src/lib/autumn-showcase.ts');
 const { AutumnShowcase } = await import('../src/components/portal/autumn-showcase.tsx');
 const fixtures = () => autumnSelections.map((entry,index) => ({
  id:entry.profileId,slug:'existing-'+index,name:'Echter Anbieter '+index,isDemo:false,isPreview:false,
@@ -79,6 +79,16 @@ test('season badges require an actual assignment and never create nested profile
  assert.equal((html.match(/<li>Winter<\/li>/g)||[]).length,1);
  assert.equal((html.match(/<li>Skiurlaub<\/li>/g)||[]).length,1);
  assert.doesNotMatch(html,/<a[^>]*class="cardLink"(?:(?!<\/a>)[^])*?<a/);
+});
+
+test('additional ski hosts are mixed into the first page only with a saved editorial assignment',()=>{
+ const base=fixtures();const ski=winterSelections.map(s=>({...base[0],id:s.profileId,slug:'ski-'+s.profileId,name:'Ski-Unterkunft',travelTermKeys:[SPECIAL_TOPIC_TERM,'theme:skifahren','theme:saison-winter'],images:[{id:s.imageId,src:'/operator-ski.jpg',alt:s.alt}]}));
+ const selected=selectAutumnStays([...base,...ski]);
+ assert.equal(selected.length,9);
+ assert.equal(selected[1].listing.id,ski[0].id);assert.equal(selected[3].listing.id,ski[1].id);
+ assert.equal(selectAutumnStays(ski.map(s=>({...s,travelTermKeys:['theme:skifahren']}))).length,0);
+ const removed={...base[0],id:'49b2316e-dd69-4d68-9f10-b7fc86100cf8',name:'Pension Sonnenhof',travelTermKeys:['theme:saison-winter']};
+ assert.equal(selectAutumnStays([...base,...ski,removed]).some(s=>s.listing.id===removed.id),false);
 });
 
 test('partial selection collapses absent providers without placeholders; content follows current records',()=>{

@@ -15,6 +15,17 @@ export const autumnSelections = [
   { profileId: '02ffb4a9-087f-40af-8c0e-5c0f85f7b27c', imageId: 'abe0970f-ca17-4f4b-97c7-a52aad2d3d9a', alt: 'Panoramahotel Oberjoch vor der Allgäuer Berglandschaft' },
 ] as const;
 
+// Existing, approved ski hosts. This only selects gallery images and ordering;
+// the persisted Sonderthema assignment is still required for every card.
+export const winterSelections = [
+  { profileId: '97578023-61cb-43f8-b650-676f3baa7777', imageId: '78aa643e-4c21-4065-a92d-08faea744c37', alt: 'Wintersport beim Hotel Steiner in Obertauern' },
+  { profileId: '9a1a97da-2aad-439c-973d-8416ef4b4345', imageId: '82443757-3085-4f1b-93bf-8be3f9955f6a', alt: 'Hotel Schneider im Schnee in Obertauern' },
+  { profileId: '4a740b14-2efb-44de-a472-f4f135d01cf0', imageId: '341f8ef3-ef2a-4dd1-aff6-021e4a9c1c0c', alt: 'Außenansicht des Hotel Franks in Oberstdorf' },
+  { profileId: 'a6249a1b-7890-45f9-9765-1c937144c114', imageId: 'b4e67472-2cad-4b8b-9867-7a9e4f6b6a89', alt: 'The Cambrian in Adelboden' },
+  { profileId: '0c8598b3-a2d2-45ad-bcbb-e19c4ee80e84', imageId: 'c2953588-2143-43c5-b335-47529d1018a5', alt: 'Außenansicht des JOAS guesthouse in Innichen' },
+] as const;
+const seasonalSelections = [autumnSelections[0], winterSelections[0], autumnSelections[1], winterSelections[1], ...autumnSelections.slice(2), ...winterSelections.slice(2)];
+
 // Input is the existing public directory: approved/listed rows only. The season
 // and curated gallery IDs do not grant eligibility. All eligible cards remain
 // reachable in the carousel; the viewport, not the selection, limits visibility.
@@ -26,11 +37,11 @@ export function selectAutumnStays(publicListings: readonly Listing[]) {
     return true;
   });
   const rank = (id: string) => {
-    const index = autumnSelections.findIndex(selection => selection.profileId === id);
-    return index < 0 ? autumnSelections.length : index;
+    const index = seasonalSelections.findIndex(selection => selection.profileId === id);
+    return index < 0 ? seasonalSelections.length : index;
   };
   return eligible.sort((a, b) => rank(a.id) - rank(b.id)).flatMap(listing => {
-    const selection = autumnSelections.find(row => row.profileId === listing.id);
+    const selection = seasonalSelections.find(row => row.profileId === listing.id);
     const curated = selection && listing.images.find(row => row.id === selection.imageId && row.src && row.src !== listing.logo?.src);
     const image = curated ? { ...curated, alt: selection.alt } : providerCardImage(listing, 'travel');
     return image?.src && image.src !== listing.logo?.src ? [{ listing, image }] : [];

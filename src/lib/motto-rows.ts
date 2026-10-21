@@ -32,6 +32,9 @@ export function visibleMottoAds(ads: readonly ActiveAd[]): ActiveAd[] {
 }
 
 export function staticPremiumAds(local: readonly ActiveAd[], pool: readonly ActiveAd[] = []) {
-  return visibleMottoAds([...local, ...pool].filter(ad => ad.placement === 'top_banner' && ad.source !== 'legacy'))
+  // These older creatives were rejected for the newly added horizontal slots.
+  // Their existing campaigns elsewhere remain intact.
+  const incompatible = new Set(['870c4024-25ec-4c13-9b8b-180599f145fe', '7f1c06f6-9946-4f0e-90bc-7fb9499ed010']);
+  return visibleMottoAds([...local, ...pool].filter(ad => ad.placement === 'top_banner' && ad.source !== 'legacy' && !incompatible.has(ad.id)))
     .filter((ad, index, all) => all.findIndex(other => other.image_path === ad.image_path) === index).slice(0, 2);
 }
