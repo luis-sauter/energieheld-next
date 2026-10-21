@@ -179,7 +179,7 @@ test('homepage has two five-banner rows plus unchanged Premium slot without muta
   const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
   assert.equal((html.match(/data-placement="sidebar_/g)||[]).length,10);assert.doesNotMatch(html,/Weitere Banner verwalten/);
   assert.equal((html.match(/data-speed="22"/g)||[]).length,2);
-  assert.equal((html.match(/data-placement="top_banner"/g)||[]).length,1);
+  assert.equal((html.match(/data-placement="top_banner"/g)||[]).length,2);
   assert.equal(JSON.stringify(globalThis.homeFixture.ads),before);
  } finally {globalThis.homeFixture.ads=original;}
 });
@@ -239,7 +239,7 @@ test('news cards render three local symbolic images and actual independent origi
  assert.equal(travelNews.length,3);assert.equal(travelNews.filter(n=>n.featured).length,1);assert.equal(travelNews[0].featured,true);
  assert.equal(new Set(travelNews.map(n=>new URL(n.sourceUrl).hostname)).size,3);
  assert.equal(travelNews.filter(n=>n.sourceUrl.includes('adac.de')).length,1);
- for(const item of travelNews){assert.ok(inspiration.includes(item.image));assert.ok(inspiration.includes(item.sourceUrl.replaceAll('&','&amp;')));assert.ok(existsSync(new URL('../public'+item.image,import.meta.url)));assert.match(item.imageAlt,/KI-Symbolbild/);assert.ok(item.publishedAt<='2026-10-13');}
+ for(const item of travelNews){assert.ok(inspiration.includes(item.image));assert.ok(inspiration.includes(item.sourceUrl.replaceAll('&','&amp;')));assert.ok(existsSync(new URL('../public'+item.image,import.meta.url)));assert.doesNotMatch(item.imageAlt,/KI-Symbolbild/);assert.ok(item.publishedAt<='2026-10-13');}
  assert.equal((inspiration.match(/Weiterlesen/g)||[]).length,3);
  assert.equal((inspiration.match(/Quelle:/g)||[]).length,3);
  assert.doesNotMatch(inspiration,/Bei der Quelle weiterlesen|<small/);

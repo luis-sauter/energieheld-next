@@ -40,5 +40,5 @@ export const historicalTravelThemes: readonly DiscoveryEntry[] = [
 // no public route, navigation, finder option, sitemap or related-page link.
 export const travelThemes: readonly DiscoveryEntry[] = [
   ...historicalTravelThemes.filter(entry => entry.slug !== 'tauchurlaub'),
-  { title: 'Skiurlaub', slug: 'skifahren', image: '/reiseportal/motto-editorial-v2/skifahren.webp', alt: 'KI-Symbolbild: Skipiste vor verschneiten Alpengipfeln', intro: 'Wintertage auf der Piste und Gastgeber mit belegtem Skiangebot entdecken.', previewSlugs: [] },
+  { title: 'Skiurlaub', slug: 'skifahren', image: '/reiseportal/motto-editorial-v2/skifahren.webp', alt: 'Skipiste vor verschneiten Alpengipfeln', intro: 'Wintertage auf der Piste und Gastgeber mit belegtem Skiangebot entdecken.', previewSlugs: [] },
 ];

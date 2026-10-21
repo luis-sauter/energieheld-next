@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { TravelThemeIcon } from "@/components/portal/travel-theme-icon";
 import { publicTravelLabel } from "@/lib/travel-presentation";
-import { travelFilterPreview, travelTermIcon } from "@/lib/travel-review-state";
+import { travelFilterPreview, travelTermIcon, travelTermVisibility } from "@/lib/travel-review-state";
 import { useTravelReview } from "./travel-review-context";
 import styles from "./admin.module.css";
 
@@ -44,22 +44,22 @@ export function TravelTaxonomyEditor({ published = false, compact = false, disab
         <div className={styles.travelChoices}>{options.map(term => <label key={term.term_key} className={styles.travelChoice} data-assigned={selected.includes(term.term_key)}>
           <input type="checkbox" checked={selected.includes(term.term_key)} disabled={isRetiredTravelTerm(term.term_key)} onChange={() => review.toggle(term.term_key)} />
           <TravelThemeIcon slug={travelTermIcon(term)} />
-          <span>{publicTravelLabel(term.term_key, term.label)}<small>{isRetiredTravelTerm(term.term_key) ? "Historisch · bleibt erhalten, öffentlich nicht aktiv" : assignedKeys.includes(term.term_key) ? selected.includes(term.term_key) ? "Bestätigt und gespeichert" : "Entfernen · noch nicht gespeichert" : selected.includes(term.term_key) ? "Ausgewählt · noch nicht gespeichert" : proposedKeys.includes(term.term_key) ? "Gastgebervorschlag" : "Nicht zugeordnet"}</small></span>
+          <span>{publicTravelLabel(term.term_key, term.label)}<small>{travelTermVisibility(term.term_key, basic)}</small><small>{isRetiredTravelTerm(term.term_key) ? "Historisch · bleibt erhalten, öffentlich nicht aktiv" : assignedKeys.includes(term.term_key) ? selected.includes(term.term_key) ? "Bestätigt und gespeichert" : "Entfernen · noch nicht gespeichert" : selected.includes(term.term_key) ? "Ausgewählt · noch nicht gespeichert" : proposedKeys.includes(term.term_key) ? "Gastgebervorschlag" : "Nicht zugeordnet"}</small></span>
         </label>)}</div>
       </fieldset>;
     })}
     {!basic&&<fieldset className={styles.travelGroup} disabled={busy || disabled}><legend>Jahreszeiten</legend>
-      <p>Interne redaktionelle Merkmale. Jahreszeiten und Sonderthema werden unabhängig voneinander ausgewählt.</p>
+      <p>Jahreszeiten und Sonderthema werden unabhängig voneinander ausgewählt. Saison-Badges erscheinen bei entsprechend zugeordneten Unterkünften im Sonderthemenbereich, nicht als eigene Premium-Mottoseite.</p>
       <div className={styles.travelChoices}>{travelSeasons.filter(season => terms.some(term => term.term_key === `theme:${season.slug}`)).map(season => {
         const key = `theme:${season.slug}`, checked = selected.includes(key);
-        return <div key={key} className={styles.seasonChoice}><label className={styles.travelChoice} data-assigned={checked}><input type="checkbox" checked={checked} onChange={() => review.toggle(key)} /><span>{season.label}</span></label>
+        return <div key={key} className={styles.seasonChoice}><label className={styles.travelChoice} data-assigned={checked}><input type="checkbox" checked={checked} onChange={() => review.toggle(key)} /><span>{season.label}<small>{travelTermVisibility(key)}</small></span></label>
           {checked && <><label htmlFor={`teaser-${season.slug}`}>Saisonaler Kurztext · {season.label}</label><textarea id={`teaser-${season.slug}`} rows={3} maxLength={240} value={review.teasers[key] ?? ""} onChange={event => review.setTeaser(key, event.target.value)} /></>}</div>;
       })}</div>
     </fieldset>}
     {!compact && <section className={styles.travelBriefing} aria-labelledby="travel-preview-title">
       <h3 id="travel-preview-title">So wird die Unterkunft auffindbar</h3>
       <p>{dirty ? "Vorschau Ihrer Auswahl — noch nicht gespeichert." : assignedKeys.length ? "Gespeicherte Reisezuordnungen." : "Noch keine Reisezuordnungen gespeichert."} {!published && "Öffentlich wirksam erst nach Veröffentlichung des Profils."}</p>
-      {!preview.length ? <p>Keine Reisebereiche ausgewählt.</p> : <ul className={styles.travelPreview}>{preview.map(term => <li key={term.term_key}>{term.href ? <Link href={term.href}>{groups.find(([key]) => key === term.dimension)?.[1]} → {term.label}</Link> : <span>{term.label} · internes Merkmal, kein öffentlicher Filter</span>}</li>)}</ul>}
+      {!preview.length ? <p>Keine Reisebereiche ausgewählt.</p> : <ul className={styles.travelPreview}>{preview.map(term => <li key={term.term_key}>{term.href ? <Link href={term.href}>{groups.find(([key]) => key === term.dimension)?.[1]} → {term.label}</Link> : <span>{term.label}</span>}<small> · {travelTermVisibility(term.term_key, basic)}</small></li>)}</ul>}
       <p>Nicht übernommene Gastgebervorschläge schränken keine öffentlichen Suchfilter ein.</p>
     </section>
     }

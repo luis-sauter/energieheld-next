@@ -30,3 +30,8 @@ export function visibleMottoAds(ads: readonly ActiveAd[]): ActiveAd[] {
   return [...new Map(ads.filter(ad => ad.imageUrl && !ad.suppressed && adTargetUrl(ad.target_url))
     .map(ad => [ad.id, ad])).values()];
 }
+
+export function staticPremiumAds(local: readonly ActiveAd[], pool: readonly ActiveAd[] = []) {
+  return visibleMottoAds([...local, ...pool].filter(ad => ad.placement === 'top_banner' && ad.source !== 'legacy'))
+    .filter((ad, index, all) => all.findIndex(other => other.image_path === ad.image_path) === index).slice(0, 2);
+}

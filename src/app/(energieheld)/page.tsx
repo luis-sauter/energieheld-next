@@ -72,6 +72,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     </section>
 
 
+    <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige vor dem Gastgeberbereich" instanceId="footer" />
     <section className={`${styles.provider} container`} aria-labelledby="provider-title">
       <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Ihre Unterkunft auf DAS-Reiseportal.com</h2>
         <p>Machen Sie Ihre Unterkunft dort sichtbar, wo neue Reisepläne entstehen. Wir beraten Sie persönlich – unverbindlich und ohne Registrierung.</p></div>

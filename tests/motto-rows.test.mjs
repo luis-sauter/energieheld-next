@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import './helpers/load-ts.mjs';
-const { orderMottoItems, mottoGroups, visibleMottoAds } = await import('../src/lib/motto-rows.ts');
+const { orderMottoItems, mottoGroups, visibleMottoAds, staticPremiumAds } = await import('../src/lib/motto-rows.ts');
 const { travelThemes, historicalTravelThemes } = await import('../src/data/reiseportal-discovery.ts');
 const { mottoEditorial } = await import('../src/data/motto-editorial.ts');
 const { portalAdSection } = await import('../src/lib/ad-target-areas.ts');
@@ -22,6 +22,13 @@ test('only occupied valid banner creatives appear, campaign identity deduplicate
  const ad={id:'one',placement:'sidebar_bottom',target_url:'https://example.org/',imageUrl:'/existing.webp'};
  const source=[ad,{...ad,placement:'sidebar_04'},{...ad,id:'hidden',suppressed:true},{...ad,id:'bad',target_url:'javascript:alert(1)'},{...ad,id:'empty',imageUrl:''}];
  assert.deepEqual(visibleMottoAds(source),[source[1]]);assert.equal(source[0].placement,'sidebar_bottom');
+});
+
+test('static Premium selection prefers local campaigns, deduplicates creatives and never revives legacy or hidden content',()=>{
+ const a={id:'local',placement:'top_banner',imageUrl:'/one.jpg',image_path:'campaigns/local/one.jpg',target_url:'https://example.org/'};
+ const b={...a,id:'second',imageUrl:'/two.jpg',image_path:'campaigns/second/two.jpg'};
+ assert.deepEqual(staticPremiumAds([a],[a,{...a,id:'duplicate'},b,{...b,id:'third',image_path:'third'}]),[a,b]);
+ assert.deepEqual(staticPremiumAds([],[{...a,source:'legacy'},{...a,suppressed:true},{...a,imageUrl:''},{...a,placement:'sidebar_top'}]),[]);
 });
 test('all eleven active themes have individual optimized art and editorial; historical diving targets remain valid',()=>{
  assert.equal(travelThemes.length,12);assert.equal(historicalTravelThemes.length,12);

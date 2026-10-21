@@ -58,7 +58,7 @@ export const mottoEditorial: Record<string, MottoEditorial> = {
   },
   "skifahren": {
     image: "/reiseportal/motto-editorial-v2/skifahren.webp",
-    alt: "KI-Symbolbild: sonnige Skipiste mit verschneiten Tannen und Alpengipfeln",
+    alt: "sonnige Skipiste mit verschneiten Tannen und Alpengipfeln",
     intro: "Frischer Schnee, weite Abfahrten und Zeit in den Bergen machen Wintertage besonders. Entdecken Sie Gastgeber mit konkretem Skiangebot, kurzen Wegen zur Piste oder hilfreichem Service für Ihre Ausrüstung. Prüfen Sie vor der Anreise die aktuellen Liftzeiten, Schneebedingungen und enthaltenen Leistungen direkt beim Gastgeber."
   }
 };

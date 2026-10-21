@@ -348,6 +348,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
       {preview && <InlineBannerContext.Provider value={null}><CampaignSlot placement={placement} preview
         ad={{ ...currentPreview(), crop: cropDirty ? crop : !file ? selected.banner?.crop : undefined }} /></InlineBannerContext.Provider>}
       {!preview && selected.banner && <p className={styles.hint}>Ohne Bild wird das Banner öffentlich nicht angezeigt. Sie können hier jederzeit ein Bild hinzufügen.</p>}
+      <p className={styles.hint}>Für scharfe Banner bitte hochauflösende Originale verwenden: für kleine Banner möglichst mindestens 1.600 Pixel Breite, für Premium-Banner etwa 3.000 Pixel. Verwenden Sie kurze, große Schrift; nachträgliches Vergrößern ergänzt keine echten Bilddetails. Für die Anzeige im Portal gilt bei Premium-Bannern ein breites Format von 7,5:1.</p>
       {notice && <p role="status">{notice}</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}
       <div className={styles.actions}>

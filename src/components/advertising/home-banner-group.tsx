@@ -7,7 +7,7 @@ import type { SidebarSlot } from "@/lib/sidebar-order";
 import styles from "@/app/(energieheld)/home.module.css";
 import { MottoRow } from '../portal/motto-row';
 import rowStyles from '../portal/motto-detail.module.css';
-export function HomeBannerGroup({ ads, placements, label, adminOnly = false, sliderAds }: { ads: ActiveAd[]; placements: AdPlacementId[]; label: string; adminOnly?: boolean; sliderAds?: ActiveAd[] }) {
+export function HomeBannerGroup({ ads, placements, label, adminOnly = false, sliderAds, instanceId }: { ads: ActiveAd[]; placements: AdPlacementId[]; label: string; adminOnly?: boolean; sliderAds?: ActiveAd[]; instanceId?: string }) {
   const inline = useInlineBanners();
   const visible = Boolean(sliderAds?.length) || placements.some(slot => {
     const ad = inline && Object.hasOwn(inline.overrides, slot) ? inline.overrides[slot] : ads.find(row => row.placement === slot);
@@ -23,7 +23,7 @@ export function HomeBannerGroup({ ads, placements, label, adminOnly = false, sli
     </MottoRow></div>
   </section>;
   return <section className={`section container ${styles.partners}`} aria-label={label}>
-    {placements[0] === "top_banner" ? <CampaignSlot compactPremium showLabel={false} placement="top_banner" ad={ads.find(row => row.placement === "top_banner")} />
+    {placements[0] === "top_banner" ? <CampaignSlot compactPremium instanceId={instanceId} showLabel={false} placement="top_banner" ad={ads.find(row => row.placement === "top_banner")} />
       : <AdvertisingRail slots={placements as SidebarSlot[]} visibleSlots={placements as SidebarSlot[]} ads={displayedAds} showAdvertiseLink={false} />}
   </section>;
 }

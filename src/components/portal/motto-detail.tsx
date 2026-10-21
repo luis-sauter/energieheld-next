@@ -29,7 +29,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
   const sectionTitle = destination ? 'Reiseziele' : 'Mottoreisen';
   const editorial = destination ? { ...entry, ...destinationEditorial[entry.slug] } : mottoEditorial[entry.slug];
   const companies = orderMottoItems(listings, listing => listing.id, seed + ':companies');
-  const banners = orderMottoItems(visibleMottoAds(advertising?.sliderAds ?? advertising?.ads ?? []), ad => ad.id, seed + ':banners');
+  const banners = orderMottoItems(visibleMottoAds(advertising?.sliderAds ?? advertising?.ads ?? []).filter(ad => destination || ad.placement !== 'top_banner'), ad => ad.id, seed + ':banners');
   const companyRows = mottoGroups(companies, 3), bannerRows = mottoGroups(banners, 2);
   const breadcrumbs = portalBreadcrumbs(entry.title, `${basePath}/${entry.slug}`, { name: sectionTitle, path: basePath });
   return <main id="hauptinhalt" className={styles.page} data-motto-detail={destination ? undefined : entry.slug} data-destination-detail={destination ? entry.slug : undefined}>
@@ -54,6 +54,10 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
               {bannerRows[i].map(ad => <CampaignSlot key={ad.id} placement={ad.placement} ad={ad}
                 searchResult={!advertising?.ads.some(local => local.id === ad.id)} />)}
             </MottoRow></div>}
+            {!destination && advertising?.premiumAds?.[i] && <div className={styles.premiumRow} data-static-premium={i + 1}>
+              <CampaignSlot placement="top_banner" ad={advertising.premiumAds[i]} compactPremium searchResult />
+              {advertising.options && <Link className="text-link" href={`/admin/werbung/${advertising.premiumAds[i].id}`}>Premium-Banner bearbeiten →</Link>}
+            </div>}
           </div>)}
           {!companies.length && <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}
           {advertising?.options && <details className={styles.management}><summary>Bannerplätze verwalten</summary>

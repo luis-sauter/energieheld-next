@@ -181,9 +181,9 @@ test('image replacement keeps stored crop, targets and URL through the actual me
  delete globalThis.inlineArchiveMedia;
 });
 
-test('only opt-in homepage Premium reduces natural frame height by 20 percent without changing width or other slots',()=>{
+test('opt-in Premium banners share the homepage reference geometry without changing sidebar slots',()=>{
  const ad={id:'premium',placement:'top_banner',headline:'Premium',imageUrl:'/wide.png',target_url:'https://example.org',image_width:1000,image_height:400};
  states=[];cursor=0;const html=renderToStaticMarkup(createElement(CampaignSlot,{placement:'top_banner',ad,compactPremium:true}));
- assert.match(html,/aspect-ratio:3.125/);assert.equal(1000/3.125,320);assert.match(html,/data-compact-premium="true"/);
+ assert.match(html,/aspect-ratio:7.5/);assert.match(html,/data-compact-premium="true"/);
  states=[];cursor=0;const standard=renderToStaticMarkup(createElement(CampaignSlot,{placement:'sidebar_top',ad:{...ad,placement:'sidebar_top'},compactPremium:true}));assert.doesNotMatch(standard,/cropFrame|data-compact-premium/);
 });

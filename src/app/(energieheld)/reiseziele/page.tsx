@@ -13,8 +13,8 @@ import styles from "./reiseziele.module.css";
 const breadcrumbs = portalBreadcrumbs("Reiseziele", "/reiseziele");
 const imageRoot = "/reiseportal/redesign/reiseziele";
 const countryImages = ["deutschland-kueste", "oesterreich-salzburg-v3", "schweiz-skipiste-v3", "suedtirol-altstadt-v3"];
-const countryAlts = ["Dünen, Strand und Leuchtturm an einer deutschen Küstenlandschaft", "KI-generierte Ansicht einer österreichischen Altstadt mit Festung und Fluss, inspiriert von Salzburg",
-  "KI-generierte Schweizer Skipiste vor verschneitem Alpenpanorama", "KI-generierte Südtiroler Altstadtgasse mit Laubengängen und Blumenschmuck"];
+const countryAlts = ["Dünen, Strand und Leuchtturm an einer deutschen Küstenlandschaft", "Österreichische Altstadt mit Festung und Fluss",
+  "Schweizer Skipiste vor verschneitem Alpenpanorama", "Südtiroler Altstadtgasse mit Laubengängen und Blumenschmuck"];
 const countryTeasers = [
   "Von der Ostseeküste über Flusstäler bis an den Alpenrand.",
   "Alpentäler, Seen und Städte voller Geschichte.",
@@ -30,9 +30,8 @@ const inspirations = [
 const quicklinks = [
   { title: "Wellnessurlaub", icon: "wellnessangebote", href: "/mottoreisen/wellnessangebote" },
   { title: "Wandern", icon: "wanderurlaub", href: "/mottoreisen/wanderurlaub" },
-  { title: "Seen & Berge", icon: "urlaub-am-wasser", href: "/mottoreisen/urlaub-am-wasser" },
-  // There is no duration facet: this entrance offers the existing directory.
-  { title: "Kurzurlaub", icon: "calendar", href: "/unterkuenfte-a-z" },
+  { title: "Radwandern", icon: "radwandern", href: "/mottoreisen/radwandern" },
+  { title: "Skiurlaub", icon: "skifahren", href: "/mottoreisen/skifahren" },
   { title: "Mit Hund", icon: "mit-hund", href: "/unterkuenfte-a-z?zielgruppe=mit-hund" },
   { title: "Familienzeit", icon: "familienurlaub", href: "/mottoreisen/familienurlaub" },
 ];
@@ -43,7 +42,6 @@ const benefits = [
 ];
 const countryTitle = (slug: string, title: string) => slug === "suedtirol-italien" ? "Südtirol / Italien" : title;
 function Arrow() { return <span className={styles.arrow} aria-hidden="true"><Icon name="arrow" /></span>; }
-function Calendar() { return <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 2v6m10-6v6M3 11h18" /></svg>; }
 
 export const metadata = pageMetadata({ title: "Reiseziele – Vier Länder. Viele Möglichkeiten.", description: hubDescriptions.destinations,
   path: "/reiseziele", image: `${imageRoot}/hero-flusstal-v3.webp` });
@@ -53,7 +51,7 @@ export default function DestinationsPage() {
     <JsonLd data={jsonLdGraph([breadcrumbSchema(breadcrumbs), collectionSchema({ name: "Reiseziele", description: hubDescriptions.destinations,
       path: "/reiseziele", items: destinations.map(entry => ({ name: entry.title, path: `/reiseziele/${entry.slug}` })) })])} />
     <section className={styles.hero} aria-labelledby="reiseziele-title">
-      <Image className={styles.heroImage} src={`${imageRoot}/hero-flusstal-v3.webp`} alt="KI-generiertes Panorama eines grünen Alpentals mit Fluss, Wiesen und Bergen"
+      <Image className={styles.heroImage} src={`${imageRoot}/hero-flusstal-v3.webp`} alt="Grünes Alpental mit Fluss, Wiesen und Bergen"
         fill sizes="100vw" preload />
       <div className={`${styles.heroContent} container`}>
         <Breadcrumbs items={breadcrumbs} className={styles.breadcrumbs} />
@@ -99,7 +97,7 @@ export default function DestinationsPage() {
             <h2 id="quicklinks-title">So finden Sie schneller das passende Reiseziel</h2>
             <p>Lassen Sie sich von beliebten Urlaubsthemen inspirieren und entdecken Sie passende Gastgeber in allen vier Ländern.</p></div>
           <div className={styles.quicklinks}>{quicklinks.map(item => <Link className={styles.quicklink} key={item.title} href={item.href}>
-            <span className={styles.orangeIcon}>{item.icon === "calendar" ? <Calendar /> : <TravelThemeIcon slug={item.icon} />}</span>
+            <span className={styles.orangeIcon}><TravelThemeIcon slug={item.icon} /></span>
             <span>{item.title}</span><Arrow /></Link>)}</div>
         </section>
         <section className={styles.section} aria-labelledby="benefits-title">

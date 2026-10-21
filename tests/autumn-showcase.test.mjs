@@ -57,12 +57,13 @@ test('special topic uses its own assignment, keeps curated images and never muta
  assert.match(html,/Sonderthemen-Unterkünfte: weiter/);
 });
 
-test('reference layout renders one declared AI editorial image, genuine linked cards and existing season CTA as server HTML',()=>{
+test('seasonal layout keeps genuine linked cards, includes winter entry and omits public image-generation labels',()=>{
  const rows=fixtures(),html=renderToStaticMarkup(createElement(AutumnShowcase,{listings:rows}));
  assert.equal((html.match(/data-autumn-profile=/g)||[]).length,4);
  assert.equal((html.match(/src="\/reiseportal\/seasons\/herbst-auszeit.webp"/g)||[]).length,1);
- assert.match(html,/KI-generiertes Symbolbild/);
- assert.match(html,/Herbst-Auszeit mit Charakter/);
+ assert.doesNotMatch(html,/KI-generiertes Symbolbild/);
+ assert.match(html,/Jahreszeiten mit Charakter/);
+ assert.match(html,/href="\/mottoreisen\/skifahren"/);
  assert.match(html,/Alle Unterkünfte entdecken/);
  assert.doesNotMatch(html,/href="[^\"]*saison-/);
  assert.ok(html.includes('href="'+AUTUMN_HREF+'"'));
@@ -70,6 +71,14 @@ test('reference layout renders one declared AI editorial image, genuine linked c
  assert.doesNotMatch(html,/Gespeicherter saisonaler Kurztext/);
  assert.doesNotMatch(html,/Panorama Lodge Aurelia|Chalet Kupferlaub|Herbstresidenz Mirabell|Seegut Waldruh|iframe/);
  assert.equal(renderToStaticMarkup(createElement(AutumnShowcase,{listings:[]})),'');
+});
+
+test('season badges require an actual assignment and never create nested profile links',()=>{
+ const rows=fixtures();rows[0].travelTermKeys.push('theme:skifahren','theme:saison-winter');
+ const html=renderToStaticMarkup(createElement(AutumnShowcase,{listings:rows}));
+ assert.equal((html.match(/<li>Winter<\/li>/g)||[]).length,1);
+ assert.equal((html.match(/<li>Skiurlaub<\/li>/g)||[]).length,1);
+ assert.doesNotMatch(html,/<a[^>]*class="cardLink"(?:(?!<\/a>)[^])*?<a/);
 });
 
 test('partial selection collapses absent providers without placeholders; content follows current records',()=>{
