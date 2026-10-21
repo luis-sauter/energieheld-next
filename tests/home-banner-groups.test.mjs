@@ -11,9 +11,10 @@ const slots=['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_04','sideb
 const ad=(placement,id=placement)=>({placement,id,imageUrl:'/real.jpg',headline:id,target_url:'https://example.org/'+id});
 const file=readFileSync(new URL('../src/components/advertising/home-banner-group.tsx',import.meta.url),'utf8');
 const loaded={exports:{}};
-function CampaignSlot({placement,ad:initial}){const row=inline&&Object.hasOwn(inline.overrides,placement)?inline.overrides[placement]:initial;return createElement('aside',{'data-placement':placement},row&&!row.suppressed?createElement('a',{href:row.target_url},row.headline):'Admin empty slot');}
+function CampaignSlot({placement,ad:initial,searchResult}){const row=!searchResult&&inline&&Object.hasOwn(inline.overrides,placement)?inline.overrides[placement]:initial;return createElement('aside',{'data-placement':placement},row&&!row.suppressed?createElement('a',{href:row.target_url},row.headline):'Admin empty slot');}
 vm.runInNewContext(transpileModule(file,{compilerOptions:{module:ModuleKind.CommonJS,jsx:JsxEmit.ReactJSX,target:ScriptTarget.ES2022}}).outputText,{module:loaded,exports:loaded.exports,require:name=>{
  if(name==='react/jsx-runtime')return jsx;
+ if(name==='next/link')return {default:({children,...props})=>createElement('a',props,children)};
  if(name==='./inline-banner-context')return {useInlineBanners:()=>inline};
  if(name==='./campaign-view')return {CampaignSlot};
  if(name==='../portal/motto-row')return {MottoRow:({children,label})=>createElement('div',{role:'region','aria-label':label},children)};
@@ -22,6 +23,15 @@ vm.runInNewContext(transpileModule(file,{compilerOptions:{module:ModuleKind.Comm
  throw Error(name);
 }});
 const render=(ads,placements,adminOnly=false)=>renderToStaticMarkup(createElement(loaded.exports.HomeBannerGroup,{ads,placements,adminOnly,label:'Existing banners'}));
+
+test('supplementary footer creative keeps its own campaign editing target, independent of homepage overrides',()=>{
+ const booked=ad('top_banner','booked'),extra=ad('top_banner','supplementary');
+ const props={ads:[booked],placements:['top_banner'],supplementaryAd:extra,label:'Footer'};
+ inline=null;let html=renderToStaticMarkup(createElement(loaded.exports.HomeBannerGroup,props));
+ assert.match(html,/example.org\/supplementary/);assert.doesNotMatch(html,/example.org\/booked|\/admin\/werbung/);
+ inline={overrides:{top_banner:booked}};html=renderToStaticMarkup(createElement(loaded.exports.HomeBannerGroup,props));
+ assert.match(html,/href="\/admin\/werbung\/supplementary"/);assert.match(html,/example.org\/supplementary/);assert.doesNotMatch(html,/example.org\/booked/);inline=null;
+});
 
 test('admin retains an add action for an emptied fifth slider slot without resurrecting static banners',()=>{
  const placements=['sidebar_top','sidebar_middle','sidebar_bottom','sidebar_07','sidebar_08'];const ads=placements.slice(0,4).map(slot=>ad(slot));

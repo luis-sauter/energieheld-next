@@ -15,7 +15,7 @@ export async function loadDiscoveryAdvertising(path: string, allPublicBanners = 
     (allPublicBanners && path.startsWith('/reiseziele/')) || path === '/mottoreisen' || path.startsWith('/mottoreisen/') ? loadTravelSearchBanners() : Promise.resolve(null),
   ]);
   return { ads, sidebarOrder, options,
-    premiumAds: staticPremiumAds(ads, pool?.banners.map(banner => banner.ad)),
+    premiumAds: staticPremiumAds(ads, pool?.banners.map(banner => banner.ad), path),
     sliderAds: pool && allPublicBanners ? destinationBanners(ads, pool.banners) : ads };
 }
 export type DiscoveryAdvertisingData = NonNullable<Awaited<ReturnType<typeof loadDiscoveryAdvertising>>>;

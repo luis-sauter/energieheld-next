@@ -3,6 +3,7 @@ import { InlineBannerProvider } from "@/components/advertising/inline-banner-edi
 import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
 import { HomeBannerGroup } from "@/components/advertising/home-banner-group";
 import { homeBannerRows } from '@/lib/home-banner-selection';
+import { staticPremiumAds } from '@/lib/motto-rows';
 import { randomUUID } from "node:crypto";
 import { selectHomeStays } from "@/lib/home-stays";
 import { MottoRow } from "@/components/portal/motto-row";
@@ -43,6 +44,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   ]);
   const featured = selectHomeStays(directory.database, randomUUID());
   const bannerRows = homeBannerRows(ads);
+  const mainPremiumId = ads.find(ad => ad.placement === 'top_banner')?.id;
+  const footerPremium = staticPremiumAds([], searchBanners.banners.map(banner => banner.ad).filter(ad => ad.id !== mainPremiumId), 'homepage-footer')[0];
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
@@ -72,7 +75,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     </section>
 
 
-    <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige vor dem Gastgeberbereich" instanceId="footer" />
+    <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige vor dem Gastgeberbereich" instanceId="footer" supplementaryAd={footerPremium} />
     <section className={`${styles.provider} container`} aria-labelledby="provider-title">
       <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Ihre Unterkunft auf DAS-Reiseportal.com</h2>
         <p>Machen Sie Ihre Unterkunft dort sichtbar, wo neue Reisepläne entstehen. Wir beraten Sie persönlich – unverbindlich und ohne Registrierung.</p></div>

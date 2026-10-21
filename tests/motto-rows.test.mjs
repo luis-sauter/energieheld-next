@@ -31,6 +31,15 @@ test('static Premium selection prefers local campaigns, deduplicates creatives a
  assert.deepEqual(staticPremiumAds([],[{...a,source:'legacy'},{...a,suppressed:true},{...a,imageUrl:''},{...a,placement:'sidebar_top'}]),[]);
    assert.deepEqual(staticPremiumAds([],[{...a,id:'870c4024-25ec-4c13-9b8b-180599f145fe'},{...a,id:'7f1c06f6-9946-4f0e-90bc-7fb9499ed010'},{...a,id:'65a74452-e82c-4177-8b72-0227ce30ad6e'}]),[]);
 });
+test('supplementary Premium creatives vary by page without changing booked placements or duplicating images',()=>{
+ const pool=Array.from({length:6},(_,i)=>({id:`premium-${i}`,placement:'top_banner',imageUrl:`/${i}.jpg`,image_path:`campaigns/${i}/creative.jpg`,target_url:'https://example.org/'}));
+ const original=structuredClone(pool), local={...pool[0],id:'booked'};
+ const results=['natur-pur','radwandern','wellnessangebote','skifahren','familienurlaub'].map(seed=>staticPremiumAds([local],pool,seed));
+ for(const result of results){assert.equal(result.length,2);assert.equal(result[0].id,'booked');assert.notEqual(result[0].image_path,result[1].image_path);}
+ assert.ok(new Set(results.map(result=>result[1].id)).size>1);
+ assert.deepEqual(results[0],staticPremiumAds([local],pool,'natur-pur'));assert.deepEqual(pool,original);
+});
+
 test('all eleven active themes have individual optimized art and editorial; historical diving targets remain valid',()=>{
  assert.equal(travelThemes.length,12);assert.equal(historicalTravelThemes.length,12);
  assert.equal(portalAdSection('mottoreisen/tauchurlaub'),'mottoreisen');

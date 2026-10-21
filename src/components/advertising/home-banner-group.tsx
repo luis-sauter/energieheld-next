@@ -7,9 +7,10 @@ import type { SidebarSlot } from "@/lib/sidebar-order";
 import styles from "@/app/(energieheld)/home.module.css";
 import { MottoRow } from '../portal/motto-row';
 import rowStyles from '../portal/motto-detail.module.css';
-export function HomeBannerGroup({ ads, placements, label, adminOnly = false, sliderAds, instanceId }: { ads: ActiveAd[]; placements: AdPlacementId[]; label: string; adminOnly?: boolean; sliderAds?: ActiveAd[]; instanceId?: string }) {
+import Link from 'next/link';
+export function HomeBannerGroup({ ads, placements, label, adminOnly = false, sliderAds, instanceId, supplementaryAd }: { ads: ActiveAd[]; placements: AdPlacementId[]; label: string; adminOnly?: boolean; sliderAds?: ActiveAd[]; instanceId?: string; supplementaryAd?: ActiveAd }) {
   const inline = useInlineBanners();
-  const visible = Boolean(sliderAds?.length) || placements.some(slot => {
+  const visible = Boolean(supplementaryAd?.imageUrl || sliderAds?.length) || placements.some(slot => {
     const ad = inline && Object.hasOwn(inline.overrides, slot) ? inline.overrides[slot] : ads.find(row => row.placement === slot);
     return ad?.imageUrl && !ad.suppressed;
   });
@@ -23,7 +24,10 @@ export function HomeBannerGroup({ ads, placements, label, adminOnly = false, sli
     </MottoRow></div>
   </section>;
   return <section className={`section container ${styles.partners}`} aria-label={label}>
-    {placements[0] === "top_banner" ? <CampaignSlot compactPremium instanceId={instanceId} showLabel={false} placement="top_banner" ad={ads.find(row => row.placement === "top_banner")} />
+    {placements[0] === "top_banner" ? <>
+      {inline && supplementaryAd && <Link className="text-link" href={`/admin/werbung/${supplementaryAd.id}`}>Banner bearbeiten</Link>}
+      <CampaignSlot compactPremium searchResult={Boolean(supplementaryAd)} instanceId={instanceId} showLabel={false} placement="top_banner" ad={supplementaryAd ?? ads.find(row => row.placement === "top_banner")} />
+    </>
       : <AdvertisingRail slots={placements as SidebarSlot[]} visibleSlots={placements as SidebarSlot[]} ads={displayedAds} showAdvertiseLink={false} />}
   </section>;
 }
