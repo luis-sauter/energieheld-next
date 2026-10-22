@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import type { PortalImage } from "@/types/portal";
+import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";
 
 // Signed private URLs bypass the image optimizer's independent public cache.
 export function CompanyImage({
@@ -12,6 +13,7 @@ export function CompanyImage({
   sizes,
   optimizeLocal = false,
   fit = "cover",
+  crop,
 }: {
   image: PortalImage;
   width?: number;
@@ -20,6 +22,7 @@ export function CompanyImage({
   sizes?: string;
   optimizeLocal?: boolean;
   fit?: "cover" | "contain";
+  crop?: ImageCrop;
 }) {
   const [failed, setFailed] = useState(false);
   if (failed) return <span>Bild nicht verfügbar</span>;
@@ -30,7 +33,7 @@ export function CompanyImage({
       {...(cover ? { fill: true, sizes: sizes ?? "(max-width: 700px) 100vw, 200px" } : { width, height })}
       unoptimized={!(optimizeLocal && image.src.startsWith("/") && !image.src.startsWith("//"))}
       onError={() => setFailed(true)}
-      style={cover ? { objectFit: fit } : { objectFit: "contain", maxWidth: "100%", height: "auto" }}
+      style={cover ? (crop ? imageCropStyle(crop) : { objectFit: fit }) : { objectFit: "contain", maxWidth: "100%", height: "auto" }}
     />
   );
 }

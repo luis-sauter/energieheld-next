@@ -5,6 +5,7 @@ import { CompanyImage } from "./company-image";
 import { QualitySeal } from "@/components/quality/quality-seal";
 import { Icon } from "./icon";
 import { providerCardImage } from '@/lib/provider-card-media';
+import { CardImageSurface, CardImagePhoto, CardImageEditButton } from "./card-image-surface";
 
 function websiteUrl(value: string) {
   try {
@@ -26,6 +27,7 @@ export function ListingRow({
   travelLabels = {},
   adminStatus,
   season,
+  cardEditing = false,
 }: {
   listing: Listing;
   categories: Category[];
@@ -35,9 +37,10 @@ export function ListingRow({
   travelLabels?: Record<string, string>;
   adminStatus?: React.ReactNode;
   season?: string;
+  cardEditing?: boolean;
 }) {
   const cardImage = travel ? providerCardImage(listing, 'directory') : listing.directoryImage ?? listing.logo ?? listing.images[0];
-  const isLogo = Boolean(cardImage && listing.logo?.src === cardImage.src);
+  const isLogo = Boolean(!listing.cardImageAssetId && cardImage && listing.logo?.src === cardImage.src);
   const premium = listing.directoryPackage === "premium" && (travel || Boolean(cardImage));
   const teaser = listing.tagline || (travel ? listing.description.replace(/\s+/g, " ").trim().slice(0, 240) : "");
   const tags = travel ? [...new Set((listing.travelTermKeys ?? []).flatMap((key) => !key.startsWith("theme:") && !key.startsWith("audience:") && travelLabels[key] ? [travelLabels[key]] : []))] : [];
@@ -48,13 +51,14 @@ export function ListingRow({
   ].filter(Boolean).join(", ");
   const website = websiteUrl(listing.contact.website);
   const phoneHref = listing.contact.phone.replace(/[^\d+]/g, "");
-  return (
-    <article className={`listing-row listing-row--${premium ? "premium" : "basic"}`}>
+  const editable = cardEditing && travel && premium;
+  const content = <>
       {(premium || travel) && (
-        <div className={`row-logo${travel && isLogo ? " row-logo--contain" : ""}`}>
-          {cardImage ? <CompanyImage key={cardImage.src} image={cardImage} cover fit={travel && isLogo ? "contain" : "cover"} optimizeLocal={travel}
-            sizes={travel ? (premium ? "(max-width: 600px) 160px, 220px" : "72px") : undefined} /> : <span aria-label={`Kein Bild für ${listing.name}`} className={travel ? "travel-image-fallback" : undefined}>{travel ? <Icon name="home" size={36} /> : listing.initials}</span>}
+        <div className={`row-logo${travel && isLogo && !editable ? " row-logo--contain" : ""}`}>
+          {editable ? <CardImagePhoto image={cardImage} initials={listing.initials} crop={listing.cardImageAssetId ? listing.cardImageCrop : undefined} fit={isLogo ? "contain" : "cover"} sizes="(max-width: 600px) 160px, 220px" /> : cardImage ? <CompanyImage key={cardImage.src} image={cardImage} cover fit={travel && isLogo ? "contain" : "cover"} optimizeLocal={travel}
+            crop={travel && listing.cardImageAssetId ? listing.cardImageCrop : undefined} sizes={travel ? (premium ? "(max-width: 600px) 160px, 220px" : "72px") : undefined} /> : <span aria-label={`Kein Bild für ${listing.name}`} className={travel ? "travel-image-fallback" : undefined}>{travel ? <Icon name="home" size={36} /> : listing.initials}</span>}
           {travel && premium && <span className="travel-premium-badge">Premium</span>}
+          {editable && <CardImageEditButton profileId={listing.id} profileName={listing.name} image={cardImage} assetId={listing.cardImageAssetId} crop={listing.cardImageCrop} ratio={1} />}
         </div>
       )}
       <div className="row-content">
@@ -91,6 +95,7 @@ export function ListingRow({
         )}
         <Link className="row-profile-link" href={href}>{travel ? (premium ? "Zum Unternehmensprofil" : "Zum Profil") : "Unternehmensprofil"}{travel && <Icon name="arrow" size={18} />}</Link>
       </div>
-    </article>
-  );
+    </>;
+  const className = `listing-row listing-row--${premium ? "premium" : "basic"}`;
+  return editable ? <CardImageSurface className={className}>{content}</CardImageSurface> : <article className={className}>{content}</article>;
 }

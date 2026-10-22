@@ -8,9 +8,10 @@ import type { PortalImage } from "@/types/portal";
 import styles from "./accommodation-card.module.css";
 const Browser = dynamic(() => import("../admin/media-library-browser").then(module => module.MediaLibraryBrowser));
 const CropControls = dynamic(() => import("../admin/image-crop-controls").then(module => module.ImageCropControls));
-export function CardImageEditor({ profileId, profileName, crop: savedCrop, image, assetId, onSaved }: {
+export function CardImageEditor({ profileId, profileName, crop: savedCrop, image, assetId, onSaved, ratio = 35 / 32 }: {
   profileId: string; profileName: string; crop?: ImageCrop; image?: PortalImage; assetId?: string;
   onSaved?: (value: { image: PortalImage; assetId: string; crop: ImageCrop }) => void;
+  ratio?: number;
 }) {
   const dialog = useRef<HTMLDialogElement>(null), returnFocus = useRef<HTMLElement | null>(null);
   const [open, setOpen] = useState(false), [selected, setSelected] = useState<{ id: string; src: string; alt: string } | null>(null);
@@ -47,8 +48,8 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
       onClose={event => { if (event.target !== event.currentTarget) return; setOpen(false); setSelected(null); }}>
       {error && <p role="alert">{error}</p>}
       {selected ? <div style={{ padding: "1.5rem" }}><h2 id="media-library-title">Vorschaubild ändern</h2><p>{profileName}</p>
-        <p>Nur das Kartenbild wird geändert. Galerie und Medienoriginal bleiben erhalten.</p>
-        <CropControls crop={crop} setCrop={setCrop} ratio={35 / 32} alt={selected.alt} disabled={busy}
+        <p>Das Vorschaubild wird in A–Z und auf den Unterkunftskarten verwendet. Galerie und Medienoriginal bleiben erhalten.</p>
+        <CropControls crop={crop} setCrop={setCrop} ratio={ratio} alt={selected.alt} disabled={busy}
           renderImage={value => {
             // eslint-disable-next-line @next/next/no-img-element
             return <img src={selected.src} alt={selected.alt} style={imageCropStyle(value)} />;

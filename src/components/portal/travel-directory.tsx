@@ -35,7 +35,8 @@ import {BasicSourceCredit} from './basic-source-credit';
 import {useAccommodationFacets} from './use-accommodation-facets';
 
 export function TravelDirectory({ initialValues, database, preview, terms, error, ads, sidebarOrder,
-  canReorder, freshnessStatuses, importedProfileIds, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions, banners = [], bannerError, pagination,basicEnabled=false,basicPagination }: {
+  canReorder, cardEditing = false, freshnessStatuses, importedProfileIds, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions, banners = [], bannerError, pagination,basicEnabled=false,basicPagination }: {
+  cardEditing?: boolean;
   basicPagination?:ResultBatch<DirectoryEntry,string|number>;
   basicEnabled?:boolean;
   pagination?: {key:string;profiles:ResultBatch<DirectoryEntry,string|number>;banners:ResultBatch<ActiveAd,number>};
@@ -109,7 +110,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     const basic = grouped.filter(row => row.directoryPackage !== "premium");
     let mobileIndex = 0;
     const render = (rows: Listing[]) => <div className="listing-rows">{rows.map((listing,index) => <Fragment key={listing.id}>
-      <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} season={values.theme}
+      <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} season={values.theme} cardEditing={cardEditing}
         adminStatus={freshnessStatuses?.[listing.id] || importedProfileIds?.includes(listing.id) || (publicImportPresentation.enabled && listing.importedAt) ? <span className="profile-review-badges">{freshnessStatuses?.[listing.id] && <FreshnessStatus status={freshnessStatuses[listing.id]} />}<ProfileImportBadge imported={importedProfileIds?.includes(listing.id) || (publicImportPresentation.enabled && Boolean(listing.importedAt))} /></span> : undefined} />
       {((index + 1) % 6 === 0 || index === rows.length - 1 && (!pagination || rows.length === results.filter(row => row.directoryPackage === rows[0]?.directoryPackage).length)) && bannerPool[mobileIndex] && <div className="directory-mobile-banner">{mobileBanner(bannerPool[mobileIndex++])}</div>}
       </Fragment>)}</div>;

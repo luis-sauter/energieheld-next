@@ -80,7 +80,7 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
         items: shown.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <TravelDirectory initialValues={initialValues} database={loaded.database}
       preview={loaded.preview} terms={mergePublicTravelTerms(terms,searchBanners.terms)} banners={searchBanners.banners} bannerError={searchBanners.error} error={loaded.error??(basicPagination===null?'Die Basic-Unterkünfte konnten nicht geladen werden.':null)} ads={ads} sidebarOrder={sidebarOrder}
-      basicEnabled={basicIntegrationEnabled()} basicPagination={basicPagination??undefined} canReorder={canReorder} freshnessStatuses={freshnessStatuses} importedProfileIds={importedProfileIds} hiddenOrderKeys={loaded.hiddenOrderKeys}
+      basicEnabled={basicIntegrationEnabled()} basicPagination={basicPagination??undefined} canReorder={canReorder} cardEditing={Boolean(adminClient)} freshnessStatuses={freshnessStatuses} importedProfileIds={importedProfileIds} hiddenOrderKeys={loaded.hiddenOrderKeys}
       saveOrder={saveOrder} saveSidebarOrder={saveSidebarOrder} bannerOptions={bannerOptions} /></>;
   }
 
