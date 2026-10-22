@@ -3,7 +3,6 @@ import { createPublicClient } from './supabase/public';
 import { loadDirectoryPackages, publicDemo, loadReiseportalDirectoryFacts, loadReiseportalFinderListings, loadReiseportalSearchListings } from './reiseportal-directory';
 import { sortByDirectoryOrder, type DirectoryOrderRow } from './company-directory-order';
 import { withPublicImportMarkers } from './public-profile-imports';
-import { withSavedCardImages } from './profile-card-images';
 import { loadPublicAds } from './public-ads';
 import { loadTravelSearchBanners } from './public-travel-search-banners';
 import { travelSearchResults } from './travel-search-banners';
@@ -84,7 +83,7 @@ export function directoryWindows(index: Awaited<ReturnType<typeof loadPublicDire
 }
 
 export async function hydrateDirectoryWindow(window: ReturnType<typeof resultWindow<Listing>>, facts: Listing[]) {
-  const loaded = await withSavedCardImages(await loadReiseportalSearchListings(window.items.map(row => row.id), facts));
+  const loaded = await loadReiseportalSearchListings(window.items.map(row => row.id), facts);
   const byId = new Map(loaded.map(row => [row.id, row]));
   return { ...window, items: window.items.flatMap(fact => {
     const loadedRow = byId.get(fact.id); const row=loadedRow && (fact.isDemo?publicDemo(loadedRow):loadedRow); return row ? [compactResultCard({ ...row, travelTermKeys:fact.travelTermKeys, importedAt: fact.importedAt })] : [];

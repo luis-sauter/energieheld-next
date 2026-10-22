@@ -108,9 +108,9 @@ export async function loadReiseportalSearchListings(profileIds: string[], facts:
   ]);
   if (result.error) throw new Error(result.error);
   const assignments = new Map(facts.map(listing => [listing.id, listing.travelTermKeys]));
-  return result.data!.listings.map(listing => withLegacyImages({ ...listing,
+  return withSavedCardImages(result.data!.listings.map(listing => withLegacyImages({ ...listing,
     directoryPackage: packages.get(listing.id) ?? "basic", travelTermKeys: assignments.get(listing.id) ?? [], seasonTeasers: facts.find(fact => fact.id === listing.id)?.seasonTeasers,
-  }));
+  })));
 }
 
 export async function loadReiseportalDirectory(options?: { cardOnly: boolean }) {
