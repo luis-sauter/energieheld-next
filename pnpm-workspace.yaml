@@ -1,3 +1,6 @@
 allowBuilds:
   sharp: false
   unrs-resolver: false
+overrides:
+  # Security fixes within the existing transitive major versions.
+  'brace-expansion@>=5.0.0 <5.0.12': 5.0.12
