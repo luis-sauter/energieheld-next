@@ -26,7 +26,7 @@ registerHooks({
     if (specifier.endsWith("/auth-actions")) return { url: 'data:text/javascript,export async function logout(){return {}}', shortCircuit: true };
     if (specifier.endsWith("/discovery-advertising") && !specifier.includes("components/")) return { url: 'data:text/javascript,export async function loadDiscoveryAdvertising(path){globalThis.__discoveryAdPaths?.push(path);return globalThis.__discoveryAdvertising}', shortCircuit: true };
     if (specifier.endsWith("/public-companies")) return {
-      url: 'data:text/javascript,export async function loadPublicCompanyDirectory(){return globalThis.__travelDirectoryResult};export async function loadPublicCompanyProfileIndex(){return []};export async function loadPublicCompanyBySlug(slug){globalThis.__travelLookups.push(slug);return globalThis.__travelDetailResult}',
+      url: 'data:text/javascript,export async function loadPublicCompanyDirectory(){return globalThis.__travelDirectoryResult};export async function loadPublicCompanyProfileIndex(){return (globalThis.__travelDirectoryResult?.data?.listings??[]).map(l=>({id:l.id,status:"approved",slug:l.slug,display_name:l.name,tagline:l.tagline,description:l.description,business_areas:l.businessAreas,city:l.location.city,postal_code:l.location.postalCode,region:l.location.region,country:l.location.country,company_profile_categories:l.categoryIds.map(category_id=>({category_id}))}))};export async function loadPublicCompanyBySlug(slug){globalThis.__travelLookups.push(slug);return globalThis.__travelDetailResult}',
       shortCircuit: true,
     };
     if (specifier.endsWith("/public-travel-taxonomy")) return {
@@ -34,7 +34,7 @@ registerHooks({
       shortCircuit: true,
     };
     if (specifier.endsWith("/supabase/public")) return {
-      url: 'data:text/javascript,export function createPublicClient(){return {async rpc(name){if(name!=="public_company_import_markers")throw Error("Unexpected public RPC");return {data:[],error:null}},from(){return {select(){return this},order(){return this},async range(){return {data:globalThis.__travelPackages ?? [],error:null}}}}}}',
+      url: 'data:text/javascript,export function createPublicClient(){return {async rpc(name){if(name!=="public_company_import_markers")throw Error("Unexpected public RPC");return {data:[],error:null}},from(){return {select(){return this},order(){return this},in(){return this},range(){return this},then(resolve){resolve({data:globalThis.__travelPackages ?? [],error:null})}}}}}',
       shortCircuit: true,
     };
     if (specifier.startsWith("@/") || specifier.startsWith(".")) {
@@ -256,10 +256,10 @@ test("destination overview links countries, all themed country filters and real 
     for (const theme of ["wellnessangebote", "familienurlaub", "wanderurlaub", "natur-pur"])
       assert.ok(html.includes('href="/unterkuenfte-a-z?ziel='+destination.slug+'&amp;thema='+theme+'"'));
   }
-  for (const theme of ["wellnessangebote", "familienurlaub", "wanderurlaub", "natur-pur", "urlaub-am-wasser"])
+  for (const theme of ["wellnessangebote", "familienurlaub", "wanderurlaub", "natur-pur", "radwandern", "skifahren"])
     assert.ok(html.includes('href="/mottoreisen/'+theme+'"'));
   assert.match(html, /href="\/unterkuenfte-a-z\?zielgruppe=mit-hund"/);
-  assert.match(html, /href="\/unterkuenfte-a-z"/);
+  assert.doesNotMatch(html, /Kurzurlaub|Seen &amp; Berge/);
   assert.match(html, /href="\/angebot-anfragen"/);
   assert.match(html, /Warum DAS-Reiseportal.com\?/);
   assert.doesNotMatch(html, /href="#"|Bayerischer Wald|Orte für den nächsten Reiseplan/);
@@ -379,7 +379,8 @@ test('motto detail keeps every matching profile and campaign once in exactly fiv
  const ads=Array.from({length:9},(_,i)=>({id:'ad-'+i,placement: i===0?'top_banner':'sidebar_'+String(i+3).padStart(2,'0'),headline:'Banner '+i,imageUrl:'/existing-'+i+'.jpg',target_url:'https://example.org/'+i}));
  const html=renderToStaticMarkup(createElement(MottoDetail,{entry:travelThemes[0],listings,advertising:{ads,sidebarOrder:[],options:undefined},seed:'fixed'}));
  assert.equal((html.match(/class="accommodation-card"/g)||[]).length,47);
- assert.equal((html.match(/data-placement=/g)||[]).length,9);assert.equal((html.match(/<h1\b/g)||[]).length,1);
+ assert.equal((html.match(/data-placement=/g)||[]).length,8);assert.equal((html.match(/<h1\b/g)||[]).length,1);
+ assert.doesNotMatch(html,/data-placement="top_banner"/); // Fixed Premium rows use their separate explicit pool.
  for(let i=0;i<47;i++)assert.equal((html.match(new RegExp('href="/unterkuenfte/profile-'+i+'"','g'))||[]).length,1);
  assert.match(html,/motto-editorial-v2\/natur-pur.webp/);assert.match(html,/Natururlaub lebt von den kleinen Entdeckungen/);
  assert.equal((html.match(/role="region"/g)||[]).length,5);

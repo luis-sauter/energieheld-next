@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from 'react';
 import { createPublicClient } from "@/lib/supabase/public";
 import type { PublicTravelTerm } from "./reiseportal-filter-options";
 
@@ -12,18 +13,18 @@ export async function loadPublicProfileTravelTerms(profileId: string): Promise<P
   return (data ?? []).flatMap(row => row.travel_terms ?? []) as unknown as PublicTravelTerm[];
 }
 
-export async function loadPublicTravelTerms(): Promise<PublicTravelTerm[]> {
+export const loadPublicTravelTerms = cache(async (): Promise<PublicTravelTerm[]> => {
   const client = createPublicClient();
   const { data, error } = await client.from("travel_terms")
     .select("term_key,dimension,slug,label").order("term_key");
   if (error?.code === "PGRST205" || error?.code === "42P01") return [];
   if (error) throw new Error("Die Reisefilter konnten nicht geladen werden.");
   return (data ?? []) as PublicTravelTerm[];
-}
+});
 
 // null means the prepared migration has not reached the Cloud yet. An empty
 // map means it is installed and there are genuinely no matching assignments.
-export async function loadPublicTravelAssignments(): Promise<TravelAssignments | null> {
+export const loadPublicTravelAssignments = cache(async (): Promise<TravelAssignments | null> => {
   const client = createPublicClient();
   const assignments: TravelAssignments = new Map<string, string[]>();
   assignments.seasonTeasers = new Map();
@@ -49,4 +50,4 @@ export async function loadPublicTravelAssignments(): Promise<TravelAssignments |
     }
     if (rows.length < 500) return assignments;
   }
-}
+});

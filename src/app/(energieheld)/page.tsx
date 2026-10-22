@@ -24,6 +24,7 @@ import { TravelNews } from "@/components/portal/travel-news";
 import { pageMetadata, type SearchParameters } from "@/lib/seo";
 import { jsonLdGraph, websiteSchema } from "@/lib/seo-schema";
 import { JsonLd } from "@/components/portal/json-ld";
+import { travelFinderListings, travelFinderBanners } from '@/lib/travel-finder-data';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParameters> }) {
   return pageMetadata({ title: "DAS-Reiseportal.com – Reiseideen seit 2010", description: "Reiseideen seit 2010: Entdecken Sie Reiseziele, Mottoreisen und Unterkünfte für Ihre nächste Auszeit. Lernen Sie Gastgeber und ihre Angebote kennen.", path: "/", home: true,
@@ -37,7 +38,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const initialValues = readTravelFilterValues(await searchParams);
   const [ads, directory, terms, bannerOptions, searchBanners, basicLocations] = await Promise.all([
     loadPublicAds(undefined, "homepage"),
-    loadReiseportalDirectory(),
+    loadReiseportalDirectory({ cardOnly: true }),
     loadPublicTravelTerms(),
     loadInlineBannerOptions("/"), loadTravelSearchBanners(),
     basicIntegrationEnabled() ? loadBasicMapLocations() : Promise.resolve([]),
@@ -49,7 +50,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
-    <HomeTravelFinder basicEnabled={basicIntegrationEnabled()} banners={searchBanners.banners} listings={[...directory.preview, ...directory.database]} initialValues={initialValues} terms={mergePublicTravelTerms(terms,searchBanners.terms)} error={directory.error ?? searchBanners.error} />
+    <HomeTravelFinder basicEnabled={basicIntegrationEnabled()} banners={travelFinderBanners(searchBanners.banners)} listings={travelFinderListings([...directory.preview, ...directory.database])} initialValues={initialValues} terms={mergePublicTravelTerms(terms,searchBanners.terms)} error={directory.error ?? searchBanners.error} />
 
     <TravelQuicklinks className={`container ${styles.quicklinks}`} />
 

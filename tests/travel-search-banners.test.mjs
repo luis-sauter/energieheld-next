@@ -25,6 +25,20 @@ const {TravelFinder}=await import('../src/components/portal/travel-finder.tsx');
 const {CampaignSlot}=await import('../src/components/advertising/campaign-view.tsx');
 const {InlineBannerContext}=await import('../src/components/advertising/inline-banner-context.tsx');
 const empty=readTravelFilterValues({});
+test('compact finder payload preserves filter options, counts and advertiser dedupe without photos or profile text',async()=>{
+ const {travelFinderListings,travelFinderBanners}=await import('../src/lib/travel-finder-data.ts');
+ const rows=Array.from({length:12},(_,i)=>({...listing(String(i)),name:'Stay '+i,location:{city:'München',postalCode:'80331',region:'Bayern',country:i%2?'Österreich':'Deutschland'},travelTermKeys:[i%2?'theme:wellnessangebote':'theme:wanderurlaub',i%3?'audience:paar':'audience:familie','accommodation:hotel'],description:'Long profile '.repeat(500),images:Array.from({length:20},()=>({src:'https://media.example/gallery.jpg?token='+'x'.repeat(500),alt:'Photo'})),contact:{email:'business@example.org',phone:'1234',website:'https://example.org'}}));
+ const ads=[banner('one',{advertiser_key:'same',destination_slugs:['deutschland']}),banner('two',{advertiser_key:'same',destination_slugs:['deutschland']}),banner('suppressed',{ad:{...banner().ad,suppressed:true}}),banner('no-photo',{ad:{...banner().ad,imageUrl:undefined}}),banner('internal',{ad:{...banner().ad,target_url:'https://das-reiseportal.com/reiseziele'}})];
+ const small=travelFinderListings(rows),smallAds=travelFinderBanners(ads);
+ for(const destination of ['','deutschland','oesterreich'])for(const theme of ['','wellnessangebote','wanderurlaub'])for(const audience of ['','paar','familie']){
+  const values={...empty,destination,theme,audience};
+  const before=travelSearchResults(rows,ads,values),after=travelSearchResults(small,smallAds,values);
+  assert.equal(after.count,before.count);assert.deepEqual(after.listings.map(x=>x.id),before.listings.map(x=>x.id));assert.deepEqual(after.advertisers.map(x=>x.banner_key),before.advertisers.map(x=>x.banner_key));
+ }
+ assert.deepEqual(availableTravelFilters(small,[],smallAds.flatMap(x=>x.term_keys),smallAds.flatMap(x=>x.destination_slugs??[])),availableTravelFilters(rows,[],ads.flatMap(x=>x.term_keys),ads.flatMap(x=>x.destination_slugs??[])));
+ assert.ok(JSON.stringify(small).length<JSON.stringify(rows).length/20);
+ assert.doesNotMatch(JSON.stringify(small),/media.example|business@example.org|Long profile/);
+});
 test('portal banner destinations stay on the current origin across slots and search cards',async()=>{
  const {adTargetHref}=await import('../src/lib/ad-values.ts');
  const {SearchAdCard}=await import('../src/components/advertising/search-ad-card.tsx');

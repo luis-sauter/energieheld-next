@@ -28,7 +28,7 @@ registerHooks({
 const {BannerSearchFields}=await import('../src/components/advertising/banner-search-fields.tsx');
 const {ImageCropControls}=await import('../src/components/admin/image-crop-controls.tsx');
 const {BannerMediaPicker}=await import('../src/components/advertising/banner-media-picker.tsx');
-const {InlineBannerDialog}=await import('../src/components/advertising/inline-banner-editor.tsx');
+const {InlineBannerDialog}=await import('../src/components/advertising/inline-banner-editor-content.tsx');
 const {CampaignSlot}=await import('../src/components/advertising/campaign-view.tsx');
 const {CampaignLifecycle}=await import('../src/components/advertising/campaign-lifecycle.tsx');
 function nodes(node){if(!node)return[];if(Array.isArray(node))return node.flatMap(nodes);if(typeof node!=='object')return[];return[node,...nodes(node.props?.children)];}

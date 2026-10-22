@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from 'react';
 import { isPubliclyListed } from "./profile-public-visibility";
 import { companyProfileListing } from "./company-presentation";
 import { signCompanyMedia, signCompanyDirectoryMedia, type MediaRow } from "./company-media";
@@ -17,7 +18,7 @@ const publicFields =
 const publicFieldsWithoutStreet = publicFields.replace("website,street,postal_code", "website,postal_code");
 
 // Sitemap data: no signed media, contact details or session client required.
-export async function loadPublicCompanyProfileIndex(factsOnly = false) {
+export const loadPublicCompanyProfileIndex = cache(async (factsOnly = false) => {
   const client = createPublicClient();
   const profiles: { id: string; status: string; slug: string; display_name: string;
     tagline: string | null; description?: string | null; business_areas?: string | null;
@@ -35,7 +36,7 @@ export async function loadPublicCompanyProfileIndex(factsOnly = false) {
     profiles.push(...rows.filter(row => row.status === "approved" && isPubliclyListed(row)));
     if (rows.length < 500) return profiles;
   }
-}
+});
 
 type PublicProfile = {
   gallery_initialized?: boolean;
@@ -71,8 +72,8 @@ async function toListing(
 
 type Result<T> = { data: T; error: null } | { data: null; error: string };
 
-export async function loadPublicCompanyDirectory(options?: { profileIds: string[]; cardOnly: boolean; directoryPreview?: boolean }): Promise<Result<{ listings: Listing[]; orderRows: DirectoryOrderRow[] }>> {
-  if (options && !options.profileIds.length) return { data: { listings: [], orderRows: [] }, error: null };
+export async function loadPublicCompanyDirectory(options?: { profileIds?: string[]; cardOnly: boolean; directoryPreview?: boolean }): Promise<Result<{ listings: Listing[]; orderRows: DirectoryOrderRow[] }>> {
+  if (options?.profileIds && !options.profileIds.length) return { data: { listings: [], orderRows: [] }, error: null };
   try {
     const client = createPublicClient();
     const profiles: PublicProfile[] = [];
@@ -89,7 +90,7 @@ export async function loadPublicCompanyDirectory(options?: { profileIds: string[
         .range(offset, offset + pageSize - 1);
       const bounded = options?.directoryPreview ? query.order('sort_order', {referencedTable:'company_profile_images'})
         .order('id', {referencedTable:'company_profile_images'}).limit(1, {referencedTable:'company_profile_images'}) : query;
-      let { data, error } = await (options ? bounded.in('id', options.profileIds) : bounded);
+      let { data, error } = await (options?.profileIds ? bounded.in('id', options.profileIds) : bounded);
       if (galleryReadable && (error?.code === "42703" || error?.code === "PGRST204") && error.message.includes("gallery_initialized")) {
         galleryReadable = false; offset -= pageSize; continue;
       }
@@ -103,7 +104,7 @@ export async function loadPublicCompanyDirectory(options?: { profileIds: string[
           .range(offset, offset + pageSize - 1);
         const boundedFallback=options?.directoryPreview?fallback.order('sort_order',{referencedTable:'company_profile_images'})
           .order('id',{referencedTable:'company_profile_images'}).limit(1,{referencedTable:'company_profile_images'}):fallback;
-        ({ data, error } = await (options ? boundedFallback.in('id', options.profileIds) : boundedFallback));
+        ({ data, error } = await (options?.profileIds ? boundedFallback.in('id', options.profileIds) : boundedFallback));
       }
       if (error) throw error;
       const rows = data as unknown as PublicProfile[];

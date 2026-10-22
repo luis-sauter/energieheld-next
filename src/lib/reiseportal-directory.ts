@@ -113,15 +113,18 @@ export async function loadReiseportalSearchListings(profileIds: string[], facts:
   }));
 }
 
-export async function loadReiseportalDirectory() {
+export async function loadReiseportalDirectory(options?: { cardOnly: boolean }) {
   let packages: Map<string, "basic" | "premium">;
+  let result: Awaited<ReturnType<typeof loadPublicCompanyDirectory>>;
+  let assignments: TravelAssignments | null;
   try {
-    packages = await loadDirectoryPackages();
+    [packages, result, assignments] = await Promise.all([
+      loadDirectoryPackages(), loadPublicCompanyDirectory(options), loadPublicTravelAssignments(),
+    ]);
   } catch {
     return { preview: [] as Listing[], database: [] as Listing[], hiddenOrderKeys: [] as string[],
       error: "Die Unterkunftsdarstellung konnte nicht geladen werden." };
   }
-  const result = await loadPublicCompanyDirectory();
   if (result.error !== null) return {
     preview: [] as Listing[],
     database: [] as Listing[],
@@ -129,13 +132,6 @@ export async function loadReiseportalDirectory() {
     error: result.error,
   };
   const demo = result.data.listings.map(publicDemo).find((item) => item !== null);
-  let assignments: TravelAssignments | null;
-  try {
-    assignments = await loadPublicTravelAssignments();
-  } catch {
-    return { preview: [] as Listing[], database: [] as Listing[], hiddenOrderKeys: [] as string[],
-      error: "Die Reisethemen konnten nicht geladen werden." };
-  }
   const database = await withSavedCardImages(result.data.listings.filter(travelVisible).map((listing) => withLegacyImages({
     ...listing,
     directoryPackage: packages.get(listing.id) ?? "basic",
@@ -176,8 +172,19 @@ export async function loadReiseportalTheme(theme: string) {
 }
 
 export async function loadReiseportalDestination(destination: string) {
-  const directory = await loadReiseportalDirectory();
-  return withPublicImportMarkers(filterTravelDiscovery(directory.database, destination, ""));
+  // Resolve public eligibility and country before signing any provider photos.
+  const matching = filterTravelDiscovery(await loadReiseportalFinderListings(), destination, "");
+  if (!matching.length) return [];
+  const [result, packages] = await Promise.all([
+    loadPublicCompanyDirectory({ profileIds: matching.map(listing => listing.id), cardOnly: true }),
+    loadDirectoryPackages(matching.map(listing => listing.id)),
+  ]);
+  if (result.error) throw new Error(result.error);
+  const facts = new Map(matching.map(listing => [listing.id, listing]));
+  return withPublicImportMarkers(await withSavedCardImages(result.data!.listings.filter(listing => facts.has(listing.id) && travelVisible(listing)).map(listing => withLegacyImages({
+    ...listing, directoryPackage: packages.get(listing.id) ?? 'basic',
+    travelTermKeys: facts.get(listing.id)?.travelTermKeys, seasonTeasers: facts.get(listing.id)?.seasonTeasers,
+  }))));
 }
 
 export async function loadReiseportalListingBySlug(slug: string) {

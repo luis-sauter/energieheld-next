@@ -59,9 +59,10 @@ test('scoped admin overrides: replacement, deletion, URL, size and moved source 
 });
 test('banner sizes reserve common reference envelopes, lazy images retain proven dimensions and safe links',()=>{
  const source=readFileSync(new URL('../src/components/advertising/campaign-view.tsx',import.meta.url),'utf8');const css=readFileSync(new URL('../src/components/advertising/advertising.module.css',import.meta.url),'utf8');
- assert.match(source,/width=\{width\} height=\{height\} loading="lazy" decoding="async"/);assert.doesNotMatch(source,/onLoad=|width=\{1200\}|height=\{600\}/);
+ assert.match(source,/width=\{width\} height=\{height\} loading="lazy" decoding="async"/);assert.doesNotMatch(source,/width=\{1200\}|height=\{600\}/);
+ assert.match(source,/onLoad=.*onDimensions/);
  assert.match(css,/data-size="large".*aspect-ratio: 1/);assert.match(css,/data-size="small".*350 \/ 120/);assert.match(css,/data-size="medium".*350 \/ 235/);assert.match(css,/data-size\] img.*object-fit: contain/);
- assert.match(source,/rel="sponsored noopener noreferrer"/);assert.match(source,/target="_blank"/);
+ assert.match(source,/rel="sponsored noopener noreferrer"/);assert.match(source,/target=\{portalDestination \? undefined : "_blank"\}/);
 });
 
 test('mobile Premium art direction uses actual verified dimensions without another slot or request per banner',()=>{
@@ -71,9 +72,10 @@ test('mobile Premium art direction uses actual verified dimensions without anoth
  const rotationCss=readFileSync(new URL('../src/components/portal/profile-rotation.module.css',import.meta.url),'utf8');assert.match(rotationCss,/--rows: 3/);assert.match(rotationCss,/repeat\(2, minmax\(0, 1fr\)\)/);assert.match(rotationCss,/max-width: 700px.*--rows: 6.*grid-template-columns: 1fr/);
 });
 
-test('homepage Premium retains its fixed identity exactly once, after themes and before destinations',()=>{
+test('homepage Premium retains its two explicit fixed positions, without duplicating their identities',()=>{
  const home=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
- assert.equal(home.match(/placements=\{\["top_banner"\]\}/g).length,1);
+ assert.equal(home.match(/placements=\{\["top_banner"\]\}/g).length,2);
+ assert.match(home,/instanceId="footer" supplementaryAd=\{footerPremium\}/);
  assert.ok(home.indexOf('placements={["top_banner"]}')>home.indexOf('<TravelNews />'));
  assert.ok(home.indexOf('placements={["top_banner"]}')<home.indexOf('<AutumnShowcase '));
 });

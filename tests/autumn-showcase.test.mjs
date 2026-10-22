@@ -102,7 +102,7 @@ test('homepage reuses its public directory without another loader and excludes t
  const page=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
  assert.match(page,/<AutumnShowcase listings=\{directory.database\} \/>/);
  assert.doesNotMatch(page,/<TravelSeasons|import \{ TravelSeasons \}/);
- assert.equal((page.match(/loadReiseportalDirectory\(\)/g)||[]).length,1);
+ assert.equal((page.match(/loadReiseportalDirectory\(\{ cardOnly: true \}\)/g)||[]).length,1);
  const componentSource=readFileSync(new URL('../src/components/portal/autumn-showcase.tsx',import.meta.url),'utf8');
  assert.doesNotMatch(componentSource,/createPublicClient|createSignedUrl|fetch\(|useEffect|useState/);
  assert.ok(existsSync(new URL('../public/reiseportal/seasons/herbst-auszeit.webp',import.meta.url)));

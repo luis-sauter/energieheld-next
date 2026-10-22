@@ -73,7 +73,7 @@ const { presentedBanners } = await import("../src/lib/banner-presentation.ts");
 const { defaultSidebarOrder } = await import("../src/lib/sidebar-order.ts");
 const { SidebarOrderSlots } = await import("../src/components/admin/sidebar-order-editor.tsx");
 const { InlineBannerContext } = await import("../src/components/advertising/inline-banner-context.tsx");
-const { InlineBannerDialog } = await import('../src/components/advertising/inline-banner-editor.tsx');
+const { InlineBannerDialog } = await import('../src/components/advertising/inline-banner-editor-content.tsx');
 const { BannerSearchFields } = await import('../src/components/advertising/banner-search-fields.tsx');
 const { CampaignLifecycle } = await import('../src/components/advertising/campaign-lifecycle.tsx');
 
@@ -468,7 +468,7 @@ test("homepage keeps the shared ad rail and uses sourced accommodation cards", (
   assert.match(source, /loadPublicAds\(undefined, "homepage"\)/);
   assert.match(source, /<HomeBannerGroup/);
   assert.match(source, /<AccommodationCard/);
-  assert.match(source, /loadReiseportalDirectory\(\)/);
+  assert.match(source, /loadReiseportalDirectory\(\{ cardOnly: true \}\)/);
   assert.match(source, /selectHomeStays\(directory\.database, randomUUID\(\)\)/);
   assert.match(source, /placements=\{\["top_banner"\]\}/);
   const group=readFileSync(new URL("../src/components/advertising/home-banner-group.tsx",import.meta.url),"utf8");

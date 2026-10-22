@@ -1253,6 +1253,16 @@ test('destination loader uses approved country records beyond former preview slu
  assert.deepEqual(await loadReiseportalDestination('unknown'),[]);
 });
 
+test('country cards sign one photo only for matching public providers and retain country/package assignments',async()=>{
+ const german={...travelRow,id:'profile-1',country:'Deutschland',company_profile_images:Array.from({length:25},(_,i)=>({id:'photo-'+i,storage_path:'profiles/profile-1/'+i+'.jpg',sort_order:i,alt_text:'Photo'}))};
+ const austrian={...german,id:'other-country',country:'Österreich',company_profile_images:[{id:'other',storage_path:'profiles/other-country/photo.jpg',sort_order:0,alt_text:'Other'}]};
+ const rows=[german,austrian],before=structuredClone(rows);const requests=api(rows,false,[],undefined,null,[{profile_id:'profile-1',package:'premium'}]);const fetch=globalThis.fetch,signed=[];
+ globalThis.fetch=async(input,init)=>{if(new URL(input).pathname==='/storage/v1/object/sign/company-media')signed.push(...JSON.parse(init.body).paths);return fetch(input,init);};
+ const results=await loadReiseportalDestination('deutschland');
+ assert.equal(results.length,1);assert.equal(results[0].directoryPackage,'premium');assert.deepEqual(signed,['profiles/profile-1/0.jpg']);assert.deepEqual(rows,before);
+ assert.ok(requests.some(({url})=>url.searchParams.get('id')==='in.(profile-1)'));
+});
+
 
 test("hidden profiles leave directory, direct URL and sitemap index before media signing; restore retains identity", async () => {
   const hidden={...travelRow,company_profile_public_visibility:{is_listed:false},company_profile_images:[{id:'hidden',storage_path:'profiles/profile-1/gallery/hidden.png',sort_order:0}]};
