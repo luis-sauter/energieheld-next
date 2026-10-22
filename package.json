@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "check:repository": "node scripts/check-repository-boundary.mjs",
     "dev": "node scripts/build-portal-search-catalog.mjs && next dev",
     "build": "node scripts/build-portal-search-catalog.mjs && next build",
     "start": "next start",
