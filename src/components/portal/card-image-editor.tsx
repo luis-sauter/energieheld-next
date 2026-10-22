@@ -44,7 +44,7 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
       onClick={event => { returnFocus.current = event.currentTarget; setError(""); setSelected(assetId && image ? { id: assetId, src: image.src, alt: image.alt } : null); setCrop(savedCrop ?? DEFAULT_IMAGE_CROP); setOpen(true); }}>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a3 3 0 0 0-4-4L4 15Z" /></svg>
     </button>
-    {open && <dialog ref={dialog} className="media-library-dialog" aria-labelledby="media-library-title"
+    {open && <dialog ref={dialog} className="media-library-dialog" style={{ fontSize: "1rem" }} aria-labelledby="media-library-title"
       onCancel={event => { if (event.target !== event.currentTarget) return; event.preventDefault(); close(); }}
       onClose={event => { if (event.target !== event.currentTarget) return; setOpen(false); setSelected(null); }}>
       {error && <p role="alert">{error}</p>}
