@@ -8,10 +8,11 @@ import type { PortalImage } from "@/types/portal";
 import styles from "./accommodation-card.module.css";
 const Browser = dynamic(() => import("../admin/media-library-browser").then(module => module.MediaLibraryBrowser));
 const CropControls = dynamic(() => import("../admin/image-crop-controls").then(module => module.ImageCropControls));
-export function CardImageEditor({ profileId, profileName, crop: savedCrop, image, assetId, onSaved, ratio = 35 / 32 }: {
+export function CardImageEditor({ profileId, profileName, crop: savedCrop, image, assetId, onSaved, ratio = 35 / 32, fit = "cover" }: {
   profileId: string; profileName: string; crop?: ImageCrop; image?: PortalImage; assetId?: string;
   onSaved?: (value: { image: PortalImage; assetId: string; crop: ImageCrop }) => void;
   ratio?: number;
+  fit?: "cover" | "contain";
 }) {
   const dialog = useRef<HTMLDialogElement>(null), returnFocus = useRef<HTMLElement | null>(null);
   const [open, setOpen] = useState(false), [selected, setSelected] = useState<{ id: string; src: string; alt: string } | null>(null);
@@ -49,12 +50,14 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
       {error && <p role="alert">{error}</p>}
       {selected ? <div style={{ padding: "1.5rem" }}><h2 id="media-library-title">Vorschaubild ändern</h2><p>{profileName}</p>
         <p>Das Vorschaubild wird in A–Z und auf den Unterkunftskarten verwendet. Galerie und Medienoriginal bleiben erhalten.</p>
+        {fit === "contain" && <p>Bei 100 % ist das ganze Bild sichtbar. Freie Flächen im quadratischen Rahmen bleiben weiß.</p>}
         <CropControls crop={crop} setCrop={setCrop} ratio={ratio} alt={selected.alt} disabled={busy}
           renderImage={value => {
             // eslint-disable-next-line @next/next/no-img-element
-            return <img src={selected.src} alt={selected.alt} style={imageCropStyle(value)} />;
+            return <img src={selected.src} alt={selected.alt} style={{ ...imageCropStyle(value, fit), background: fit === "contain" ? "#fff" : undefined }} />;
           }} />
         <div className="actions"><button type="button" className="button" disabled={busy} onClick={() => setSelected(null)}>Bild aus Mediathek wählen</button>
+          {fit === "contain" && <button type="button" className="button" disabled={busy} onClick={() => setCrop({ ...DEFAULT_IMAGE_CROP })}>Ganzes Bild einpassen</button>}
           <button type="button" className="button" disabled={busy} onClick={close}>Abbrechen</button>
           <button type="button" className="button button-primary" disabled={busy} onClick={save}>{busy ? "Speichert …" : "Vorschaubild speichern"}</button></div>
       </div> : <Browser title="Vorschaubild ändern" initialProfileId={profileId} initialProfileName={profileName} initialKind="images"

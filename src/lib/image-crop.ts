@@ -26,12 +26,12 @@ export function parseImageCrop(focusX: unknown, focusY: unknown, zoom: unknown):
   return hasPersistedImageCrop(crop) ? crop : null;
 }
 
-export function imageCropStyle(value: unknown) {
+export function imageCropStyle(value: unknown, fit: "cover" | "contain" = "cover") {
   const { focus_x, focus_y, zoom } = normalizeImageCrop(value);
-  // The image already covers its clipped frame. Scaling by >= 1 around a point
-  // inside that frame keeps every edge covered without altering the source file.
+  // Cover keeps photo frames filled; contain preserves the whole image at 100%.
+  // Both modes share persisted focus/zoom without altering the source file.
   return {
-    objectFit: "cover" as const,
+    objectFit: fit,
     objectPosition: `${focus_x}% ${focus_y}%`,
     transform: `scale(${zoom})`,
     transformOrigin: `${focus_x}% ${focus_y}%`,

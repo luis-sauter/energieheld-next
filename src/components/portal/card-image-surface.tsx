@@ -20,7 +20,7 @@ export function CardImagePhoto({ image, crop, sizes, initials, fit = "cover" }: 
   const current = context?.value?.image ?? image, frame = context?.value?.crop ?? crop;
   if (!current) return <span aria-hidden="true">{initials}</span>;
   return <Image src={current.src} alt={current.alt} fill loading="lazy" unoptimized={/^https?:\/\//.test(current.src)}
-    sizes={sizes ?? "(max-width: 700px) calc(100vw - 48px), 430px"} style={frame ? imageCropStyle(frame) : { objectFit: fit }} />;
+    sizes={sizes ?? "(max-width: 700px) calc(100vw - 48px), 430px"} style={frame ? imageCropStyle(frame, fit) : { objectFit: fit }} />;
 }
 export function CardImageEditButton(props: ComponentProps<typeof CardImageEditor>) {
   const context = useContext(Context);

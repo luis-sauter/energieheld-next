@@ -19,6 +19,15 @@ test("public and editor styling applies the same saved focus and zoom", () => {
   assert.equal(crop.hasPersistedImageCrop(saved), true);
 });
 
+test("A–Z whole-image mode fits wide artwork at 100% while other cards keep cover", () => {
+  const frame = crop.imageCropStyle(crop.DEFAULT_IMAGE_CROP, "contain");
+  assert.equal(frame.objectFit, "contain");
+  assert.equal(frame.objectPosition, "50% 50%");
+  assert.equal(frame.transform, "scale(1)");
+  assert.equal(crop.imageCropStyle(crop.DEFAULT_IMAGE_CROP).objectFit, "cover");
+  assert.equal(crop.imageCropStyle({focus_x: 25, focus_y: 60, zoom: 1.07}, "contain").transform, "scale(1.07)");
+});
+
 test("server input accepts exact bounds and rejects malformed or excessive precision", () => {
   assert.deepEqual(crop.parseImageCrop("0", "100", "3"), { focus_x: 0, focus_y: 100, zoom: 3 });
   assert.deepEqual(crop.parseImageCrop("37.5", "62.5", "1.25"), { focus_x: 37.5, focus_y: 62.5, zoom: 1.25 });

@@ -33,7 +33,7 @@ export function CompanyImage({
       {...(cover ? { fill: true, sizes: sizes ?? "(max-width: 700px) 100vw, 200px" } : { width, height })}
       unoptimized={!(optimizeLocal && image.src.startsWith("/") && !image.src.startsWith("//"))}
       onError={() => setFailed(true)}
-      style={cover ? (crop ? imageCropStyle(crop) : { objectFit: fit }) : { objectFit: "contain", maxWidth: "100%", height: "auto" }}
+      style={cover ? (crop ? imageCropStyle(crop, fit) : { objectFit: fit }) : { objectFit: "contain", maxWidth: "100%", height: "auto" }}
     />
   );
 }

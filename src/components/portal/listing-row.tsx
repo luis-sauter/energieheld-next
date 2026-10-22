@@ -55,10 +55,10 @@ export function ListingRow({
   const content = <>
       {(premium || travel) && (
         <div className={`row-logo${travel && isLogo && !editable ? " row-logo--contain" : ""}`}>
-          {editable ? <CardImagePhoto image={cardImage} initials={listing.initials} crop={listing.cardImageAssetId ? listing.cardImageCrop : undefined} fit={isLogo ? "contain" : "cover"} sizes="(max-width: 600px) 160px, 220px" /> : cardImage ? <CompanyImage key={cardImage.src} image={cardImage} cover fit={travel && isLogo ? "contain" : "cover"} optimizeLocal={travel}
+          {editable ? <CardImagePhoto image={cardImage} initials={listing.initials} crop={listing.cardImageAssetId ? listing.cardImageCrop : undefined} fit="contain" sizes="(max-width: 600px) 160px, 220px" /> : cardImage ? <CompanyImage key={cardImage.src} image={cardImage} cover fit={travel && (premium || isLogo) ? "contain" : "cover"} optimizeLocal={travel}
             crop={travel && listing.cardImageAssetId ? listing.cardImageCrop : undefined} sizes={travel ? (premium ? "(max-width: 600px) 160px, 220px" : "72px") : undefined} /> : <span aria-label={`Kein Bild für ${listing.name}`} className={travel ? "travel-image-fallback" : undefined}>{travel ? <Icon name="home" size={36} /> : listing.initials}</span>}
           {travel && premium && <span className="travel-premium-badge">Premium</span>}
-          {editable && <CardImageEditButton profileId={listing.id} profileName={listing.name} image={cardImage} assetId={listing.cardImageAssetId} crop={listing.cardImageCrop} ratio={1} />}
+          {editable && <CardImageEditButton profileId={listing.id} profileName={listing.name} image={cardImage} assetId={listing.cardImageAssetId} crop={listing.cardImageCrop} ratio={1} fit="contain" />}
         </div>
       )}
       <div className="row-content">
