@@ -8,6 +8,10 @@ import { createElement } from "react";
 
 registerHooks({
   resolve(specifier, context, next) {
+    // These synchronous SSR fixtures inspect the actual editor after the
+    // server's authorization gate; client chunk loading is checked in preview.
+    if (specifier.endsWith('/lazy-inline-profile-editor'))
+      return next(new URL('../src/components/admin/inline-profile-editor.tsx', import.meta.url).href, context);
     if (specifier === "server-only" || specifier === "next/cache")
       return { url: 'data:text/javascript,export function revalidatePath(){}', shortCircuit: true };
     if (specifier === "next/navigation")

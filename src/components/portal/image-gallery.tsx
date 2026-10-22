@@ -77,7 +77,7 @@ export function ImageGallery({
             aria-label={`Bild ${selectedIndex + 1} in voller Größe öffnen`}><Image
             src={current.src}
             alt={current.alt}
-            unoptimized={!isDemo}
+            unoptimized={!current.src.startsWith('/reiseportal/')}
             onError={() =>
               setFailed((previous) => ({ ...previous, [current.src]: true }))
             }
@@ -113,7 +113,7 @@ export function ImageGallery({
                     loading="lazy"
                     width={150}
                     height={90}
-                    unoptimized={!isDemo}
+                    unoptimized={!image.src.startsWith('/reiseportal/')}
                     onError={() =>
                       setFailed((previous) => ({ ...previous, [image.src]: true }))
                     }

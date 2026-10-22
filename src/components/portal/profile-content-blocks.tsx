@@ -56,7 +56,7 @@ export function TextImageSection({ text, image, heading, textWidth, imageWidth, 
 }
 
 export function ProfileBlockImage({ image, crop }: { image: ProfileBlockImage; crop?: ImageCrop }) {
-  return <Image src={image.src} alt={imageCaptionPresentation(image).alt} fill unoptimized
+  return <Image src={image.src} alt={imageCaptionPresentation(image).alt} fill unoptimized={!image.src.startsWith('/reiseportal/')}
     sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 25vw"
     style={imageCropStyle(crop ?? image)} />;
 }

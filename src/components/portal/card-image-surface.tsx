@@ -3,7 +3,9 @@ import { createContext, useContext, useState, type ReactNode, type ComponentProp
 import Image from "next/image";
 import type { PortalImage } from "@/types/portal";
 import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";
-import { CardImageEditor } from "./card-image-editor";
+import dynamic from 'next/dynamic.js';
+
+const CardImageEditor = dynamic(() => import('./card-image-editor').then(module => module.CardImageEditor));
 
 type SavedImage = { image: PortalImage; assetId: string; crop: ImageCrop };
 const Context = createContext<{ value: SavedImage | null; saved: (value: SavedImage) => void } | null>(null);

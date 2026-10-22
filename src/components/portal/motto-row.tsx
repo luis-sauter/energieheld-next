@@ -14,6 +14,7 @@ export function MottoRow({ children, label, speed = 18, direction = 'left' }: {
   const [offset, setOffset] = useState(0);
   const [overflowing, setOverflowing] = useState(false);
   const idleUntil = useRef(0);
+  const measuredStride = useRef(0);
   const { root, handlers, canPlay, interact } = useRotationMotion(items.length, () => {}, label, 4000, false);
   const ordered = [...items.slice(offset), ...items.slice(0, offset)];
   const stride = () => {
@@ -25,7 +26,11 @@ export function MottoRow({ children, label, speed = 18, direction = 'left' }: {
   useEffect(() => {
     const element = track.current;
     if (!element) return;
-    const update = () => setOverflowing(element.scrollWidth > element.clientWidth + 2);
+    const update = () => {
+      // Card widths/gaps change on resize, not on every animation frame.
+      measuredStride.current = stride();
+      setOverflowing(element.scrollWidth > element.clientWidth + 2);
+    };
     const observer = new ResizeObserver(update);
     observer.observe(element); update();
     return () => observer.disconnect();
@@ -35,7 +40,7 @@ export function MottoRow({ children, label, speed = 18, direction = 'left' }: {
     if (!element || !canPlay || !overflowing) return;
     let frame = 0, last = 0, position = element.scrollLeft;
     const tick = (now: number) => {
-      const step = stride();
+      const step = measuredStride.current;
       if (last && now >= idleUntil.current && step > 0) {
         position += Math.min(now - last, 50) * speed / 1000 * (direction === 'right' ? -1 : 1);
         if (position < 0) {

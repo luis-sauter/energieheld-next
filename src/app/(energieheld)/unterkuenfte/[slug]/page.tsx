@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { checkAdmin, canReviewProfiles, isProfileId, loadReviewProfile } from "@/lib/admin-review";
 import { signCompanyMedia, type MediaRow, type SignedMedia } from "@/lib/company-media";
 import { profileFields, type ProfileValues } from "@/lib/company-profile";
-import { InlineProfileEditor } from "@/components/admin/inline-profile-editor";
+import { InlineProfileEditor } from "@/components/admin/lazy-inline-profile-editor";
 import { saveInlineProfile, saveInlineMedia, reviewInlineProfile, withdrawInlineProfileReview } from "@/app/(energieheld)/experten/[slug]/inline-actions";
 import { saveInlineContent } from "@/app/(energieheld)/experten/[slug]/content-actions";
 import { saveInlineBlockImage } from "@/app/(energieheld)/experten/[slug]/block-image-actions";

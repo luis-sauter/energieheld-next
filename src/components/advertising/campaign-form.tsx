@@ -2,7 +2,8 @@
 import Image from "next/image";
 import { validateOfferPeriod } from "@/lib/offer-period";
 import { sendOfferRequest, prepareOfferImage } from "@/app/(energieheld)/angebot-anfragen/actions";
-import { BannerMediaPicker } from "./banner-media-picker";
+import dynamic from 'next/dynamic.js';
+const BannerMediaPicker = dynamic(() => import('./banner-media-picker').then(module => module.BannerMediaPicker));
 import { useActionState, useEffect, useRef, useState } from "react";
 import {
   adPlacements,
@@ -18,7 +19,6 @@ import {
   prepareCampaignImage,
   campaignAvailability,
 } from "@/app/(energieheld)/firma/werbung/actions";
-import { createClient } from "@/lib/supabase/client";
 import type { AdFormState } from "@/lib/ad-values";
 import { reviewCampaign, saveAdminCampaign, prepareAdminCampaignImage, adminCampaignAvailability } from "@/app/(energieheld)/admin/werbung/actions";
 import { portalAdAreaLabel, portalAdSections, portalAdSection, requestAdScopes, type RequestAdScope } from "@/lib/ad-target-areas";
@@ -89,6 +89,7 @@ export function CampaignForm({
         if(file instanceof File && file.name){
           const prepared=await prepareOfferImage(form,file.type,file.size);
           if(!prepared.uploadPath)return prepared;
+          const { createClient } = await import('@/lib/supabase/client');
           const uploaded=await createClient().storage.from("ad-media").upload(prepared.uploadPath,await file.arrayBuffer(),{contentType:file.type,upsert:false});
           if(uploaded.error && uploaded.error.message!=="The resource already exists")return {error:"Ihre Angaben sind gesichert. Das Bild konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut."};
           form.set("uploaded_path",prepared.uploadPath);
@@ -99,6 +100,7 @@ export function CampaignForm({
       // Keep large multipart bodies off Netlify; finalize by validating stored bytes server-side.
       form.delete("image");
       if (!(file instanceof File) || !file.name) return admin ? saveAdminCampaign({}, form) : saveCampaign({}, form);
+      const { createClient } = await import('@/lib/supabase/client');
       const storage = createClient().storage.from("ad-media");
       let path: string | undefined;
       try {
