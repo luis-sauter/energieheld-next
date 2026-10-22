@@ -70,7 +70,7 @@ test('SSR includes every premium/basic profile, true package labels and public l
   assert.equal((html.match(/class="listing-row /g)||[]).length,5);
   assert.equal((html.match(/travel-premium-badge/g)||[]).length,4);
   assert.ok(html.indexOf('premium-3')<html.indexOf('href="/unterkuenfte/basic"'));
-  assert.match(html,/Premium-Unterkünfte/);assert.match(html,/Weitere Unterkünfte/);
+  assert.match(html,/Premium-Unterkünfte/);assert.doesNotMatch(html,/Weitere Unterkünfte|Weitere Gastgeber aus dem Reiseportal/);
   for(const item of items) assert.match(html,new RegExp(`href="/unterkuenfte/${item.slug}"`));
   assert.doesNotMatch(html,/rating|Bewertungen|Qualitätsprüfung|redaktionell empfohlen/);
   assert.equal((html.match(/<h1 /g)||[]).length,1);

@@ -118,9 +118,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
       {premium.length > 0 && <section className="travel-package-group" aria-labelledby="premium-title">
         <header className="travel-package-heading"><h2 id="premium-title">Premium-Unterkünfte</h2><p>Unterkünfte mit erweitertem Profil im Reiseportal.</p></header>{render(premium)}
       </section>}
-      {basic.length > 0 && <section className="travel-package-group" aria-labelledby="basic-title">
-        <header className="travel-package-heading"><h2 id="basic-title">Weitere Unterkünfte</h2><p>Weitere Gastgeber aus dem Reiseportal – kompakt und übersichtlich.</p></header>{render(basic)}
-      </section>}
+      {basic.length > 0 && render(basic)}
       {basicContacts.length>0&&<section className="travel-package-group" aria-labelledby="basic-contacts-title"><header className="travel-package-heading"><h2 id="basic-contacts-title">Basic-Unterkünfte</h2></header><div className="listing-rows">{basicContacts.map(entry=><BasicAccommodationCard key={entry.id} entry={entry}/>)}</div><BasicSourceCredit/></section>}
     </>;
   }
