@@ -46,3 +46,24 @@ next-env.d.ts
 
 # Isolated Python acquisition runtime artifacts (never research data or packages).
 /workers/acquisition/__pycache__/
+
+# Local coding-assistant instructions; Next.js may regenerate these files.
+/AGENTS.md
+/CLAUDE.md
+/README.md
+
+# Internal working notes and research exports are not public source files.
+/docs/*.md
+/docs/auth-email-templates/README.md
+/docs/autumn-editorial-image.json
+/workers/acquisition/README.md
+/supabase/proposals/README.md
+/.legacy-reiseportal/
+/qa/
+/backups/
+/.internal/
+
+# Editorial generation notes must never be served from public/.
+/public/reiseportal/destination-editorial/manifest.json
+/public/reiseportal/motto-editorial-v2/manifest.json
+/public/reiseportal/news/manifest.json
