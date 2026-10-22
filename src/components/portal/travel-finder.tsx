@@ -126,6 +126,7 @@ export function TravelFinder({ mode, listings, options:existingOptions, values, 
 
   return <section className="travel-hero" aria-labelledby="travel-hero-title">
     {mode !== "home" ? <Image src="/reiseportal/redesign/unterkuenfte/hero.webp" alt="" fill sizes="100vw" priority className="directory-hero-image" /> : <video autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1}>
+      <source src="/reiseportal/hero-loop-mobile.mp4" media="(max-width: 700px)" type="video/mp4" />
       <source src="/reiseportal/hero-loop.mp4" type="video/mp4" />
     </video>}
     <div className="travel-hero-content container">
