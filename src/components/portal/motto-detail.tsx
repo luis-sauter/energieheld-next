@@ -29,7 +29,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
   const sectionTitle = destination ? 'Reiseziele' : 'Mottoreisen';
   const editorial = destination ? { ...entry, ...destinationEditorial[entry.slug] } : mottoEditorial[entry.slug];
   const companies = orderMottoItems(listings, listing => listing.id, seed + ':companies');
-  const banners = orderMottoItems(visibleMottoAds(advertising?.sliderAds ?? advertising?.ads ?? []).filter(ad => destination || ad.placement !== 'top_banner'), ad => ad.id, seed + ':banners');
+  const banners = orderMottoItems(visibleMottoAds(advertising?.sliderAds ?? advertising?.ads ?? []).filter(ad => ad.placement !== 'top_banner'), ad => ad.id, seed + ':banners');
   const companyRows = mottoGroups(companies, 3), bannerRows = mottoGroups(banners, 2);
   const breadcrumbs = portalBreadcrumbs(entry.title, `${basePath}/${entry.slug}`, { name: sectionTitle, path: basePath });
   return <main id="hauptinhalt" className={styles.page} data-motto-detail={destination ? undefined : entry.slug} data-destination-detail={destination ? entry.slug : undefined}>

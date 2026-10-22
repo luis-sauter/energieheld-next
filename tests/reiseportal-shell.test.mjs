@@ -562,12 +562,24 @@ test('expanded country sliders render every public creative once without duplica
  const {MottoDetail}=await import('../src/components/portal/motto-detail.tsx');
  const local={id:'local',placement:'sidebar_top',imageUrl:'/local.webp',target_url:'https://local.example/',headline:'Local'};
  const extras=Array.from({length:23},(_,i)=>({...local,id:'extra-'+i,imageUrl:'/extra-'+i+'.webp',target_url:'https://extra.example/'+i,headline:'Extra '+i}));
- const html=renderToStaticMarkup(createElement(MottoDetail,{entry:destinations[1],kind:'destination',listings:reiseportalPreview,seed:'expanded',advertising:{ads:[local],sliderAds:[local,...extras],sidebarOrder:[]}}));
+ const premium={...local,id:'wide-premium',placement:'top_banner',headline:'Wide Premium',imageUrl:'/wide-premium.webp',target_url:'https://premium.example/'};
+ const html=renderToStaticMarkup(createElement(MottoDetail,{entry:destinations[1],kind:'destination',listings:reiseportalPreview,seed:'expanded',advertising:{ads:[local,premium],sliderAds:[local,...extras,premium],sidebarOrder:[]}}));
  assert.equal((html.match(/data-placement=/g)||[]).length,24);
  assert.equal((html.match(/id="banner-sidebar_top"/g)||[]).length,1);
  for(let i=0;i<23;i++)assert.equal((html.match(new RegExp('href="https://extra.example/'+i+'"','g'))||[]).length,1);
  assert.doesNotMatch(html,/Reiseideen für Ihren Aufenthalt/);
+ assert.doesNotMatch(html,/wide-premium|data-placement="top_banner"/);
  assert.match(html,/ziel=oesterreich/);
+});
+
+test('country compact banner pools exclude local and supplementary Premium formats without blocking a normal creative',async()=>{
+ const {destinationBanners}=await import('../src/lib/destination-banners.ts');
+ const compact={id:'shared-campaign',source:'campaign',placement:'sidebar_top',imageUrl:'/compact.webp',target_url:'https://hotel.example/',headline:'Compact'};
+ const premium={...compact,placement:'top_banner',imageUrl:'/premium.webp',headline:'Premium'};
+ const row=ad=>({ad,banner_key:'campaign:'+ad.id});
+ assert.deepEqual(destinationBanners([premium],[row(premium),row(compact)]),[compact]);
+ assert.deepEqual(destinationBanners([compact],[row(premium),row({...premium,id:'other-premium'})]),[compact]);
+ assert.deepEqual(destinationBanners([premium],[]),[]);
 });
 
 test('destination details reuse premium motto rows and end directly with country links',async()=>{
