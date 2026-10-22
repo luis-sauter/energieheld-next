@@ -40,3 +40,87 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Deterministic public JSX search catalog; generated before dev/build/test/typecheck.
+/src/data/generated/public-search-pages.json
+
+# Isolated Python acquisition runtime artifacts (never research data or packages).
+/workers/acquisition/__pycache__/
+
+# Local coding-assistant instructions; Next.js may regenerate these files.
+/AGENTS.md
+/CLAUDE.md
+/README.md
+
+# Internal working notes and research exports are not public source files.
+/docs/*.md
+/docs/auth-email-templates/README.md
+/docs/autumn-editorial-image.json
+/workers/acquisition/README.md
+/supabase/proposals/README.md
+/.legacy-reiseportal/
+/qa/
+/backups/
+/.internal/
+
+# Editorial generation notes must never be served from public/.
+/public/reiseportal/destination-editorial/manifest.json
+/public/reiseportal/motto-editorial-v2/manifest.json
+/public/reiseportal/news/manifest.json
+
+# Private acquisition code, evidence and historical data imports live separately.
+/workers/
+/scripts/*
+!/scripts/build-portal-search-catalog.mjs
+!/scripts/build-europe-map.mjs
+!/scripts/check-repository-boundary.mjs
+/src/lib/basic-accommodation-pilot.ts
+/docs/reiseportal-audience-evidence-assignments.sql
+/docs/reiseportal-audience-evidence-audit.json
+/docs/reiseportal-banner-audience-assignments.sql
+/docs/reiseportal-legacy-az-assets.json
+/docs/reiseportal-legacy-az-media.json
+/docs/reiseportal-legacy-az-source.json
+/docs/reiseportal-legacy-inventory.json
+/docs/reiseportal-live-gallery-audit.json
+/docs/reiseportal-provider-image-audit.json
+/supabase/migrations/20260926145100_import_targeted_reiseportal_providers.sql
+/supabase/migrations/20260926190001_import_verified_reiseportal_batch_01.sql
+/supabase/migrations/20260926190002_import_verified_reiseportal_batch_02.sql
+/supabase/migrations/20260926190003_import_verified_reiseportal_batch_03.sql
+/supabase/migrations/20260926190004_import_verified_reiseportal_batch_04.sql
+/supabase/migrations/20260926230848_import_verified_buechele.sql
+/supabase/migrations/20260927110000_import_missing_public_az_providers.sql
+/supabase/migrations/20261002090000_seed_reiseziele_editorial_promo.sql
+/supabase/proposals/20261015225242_basic_acquisition_foundation.sql
+/supabase/seeds/reviewed-special-topic.sql
+/tests/acquisition-download.test.mjs
+/tests/acquisition-evaluation.test.mjs
+/tests/acquisition-global-identity.test.mjs
+/tests/acquisition-internal-ski.test.mjs
+/tests/acquisition-practice-policy.test.mjs
+/tests/acquisition-price-suitability.test.mjs
+/tests/acquisition-research-rules.test.mjs
+/tests/acquisition-source-import.test.mjs
+/tests/acquisition-tariffs.test.mjs
+/tests/acquisition-website-scale.test.mjs
+/tests/acquisition-website-themes.test.mjs
+/tests/acquisition-website.test.mjs
+/tests/audience-evidence.test.mjs
+/tests/basic-accommodation-foundation-db.test.mjs
+/tests/basic-accommodation-pilot.test.mjs
+/tests/basic-assessment-admin.test.mjs
+/tests/basic-audience-filters.test.mjs
+/tests/basic-optional-themes.test.mjs
+/tests/editorial-ad-campaigns-db.test.mjs
+/tests/provider-card-media.test.mjs
+/tests/provider-live-gallery-audit.test.mjs
+/tests/public-ski-theme.test.mjs
+/tests/reiseportal-import-db.test.mjs
+/tests/reiseportal-legacy-az.test.mjs
+/tests/reiseportal-legacy-import.test.mjs
+/tests/reiseportal-legacy-resolution.test.mjs
+/tests/reiseportal-taxonomy-db.test.mjs
+/tests/reviewed-basic-pilot.test.mjs
+/tests/special-topic-transfer.test.mjs
+/tests/travel-search-banners-db.test.mjs
