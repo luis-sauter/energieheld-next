@@ -3,7 +3,7 @@
   "attribution": "© OpenStreetMap contributors; contact facts checked on official accommodation websites. Municipal names/codes: Statistische Ämter des Bundes und der Länder, Anschriftenverzeichnis2026. South Tyrol municipal names/codes: ISTAT, Elenco comuni italiani, 21 February 2026 (CC BY 4.0). Austria: STATISTIK AUSTRIA, Gemeindeverzeichnis2026, edited extract; reuse permission in source Vorwort. Switzerland: Bundesamt für Statistik BFS and Federal Office of Topography swisstopo, current2026 point/municipality attribution.",
   "source": "https://www.openstreetmap.org/copyright",
   "municipalitySource": "https://www.statistikportal.de/de/veroeffentlichungen/anschriftenverzeichnis",
-  "checkedAt": "2026-10-23T00:09:14.242759+00:00",
+  "checkedAt": "2026-10-23T12:11:57.732155+00:00",
   "entries": [
     {
       "id": "0010f548-cb1e-8a5f-acf9-1c9c5de049a6",
@@ -17,6 +17,19 @@
         "houseNumber": "7"
       },
       "phone": "+43158661830"
+    },
+    {
+      "id": "002eb935-ff36-88e2-9a32-7e08f27baf37",
+      "name": "Pension Platter",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Blumenstraße - Via dei Fiori",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "9"
+      },
+      "phone": "+390473561117"
     },
     {
       "id": "0099d6c4-584e-8e34-a6c0-2ec9bd7787a2",
@@ -82,6 +95,32 @@
       "phone": "+390473633202"
     },
     {
+      "id": "0153f2d4-ac37-8d1b-a61f-aafced4bd0b8",
+      "name": "Rettenberg",
+      "address": {
+        "city": "Kolsass",
+        "region": "Tirol",
+        "street": "Mühlbach",
+        "country": "AT",
+        "postalCode": "6114",
+        "houseNumber": "6"
+      },
+      "phone": "+43522468124"
+    },
+    {
+      "id": "0164f80f-cc98-8c98-8439-46bebdcf44e1",
+      "name": "Hotel Garni Bergland",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Oberstdorfer Straße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "10"
+      },
+      "phone": "+49832296790"
+    },
+    {
       "id": "016bbc26-8f9e-8d77-b4e8-1b8ec91f3d16",
       "name": "Hotel Birkenhof",
       "address": {
@@ -134,6 +173,19 @@
       "phone": "+4983247605"
     },
     {
+      "id": "02305485-3bdf-47f1-a4e8-2ddbd2b33f3e",
+      "name": "Chalet an der Brunnader",
+      "address": {
+        "city": "Bad Birnbach",
+        "region": "Bayern",
+        "street": "Brunnaderstraße",
+        "country": "DE",
+        "postalCode": "84364",
+        "houseNumber": "13"
+      },
+      "phone": "+4985635069111"
+    },
+    {
       "id": "02403794-0dc5-8bfb-a890-243132fc6968",
       "name": "App. Tamanhof",
       "address": {
@@ -160,6 +212,19 @@
       "phone": "+4940559061"
     },
     {
+      "id": "0266b221-05cf-8d19-9ad4-ffccd5fad3ee",
+      "name": "Hotel Eichhof",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Aichweg - Via delle Quercie",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "4"
+      },
+      "phone": "+390473561155"
+    },
+    {
       "id": "026dfcdd-e7b2-8894-84af-aa427bc2d407",
       "name": "Hotel Mair",
       "address": {
@@ -171,6 +236,45 @@
         "houseNumber": "38"
       },
       "phone": "+390474678216"
+    },
+    {
+      "id": "0276bc7d-30a4-8423-8e17-74c93551f1a2",
+      "name": "Gasthof zum Schwan",
+      "address": {
+        "city": "Traismauer",
+        "region": "Niederösterreich",
+        "street": "Wiener Straße",
+        "country": "AT",
+        "postalCode": "3133",
+        "houseNumber": "12"
+      },
+      "phone": "+4327836236"
+    },
+    {
+      "id": "02b108e9-f680-88c7-b798-12d547e0d411",
+      "name": "Garni Färbe",
+      "address": {
+        "city": "Sterzing - Vipiteno",
+        "region": "Südtirol",
+        "street": "Altstadt - Città Vecchia",
+        "country": "IT",
+        "postalCode": "39049",
+        "houseNumber": "46"
+      },
+      "phone": "+390472764123"
+    },
+    {
+      "id": "02c291ef-7c6e-8b38-81e8-0f4857187fa8",
+      "name": "Hotel-Gasthof Steinmaurer",
+      "address": {
+        "city": "Gmunden",
+        "region": "Oberösterreich",
+        "street": "Traunsteinstraße",
+        "country": "AT",
+        "postalCode": "4810",
+        "houseNumber": "23"
+      },
+      "phone": "+43761270488"
     },
     {
       "id": "02f23899-0f07-8e8f-9c59-ffb0b972aef1",
@@ -251,6 +355,19 @@
       "phone": "+4983636596"
     },
     {
+      "id": "0384616c-5502-8e2d-9690-bc3b2336a02a",
+      "name": "The Cloud One Hamburg-Kontorhaus",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Willy-Brandt-Straße",
+        "country": "DE",
+        "postalCode": "20457",
+        "houseNumber": "22"
+      },
+      "phone": "+494052471630"
+    },
+    {
       "id": "03870a08-5f60-87d1-8fb5-9afaaead9137",
       "name": "Ferienwohnung Peter",
       "address": {
@@ -325,6 +442,32 @@
       "phone": "+390471623048"
     },
     {
+      "id": "0499f75f-b218-8a17-b1b8-08aed3c268f1",
+      "name": "Rezeption Ferienclub Maierhöfen",
+      "address": {
+        "city": "Maierhöfen",
+        "region": "Bayern",
+        "street": "Stockach",
+        "country": "DE",
+        "postalCode": "88167",
+        "houseNumber": "1"
+      },
+      "phone": "+49838392200"
+    },
+    {
+      "id": "05222a2b-7e15-84fc-b897-94eafc88bddf",
+      "name": "Centre International John Knox",
+      "address": {
+        "city": "Le Grand-Saconnex",
+        "region": "Genève",
+        "street": "Chemin des Crêts-de-Pregny",
+        "country": "CH",
+        "postalCode": "1218",
+        "houseNumber": "27"
+      },
+      "phone": "+41227470000"
+    },
+    {
       "id": "05255b47-1509-8fa3-9c82-d5e45447c235",
       "name": "Berggasthof Ellegg-Höhe - Zimmer",
       "address": {
@@ -362,6 +505,19 @@
       "phone": "+390474401240"
     },
     {
+      "id": "0577c583-5fbf-8f2e-b818-1cc9d8926aa9",
+      "name": "Conrad Hamburg",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Bugenhagenstraße",
+        "country": "DE",
+        "postalCode": "20095",
+        "houseNumber": "8"
+      },
+      "phone": "+49409876340"
+    },
+    {
       "id": "0582dc79-0457-8263-99bc-b96a23bbfe2e",
       "name": "Gästehaus Maximilian",
       "address": {
@@ -386,6 +542,19 @@
         "houseNumber": "18"
       },
       "phone": "+4355173189"
+    },
+    {
+      "id": "05a75a1b-8576-8a54-8e72-54c649271908",
+      "name": "Alpenhotel",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Falkenstraße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "15"
+      },
+      "phone": "+498322702100"
     },
     {
       "id": "061ea770-170c-85cb-a5cf-9380fc0099ea",
@@ -526,6 +695,19 @@
       "phone": "+390473634565"
     },
     {
+      "id": "0764f216-4031-8e16-a170-fb20b381e6dc",
+      "name": "Markushof",
+      "address": {
+        "city": "Auer - Ora",
+        "region": "Südtirol",
+        "street": "Truidn",
+        "country": "IT",
+        "postalCode": "39040",
+        "houseNumber": "1"
+      },
+      "phone": "+390471810025"
+    },
+    {
       "id": "079dd322-8c47-8640-9fa0-c53ecee552c5",
       "name": "Austria Classic Hotel Wien",
       "address": {
@@ -537,6 +719,19 @@
         "houseNumber": "72"
       },
       "phone": "+431211300"
+    },
+    {
+      "id": "07b417fa-c742-8257-921b-2db9deafea91",
+      "name": "Marianne",
+      "address": {
+        "city": "Gratwein-Straßengel",
+        "region": "Steiermark",
+        "street": "Straßengelstraße",
+        "country": "AT",
+        "postalCode": "8111",
+        "houseNumber": "4"
+      },
+      "phone": "+43312451077"
     },
     {
       "id": "07bab94b-230b-81f7-82bb-3ccc6cb94e18",
@@ -561,6 +756,32 @@
         "houseNumber": "10"
       },
       "phone": "+49832296870"
+    },
+    {
+      "id": "0820d388-a061-8691-a1ec-4952e6fdf987",
+      "name": "Berggasthof Wallackhaus",
+      "address": {
+        "city": "Heiligenblut am Großglockner",
+        "region": "Kärnten",
+        "street": "Untertauern",
+        "country": "AT",
+        "postalCode": "9844",
+        "houseNumber": "20"
+      },
+      "phone": "+4348242223"
+    },
+    {
+      "id": "082a5a61-8dae-8692-84ec-26f4e90e14ad",
+      "name": "SMARTments business",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Schottweg",
+        "country": "DE",
+        "postalCode": "22087",
+        "houseNumber": "9"
+      },
+      "phone": "+4940229250"
     },
     {
       "id": "08401cb2-5b09-8907-a07a-c1b8c4cbb05f",
@@ -602,6 +823,18 @@
       "phone": "+390473279401"
     },
     {
+      "id": "08bbd7d5-cbac-8711-a3dd-9f3c295912e2",
+      "name": "Witting",
+      "address": {
+        "city": "Pfunds",
+        "region": "Tirol",
+        "country": "AT",
+        "postalCode": "6542",
+        "houseNumber": "88"
+      },
+      "phone": "+4354745587"
+    },
+    {
       "id": "08dfce38-db21-837f-85fd-e1403e383fd5",
       "name": "Hotel Stockinger",
       "address": {
@@ -626,6 +859,19 @@
       "phone": "+390474496134"
     },
     {
+      "id": "0920ab3f-dbad-8794-8732-4adca53a3ce2",
+      "name": "Whitepod",
+      "address": {
+        "city": "Les Giettes",
+        "region": "Valais / Wallis",
+        "street": "Route des Cerniers",
+        "country": "CH",
+        "postalCode": "1871",
+        "houseNumber": "100"
+      },
+      "phone": "+41244713838"
+    },
+    {
       "id": "0933aaa5-6e8a-8127-a278-181db3cad39f",
       "name": "Gasthof Schmirl",
       "address": {
@@ -637,6 +883,18 @@
         "houseNumber": "8"
       },
       "phone": "+4326362277"
+    },
+    {
+      "id": "094b13da-9f64-842b-8e0c-1d959715f7cc",
+      "name": "Alpenhof",
+      "address": {
+        "city": "Tux",
+        "region": "Tirol",
+        "country": "AT",
+        "postalCode": "6294",
+        "houseNumber": "750"
+      },
+      "phone": "+4352878550"
     },
     {
       "id": "09533032-bcc6-8238-8b75-3817211e2857",
@@ -652,6 +910,19 @@
       "phone": "+41818388686"
     },
     {
+      "id": "0958c9f7-d06a-8ec8-8bf9-d9f18f77d8ea",
+      "name": "Ferienhof Stephanie",
+      "address": {
+        "city": "Riezlern",
+        "region": "Vorarlberg",
+        "street": "Zwerwaldstraße",
+        "country": "AT",
+        "postalCode": "6991",
+        "houseNumber": "2"
+      },
+      "phone": "+43551732330"
+    },
+    {
       "id": "098f9784-0e28-8cb1-a09e-757284c8b4a5",
       "name": "Hotel Waldmann",
       "address": {
@@ -663,6 +934,19 @@
         "houseNumber": "5"
       },
       "phone": "+4983628426"
+    },
+    {
+      "id": "09bb8966-1af3-8365-89cc-d2e368832556",
+      "name": "fewo-badhindelang",
+      "address": {
+        "city": "Bad Hindelang",
+        "region": "Bayern",
+        "street": "Hindelanger Straße",
+        "country": "DE",
+        "postalCode": "87541",
+        "houseNumber": "28"
+      },
+      "phone": "+498324452"
     },
     {
       "id": "09f4110a-4113-88f3-9c9c-d1fa95cc0f8e",
@@ -689,6 +973,31 @@
         "houseNumber": "31"
       },
       "phone": "+41816304245"
+    },
+    {
+      "id": "0a0dc644-6844-8a0e-916c-41e75abd129a",
+      "name": "Ausserhof - Ferienwohnungen",
+      "address": {
+        "city": "St. Pankraz - San Pancrazio",
+        "region": "Südtirol",
+        "street": "Gegend",
+        "country": "IT",
+        "postalCode": "39010"
+      },
+      "phone": "+390473561666"
+    },
+    {
+      "id": "0a642eb6-82fe-8e1e-a75b-67dc91beb388",
+      "name": "Römeralm - Malga Römer",
+      "address": {
+        "city": "Kastelruth - Castelrotto",
+        "region": "Südtirol",
+        "street": "Saltria",
+        "country": "IT",
+        "postalCode": "39040",
+        "houseNumber": "18"
+      },
+      "phone": "+390471727838"
     },
     {
       "id": "0a73bfb2-b0ec-8984-b71e-9b0c897f2aa3",
@@ -871,6 +1180,45 @@
       "phone": "+4327222281"
     },
     {
+      "id": "0befc503-4ef9-8c99-813c-db29cd549837",
+      "name": "Hotel Alameda",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Colonnaden",
+        "country": "DE",
+        "postalCode": "20354",
+        "houseNumber": "45"
+      },
+      "phone": "+4940344000"
+    },
+    {
+      "id": "0c2ba828-98c1-8cd2-91aa-12877a60779a",
+      "name": "Ferienwohnungen Holzner Rosalinde",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Goldeggstraße",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "4"
+      },
+      "phone": "+390473561041"
+    },
+    {
+      "id": "0c776fbe-2c26-8029-b74d-4c78649af306",
+      "name": "Moosmatt",
+      "address": {
+        "city": "Egolzwil",
+        "region": "Luzern",
+        "street": "Dorf",
+        "country": "CH",
+        "postalCode": "6243",
+        "houseNumber": "1"
+      },
+      "phone": "+41419805080"
+    },
+    {
       "id": "0c9ab7d2-f418-8c58-bc67-43a802f354b5",
       "name": "Ferienwohnungen Krehl",
       "address": {
@@ -882,6 +1230,19 @@
         "houseNumber": "60"
       },
       "phone": "+49836237986"
+    },
+    {
+      "id": "0cda4d8a-b157-8745-8850-35e563c4e7cd",
+      "name": "Dreimädelhaus",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Greitenweg",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "5"
+      },
+      "phone": "+390473561269"
     },
     {
       "id": "0ce69713-0685-8dc5-88eb-daf0286d3cb5",
@@ -934,6 +1295,19 @@
         "houseNumber": "1"
       },
       "phone": "+4983224386"
+    },
+    {
+      "id": "0d9f5f7c-68dc-8dba-aad9-76e9fa64a187",
+      "name": "Hotel Garni",
+      "address": {
+        "city": "Blieskastel",
+        "region": "Saarland",
+        "street": "Gut Lindenfels",
+        "country": "DE",
+        "postalCode": "66440",
+        "houseNumber": "3"
+      },
+      "phone": "+496842930724"
     },
     {
       "id": "0dc0182b-cd2c-8252-a97f-d5e536f6beb8",
@@ -1012,6 +1386,18 @@
       "phone": "+41326391307"
     },
     {
+      "id": "0e88af1d-8e1d-874e-97d1-8cc0f65924df",
+      "name": "Der Krallerhof",
+      "address": {
+        "city": "Leogang",
+        "region": "Salzburg",
+        "country": "AT",
+        "postalCode": "5771",
+        "houseNumber": "6"
+      },
+      "phone": "+43658382460"
+    },
+    {
       "id": "0ea8a026-db89-80ba-a30e-e4b4d80e2514",
       "name": "Hotel Garni Günther",
       "address": {
@@ -1047,6 +1433,19 @@
         "houseNumber": "24"
       },
       "phone": "+390471615143"
+    },
+    {
+      "id": "0efeeef3-1f94-8588-9eba-6901f127e35b",
+      "name": "Ferienwohnungen Fuchs",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Rohrmooser Straße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "23"
+      },
+      "phone": "+4983225425"
     },
     {
       "id": "0f36cd40-4e5c-80d5-b164-e08439e52b2a",
@@ -1110,6 +1509,32 @@
       "phone": "+498362300310"
     },
     {
+      "id": "1023ae9b-8db7-8b77-81c2-8e2d960350b4",
+      "name": "Meisters Irma",
+      "address": {
+        "city": "Meran - Merano",
+        "region": "Südtirol",
+        "street": "Schönblickstraße - Via Belvedere",
+        "country": "IT",
+        "postalCode": "39012",
+        "houseNumber": "17"
+      },
+      "phone": "+390473212000"
+    },
+    {
+      "id": "1036db25-f402-8283-86fd-8902a597e1aa",
+      "name": "Auszeit im Grünen",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Lorettostraße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "32a"
+      },
+      "phone": "+491703882883"
+    },
+    {
       "id": "107494f9-8048-8b73-b18e-e3a3f407dc02",
       "name": "Rungghof",
       "address": {
@@ -1118,6 +1543,19 @@
         "country": "IT"
       },
       "phone": "+390471665854"
+    },
+    {
+      "id": "1079e7f4-21b6-45cd-a8f8-d057fdb4e000",
+      "name": "Hotel Hofmark",
+      "address": {
+        "city": "Bad Birnbach",
+        "region": "Bayern",
+        "street": "Kurallee",
+        "country": "DE",
+        "postalCode": "84364",
+        "houseNumber": "3"
+      },
+      "phone": "+4985632960"
     },
     {
       "id": "1089ce49-3721-84d6-b5f1-f8f374a3b9f8",
@@ -1224,6 +1662,19 @@
       "phone": "+390473290029"
     },
     {
+      "id": "11f779fe-d093-82ae-81fa-1db2f7fa4207",
+      "name": "Hotel Regina",
+      "address": {
+        "city": "Bolzano - Bozen",
+        "region": "Südtirol",
+        "street": "Via Renon",
+        "country": "IT",
+        "postalCode": "39100",
+        "houseNumber": "1"
+      },
+      "phone": "+390471972195"
+    },
+    {
       "id": "12331fac-822f-8307-80e4-41da5f914cd1",
       "name": "Wysses Rössli",
       "address": {
@@ -1289,6 +1740,19 @@
       "phone": "+4365842100"
     },
     {
+      "id": "1363e0d4-e5e0-81bd-bc4f-cb36c95190c3",
+      "name": "Ferienhof Mueller",
+      "address": {
+        "city": "Rettenberg",
+        "region": "Bayern",
+        "street": "Amthausstraße",
+        "country": "DE",
+        "postalCode": "87549",
+        "houseNumber": "2"
+      },
+      "phone": "+4983277077"
+    },
+    {
       "id": "13652d1a-e73d-8e63-bfae-ec7b786e80d8",
       "name": "Moarhof",
       "address": {
@@ -1326,6 +1790,31 @@
       "phone": "+41413758580"
     },
     {
+      "id": "13dab65a-b77b-8191-8c0c-b2f9bfbca7a4",
+      "name": "Pension Singer",
+      "address": {
+        "city": "Köttmannsdorf",
+        "region": "Kärnten",
+        "country": "AT",
+        "postalCode": "9161",
+        "houseNumber": "5"
+      },
+      "phone": "+43422784020"
+    },
+    {
+      "id": "13e507a3-02a9-8bb6-a7d6-a29b7a8e2586",
+      "name": "Gasthof Maierhof",
+      "address": {
+        "city": "Westendorf",
+        "region": "Tirol",
+        "street": "Nachtsöllberg",
+        "country": "AT",
+        "postalCode": "6363",
+        "houseNumber": "75"
+      },
+      "phone": "+4353346412"
+    },
+    {
       "id": "1447101c-66a6-8476-af4a-490b294a3691",
       "name": "La Fontana",
       "address": {
@@ -1350,6 +1839,18 @@
         "houseNumber": "10"
       },
       "phone": "+41556121012"
+    },
+    {
+      "id": "147c496a-0a2b-8c92-a68d-fc859d118b28",
+      "name": "Magnushof in Eisenberg",
+      "address": {
+        "city": "Eisenberg",
+        "region": "Bayern",
+        "country": "DE",
+        "postalCode": "87637",
+        "houseNumber": "51"
+      },
+      "phone": "+4983639298733"
     },
     {
       "id": "14e16c08-c88d-82e4-b587-fa80ea440325",
@@ -1402,6 +1903,19 @@
       "phone": "+4983787532"
     },
     {
+      "id": "15183d24-e699-89f4-9b1c-905d400fb433",
+      "name": "Gasthof-Pension Gradlwirt",
+      "address": {
+        "city": "Niederndorf",
+        "region": "Tirol",
+        "street": "Dorf",
+        "country": "AT",
+        "postalCode": "6342",
+        "houseNumber": "45"
+      },
+      "phone": "+43537361273"
+    },
+    {
       "id": "15216a9a-e981-81d0-9365-a6ec2f92d13c",
       "name": "Rosenlaui",
       "address": {
@@ -1424,6 +1938,19 @@
         "houseNumber": "3"
       },
       "phone": "+4983217809850"
+    },
+    {
+      "id": "15860b26-0641-8de1-9ced-0493d5fd99fd",
+      "name": "Residence Kathrainhof",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Kirchweg - Via della Chiesa",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "10a"
+      },
+      "phone": "+390473562422"
     },
     {
       "id": "158dc552-45ee-80fa-971c-ecfb269e9d05",
@@ -1526,6 +2053,19 @@
       "phone": "+49838693240"
     },
     {
+      "id": "1713cdd3-3eaf-8764-a242-3f6fc092b98d",
+      "name": "Hotel Viertlerhof",
+      "address": {
+        "city": "Hafling - Avelengo",
+        "region": "Südtirol",
+        "street": "Falzebenerstraße - Via Falzeben",
+        "country": "IT",
+        "postalCode": "39010",
+        "houseNumber": "126"
+      },
+      "phone": "+390473279428"
+    },
+    {
       "id": "17551c00-4798-8891-a157-3b63aa8156c7",
       "name": "Best Western Raphael Hotel Altona",
       "address": {
@@ -1584,6 +2124,19 @@
       "phone": "+49838698010"
     },
     {
+      "id": "18335afd-788f-8a95-ab47-68115a7c3572",
+      "name": "Haus Steinbrunn",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Badlweg - Via dei Bagni",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "10"
+      },
+      "phone": "+390473568017"
+    },
+    {
       "id": "1838f57d-7ac6-8f6b-9b94-709cfa79ab41",
       "name": "Hotel Niedermair",
       "address": {
@@ -1629,6 +2182,19 @@
       "phone": "+390473421022"
     },
     {
+      "id": "18980fd1-2245-8ff4-bb8c-7004ad811a18",
+      "name": "Cà Stella",
+      "address": {
+        "city": "Bignasco",
+        "region": "Ticino",
+        "street": "Via alla Motta",
+        "country": "CH",
+        "postalCode": "6676",
+        "houseNumber": "2"
+      },
+      "phone": "+41917543434"
+    },
+    {
       "id": "18ec182b-dfa8-8e38-ac9b-3a34bc12634a",
       "name": "Hotel Eggerwirt",
       "address": {
@@ -1668,6 +2234,19 @@
       "phone": "+4322647280"
     },
     {
+      "id": "199c4eff-618c-4736-aad8-a5f3771fbe22",
+      "name": "Ferienwohnung Berger",
+      "address": {
+        "city": "Bad Birnbach",
+        "region": "Bayern",
+        "street": "Von-Pichler-Straße",
+        "country": "DE",
+        "postalCode": "84364",
+        "houseNumber": "7"
+      },
+      "phone": "+4985631055"
+    },
+    {
       "id": "199e0541-db79-8e2f-927a-bd26564fb57a",
       "name": "Gästehaus Streif",
       "address": {
@@ -1679,6 +2258,19 @@
         "houseNumber": "28-30"
       },
       "phone": "+4983623327"
+    },
+    {
+      "id": "199ebdc9-ae40-8b02-8f67-c3fb876f98be",
+      "name": "Ebenrieder",
+      "address": {
+        "city": "Stötten am Auerberg",
+        "region": "Bayern",
+        "street": "Remnatsried",
+        "country": "DE",
+        "postalCode": "87675",
+        "houseNumber": "2"
+      },
+      "phone": "+4983499763940"
     },
     {
       "id": "19db5304-9c08-8caf-81c8-9baf541545d1",
@@ -1704,6 +2296,45 @@
         "houseNumber": "9/a"
       },
       "phone": "+390473561698"
+    },
+    {
+      "id": "1a4070bf-a45a-8d2e-9252-74984f803ccf",
+      "name": "City Apartment Hotel Hamburg",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Schröderstraße",
+        "country": "DE",
+        "postalCode": "22087",
+        "houseNumber": "35-35a"
+      },
+      "phone": "+4940411770"
+    },
+    {
+      "id": "1a47726c-7704-8041-84c1-8eb3481358b1",
+      "name": "Berghotel Kienles Adlerkönig",
+      "address": {
+        "city": "Balderschwang",
+        "region": "Bayern",
+        "street": "Dorf",
+        "country": "DE",
+        "postalCode": "87538",
+        "houseNumber": "3"
+      },
+      "phone": "+498328221"
+    },
+    {
+      "id": "1a4adabb-7e46-8c25-9d03-64f9b90746db",
+      "name": "B&B Hotel Hamburg-Altona",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Stresemannstraße",
+        "country": "DE",
+        "postalCode": "22761",
+        "houseNumber": "318"
+      },
+      "phone": "+49408518060"
     },
     {
       "id": "1a8aef80-c260-8b8f-8074-0b94d186c497",
@@ -1779,6 +2410,19 @@
       "phone": "+43662874776"
     },
     {
+      "id": "1bb94b27-ba95-87dd-b802-d69af0917f6e",
+      "name": "Haus Kuntner",
+      "address": {
+        "city": "Völlan/Lana",
+        "region": "Südtirol",
+        "street": "Rateiserweg",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "5"
+      },
+      "phone": "+390473562830"
+    },
+    {
       "id": "1c06d28a-ddad-860c-bce4-e13c58dde43f",
       "name": "Hotel Ambassador",
       "address": {
@@ -1805,6 +2449,19 @@
       "phone": "+41556536363"
     },
     {
+      "id": "1c11af4a-ccb1-8057-87d5-8d9ebae0d032",
+      "name": "Superbude St. Pauli",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Juliusstraße",
+        "country": "DE",
+        "postalCode": "22769",
+        "houseNumber": "1-7"
+      },
+      "phone": "+4940807915820"
+    },
+    {
       "id": "1c1e8bbc-5532-881d-9d78-9ad68e42f0c5",
       "name": "Hotel Jarolim",
       "address": {
@@ -1814,6 +2471,19 @@
         "postalCode": "39042"
       },
       "phone": "+390472836230"
+    },
+    {
+      "id": "1c5a951b-e65b-8c31-8632-0eda7f4a94f4",
+      "name": "BO Hotel Hamburg",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Ausschläger Weg",
+        "country": "DE",
+        "postalCode": "20537",
+        "houseNumber": "68"
+      },
+      "phone": "+49402263312800"
     },
     {
       "id": "1c5b12c0-9123-85f5-9d48-bd06edad0377",
@@ -1915,6 +2585,18 @@
         "houseNumber": "54"
       },
       "phone": "+41818370707"
+    },
+    {
+      "id": "1d387b0e-119d-8559-a49e-7cd3bca586f2",
+      "name": "Zum Grüntenblick",
+      "address": {
+        "city": "Burgberg i.Allgäu",
+        "region": "Bayern",
+        "country": "DE",
+        "postalCode": "87545",
+        "houseNumber": "8"
+      },
+      "phone": "+4983213353"
     },
     {
       "id": "1d67505d-45ab-8ceb-8b9c-61219ff1d4a3",
@@ -2056,6 +2738,19 @@
       "phone": "+4983268233"
     },
     {
+      "id": "1f1171b6-3965-8d96-8326-6616ee56b9f9",
+      "name": "Stacey",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Eppendorfer Weg",
+        "country": "DE",
+        "postalCode": "20251",
+        "houseNumber": "270"
+      },
+      "phone": "+4940696389600"
+    },
+    {
       "id": "1f14f6d5-8342-8a8e-8c2b-d90d96510a41",
       "name": "Domaine de Chateauvieux",
       "address": {
@@ -2069,6 +2764,19 @@
       "phone": "+41227531511"
     },
     {
+      "id": "1f7b706b-11eb-8103-8f5b-d6bf3b83e861",
+      "name": "Lapis Monti Apartments & Suites",
+      "address": {
+        "city": "Mals - Malles Venosta",
+        "region": "Südtirol",
+        "street": "Burgeis - Burgusio",
+        "country": "IT",
+        "postalCode": "39024",
+        "houseNumber": "126"
+      },
+      "phone": "+390473831410"
+    },
+    {
       "id": "1f91e107-c04d-87ea-a31a-d53039907718",
       "name": "Hotel Mödlinger",
       "address": {
@@ -2080,6 +2788,19 @@
         "houseNumber": "30"
       },
       "phone": "+4353335339"
+    },
+    {
+      "id": "1fa63bbe-6d69-8afe-8e1b-274eae0b46b2",
+      "name": "L'Union",
+      "address": {
+        "city": "Epalinges",
+        "region": "Vaud",
+        "street": "Chemin des Croisettes",
+        "country": "CH",
+        "postalCode": "1066",
+        "houseNumber": "2"
+      },
+      "phone": "+41216544100"
     },
     {
       "id": "1fb98b3a-d5f1-8bd6-87f7-adbba3f30434",
@@ -2115,6 +2836,19 @@
         "postalCode": "7303"
       },
       "phone": "+41813221622"
+    },
+    {
+      "id": "1fcdf224-bcd4-8e07-bc80-6c5057952f35",
+      "name": "Seiser Alm Plaza",
+      "address": {
+        "city": "Seiser Alm - Alpe di Siusi",
+        "region": "Südtirol",
+        "street": "Compatsch",
+        "country": "IT",
+        "postalCode": "39040",
+        "houseNumber": "33"
+      },
+      "phone": "+390471727973"
     },
     {
       "id": "1fd564c2-8a77-896f-b845-6cefdad34ee1",
@@ -2231,6 +2965,19 @@
       "phone": "+4372826258"
     },
     {
+      "id": "20fe2b0b-ace2-83a1-b86a-12a6ae9c5841",
+      "name": "Cheval Blanc",
+      "address": {
+        "city": "Saint-Blaise",
+        "region": "Neuchâtel",
+        "street": "Grand'Rue",
+        "country": "CH",
+        "postalCode": "2072",
+        "houseNumber": "18"
+      },
+      "phone": "+41327533007"
+    },
+    {
       "id": "212077bf-3330-86a9-9e65-2118c710f7af",
       "name": "Bergbauernhof Echtler",
       "address": {
@@ -2255,6 +3002,19 @@
         "houseNumber": "4-8"
       },
       "phone": "+4331670660"
+    },
+    {
+      "id": "2141af71-d87d-8896-867e-70b64cac780d",
+      "name": "Tiefenbacher Hof",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Im Winkel",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "3"
+      },
+      "phone": "+4983225833"
     },
     {
       "id": "214b24b3-1849-84cd-9524-e2dec4fbcefd",
@@ -2292,6 +3052,19 @@
         "houseNumber": "3-5"
       },
       "phone": "+43316811616"
+    },
+    {
+      "id": "21d9fa9b-3bf0-823a-946d-c37e60181c5c",
+      "name": "Henri Hotel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Bugenhagenstraße",
+        "country": "DE",
+        "postalCode": "20095",
+        "houseNumber": "21"
+      },
+      "phone": "+4940554357557"
     },
     {
       "id": "220c53d6-7a71-84d8-b381-110a180ceb5a",
@@ -2343,6 +3116,18 @@
         "houseNumber": "7"
       },
       "phone": "+4983212309"
+    },
+    {
+      "id": "227e123f-9c74-86a0-be2d-34891814688c",
+      "name": "Patleidhof",
+      "address": {
+        "city": "Naturns - Naturno",
+        "region": "Südtirol",
+        "street": "Sonnenberg-Monte Sole",
+        "country": "IT",
+        "houseNumber": "47"
+      },
+      "phone": "+390473667767"
     },
     {
       "id": "227f37df-b7cb-8be2-a0c4-5db39398c608",
@@ -2460,6 +3245,19 @@
       "phone": "+4317898899"
     },
     {
+      "id": "2430d769-b9db-8f12-9542-74068f9a10cb",
+      "name": "Ressmair",
+      "address": {
+        "city": "Meran - Merano",
+        "region": "Südtirol",
+        "street": "Romstraße - Via Roma",
+        "country": "IT",
+        "postalCode": "39012",
+        "houseNumber": "166"
+      },
+      "phone": "+390473236400"
+    },
+    {
       "id": "24605339-e035-84f2-bdfd-4aa39abe45c1",
       "name": "Schiff",
       "address": {
@@ -2508,6 +3306,19 @@
         "postalCode": "39040"
       },
       "phone": "+393313186084"
+    },
+    {
+      "id": "251d2639-a8e6-886b-a024-b9a244f6c26c",
+      "name": "Gasthof Schweinberger",
+      "address": {
+        "city": "Stetten",
+        "region": "Niederösterreich",
+        "street": "Hauptstraße",
+        "country": "AT",
+        "postalCode": "2100",
+        "houseNumber": "6"
+      },
+      "phone": "+432262673488"
     },
     {
       "id": "2521f84f-86df-8c7b-9e5d-43869dc274db",
@@ -2573,6 +3384,19 @@
       "phone": "+390474496250"
     },
     {
+      "id": "260ec1b1-9c5b-8408-8c51-593ea3059ab8",
+      "name": "Hotel Kocher",
+      "address": {
+        "city": "St. Agatha",
+        "region": "Oberösterreich",
+        "street": "Stefan Fadinger-Straße",
+        "country": "AT",
+        "postalCode": "4084",
+        "houseNumber": "6"
+      },
+      "phone": "+4372778308"
+    },
+    {
       "id": "26644ae1-cdfe-86f4-8660-917e405af4b5",
       "name": "Ferienhof Schwarzenbach",
       "address": {
@@ -2636,6 +3460,19 @@
       "phone": "+41323742828"
     },
     {
+      "id": "271f3570-bfff-8bd5-980b-95b443cc6c05",
+      "name": "Zum goldenen Löwen",
+      "address": {
+        "city": "Türnitz",
+        "region": "Niederösterreich",
+        "street": "Markt",
+        "country": "AT",
+        "postalCode": "3184",
+        "houseNumber": "8"
+      },
+      "phone": "+4327698222"
+    },
+    {
       "id": "2749b72c-8f37-870e-ad78-1e8fc77a34ca",
       "name": "City Hostel Geneva",
       "address": {
@@ -2647,6 +3484,19 @@
         "houseNumber": "2"
       },
       "phone": "+41229011500"
+    },
+    {
+      "id": "2760a76c-72c2-887a-8d0f-0ae7c0659923",
+      "name": "Winkinger Hof",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Steindamm",
+        "country": "DE",
+        "postalCode": "20099",
+        "houseNumber": "53"
+      },
+      "phone": "+4940243834"
     },
     {
       "id": "27936410-202e-80b6-8fbe-5fe1b5327544",
@@ -2711,6 +3561,45 @@
       "phone": "+4353588118"
     },
     {
+      "id": "28432694-e208-8c70-b6d2-d84bb93373e9",
+      "name": "Jörgnerhof",
+      "address": {
+        "city": "Pfitsch - Val di Vizze",
+        "region": "Südtirol",
+        "street": "Grube",
+        "country": "IT",
+        "postalCode": "39049",
+        "houseNumber": "87"
+      },
+      "phone": "+393401524329"
+    },
+    {
+      "id": "2843ca86-d1f0-84c4-ba10-e9a409d84c02",
+      "name": "Plattwies",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Mayenburgstraße - Via Mayenburg",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "30"
+      },
+      "phone": "+390473568043"
+    },
+    {
+      "id": "2851caeb-442a-8c34-b9a7-d4f47c1324a9",
+      "name": "Zum Mohren",
+      "address": {
+        "city": "Graun im Vinschgau - Curon Venosta",
+        "region": "Südtirol",
+        "street": "Hauptstraße - Via Nazionale",
+        "country": "IT",
+        "postalCode": "39027",
+        "houseNumber": "30"
+      },
+      "phone": "+390473633120"
+    },
+    {
       "id": "286b3e1d-cd51-89f2-9a97-93ec9da5eede",
       "name": "Hotel des Alpes",
       "address": {
@@ -2735,6 +3624,19 @@
         "houseNumber": "81"
       },
       "phone": "+4983837295"
+    },
+    {
+      "id": "2891179e-20d3-80ec-aafd-55783df480fe",
+      "name": "Anternann",
+      "address": {
+        "city": "Kastelruth - Castelrotto",
+        "region": "Südtirol",
+        "street": "Compatsch",
+        "country": "IT",
+        "postalCode": "39040",
+        "houseNumber": "3"
+      },
+      "phone": "+393491753438"
     },
     {
       "id": "289407b7-f7b5-8683-92d3-b12a23e43b1c",
@@ -2783,6 +3685,19 @@
         "postalCode": "39010"
       },
       "phone": "+390473426037"
+    },
+    {
+      "id": "292e8936-e06a-808a-b215-14a3ec2b319b",
+      "name": "Heikotel – Hotel Stadtpark Residenz",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Flüggestraße",
+        "country": "DE",
+        "postalCode": "22303",
+        "houseNumber": "6"
+      },
+      "phone": "+4940278400"
     },
     {
       "id": "299b9f2a-4f94-8b41-a1de-11e43976a629",
@@ -2857,6 +3772,19 @@
         "houseNumber": "31"
       },
       "phone": "+393334797746"
+    },
+    {
+      "id": "2b04e10f-fbc3-805d-8a50-3279e682b6da",
+      "name": "The Westin",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Platz der Deutschen Einheit",
+        "country": "DE",
+        "postalCode": "20457",
+        "houseNumber": "2"
+      },
+      "phone": "+49408000100"
     },
     {
       "id": "2b4a2b42-e927-81f5-b911-59fd66ee054b",
@@ -2943,6 +3871,17 @@
       "phone": "+390474496150"
     },
     {
+      "id": "2c3f4257-95f9-80a9-bf1f-ea8a9c0c9b89",
+      "name": "Hüfihütte",
+      "address": {
+        "city": "Silenen",
+        "region": "Uri",
+        "country": "CH",
+        "postalCode": "6473"
+      },
+      "phone": "+41418851475"
+    },
+    {
       "id": "2c7c3995-72b3-822d-a71b-f3e73a498d2c",
       "name": "Gasthof Hotel Langhof",
       "address": {
@@ -2976,6 +3915,19 @@
         "postalCode": "39050"
       },
       "phone": "+390471642138"
+    },
+    {
+      "id": "2cdbdc5a-b147-8800-b883-55082b8f9779",
+      "name": "K&M Hostel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Elsässer Straße",
+        "country": "DE",
+        "postalCode": "22049",
+        "houseNumber": "4"
+      },
+      "phone": "+494065043066"
     },
     {
       "id": "2cf4bdff-116a-879c-9c81-b2d7b4788bff",
@@ -3037,6 +3989,19 @@
         "houseNumber": "144"
       },
       "phone": "+4983624487"
+    },
+    {
+      "id": "2e17e48d-0bae-8805-a07b-1a4820fd91dd",
+      "name": "Residence Schlossberg",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Ultner Straße - Via Ultimo",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "4/a"
+      },
+      "phone": "+390473561513"
     },
     {
       "id": "2e24c641-80cb-81f4-b43c-6617257b4fdf",
@@ -3356,6 +4321,32 @@
       "phone": "+498379728231"
     },
     {
+      "id": "32c4e30c-9051-87a1-9603-236825bbbb54",
+      "name": "Pension Sonne",
+      "address": {
+        "city": "Halblech",
+        "region": "Bayern",
+        "street": "Leitenweg",
+        "country": "DE",
+        "postalCode": "87642",
+        "houseNumber": "1"
+      },
+      "phone": "+4983689148990"
+    },
+    {
+      "id": "32d377d9-26ff-8a63-816b-70257277efbf",
+      "name": "Stadthotel Styria",
+      "address": {
+        "city": "Steyr",
+        "region": "Oberösterreich",
+        "street": "Stadtplatz",
+        "country": "AT",
+        "postalCode": "4400",
+        "houseNumber": "40-42"
+      },
+      "phone": "+437252515510"
+    },
+    {
       "id": "32e33310-a077-8f62-b506-35f58667959a",
       "name": "Hotel La Furca",
       "address": {
@@ -3470,6 +4461,32 @@
       "phone": "+498362930180"
     },
     {
+      "id": "347037fd-975f-8ca9-9c6f-4fcf72cbb6f2",
+      "name": "Alpina Sonnen-Appartements",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Abt-Goßwin-Straße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "12 b"
+      },
+      "phone": "+4983629115900"
+    },
+    {
+      "id": "34756c55-5a7d-827d-a644-d11ac2400005",
+      "name": "Hotel Fanes",
+      "address": {
+        "city": "Badia - Abtei",
+        "region": "Südtirol",
+        "street": "Strada Pecei",
+        "country": "IT",
+        "postalCode": "39036",
+        "houseNumber": "19"
+      },
+      "phone": "+390471849470"
+    },
+    {
       "id": "3493fb9f-c79b-8666-b740-49d9c3bddbc9",
       "name": "Hotel Mare",
       "address": {
@@ -3494,6 +4511,32 @@
         "houseNumber": "14"
       },
       "phone": "+498322986725"
+    },
+    {
+      "id": "34ac4d85-2277-899f-a668-13e9fc6a863d",
+      "name": "Strandhotel Blankenese",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Strandweg",
+        "country": "DE",
+        "postalCode": "22587",
+        "houseNumber": "13"
+      },
+      "phone": "+4940861344"
+    },
+    {
+      "id": "34d4d166-f2ed-8acc-8204-de0f6d8490c4",
+      "name": "Wira Hostel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Königstraße",
+        "country": "DE",
+        "postalCode": "22767",
+        "houseNumber": "16a"
+      },
+      "phone": "+494076997202"
     },
     {
       "id": "3507be4b-9cfd-837d-8a1b-4d99def22a5c",
@@ -3568,6 +4611,70 @@
         "houseNumber": "38"
       },
       "phone": "+4983628921"
+    },
+    {
+      "id": "3693f557-f0c1-8392-9d63-45b1b6a2f965",
+      "name": "Bel'Espérance",
+      "address": {
+        "city": "Genève",
+        "region": "Genève",
+        "street": "Rue Mina-Audemars (Rue de la Vallée)",
+        "country": "CH",
+        "postalCode": "1204",
+        "houseNumber": "1"
+      },
+      "phone": "+41228183737"
+    },
+    {
+      "id": "3698bd17-da75-8167-b5d3-2c10e051d8a4",
+      "name": "Gästehaus Schäfli",
+      "address": {
+        "city": "Hospental",
+        "region": "Uri",
+        "street": "Gotthardstrasse",
+        "country": "CH",
+        "postalCode": "6493",
+        "houseNumber": "97"
+      },
+      "phone": "+41418831140"
+    },
+    {
+      "id": "3698f52a-f80b-806b-bac0-68265df94dd3",
+      "name": "Garni Pichlbauer",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Gampenstraße - Via Palade",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "19/b"
+      },
+      "phone": "+390473562218"
+    },
+    {
+      "id": "36c42e32-483a-8859-bcb5-0143dc76cda9",
+      "name": "Camping Lanzmaierhof",
+      "address": {
+        "city": "Frohnleiten",
+        "region": "Steiermark",
+        "country": "AT",
+        "postalCode": "8130",
+        "houseNumber": "16"
+      },
+      "phone": "+4331262360"
+    },
+    {
+      "id": "36d95e0a-9596-882f-b3f1-46ffc61cd6fc",
+      "name": "Rothenfels Hotel & Panorama Restaurant",
+      "address": {
+        "city": "Immenstadt im Allgäu",
+        "region": "Bayern",
+        "street": "Missener Straße",
+        "country": "DE",
+        "postalCode": "87509",
+        "houseNumber": "60"
+      },
+      "phone": "+4983239190"
     },
     {
       "id": "36e7403d-5b43-8042-ad85-ec01cd70bd7f",
@@ -3672,6 +4779,19 @@
       "phone": "+49405002220"
     },
     {
+      "id": "385ee650-940b-8e7b-b4d1-452b94e3f1c2",
+      "name": "Casa Moscia",
+      "address": {
+        "city": "Ascona",
+        "region": "Ticino",
+        "street": "Via Moscia",
+        "country": "CH",
+        "postalCode": "6612",
+        "houseNumber": "89"
+      },
+      "phone": "+41917911268"
+    },
+    {
       "id": "38639cd7-b8b3-8439-9cda-ffe793d87c47",
       "name": "Hotel Rosa Eco Alpin Spa Resort",
       "address": {
@@ -3685,6 +4805,19 @@
       "phone": "+390471727950"
     },
     {
+      "id": "389891e1-5489-882f-abf6-b173c3ad6702",
+      "name": "Gasthaus-Pension Alpenheim",
+      "address": {
+        "city": "Dornbirn",
+        "region": "Vorarlberg",
+        "street": "Ebnit",
+        "country": "AT",
+        "postalCode": "6850",
+        "houseNumber": "40"
+      },
+      "phone": "+43557673222"
+    },
+    {
       "id": "38af0c04-686e-8e8d-8cbe-578f1aa2846b",
       "name": "Hotel Alpenpanorama",
       "address": {
@@ -3696,6 +4829,19 @@
         "houseNumber": "18"
       },
       "phone": "+4353335309"
+    },
+    {
+      "id": "3952145d-681e-8304-b173-c8bcf1150e12",
+      "name": "St. Raphael im Allgäu",
+      "address": {
+        "city": "Kempten (Allgäu)",
+        "region": "Bayern",
+        "street": "Bischof-Freundorfer-Weg",
+        "country": "DE",
+        "postalCode": "87439",
+        "houseNumber": "24"
+      },
+      "phone": "+498315404330"
     },
     {
       "id": "39559870-3045-8065-a87d-1876b5e8af64",
@@ -3822,6 +4968,19 @@
       "phone": "+4331438113"
     },
     {
+      "id": "3abfb926-bdae-8fe9-bcee-0b10209e30ee",
+      "name": "Walhalla",
+      "address": {
+        "city": "St. Gallen",
+        "region": "St. Gallen",
+        "street": "Poststrasse",
+        "country": "CH",
+        "postalCode": "9000",
+        "houseNumber": "27"
+      },
+      "phone": "+41712282800"
+    },
+    {
       "id": "3acaa35c-f913-8987-825d-cbb06e87a581",
       "name": "Hotel City Locarno",
       "address": {
@@ -3846,6 +5005,32 @@
         "houseNumber": "12"
       },
       "phone": "+390473568080"
+    },
+    {
+      "id": "3aec2cbc-d277-851e-8994-92a589bb33ae",
+      "name": "1/2/sleep",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Letzter Heller",
+        "country": "DE",
+        "postalCode": "22111",
+        "houseNumber": "11"
+      },
+      "phone": "+498920001590300"
+    },
+    {
+      "id": "3afb90c2-df59-86f1-9ed0-7cbef746226f",
+      "name": "Weißes Rössel",
+      "address": {
+        "city": "Mistelbach",
+        "region": "Niederösterreich",
+        "street": "Hafnerstraße",
+        "country": "AT",
+        "postalCode": "2130",
+        "houseNumber": "8"
+      },
+      "phone": "+43257220785"
     },
     {
       "id": "3b98a95a-46ea-8e96-934b-e1f442d049ab",
@@ -3887,6 +5072,19 @@
       "phone": "+436765282300"
     },
     {
+      "id": "3bf51a97-2d3f-8a31-92d0-85a7bbe2b8bc",
+      "name": "Ferienwohnung Erd",
+      "address": {
+        "city": "Wertach",
+        "region": "Bayern",
+        "street": "Doktor-Bach-Straße",
+        "country": "DE",
+        "postalCode": "87497",
+        "houseNumber": "9"
+      },
+      "phone": "+498365519"
+    },
+    {
       "id": "3c2b2f57-d5bc-8624-8b1a-d57a5b260381",
       "name": "Bad Ratzes",
       "address": {
@@ -3909,6 +5107,44 @@
         "houseNumber": "9"
       },
       "phone": "+43557442766"
+    },
+    {
+      "id": "3c4af127-4827-8c7d-a43a-ce0b64eb4224",
+      "name": "Ferienhaus im Winkl",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Reichenbach",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "18b"
+      },
+      "phone": "+4917676763309"
+    },
+    {
+      "id": "3c5e5f43-0b5d-8050-b704-12047380208e",
+      "name": "Instant Sleep",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Max-Brauer-Allee",
+        "country": "DE",
+        "postalCode": "22769",
+        "houseNumber": "277"
+      },
+      "phone": "+494043180180"
+    },
+    {
+      "id": "3c611762-c604-8fd3-8b47-dc90716cdc42",
+      "name": "Bergbauernhof Meßmang",
+      "address": {
+        "city": "Waltenhofen",
+        "region": "Bayern",
+        "country": "DE",
+        "postalCode": "87448",
+        "houseNumber": "6"
+      },
+      "phone": "+498379649"
     },
     {
       "id": "3c6e8be7-698d-8d06-8e1d-830944e9a657",
@@ -3959,6 +5195,19 @@
         "houseNumber": "5"
       },
       "phone": "+498362819687"
+    },
+    {
+      "id": "3cbee6e5-1edb-8d87-a693-32ba299da60d",
+      "name": "Alpina Dolomites",
+      "address": {
+        "city": "Kastelruth - Castelrotto",
+        "region": "Südtirol",
+        "street": "Compatsch",
+        "country": "IT",
+        "postalCode": "39040",
+        "houseNumber": "62/3"
+      },
+      "phone": "+390471796004"
     },
     {
       "id": "3cc11cab-2a5a-8bbc-a1ab-988953bed7e4",
@@ -4136,6 +5385,19 @@
       "phone": "+43424227896"
     },
     {
+      "id": "3ec23a35-4164-892f-b72e-a982aa4cfd62",
+      "name": "Kultiviert",
+      "address": {
+        "city": "Wildpoldsried",
+        "region": "Bayern",
+        "street": "Marktoberdorfer Straße",
+        "country": "DE",
+        "postalCode": "87499",
+        "houseNumber": "3"
+      },
+      "phone": "+498304924970"
+    },
+    {
       "id": "3ed4400f-bde2-8b7e-b558-82f6993ffcff",
       "name": "Franzlhof",
       "address": {
@@ -4209,6 +5471,19 @@
         "houseNumber": "20"
       },
       "phone": "+390473550994"
+    },
+    {
+      "id": "4007efa3-c2fc-813b-8ed9-64ed9315f07c",
+      "name": "Villa Wandsbek Hotel Garni",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Bärenallee",
+        "country": "DE",
+        "postalCode": "22041",
+        "houseNumber": "6"
+      },
+      "phone": "+4940683560"
     },
     {
       "id": "4019583f-2cf7-8602-b602-bf3e48990f01",
@@ -4315,6 +5590,45 @@
       "phone": "+393392715060"
     },
     {
+      "id": "41fe03f8-73f6-8e2d-85da-40c10f8ae37c",
+      "name": "Residence Föhrnerhof",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Kapuzinerstraße - Via Cappuccini",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "2"
+      },
+      "phone": "+390473562247"
+    },
+    {
+      "id": "42090d86-01f5-82b9-8348-520d23fd19fa",
+      "name": "Rifugio Frara",
+      "address": {
+        "city": "Corvara - Corvara in Badia",
+        "region": "Südtirol",
+        "street": "Strada Frara",
+        "country": "IT",
+        "postalCode": "39033",
+        "houseNumber": "15"
+      },
+      "phone": "+390471795225"
+    },
+    {
+      "id": "425eaa7c-0f5d-8a33-a344-159a25642efd",
+      "name": "Hotel Vino Q",
+      "address": {
+        "city": "Zistersdorf",
+        "region": "Niederösterreich",
+        "street": "Meierhofgasse",
+        "country": "AT",
+        "postalCode": "2225",
+        "houseNumber": "4"
+      },
+      "phone": "+436704099190"
+    },
+    {
       "id": "427b8632-d5d5-86bb-892b-283bcde9ecc0",
       "name": "Gasthof Orthofer",
       "address": {
@@ -4339,6 +5653,19 @@
         "houseNumber": "19"
       },
       "phone": "+41919941631"
+    },
+    {
+      "id": "42c678ef-e1b5-89f5-8daa-98bd97b05b2d",
+      "name": "Apparthotel Barbara",
+      "address": {
+        "city": "Mittersill",
+        "region": "Salzburg",
+        "street": "Lebzeltergasse",
+        "country": "AT",
+        "postalCode": "5730",
+        "houseNumber": "2b"
+      },
+      "phone": "+43656255560"
     },
     {
       "id": "43024068-c98d-8b79-8f4d-b23ef6c91323",
@@ -4393,6 +5720,19 @@
       "phone": "+49834392050"
     },
     {
+      "id": "43925eb3-ea61-80f2-a25d-5c4b7dfd499a",
+      "name": "Steigenberger Hotel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Heiligengeistbrücke",
+        "country": "DE",
+        "postalCode": "20459",
+        "houseNumber": "4"
+      },
+      "phone": "+4940368060"
+    },
+    {
       "id": "43b41e74-9116-8757-8824-3c1f68c17deb",
       "name": "Kappeler Haus",
       "address": {
@@ -4427,6 +5767,19 @@
         "houseNumber": "60"
       },
       "phone": "+491717880375"
+    },
+    {
+      "id": "447d58b1-f6f7-88b8-a645-092c80001d8b",
+      "name": "Pension Villa Bergmann",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Köppenstraße",
+        "country": "DE",
+        "postalCode": "22453",
+        "houseNumber": "5"
+      },
+      "phone": "+49405536171"
     },
     {
       "id": "448e787c-c30d-8e22-8627-eb04ee04aa23",
@@ -4564,6 +5917,19 @@
       "phone": "+4983629392895"
     },
     {
+      "id": "45e4a7a8-1abf-8bb4-b3a4-424445ed5dbf",
+      "name": "Innerrunggöglhof",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Völlaner Weg - Via Foiana",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "10"
+      },
+      "phone": "+390473561842"
+    },
+    {
       "id": "45f8421e-6bdd-88f3-bfc3-1665aa6b48b5",
       "name": "Nydeck",
       "address": {
@@ -4692,6 +6058,19 @@
       "phone": "+49836270300"
     },
     {
+      "id": "4738ad7e-43f6-8fca-826d-1a06c20db2af",
+      "name": "House L.A",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Wachsbleiche",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "2"
+      },
+      "phone": "+498362607366"
+    },
+    {
       "id": "475b4c68-77f1-8a87-8a06-41ec0bf99f60",
       "name": "Zak Backpackers",
       "address": {
@@ -4731,6 +6110,19 @@
       "phone": "+41623911149"
     },
     {
+      "id": "47c0fe8a-20d9-85df-b9f5-bde856f19fba",
+      "name": "Gästehaus Kirchwerder",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Süderquerweg",
+        "country": "DE",
+        "postalCode": "21037",
+        "houseNumber": "433"
+      },
+      "phone": "+49407237240"
+    },
+    {
       "id": "47c5061b-63b8-8768-acf9-9553a2997c1a",
       "name": "Peterlinhof",
       "address": {
@@ -4744,6 +6136,18 @@
       "phone": "+390471962677"
     },
     {
+      "id": "47e7bff7-24cc-81bb-94a0-c4e067d57f7e",
+      "name": "Neuhornbachhaus",
+      "address": {
+        "city": "Schoppernau",
+        "region": "Vorarlberg",
+        "country": "AT",
+        "postalCode": "6886",
+        "houseNumber": "258"
+      },
+      "phone": "+436645367595"
+    },
+    {
       "id": "47f67723-5b48-8b77-9b0b-5ede92680ea6",
       "name": "Haus Obwaller",
       "address": {
@@ -4755,6 +6159,19 @@
         "houseNumber": "55"
       },
       "phone": "+4353335457"
+    },
+    {
+      "id": "4817dc78-9f64-8071-bc84-83b3985f6146",
+      "name": "Kreiersalp",
+      "address": {
+        "city": "Hohenems",
+        "region": "Vorarlberg",
+        "street": "Schuttannenstraße",
+        "country": "AT",
+        "postalCode": "6845",
+        "houseNumber": "13"
+      },
+      "phone": "+43557676092"
     },
     {
       "id": "48547bb9-5d72-82a5-b4f9-45ee64755a12",
@@ -4809,6 +6226,19 @@
       "phone": "+4983222134"
     },
     {
+      "id": "48b8bee8-cc96-8398-a226-afbfdf0ac75b",
+      "name": "HIAMO Hotel Hamburg-Bergedorf",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Weidenbaumsweg",
+        "country": "DE",
+        "postalCode": "21029",
+        "houseNumber": "9"
+      },
+      "phone": "+4940604299800"
+    },
+    {
       "id": "48bd46ac-4697-8ecb-b1dc-db28a7b00e35",
       "name": "Pension Moarhof",
       "address": {
@@ -4842,6 +6272,19 @@
         "houseNumber": "2"
       },
       "phone": "+41337333003"
+    },
+    {
+      "id": "4907d4c7-0425-815f-925a-406724c9fadd",
+      "name": "Bavaria City Hostel",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Reichenstraße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "15"
+      },
+      "phone": "+4983629266980"
     },
     {
       "id": "4910372e-9698-8440-8b54-29c7783192ed",
@@ -4883,6 +6326,19 @@
       "phone": "+4353335497"
     },
     {
+      "id": "497c7a8e-eeb4-83df-9a26-ab9ac328a6d4",
+      "name": "Chalet Zoila",
+      "address": {
+        "city": "Hafling - Avelengo",
+        "region": "Südtirol",
+        "street": "Falzebenerstraße - Via Falzeben",
+        "country": "IT",
+        "postalCode": "39010",
+        "houseNumber": "50"
+      },
+      "phone": "+393392298949"
+    },
+    {
       "id": "499822fe-c85f-8063-bcf5-47dabaa28306",
       "name": "Hotel Masatsch",
       "address": {
@@ -4918,6 +6374,32 @@
         "houseNumber": "14"
       },
       "phone": "+43512582980"
+    },
+    {
+      "id": "4a10d876-d69b-8abd-ab9b-8cfe296aca3c",
+      "name": "Hotel Garni Dolomieu",
+      "address": {
+        "city": "Sëlva - Wolkenstein in Gröden - Selva di Val Gardena",
+        "region": "Südtirol",
+        "street": "Streda Frëina",
+        "country": "IT",
+        "postalCode": "39048",
+        "houseNumber": "7"
+      },
+      "phone": "+390471795440"
+    },
+    {
+      "id": "4a1f591c-4c9c-8740-a405-3e8309c49c3a",
+      "name": "Bannholzhof",
+      "address": {
+        "city": "Riezlern",
+        "region": "Vorarlberg",
+        "street": "Köpfleweg",
+        "country": "AT",
+        "postalCode": "6991",
+        "houseNumber": "20"
+      },
+      "phone": "+4355175608"
     },
     {
       "id": "4a53ef7b-43dd-88d9-b780-99b3ac5fab11",
@@ -4996,6 +6478,19 @@
       "phone": "+498364986803"
     },
     {
+      "id": "4ac93221-7d7f-85b5-88b2-4a34443181e5",
+      "name": "Hotel Nord",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Bremer Reihe",
+        "country": "DE",
+        "postalCode": "20099",
+        "houseNumber": "22"
+      },
+      "phone": "+494028051733"
+    },
+    {
       "id": "4b0082b9-e98d-8ae0-b7f1-8c429b899cdf",
       "name": "Hotel Richter",
       "address": {
@@ -5007,6 +6502,32 @@
         "houseNumber": "5"
       },
       "phone": "+494069455646"
+    },
+    {
+      "id": "4b039179-3019-8aff-8105-2dc9f08034a5",
+      "name": "Jollyday Inn Hostel St. Pauli",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Budapester Straße",
+        "country": "DE",
+        "postalCode": "20359",
+        "houseNumber": "44"
+      },
+      "phone": "+494060570620"
+    },
+    {
+      "id": "4b26fd04-5d7b-8712-bdd7-3bfa2172a5fd",
+      "name": "Motel Fehraltorf",
+      "address": {
+        "city": "Fehraltorf",
+        "region": "Zürich",
+        "street": "Luppmenstrasse",
+        "country": "CH",
+        "postalCode": "8320",
+        "houseNumber": "13"
+      },
+      "phone": "+41444977171"
     },
     {
       "id": "4b287320-1e93-8e68-93bc-e8749faac5d3",
@@ -5022,6 +6543,19 @@
       "phone": "+390471887168"
     },
     {
+      "id": "4b412a88-3f2b-8efa-839e-c4bc0d911926",
+      "name": "Ferienwohnung Zobl",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Keltensteinstraße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "14"
+      },
+      "phone": "+491708948787"
+    },
+    {
       "id": "4b48fc00-7979-8df4-b58d-a50be527599f",
       "name": "Kalchkendlalm",
       "address": {
@@ -5033,6 +6567,19 @@
         "houseNumber": "44"
       },
       "phone": "+436644307217"
+    },
+    {
+      "id": "4b9815a7-2045-84ee-aa8c-830f31858c23",
+      "name": "Beim Lackl",
+      "address": {
+        "city": "Hafling - Avelengo",
+        "region": "Südtirol",
+        "street": "Falzebenerstraße - Via Falzeben",
+        "country": "IT",
+        "postalCode": "39010",
+        "houseNumber": "35"
+      },
+      "phone": "+393478279523"
     },
     {
       "id": "4bb008e4-f7b9-88c2-9cef-78b1da303d77",
@@ -5247,6 +6794,19 @@
       "phone": "+41337223400"
     },
     {
+      "id": "4f1af1bf-5b0f-8ad8-a5b4-54458185561e",
+      "name": "Prizeotel Hamburg-St. Pauli",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Holstenstraße",
+        "country": "DE",
+        "postalCode": "22767",
+        "houseNumber": "7"
+      },
+      "phone": "+4942159499401"
+    },
+    {
       "id": "4f345224-94ec-8729-8165-356e51c74355",
       "name": "Kolpinghaus Wien-Zentral",
       "address": {
@@ -5268,6 +6828,19 @@
         "country": "DE"
       },
       "phone": "+4983651437"
+    },
+    {
+      "id": "4f4c1b53-91d8-85da-ae85-164601cc40e9",
+      "name": "Alpenresort Schwarz",
+      "address": {
+        "city": "Mieming",
+        "region": "Tirol",
+        "street": "Obermieming",
+        "country": "AT",
+        "postalCode": "6414",
+        "houseNumber": "141"
+      },
+      "phone": "+43526452120"
     },
     {
       "id": "4f6af5f2-84e4-8b56-9502-48a72cc5c535",
@@ -5432,6 +7005,18 @@
       "phone": "+41918691111"
     },
     {
+      "id": "520edc0a-ee40-8aad-9a57-a891649d5b14",
+      "name": "Gasthof Mühle",
+      "address": {
+        "city": "Wattenberg",
+        "region": "Tirol",
+        "country": "AT",
+        "postalCode": "6113",
+        "houseNumber": "68"
+      },
+      "phone": "+43522452510"
+    },
+    {
       "id": "5214ee8b-ff73-8fa0-8488-124e9ad84774",
       "name": "Croce Bianca",
       "address": {
@@ -5555,6 +7140,32 @@
       "phone": "+390471279000"
     },
     {
+      "id": "53f3e171-32db-84e4-b871-46c30bd313d1",
+      "name": "Plattnerhof",
+      "address": {
+        "city": "Bolzano - Bozen",
+        "region": "Südtirol",
+        "street": "Via Rafenstein - Rafensteiner Weg",
+        "country": "IT",
+        "postalCode": "39100",
+        "houseNumber": "39"
+      },
+      "phone": "+390471970268"
+    },
+    {
+      "id": "54190edf-32db-85aa-a1d2-a8d96a05b967",
+      "name": "Törggelehof - Ferienwohnungen",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Aichbergweg - Monte Rovere",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "2"
+      },
+      "phone": "+390473562108"
+    },
+    {
       "id": "54380703-047d-8610-ba0d-713600bec2f4",
       "name": "Pinzger",
       "address": {
@@ -5604,6 +7215,19 @@
       "phone": "+498373587"
     },
     {
+      "id": "5492c0dd-91ca-87cf-a0ff-5b20d1c4a994",
+      "name": "Gaisbock",
+      "address": {
+        "city": "Fischen im Allgäu",
+        "region": "Bayern",
+        "street": "Hauptstraße",
+        "country": "DE",
+        "postalCode": "87538",
+        "houseNumber": "11"
+      },
+      "phone": "+4983262569320"
+    },
+    {
       "id": "5502e7d7-753a-8b14-aa98-55f43fecb8a1",
       "name": "Senator Hotel Vienna",
       "address": {
@@ -5641,6 +7265,19 @@
       "phone": "+491634773465"
     },
     {
+      "id": "5518c866-2a79-8292-8724-8c5ca748caf2",
+      "name": "Gasthof Schäffler",
+      "address": {
+        "city": "Sonthofen",
+        "region": "Bayern",
+        "street": "Am Anger",
+        "country": "DE",
+        "postalCode": "87527",
+        "houseNumber": "8"
+      },
+      "phone": "+49832126730"
+    },
+    {
       "id": "551e8602-aab5-88c8-bc47-0d86a2895f47",
       "name": "Garni Criss",
       "address": {
@@ -5650,6 +7287,19 @@
         "postalCode": "39033"
       },
       "phone": "+390471836954"
+    },
+    {
+      "id": "551f9971-21fb-8a41-9607-ec5f7a21ab35",
+      "name": "City Hotel",
+      "address": {
+        "city": "Saarbrücken",
+        "region": "Saarland",
+        "street": "Richard-Wagner-Straße",
+        "country": "DE",
+        "postalCode": "66111",
+        "houseNumber": "67"
+      },
+      "phone": "+496819279970"
     },
     {
       "id": "5520a900-0d31-8970-86b7-a1ae23c09327",
@@ -5676,6 +7326,19 @@
         "houseNumber": "1"
       },
       "phone": "+41442979999"
+    },
+    {
+      "id": "55894fc7-791d-8c1b-ad56-8c5e3c64f4b1",
+      "name": "Josef Mountain Resort",
+      "address": {
+        "city": "Hafling - Avelengo",
+        "region": "Südtirol",
+        "street": "Falzebenerstraße - Via Falzeben",
+        "country": "IT",
+        "postalCode": "39010",
+        "houseNumber": "225"
+      },
+      "phone": "+390473279590"
     },
     {
       "id": "558a2597-ac03-8658-810b-56ce918eb547",
@@ -5713,6 +7376,18 @@
         "postalCode": "39048"
       },
       "phone": "+390471795110"
+    },
+    {
+      "id": "56180389-b6e3-8167-b5b3-efdbeb3818ed",
+      "name": "Gasthaus Bären",
+      "address": {
+        "city": "Bözberg",
+        "region": "Aargau",
+        "country": "CH",
+        "postalCode": "5225",
+        "houseNumber": "6"
+      },
+      "phone": "+41564411565"
     },
     {
       "id": "5636061e-7c3b-895f-986b-7b47a44e4542",
@@ -5825,6 +7500,19 @@
         "houseNumber": "3"
       },
       "phone": "+4983223290"
+    },
+    {
+      "id": "5770deef-ba6b-8dd5-9be7-c44c42d64b11",
+      "name": "Le Chandelier",
+      "address": {
+        "city": "St-Ursanne",
+        "region": "Jura",
+        "street": "Chemin de Lorette",
+        "country": "CH",
+        "postalCode": "2882",
+        "houseNumber": "1"
+      },
+      "phone": "+41792512432"
     },
     {
       "id": "577ef402-795b-8710-b74d-bbc00571199f",
@@ -5940,6 +7628,19 @@
       "phone": "+49406429969"
     },
     {
+      "id": "594b3705-d377-8a16-a362-d4c2929471aa",
+      "name": "Swiss Diamond Hotel",
+      "address": {
+        "city": "Vico Morcote",
+        "region": "Ticino",
+        "street": "Riva Lago Olivella",
+        "country": "CH",
+        "postalCode": "6921",
+        "houseNumber": "14"
+      },
+      "phone": "+41917350000"
+    },
+    {
       "id": "59517157-a5e6-4ad9-a7f3-cf36d178806e",
       "name": "Best Western Aparthotel Birnbachhöhe",
       "address": {
@@ -5992,6 +7693,19 @@
       "phone": "+498385742"
     },
     {
+      "id": "5a2baf7d-9b73-8990-b0f2-42e8228ed495",
+      "name": "Hotel Guggital",
+      "address": {
+        "city": "Zug",
+        "region": "Zug",
+        "street": "Zugerbergstrasse",
+        "country": "CH",
+        "postalCode": "6300",
+        "houseNumber": "46"
+      },
+      "phone": "+41417287417"
+    },
+    {
       "id": "5a36423b-9696-84bb-9075-1a11cdbac68b",
       "name": "Weinreichhof",
       "address": {
@@ -6029,6 +7743,19 @@
         "houseNumber": "29"
       },
       "phone": "+4983225319"
+    },
+    {
+      "id": "5adfe4f6-76ba-856e-92e3-e2cca38e1c7c",
+      "name": "Gesundheitshotel Witzigmann",
+      "address": {
+        "city": "Oberstaufen",
+        "region": "Bayern",
+        "street": "Am Kühlen Grund",
+        "country": "DE",
+        "postalCode": "87534",
+        "houseNumber": "4"
+      },
+      "phone": "+4983863261332"
     },
     {
       "id": "5b0839d0-cc18-8933-af54-0684caf6f761",
@@ -6243,6 +7970,18 @@
       "phone": "+4312143317"
     },
     {
+      "id": "5d94bbae-8524-8187-9dde-c06aaef95692",
+      "name": "Ferienhäusle Beim Sima",
+      "address": {
+        "city": "Rieden am Forggensee",
+        "region": "Bayern",
+        "country": "DE",
+        "postalCode": "87669",
+        "houseNumber": "2"
+      },
+      "phone": "+4983621465"
+    },
+    {
       "id": "5dab784d-b816-86e8-947e-ffeb6bbb49cd",
       "name": "Landhotel Berghof",
       "address": {
@@ -6293,6 +8032,19 @@
       "phone": "+4348426341"
     },
     {
+      "id": "5dcbcc7c-69ff-8e64-a1b0-f0537551772d",
+      "name": "Stöckli",
+      "address": {
+        "city": "St. Stephan",
+        "region": "Bern / Berne",
+        "street": "Lenkstrasse",
+        "country": "CH",
+        "postalCode": "3772",
+        "houseNumber": "33"
+      },
+      "phone": "+41337221201"
+    },
+    {
       "id": "5e027ecb-d5d9-83fb-b43f-ad6557b04618",
       "name": "Garni-Hotel Wiesental",
       "address": {
@@ -6326,6 +8078,19 @@
         "houseNumber": "1"
       },
       "phone": "+43275252345"
+    },
+    {
+      "id": "5eb98c3b-6f6e-802e-9e24-c5b4c565cf37",
+      "name": "My Hostel Füssen",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Augsburger Straße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "12"
+      },
+      "phone": "+4917679797077"
     },
     {
       "id": "5f0aecad-815e-8bcb-9826-54d4f86cd801",
@@ -6363,6 +8128,19 @@
         "houseNumber": "8"
       },
       "phone": "+4983613358"
+    },
+    {
+      "id": "5f3bdf4a-c3f2-811b-a6b8-c218545fd63a",
+      "name": "IntercityHotel Hamburg-Barmbek",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Fuhlsbüttler Straße",
+        "country": "DE",
+        "postalCode": "22305",
+        "houseNumber": "101"
+      },
+      "phone": "+49696656401"
     },
     {
       "id": "5f4d5626-5ea9-8b2b-b304-35fff263a534",
@@ -6414,6 +8192,19 @@
       "phone": "+494044809414"
     },
     {
+      "id": "5fd76b94-bf9d-8b9e-bb4e-8a311c3c0c67",
+      "name": "Pension Sonntag",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Neubertstraße",
+        "country": "DE",
+        "postalCode": "22087",
+        "houseNumber": "24a"
+      },
+      "phone": "+494046006834"
+    },
+    {
       "id": "5fde6bb2-2b4d-817c-b5a5-bd7cd4225ab6",
       "name": "Haus Santer",
       "address": {
@@ -6427,6 +8218,19 @@
       "phone": "+390473561679"
     },
     {
+      "id": "6037c099-25a9-8247-8b25-d1503bf80663",
+      "name": "Gasthof zum Kapitel",
+      "address": {
+        "city": "Wiggensbach",
+        "region": "Bayern",
+        "street": "Marktplatz",
+        "country": "DE",
+        "postalCode": "87487",
+        "houseNumber": "5"
+      },
+      "phone": "+4983702093211"
+    },
+    {
       "id": "606169df-0790-839e-8b43-02f9354d28ec",
       "name": "Berghof Eberle",
       "address": {
@@ -6438,6 +8242,19 @@
         "houseNumber": "43"
       },
       "phone": "+4983679129280"
+    },
+    {
+      "id": "60988f5e-014a-8504-91f4-93c09b9f75a5",
+      "name": "Entrée Gross Borstel Garni Hotel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Borsteler Chaussee",
+        "country": "DE",
+        "postalCode": "22453",
+        "houseNumber": "168"
+      },
+      "phone": "+4915735981863"
     },
     {
       "id": "619797be-1a57-8e77-aaa5-2acd6b96883a",
@@ -6518,6 +8335,32 @@
       "phone": "+41332430083"
     },
     {
+      "id": "6273bd14-3327-8ecd-8ad4-f97a7359dea1",
+      "name": "Landgasthaus am Rosenbächle",
+      "address": {
+        "city": "Pfronten",
+        "region": "Bayern",
+        "street": "Edelsbergweg",
+        "country": "DE",
+        "postalCode": "87459",
+        "houseNumber": "21"
+      },
+      "phone": "+49836391370"
+    },
+    {
+      "id": "62850329-4adb-8c7e-99ac-41d4efba2a3f",
+      "name": "Pension Sonnegg",
+      "address": {
+        "city": "Völlan/Lana",
+        "region": "Südtirol",
+        "street": "Mayenburgstr.",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "5"
+      },
+      "phone": "+390473568006"
+    },
+    {
       "id": "62beb78d-fa07-8854-a2ed-d3c1943d3a56",
       "name": "Alphotel Biel-Kinzig",
       "address": {
@@ -6553,6 +8396,58 @@
         "postalCode": "39013"
       },
       "phone": "+390473646762"
+    },
+    {
+      "id": "63052ab0-62fc-87e5-af70-8a876952e5b1",
+      "name": "Rebmannhof",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Kirchweg - Via della Chiesa",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "12"
+      },
+      "phone": "+390473561585"
+    },
+    {
+      "id": "636f109f-d250-86c9-b0de-d1417ca47958",
+      "name": "Edelrautehütte",
+      "address": {
+        "city": "Hohentauern",
+        "region": "Steiermark",
+        "street": "Edelrautestraße",
+        "country": "AT",
+        "postalCode": "8785",
+        "houseNumber": "5"
+      },
+      "phone": "+43361821014"
+    },
+    {
+      "id": "639a548b-e68c-86bf-9a0b-db4071709db8",
+      "name": "Pension Gruber",
+      "address": {
+        "city": "Ahrntal - Valle Aurina",
+        "region": "Südtirol",
+        "street": "Gisse",
+        "country": "IT",
+        "postalCode": "39030",
+        "houseNumber": "134"
+      },
+      "phone": "+390474671193"
+    },
+    {
+      "id": "64429639-0c47-89e4-8d03-7b00a05d11fa",
+      "name": "Kieler Hof",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Bremer Reihe",
+        "country": "DE",
+        "postalCode": "20099",
+        "houseNumber": "15"
+      },
+      "phone": "+4940243024"
     },
     {
       "id": "6468049c-d070-81a3-8614-55685f9e95fc",
@@ -6629,6 +8524,19 @@
       "phone": "+393389519476"
     },
     {
+      "id": "653b88e8-f010-87ce-9740-c69f18858b19",
+      "name": "Ferienhaus Ressle",
+      "address": {
+        "city": "Halblech",
+        "region": "Bayern",
+        "street": "Moorbadstraße",
+        "country": "DE",
+        "postalCode": "87642",
+        "houseNumber": "10"
+      },
+      "phone": "+4983681611"
+    },
+    {
       "id": "656818f3-d6ed-8347-87dc-9b16aa5e2c85",
       "name": "Hotel Turmwirt",
       "address": {
@@ -6679,6 +8587,18 @@
       "phone": "+494045063323"
     },
     {
+      "id": "66064051-92ce-859e-892e-44f502f4e29c",
+      "name": "Cabane Bella-Tola",
+      "address": {
+        "city": "St-Luc",
+        "region": "Valais / Wallis",
+        "street": "Route du Funiculaire",
+        "country": "CH",
+        "postalCode": "3961"
+      },
+      "phone": "+41274761567"
+    },
+    {
       "id": "665431ef-c866-85d0-bc1a-889d4c202d09",
       "name": "Landhaus Berkmiller",
       "address": {
@@ -6688,6 +8608,32 @@
         "postalCode": "87637"
       },
       "phone": "+4983632069925"
+    },
+    {
+      "id": "66a1b8c3-f902-81b5-bafe-df3513fdbfed",
+      "name": "Ermitage",
+      "address": {
+        "city": "Schönried",
+        "region": "Bern / Berne",
+        "street": "Dorfstrasse",
+        "country": "CH",
+        "postalCode": "3778",
+        "houseNumber": "46"
+      },
+      "phone": "+41337480430"
+    },
+    {
+      "id": "66b811b7-dbb7-8804-aee8-e24f33eba8b8",
+      "name": "Gasthof Argentobelbrücke",
+      "address": {
+        "city": "Maierhöfen",
+        "region": "Bayern",
+        "street": "Hauptstraße",
+        "country": "DE",
+        "postalCode": "88167",
+        "houseNumber": "3"
+      },
+      "phone": "+498383289"
     },
     {
       "id": "66fb46c0-df4e-8d3d-a1a7-d668c8168e7d",
@@ -6753,6 +8699,19 @@
         "houseNumber": "8"
       },
       "phone": "+494036111239"
+    },
+    {
+      "id": "68717a11-05a5-800e-8461-f12fbae21b35",
+      "name": "Hotel Post",
+      "address": {
+        "city": "Scheidegg",
+        "region": "Bayern",
+        "street": "Kirchplatz",
+        "country": "DE",
+        "postalCode": "88175",
+        "houseNumber": "5"
+      },
+      "phone": "+4983812209"
     },
     {
       "id": "68a749d7-950a-876c-9942-f57762ee1915",
@@ -6844,6 +8803,19 @@
       "phone": "+41442676040"
     },
     {
+      "id": "6a61f936-4eb0-8730-a32a-17f72c516b23",
+      "name": "Generator Hostel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Steintorplatz",
+        "country": "DE",
+        "postalCode": "20099",
+        "houseNumber": "3"
+      },
+      "phone": "+4940226358460"
+    },
+    {
       "id": "6a8e7dd0-71c9-8746-807d-c8c41253e403",
       "name": "Bristol",
       "address": {
@@ -6890,6 +8862,45 @@
         "houseNumber": "14"
       },
       "phone": "+498365449"
+    },
+    {
+      "id": "6ab34a0e-4d52-8ece-b52c-988f07f09bf6",
+      "name": "Weissgarberhof",
+      "address": {
+        "city": "Sand in Taufers - Campo Tures",
+        "region": "Südtirol",
+        "street": "Am Anger",
+        "country": "IT",
+        "postalCode": "39032",
+        "houseNumber": "17"
+      },
+      "phone": "+390474659009"
+    },
+    {
+      "id": "6b1a184f-ed1b-8917-a397-247e0aea7c6f",
+      "name": "Haus Daheim",
+      "address": {
+        "city": "Oberstaufen",
+        "region": "Bayern",
+        "street": "Freibadweg",
+        "country": "DE",
+        "postalCode": "87534",
+        "houseNumber": "6"
+      },
+      "phone": "+49838693210"
+    },
+    {
+      "id": "6b243d5f-ce69-85ab-9600-1b1f9f57f1d6",
+      "name": "UNO Smart Hamburg Central 056",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Kirchenallee",
+        "country": "DE",
+        "postalCode": "20099",
+        "houseNumber": "56a"
+      },
+      "phone": "+4940244545"
     },
     {
       "id": "6b58624f-2881-895b-81e1-a11c4478a9aa",
@@ -6955,6 +8966,19 @@
         "houseNumber": "1"
       },
       "phone": "+498343674"
+    },
+    {
+      "id": "6c0b72e6-39ac-82f4-b16e-125a36bd8fd0",
+      "name": "Hotel Hamburg Altona",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Hahnenkamp",
+        "country": "DE",
+        "postalCode": "22765",
+        "houseNumber": "8"
+      },
+      "phone": "+494039908954"
     },
     {
       "id": "6c60b6f3-415f-8cb8-9dfd-65b27bbe56b1",
@@ -7144,6 +9168,19 @@
       "phone": "+498368266222"
     },
     {
+      "id": "6e4c572d-275f-8180-9b43-7228090b1e62",
+      "name": "Sporthotel Tyrol",
+      "address": {
+        "city": "Innichen - San Candido",
+        "region": "Südtirol",
+        "street": "Draustraße - Via Drava",
+        "country": "IT",
+        "postalCode": "39038",
+        "houseNumber": "12"
+      },
+      "phone": "+390474913198"
+    },
+    {
       "id": "6e5ad7b3-90fe-830d-a728-594e7ffcbe91",
       "name": "Haus Alpengruss",
       "address": {
@@ -7155,6 +9192,19 @@
         "houseNumber": "6"
       },
       "phone": "+41797035918"
+    },
+    {
+      "id": "6e673319-c451-42e6-ac04-da0b043aac08",
+      "name": "Haus am Kurpark",
+      "address": {
+        "city": "Bad Birnbach",
+        "region": "Bayern",
+        "street": "Prof.-Drexel-Straße",
+        "country": "DE",
+        "postalCode": "84364",
+        "houseNumber": "21"
+      },
+      "phone": "+498563533"
     },
     {
       "id": "6e6fad64-5da6-81a6-a94e-53a94f4816a5",
@@ -7183,6 +9233,19 @@
       "phone": "+4983638062"
     },
     {
+      "id": "6effbab4-2c35-813e-844b-85167f7c9cc2",
+      "name": "Seminarhotel Friedrichshof",
+      "address": {
+        "city": "Zurndorf",
+        "region": "Burgenland",
+        "street": "Römerstraße",
+        "country": "AT",
+        "postalCode": "2424",
+        "houseNumber": "2"
+      },
+      "phone": "+4321477000333"
+    },
+    {
       "id": "6f052078-893c-868d-895b-59f828c558f1",
       "name": "Hotel Amaris",
       "address": {
@@ -7207,6 +9270,19 @@
         "houseNumber": "46"
       },
       "phone": "+4331852280"
+    },
+    {
+      "id": "6f20fb4a-aca2-82a7-ac36-f2fb2bf78951",
+      "name": "NH Bern The Bristol",
+      "address": {
+        "city": "Bern",
+        "region": "Bern / Berne",
+        "street": "Schauplatzgasse",
+        "country": "CH",
+        "postalCode": "3011",
+        "houseNumber": "10"
+      },
+      "phone": "+41313110101"
     },
     {
       "id": "6f98ab4f-a983-8f10-8771-848c5720686b",
@@ -7248,6 +9324,19 @@
       "phone": "+390473563065"
     },
     {
+      "id": "7003245a-453f-84ce-9b91-a5dc3702c162",
+      "name": "Goldener Adler",
+      "address": {
+        "city": "Lindenberg im Allgäu",
+        "region": "Bayern",
+        "street": "Goßholz",
+        "country": "DE",
+        "postalCode": "88161",
+        "houseNumber": "11"
+      },
+      "phone": "+4983819285588"
+    },
+    {
       "id": "700e6bda-a232-8c8a-b72a-9655c7848b02",
       "name": "Alpina",
       "address": {
@@ -7272,6 +9361,31 @@
         "houseNumber": "9"
       },
       "phone": "+49836298380"
+    },
+    {
+      "id": "707893b8-751e-8cf9-9800-19656d2ad888",
+      "name": "The River House",
+      "address": {
+        "city": "Andermatt",
+        "region": "Uri",
+        "street": "Gotthardstrasse",
+        "country": "CH",
+        "postalCode": "6490",
+        "houseNumber": "58"
+      },
+      "phone": "+41418870025"
+    },
+    {
+      "id": "70a04e30-e097-8f89-aa28-d6928739dd60",
+      "name": "Gasthof Pension Sägemühle",
+      "address": {
+        "city": "Annaberg",
+        "region": "Niederösterreich",
+        "country": "AT",
+        "postalCode": "3222",
+        "houseNumber": "15"
+      },
+      "phone": "+4327288248"
     },
     {
       "id": "70af5313-d4a4-8ad3-b993-f3eb60d370f2",
@@ -7322,6 +9436,19 @@
         "houseNumber": "5"
       },
       "phone": "+390471272300"
+    },
+    {
+      "id": "711ca715-96d6-8a76-aaef-561cf25fe866",
+      "name": "Seehotel Weissensee",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Pfrontener Straße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "23"
+      },
+      "phone": "+498362930170"
     },
     {
       "id": "71384e5b-97d4-88f3-b7d9-a0f72150dff9",
@@ -7387,6 +9514,32 @@
       "phone": "+390471836064"
     },
     {
+      "id": "72108f46-77bb-870c-929b-415abb252b5c",
+      "name": "Christliches Gästehaus Bergfrieden",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Oytalstraße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "4"
+      },
+      "phone": "+49832295980"
+    },
+    {
+      "id": "721dc475-4008-8893-a720-307699af340d",
+      "name": "Garni Amalia",
+      "address": {
+        "city": "Brixen - Bressanone",
+        "region": "Südtirol",
+        "street": "Dorfstraße 28",
+        "country": "IT",
+        "postalCode": "39040",
+        "houseNumber": "28"
+      },
+      "phone": "+390472850127"
+    },
+    {
       "id": "7222fae3-ba7c-8372-b3be-15b43e6609ae",
       "name": "Gästehaus Stefanie",
       "address": {
@@ -7422,6 +9575,19 @@
         "houseNumber": "1"
       },
       "phone": "+436643217032"
+    },
+    {
+      "id": "72842860-6b79-84d7-9bd2-b3efa45e08c4",
+      "name": "Hotel Nives",
+      "address": {
+        "city": "Sëlva - Wolkenstein in Gröden - Selva di Val Gardena",
+        "region": "Südtirol",
+        "street": "Streda Nives",
+        "country": "IT",
+        "postalCode": "39048",
+        "houseNumber": "4"
+      },
+      "phone": "+390471773329"
     },
     {
       "id": "72871154-1565-815b-b0bc-b129cf86fc0a",
@@ -7489,6 +9655,19 @@
       "phone": "+49836291600"
     },
     {
+      "id": "7386fbd7-9334-8a89-9375-22b576150a3d",
+      "name": "Cilli´s Caféstüberl",
+      "address": {
+        "city": "Halblech",
+        "region": "Bayern",
+        "street": "Füssener Straße",
+        "country": "DE",
+        "postalCode": "87642",
+        "houseNumber": "16"
+      },
+      "phone": "+498368619"
+    },
+    {
       "id": "73962d07-ddb1-8fd2-99b7-1fbf4c163c75",
       "name": "Gasthof Ernst",
       "address": {
@@ -7515,6 +9694,19 @@
       "phone": "+4983222647"
     },
     {
+      "id": "742de006-cd83-85bb-a8b9-8268194f3ded",
+      "name": "Agritur E-Cinque",
+      "address": {
+        "city": "Salorno - Salurn",
+        "region": "Südtirol",
+        "street": "Via Molini - Mühlenstraße",
+        "country": "IT",
+        "postalCode": "39040",
+        "houseNumber": "6"
+      },
+      "phone": "+393383612836"
+    },
+    {
       "id": "744514f1-d183-8629-a1e6-7e374a5dd6a4",
       "name": "Parkhotel Oberstaufen",
       "address": {
@@ -7526,6 +9718,19 @@
         "houseNumber": "1"
       },
       "phone": "+4983867030"
+    },
+    {
+      "id": "7447bed2-97c5-8341-9693-2114e4047257",
+      "name": "Pension Mayrhofer",
+      "address": {
+        "city": "Brixen - Bressanone",
+        "region": "Südtirol",
+        "street": "Trattengasse - Via Tratten",
+        "country": "IT",
+        "postalCode": "39042",
+        "houseNumber": "17"
+      },
+      "phone": "+390472836327"
     },
     {
       "id": "7458538e-eccb-89fb-aa69-e8700e8a44dc",
@@ -7683,6 +9888,32 @@
       "phone": "+4315976729"
     },
     {
+      "id": "76ed5a8a-9c2e-8efb-a4fb-47601f6c7861",
+      "name": "Plateidhof",
+      "address": {
+        "city": "Völlan/Lana",
+        "region": "Südtirol",
+        "street": "St.-Georg-Straße - Via San Giorgio",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "14"
+      },
+      "phone": "+390473561452"
+    },
+    {
+      "id": "76f2348c-5517-8e3d-8868-796f080f2c47",
+      "name": "Haus Burggräfler",
+      "address": {
+        "city": "Völlan/Lana",
+        "region": "Südtirol",
+        "street": "Werrenbergweg",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "2"
+      },
+      "phone": "+390473568011"
+    },
+    {
       "id": "77064a54-2e4e-866b-80be-99e1d941877f",
       "name": "Landhaus am Kienberg",
       "address": {
@@ -7746,6 +9977,45 @@
       "phone": "+390471847155"
     },
     {
+      "id": "78418323-cc08-8a8c-b612-3a4494e57086",
+      "name": "Hotel National",
+      "address": {
+        "city": "Zermatt",
+        "region": "Valais / Wallis",
+        "street": "Matterstrasse",
+        "country": "CH",
+        "postalCode": "3920",
+        "houseNumber": "39"
+      },
+      "phone": "+41279669966"
+    },
+    {
+      "id": "78c154e1-11d1-87c9-98e1-88c9d6da1c12",
+      "name": "Jufa Hotel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Versmannstraße",
+        "country": "DE",
+        "postalCode": "20457",
+        "houseNumber": "12-14"
+      },
+      "phone": "+4940794167660"
+    },
+    {
+      "id": "78d9a14b-b6bd-85f6-9fe4-bea53c38c891",
+      "name": "Naturfreundehaus Freibergsee",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Höllwiesenweg",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "2"
+      },
+      "phone": "+4983222285"
+    },
+    {
       "id": "794c657c-e714-8eea-a34f-53252170ed36",
       "name": "Bio-Ferienhof Wagner",
       "address": {
@@ -7792,6 +10062,19 @@
         "houseNumber": "14"
       },
       "phone": "+4355122944"
+    },
+    {
+      "id": "79d0da72-4e1b-82e6-ba33-ccfbebeceace",
+      "name": "Lochmannhof",
+      "address": {
+        "city": "Völlan/Lana",
+        "region": "Südtirol",
+        "street": "St. Magdalena Weg",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "12"
+      },
+      "phone": "+393496144557"
     },
     {
       "id": "7a3fdd0f-f9df-8869-9cda-91424f262ae4",
@@ -7984,6 +10267,19 @@
       "phone": "+390473562111"
     },
     {
+      "id": "7bab8511-0c70-8377-897b-3b0eda389dd3",
+      "name": "Postigliun Restaurant Pizzeria Hotel",
+      "address": {
+        "city": "Sedrun",
+        "region": "Graubünden / Grigioni / Grischun",
+        "street": "Via Alpsu",
+        "country": "CH",
+        "postalCode": "7188",
+        "houseNumber": "57"
+      },
+      "phone": "+41819491046"
+    },
+    {
       "id": "7bd30a02-3431-8668-9912-d74f9f2a9b75",
       "name": "Madison Hotel",
       "address": {
@@ -7997,6 +10293,19 @@
       "phone": "+4940376660"
     },
     {
+      "id": "7be893ce-3503-80b7-a93c-6d9661ac2cc5",
+      "name": "Junges Hotel Tulln",
+      "address": {
+        "city": "Tulln an der Donau",
+        "region": "Niederösterreich",
+        "street": "Marc-Aurel-Park",
+        "country": "AT",
+        "postalCode": "3430",
+        "houseNumber": "1"
+      },
+      "phone": "+432272651650"
+    },
+    {
       "id": "7bea4acf-1c2e-86ed-9f9a-fbe5aaa4583d",
       "name": "Marthahaus",
       "address": {
@@ -8008,6 +10317,19 @@
         "houseNumber": "22a"
       },
       "phone": "+41313324135"
+    },
+    {
+      "id": "7beba662-3d3e-8d78-931b-779fdd281f96",
+      "name": "Cabane de Bertol CAS",
+      "address": {
+        "city": "Arolla",
+        "region": "Valais / Wallis",
+        "street": "Sentier du Col de Bertol",
+        "country": "CH",
+        "postalCode": "1986",
+        "houseNumber": "5"
+      },
+      "phone": "+41272831929"
     },
     {
       "id": "7c10687a-ca07-8fac-842a-7edfa8088da1",
@@ -8036,6 +10358,19 @@
       "phone": "+494023939911"
     },
     {
+      "id": "7c5791d5-a777-8d81-88ac-3ae4ff0236a9",
+      "name": "Hotel Neuhaus",
+      "address": {
+        "city": "Mayrhofen",
+        "region": "Tirol",
+        "street": "Am Marktplatz",
+        "country": "AT",
+        "postalCode": "6290",
+        "houseNumber": "202"
+      },
+      "phone": "+4352856703"
+    },
+    {
       "id": "7c6e74aa-bd21-8686-be3c-bd2049b4348a",
       "name": "Grimmhof",
       "address": {
@@ -8060,6 +10395,32 @@
         "houseNumber": "6"
       },
       "phone": "+41556431045"
+    },
+    {
+      "id": "7c912c9c-c824-8267-a17b-13c857433d2d",
+      "name": "Holiday Inn Zürich Messe",
+      "address": {
+        "city": "Zürich",
+        "region": "Zürich",
+        "street": "Wallisellenstrasse",
+        "country": "CH",
+        "postalCode": "8050",
+        "houseNumber": "48"
+      },
+      "phone": "+41443161100"
+    },
+    {
+      "id": "7cb033c8-293d-8bf5-b5bf-56ec94e5a80b",
+      "name": "Apartments Anny",
+      "address": {
+        "city": "Burgstall - Postal",
+        "region": "Südtirol",
+        "street": "Bahnhofstraße",
+        "country": "IT",
+        "postalCode": "39014",
+        "houseNumber": "10"
+      },
+      "phone": "+390473291132"
     },
     {
       "id": "7cc8ef26-985d-8996-9035-f13de9eb0604",
@@ -8135,6 +10496,19 @@
       "phone": "+4362272157"
     },
     {
+      "id": "7edd0d18-2be5-8c4c-acd1-8996f2a62b2a",
+      "name": "Ferienhaus Elisabeth",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Rupprechtstraße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "12"
+      },
+      "phone": "+4915786798540"
+    },
+    {
       "id": "7ef784f8-4546-80b3-b6c8-1baa7b48dbeb",
       "name": "Hotel Michaelishof",
       "address": {
@@ -8187,6 +10561,19 @@
       "phone": "+4353335228"
     },
     {
+      "id": "7fb350b1-73aa-8850-9162-89fe81c24d00",
+      "name": "Alpshotel Bergland",
+      "address": {
+        "city": "Pfelders - Plan",
+        "region": "Südtirol",
+        "street": "Lazinser Straße - Via Lazins",
+        "country": "IT",
+        "postalCode": "39013",
+        "houseNumber": "2"
+      },
+      "phone": "+390473646716"
+    },
+    {
       "id": "7fee50d2-67d3-8420-9b71-c7d69f4e39a4",
       "name": "Sonne",
       "address": {
@@ -8226,6 +10613,19 @@
       "phone": "+4917672519867"
     },
     {
+      "id": "80ffaf5c-6bda-8df7-b0e3-102106c0d3fe",
+      "name": "Hotel Luganodante",
+      "address": {
+        "city": "Lugano",
+        "region": "Ticino",
+        "street": "Piazza Cioccaro",
+        "country": "CH",
+        "postalCode": "6900",
+        "houseNumber": "5"
+      },
+      "phone": "+41919105700"
+    },
+    {
       "id": "8110148a-cf4d-8486-9a5d-5799d2d24d40",
       "name": "Kirchtalhof",
       "address": {
@@ -8261,6 +10661,19 @@
         "houseNumber": "1"
       },
       "phone": "+498365558"
+    },
+    {
+      "id": "815466af-cbd6-82df-88b7-feff3166022b",
+      "name": "Tegelberghaus",
+      "address": {
+        "city": "Schwangau",
+        "region": "Bayern",
+        "street": "Tegelberg",
+        "country": "DE",
+        "postalCode": "87645",
+        "houseNumber": "1"
+      },
+      "phone": "+4983628980"
     },
     {
       "id": "81e7930f-e066-8f66-8b8d-3038face0607",
@@ -8378,6 +10791,19 @@
       "phone": "+49681687060"
     },
     {
+      "id": "8322cbb3-32c0-8967-ba03-012bd70bcc98",
+      "name": "Hotel Blankenese",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Schenefelder Landstraße",
+        "country": "DE",
+        "postalCode": "22589",
+        "houseNumber": "164"
+      },
+      "phone": "+4940874742"
+    },
+    {
       "id": "83231bfe-bb1c-838e-8f9a-42fb0dee7aa7",
       "name": "Pension Sera",
       "address": {
@@ -8485,6 +10911,19 @@
         "postalCode": "39020"
       },
       "phone": "+390473967013"
+    },
+    {
+      "id": "84a23db0-b1b0-817d-abb2-474361e46fa5",
+      "name": "Rheinquelle",
+      "address": {
+        "city": "Rueras",
+        "region": "Graubünden / Grigioni / Grischun",
+        "street": "Via Alpsu",
+        "country": "CH",
+        "postalCode": "7189",
+        "houseNumber": "323"
+      },
+      "phone": "+41819491112"
     },
     {
       "id": "84dd67e5-2058-8b67-918b-7283bb6ead9c",
@@ -8743,6 +11182,19 @@
       "phone": "+390473561266"
     },
     {
+      "id": "87794eb9-82cb-8768-b9d7-14669efd1c8d",
+      "name": "mybrand Boardinghouse",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Buchenring",
+        "country": "DE",
+        "postalCode": "22359",
+        "houseNumber": "53"
+      },
+      "phone": "+494107330090"
+    },
+    {
       "id": "879ea34b-c110-8fc4-a479-e341763aefa4",
       "name": "Ochsenkoflerhof",
       "address": {
@@ -8876,6 +11328,19 @@
         "houseNumber": "33"
       },
       "phone": "+41792410190"
+    },
+    {
+      "id": "89841096-e610-829f-936f-b7f007b80801",
+      "name": "Pension am Rathaus",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Rathausstraße",
+        "country": "DE",
+        "postalCode": "20095",
+        "houseNumber": "14"
+      },
+      "phone": "+4940337489"
     },
     {
       "id": "898e1daa-8182-8da7-957e-529a032d4524",
@@ -9131,6 +11596,19 @@
       "phone": "+41415627660"
     },
     {
+      "id": "8bf25ef9-6eb2-893b-a1e9-d17cba3415ed",
+      "name": "Ibis Budget Hamburg City Ost",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Wandsbeker Zollstraße",
+        "country": "DE",
+        "postalCode": "22041",
+        "houseNumber": "25-29"
+      },
+      "phone": "+494020947520"
+    },
+    {
       "id": "8c1b4265-d7d2-883b-ad67-4aa80b9f5c3e",
       "name": "Felsenhof",
       "address": {
@@ -9144,6 +11622,32 @@
       "phone": "+43645722510"
     },
     {
+      "id": "8c1b47ef-6055-84e2-9a09-3ef577d8ca20",
+      "name": "Haus Traufberg Ferienwohnungen",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Lorettostraße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "22"
+      },
+      "phone": "+4983225132"
+    },
+    {
+      "id": "8c2d25ce-351d-8705-a901-7b49288bd0b5",
+      "name": "Anna Holzer",
+      "address": {
+        "city": "Neuberg an der Mürz",
+        "region": "Steiermark",
+        "street": "Hauptstraße",
+        "country": "AT",
+        "postalCode": "8692",
+        "houseNumber": "65"
+      },
+      "phone": "+4338578369"
+    },
+    {
       "id": "8ccecc57-1671-8e5c-bf39-66b42fdbd4d0",
       "name": "Ederer Seminarhotel",
       "address": {
@@ -9155,6 +11659,18 @@
         "houseNumber": "2"
       },
       "phone": "+43317223490"
+    },
+    {
+      "id": "8cd84256-cb2e-8401-96d1-35e6cf6813f9",
+      "name": "ibis Wörthersee A2",
+      "address": {
+        "city": "Techelsberg am Wörther See",
+        "region": "Kärnten",
+        "country": "AT",
+        "postalCode": "9212",
+        "houseNumber": "84"
+      },
+      "phone": "+43427243995"
     },
     {
       "id": "8cfbbdff-9500-8014-bc54-181fcb922827",
@@ -9256,6 +11772,18 @@
       "phone": "+43294220482"
     },
     {
+      "id": "8e7b23c7-4f5a-8c50-ab96-48635d121b90",
+      "name": "Gasthof Sereinig",
+      "address": {
+        "city": "Ferlach",
+        "region": "Kärnten",
+        "country": "AT",
+        "postalCode": "9163",
+        "houseNumber": "40"
+      },
+      "phone": "+4342276300"
+    },
+    {
       "id": "8e816f7a-ae17-8bac-ad23-5ba32df1fa82",
       "name": "Hotel Messnerwirt",
       "address": {
@@ -9293,6 +11821,19 @@
       "phone": "+41442565656"
     },
     {
+      "id": "8eeec174-a8e8-80b0-bd24-0610c8f2789a",
+      "name": "Gästehaus Haberstock",
+      "address": {
+        "city": "Riezlern",
+        "region": "Vorarlberg",
+        "street": "Walserstraße",
+        "country": "AT",
+        "postalCode": "6991",
+        "houseNumber": "20"
+      },
+      "phone": "+4355176586"
+    },
+    {
       "id": "8f030748-2c7f-87f1-8d5b-34c4413f79a3",
       "name": "Der Auszeithof",
       "address": {
@@ -9317,6 +11858,19 @@
         "houseNumber": "67"
       },
       "phone": "+43223353107"
+    },
+    {
+      "id": "8f2dffa5-3007-8460-b464-b55ad31a0b16",
+      "name": "Residence Hotel Graf Volkmar",
+      "address": {
+        "city": "Burgstall - Postal",
+        "region": "Südtirol",
+        "street": "Romstraße",
+        "country": "IT",
+        "postalCode": "39014",
+        "houseNumber": "3"
+      },
+      "phone": "+390473291581"
     },
     {
       "id": "8f45805d-fbc6-80eb-afad-e7bdb216a5da",
@@ -9356,6 +11910,18 @@
         "houseNumber": "19/1"
       },
       "phone": "+393334660394"
+    },
+    {
+      "id": "8f74384b-9999-828b-9b49-bbfe48fd6808",
+      "name": "Jausenstation Gwölbstüberl",
+      "address": {
+        "city": "Helfenberg",
+        "region": "Oberösterreich",
+        "country": "AT",
+        "postalCode": "4184",
+        "houseNumber": "1"
+      },
+      "phone": "+43721620599"
     },
     {
       "id": "8f976112-b1dc-8394-9915-afe3b1ffc466",
@@ -9455,6 +12021,19 @@
         "houseNumber": "6"
       },
       "phone": "+41794884946"
+    },
+    {
+      "id": "910e5e3e-19e5-87ad-965b-55d009cd094b",
+      "name": "Stöcklpeter",
+      "address": {
+        "city": "Deutschlandsberg",
+        "region": "Steiermark",
+        "street": "Schloßweg",
+        "country": "AT",
+        "postalCode": "8530",
+        "houseNumber": "51"
+      },
+      "phone": "+4334622889"
     },
     {
       "id": "914210a8-1bc8-835b-b3f6-bd996ba658fb",
@@ -9594,6 +12173,19 @@
       "phone": "+435522735690"
     },
     {
+      "id": "927d7cb9-8b6a-82c8-b5d3-63a3722724f9",
+      "name": "Kreuzwiesenhof",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Kreuzwiesenweg",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "20"
+      },
+      "phone": "+390473563111"
+    },
+    {
       "id": "928e34b6-a143-81fe-a155-247a7f464b45",
       "name": "Hotel Hanseport Hamburg",
       "address": {
@@ -9605,6 +12197,18 @@
         "houseNumber": "18"
       },
       "phone": "+4940319970"
+    },
+    {
+      "id": "92a08570-2d77-864c-a357-d42d48aa2ba8",
+      "name": "Camping Hostetten",
+      "address": {
+        "city": "Ennetmoos",
+        "region": "Nidwalden",
+        "street": "Neumatt",
+        "country": "CH",
+        "postalCode": "6372"
+      },
+      "phone": "+41416104764"
     },
     {
       "id": "92ae4a58-93db-8a6f-aa22-a1ae5f7ab0ee",
@@ -9668,6 +12272,18 @@
       "phone": "+4353335377"
     },
     {
+      "id": "9338f516-ee76-89e8-825b-996f0f2565f9",
+      "name": "Holiday Inn Express : Luzern - Neuenkirch",
+      "address": {
+        "city": "Rothenburg - Luzern",
+        "region": "Luzern",
+        "street": "Raststätte Luzern-Neuenkirch A2",
+        "country": "CH",
+        "postalCode": "6023"
+      },
+      "phone": "+41412882828"
+    },
+    {
       "id": "9341a9f3-6087-82e2-b20c-0466b7f7d647",
       "name": "Schloss Hopferau",
       "address": {
@@ -9681,6 +12297,19 @@
       "phone": "+498364984890"
     },
     {
+      "id": "937e5488-6d96-8fd8-a378-7decdb894022",
+      "name": "Jausenstation Schrandlhof",
+      "address": {
+        "city": "Westendorf",
+        "region": "Tirol",
+        "street": "Oberwindau",
+        "country": "AT",
+        "postalCode": "6363",
+        "houseNumber": "155"
+      },
+      "phone": "+4353342511"
+    },
+    {
       "id": "93992b0f-41a1-8612-ae72-dc63c2baa40b",
       "name": "Hotel Federale",
       "address": {
@@ -9692,6 +12321,19 @@
         "houseNumber": "8"
       },
       "phone": "+41919100808"
+    },
+    {
+      "id": "93a5a0a1-5bd0-88f5-9ace-0926e921082d",
+      "name": "Hotel Lungau",
+      "address": {
+        "city": "Tweng",
+        "region": "Salzburg",
+        "street": "Ringstraße",
+        "country": "AT",
+        "postalCode": "5562",
+        "houseNumber": "76"
+      },
+      "phone": "+4364567335"
     },
     {
       "id": "93cad1e9-d89a-861d-a682-f730803bd7b6",
@@ -9755,6 +12397,19 @@
         "houseNumber": "1"
       },
       "phone": "+390473279454"
+    },
+    {
+      "id": "94bf8dfa-7269-8cfe-9abb-38304a3c45cf",
+      "name": "Fideliushaus",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Lorettostraße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "26"
+      },
+      "phone": "+4983224776"
     },
     {
       "id": "94d0a4a6-aafc-8716-a26a-b66d28412aa8",
@@ -9837,6 +12492,19 @@
       "phone": "+390473222020"
     },
     {
+      "id": "9570d19d-ede1-8903-b1d8-a6ee133cf603",
+      "name": "Residence Hännsl am Ort",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "St. Agathaweg",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "9"
+      },
+      "phone": "+390473561759"
+    },
+    {
       "id": "95ae2293-d702-8df3-9f1a-ecd8ae33a19f",
       "name": "Mayor",
       "address": {
@@ -9861,6 +12529,31 @@
         "houseNumber": "11a"
       },
       "phone": "+491728229377"
+    },
+    {
+      "id": "95f67dd3-fb69-81d2-af86-7269ea91efb0",
+      "name": "Oberaar",
+      "address": {
+        "city": "Guttannen",
+        "region": "Bern / Berne",
+        "country": "CH",
+        "postalCode": "3864",
+        "houseNumber": "2a"
+      },
+      "phone": "+41339823611"
+    },
+    {
+      "id": "962b5c90-5f5d-8718-b0e7-4b319a70bb89",
+      "name": "City Apart Hotel",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Reichenstraße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "33"
+      },
+      "phone": "+4983629250396"
     },
     {
       "id": "963ce5cd-4281-8ecd-bcec-01f3941319e9",
@@ -9902,6 +12595,19 @@
       "phone": "+41554408436"
     },
     {
+      "id": "96a75344-bc31-8274-8b5d-445b202df7f9",
+      "name": "Victoria",
+      "address": {
+        "city": "Basel",
+        "region": "Basel-Stadt",
+        "street": "Centralbahnplatz",
+        "country": "CH",
+        "postalCode": "4002",
+        "houseNumber": "3-4"
+      },
+      "phone": "+41612707070"
+    },
+    {
       "id": "96cd410d-79e1-81c0-8213-8e172a3a1ae2",
       "name": "Haus Böck",
       "address": {
@@ -9941,6 +12647,19 @@
       "phone": "+498324973838"
     },
     {
+      "id": "973fd025-6849-85bc-8875-4a9df80f488f",
+      "name": "Pension Schihütte",
+      "address": {
+        "city": "Oberstaufen",
+        "region": "Bayern",
+        "street": "Am Seelesgraben",
+        "country": "DE",
+        "postalCode": "87534",
+        "houseNumber": "2"
+      },
+      "phone": "+498386991190"
+    },
+    {
       "id": "9777e5d4-39fc-8098-8b16-7703c6099c6d",
       "name": "St. Gotthard",
       "address": {
@@ -9978,6 +12697,32 @@
         "houseNumber": "6"
       },
       "phone": "+390473561160"
+    },
+    {
+      "id": "97fab4ad-9187-81c0-8c6a-cda9ef84be9f",
+      "name": "Hôtel Les Arcades",
+      "address": {
+        "city": "Genève",
+        "region": "Genève",
+        "street": "Place de Cornavin",
+        "country": "CH",
+        "postalCode": "1201",
+        "houseNumber": "14 – 16"
+      },
+      "phone": "+41227154800"
+    },
+    {
+      "id": "980e6400-9acb-805d-9d44-98433abdb179",
+      "name": "Lühmanns Bed & Breakfast",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Blankeneser Landstraße",
+        "country": "DE",
+        "postalCode": "22587",
+        "houseNumber": "29"
+      },
+      "phone": "+4940860186"
     },
     {
       "id": "98696d61-5931-87d6-b56a-31152b06e376",
@@ -10026,6 +12771,19 @@
         "postalCode": "88178"
       },
       "phone": "+4983817643"
+    },
+    {
+      "id": "994481e3-a8c8-8334-8abb-befe062903cd",
+      "name": "Niedermair",
+      "address": {
+        "city": "Sankt Lorenzen",
+        "region": "Südtirol",
+        "street": "Josef-Renzler-Straße",
+        "country": "IT",
+        "postalCode": "39030",
+        "houseNumber": "12"
+      },
+      "phone": "+390474474456"
     },
     {
       "id": "9954f5cc-51e2-8ba4-8842-f190a60bdafa",
@@ -10104,6 +12862,32 @@
       "phone": "+43284252668"
     },
     {
+      "id": "9a8bdd45-bb99-82a4-b420-9f92968790a2",
+      "name": "Marlstein",
+      "address": {
+        "city": "Haiming",
+        "region": "Tirol",
+        "street": "Ochsengarten",
+        "country": "AT",
+        "postalCode": "6433",
+        "houseNumber": "20"
+      },
+      "phone": "+4352526203"
+    },
+    {
+      "id": "9aa466c3-ead6-838b-a375-cc2e44d6ddc5",
+      "name": "REVERB by Hard Rock Hamburg",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Feldstraße",
+        "country": "DE",
+        "postalCode": "20359",
+        "houseNumber": "66"
+      },
+      "phone": "+4940808141100"
+    },
+    {
       "id": "9af052e6-9b56-80c2-8e81-fc143ee63d3e",
       "name": "Hofmann-Hof",
       "address": {
@@ -10167,6 +12951,19 @@
       "phone": "+390471963205"
     },
     {
+      "id": "9bfb4f5b-e26f-86d4-ab54-5cdd58aa8c6e",
+      "name": "Macun",
+      "address": {
+        "city": "Tschlin",
+        "region": "Graubünden / Grigioni / Grischun",
+        "street": "Giassa d'Immez",
+        "country": "CH",
+        "postalCode": "7559",
+        "houseNumber": "88"
+      },
+      "phone": "+41818663270"
+    },
+    {
       "id": "9c02cc80-a1ef-8b65-8af0-13aeccd84d33",
       "name": "Helmhaus",
       "address": {
@@ -10202,6 +12999,19 @@
       "phone": "+4975691265"
     },
     {
+      "id": "9c21777e-8590-883f-a4a1-f761d082b48e",
+      "name": "Garten Hotel Ochensberger",
+      "address": {
+        "city": "Sankt Ruprecht an der Raab",
+        "region": "Steiermark",
+        "street": "Untere Hauptstraße",
+        "country": "AT",
+        "postalCode": "8181",
+        "houseNumber": "181"
+      },
+      "phone": "+43317851320"
+    },
+    {
       "id": "9c484be6-a54d-8b4a-8be0-836a56163dc5",
       "name": "Ferienhof Metzeler",
       "address": {
@@ -10224,6 +13034,19 @@
         "postalCode": "39013"
       },
       "phone": "+393402429756"
+    },
+    {
+      "id": "9c6fd825-7d47-8014-8789-1c0c7b8c98fc",
+      "name": "Gaia",
+      "address": {
+        "city": "Basel",
+        "region": "Basel-Stadt",
+        "street": "Centralbahnstrasse",
+        "country": "CH",
+        "postalCode": "4002",
+        "houseNumber": "13-15"
+      },
+      "phone": "+41612251313"
     },
     {
       "id": "9c7f0e2a-18b3-869c-8095-d82826f15ec2",
@@ -10341,6 +13164,19 @@
       "phone": "+41448440550"
     },
     {
+      "id": "9e1de420-13e1-8a60-a718-23d757985aa4",
+      "name": "Neustöckler",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Kirchweg - Via della Chiesa",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "26"
+      },
+      "phone": "+390473562827"
+    },
+    {
       "id": "9e73199a-1ea6-807e-b0c0-dd7409f177d0",
       "name": "Pension Edelweiss",
       "address": {
@@ -10443,6 +13279,19 @@
       "phone": "+41329102222"
     },
     {
+      "id": "9f70987d-3766-8824-8861-3dfd2bf87edf",
+      "name": "Sorgerhof Frühstückspension",
+      "address": {
+        "city": "Hausmannstätten",
+        "region": "Steiermark",
+        "street": "Paula-Grogger-Weg",
+        "country": "AT",
+        "postalCode": "8071",
+        "houseNumber": "1"
+      },
+      "phone": "+43313540939"
+    },
+    {
       "id": "9fab5b8e-6cc5-8321-89fe-4a4ddf17cd4f",
       "name": "Hôtel de L'Aviation",
       "address": {
@@ -10504,6 +13353,19 @@
       "phone": "+390473562323"
     },
     {
+      "id": "a05fbbe5-183d-81ae-9931-f2d6dc72c62f",
+      "name": "east Hotel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Simon-von-Utrecht-Straße",
+        "country": "DE",
+        "postalCode": "20359",
+        "houseNumber": "31"
+      },
+      "phone": "+4940309930"
+    },
+    {
       "id": "a0687e8e-4e64-460b-a948-e779cf1b0a7d",
       "name": "Hotel Lenauhof",
       "address": {
@@ -10517,6 +13379,31 @@
       "phone": "+498563960100"
     },
     {
+      "id": "a08117db-744b-8841-9154-641d71b4209b",
+      "name": "Landhaus Becherer",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Ludwigstraße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "1"
+      },
+      "phone": "+498322940660"
+    },
+    {
+      "id": "a088d1ae-c14c-8f77-abe9-5df34001028a",
+      "name": "Almhof Family Resort & SPA",
+      "address": {
+        "city": "Gerlos",
+        "region": "Tirol",
+        "country": "AT",
+        "postalCode": "6281",
+        "houseNumber": "45"
+      },
+      "phone": "+4352845323"
+    },
+    {
       "id": "a089c0fe-e34c-8959-880c-62d4ffb3513e",
       "name": "Landhaus Falkenstein",
       "address": {
@@ -10528,6 +13415,32 @@
         "houseNumber": "9"
       },
       "phone": "+4983224518"
+    },
+    {
+      "id": "a09effe5-071e-882a-9201-0519c3fb5df9",
+      "name": "Seehotel Vinzenz",
+      "address": {
+        "city": "Schiefling am Wörthersee",
+        "region": "Kärnten",
+        "street": "Süduferstraße",
+        "country": "AT",
+        "postalCode": "9220",
+        "houseNumber": "154"
+      },
+      "phone": "+4342742889"
+    },
+    {
+      "id": "a0bd06ac-68c6-46ca-a2b8-094aeb832e76",
+      "name": "Hotel & Restaurant Sammareier Gutshof",
+      "address": {
+        "city": "Bad Birnbach",
+        "region": "Bayern",
+        "street": "Pfarrkirchner Straße",
+        "country": "DE",
+        "postalCode": "84364",
+        "houseNumber": "20 - 22"
+      },
+      "phone": "+4985632970"
     },
     {
       "id": "a0c5a8dd-7f58-8fbf-9947-629d36ad0e5c",
@@ -10582,6 +13495,31 @@
       "phone": "+4915120161117"
     },
     {
+      "id": "a1352e72-bae1-8c22-8bde-8e55149b8f63",
+      "name": "Hotel Maderanertal",
+      "address": {
+        "city": "Bristen",
+        "region": "Uri",
+        "street": "Balmenegg",
+        "country": "CH",
+        "postalCode": "6475"
+      },
+      "phone": "+41418831122"
+    },
+    {
+      "id": "a15e395d-5b2a-8334-8016-aa51ff513c08",
+      "name": "A&O Hamburg Hauptbahnhof",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Amsinckstraße",
+        "country": "DE",
+        "postalCode": "20097",
+        "houseNumber": "2-10"
+      },
+      "phone": "+494064421045600"
+    },
+    {
       "id": "a17c4424-445f-899d-b2b9-78b69c280a1c",
       "name": "Berghof Babel",
       "address": {
@@ -10619,6 +13557,18 @@
         "houseNumber": "18"
       },
       "phone": "+41412268088"
+    },
+    {
+      "id": "a1d49e84-cfd8-8557-b5a2-b46a490de8a9",
+      "name": "Kinderferienhof Hagspiel",
+      "address": {
+        "city": "Waltenhofen",
+        "region": "Bayern",
+        "country": "DE",
+        "postalCode": "87448",
+        "houseNumber": "7"
+      },
+      "phone": "+4983797621"
     },
     {
       "id": "a266d4fe-904e-8058-89fc-c7ab025f7d0c",
@@ -10680,6 +13630,18 @@
         "houseNumber": "42"
       },
       "phone": "+4353335270"
+    },
+    {
+      "id": "a396eb60-b280-8e98-a71b-653c83323ad3",
+      "name": "Hotel Gasthof Adler",
+      "address": {
+        "city": "Schoppernau",
+        "region": "Vorarlberg",
+        "country": "AT",
+        "postalCode": "6886",
+        "houseNumber": "42"
+      },
+      "phone": "+4355152106"
     },
     {
       "id": "a3cadf9f-9483-83b4-a3d6-50571eebbce8",
@@ -10800,6 +13762,19 @@
       "phone": "+4983638018"
     },
     {
+      "id": "a576f808-e733-8bc3-98b4-88148e12894a",
+      "name": "Winklerhof",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Via Villa - Villenerweg",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "7"
+      },
+      "phone": "+393336044728"
+    },
+    {
       "id": "a579d20a-980b-889d-9cf3-dc50018a3050",
       "name": "Torgglerhof",
       "address": {
@@ -10809,6 +13784,19 @@
         "postalCode": "39042"
       },
       "phone": "+390472835510"
+    },
+    {
+      "id": "a5b055c6-eb44-84f0-9cd9-382d6acda07c",
+      "name": "Ostello Montebello",
+      "address": {
+        "city": "Bellinzona",
+        "region": "Ticino",
+        "street": "Via Nocca",
+        "country": "CH",
+        "postalCode": "6500",
+        "houseNumber": "4"
+      },
+      "phone": "+41918251522"
     },
     {
       "id": "a5b9ab67-9c99-8578-9f6f-6f9800432d38",
@@ -10824,6 +13812,45 @@
       "phone": "+4326462216"
     },
     {
+      "id": "a5e85970-5157-843c-91f6-49c833c41506",
+      "name": "Schönblick",
+      "address": {
+        "city": "Bolsterlang",
+        "region": "Bayern",
+        "street": "Dietrichs",
+        "country": "DE",
+        "postalCode": "87538",
+        "houseNumber": "1"
+      },
+      "phone": "+498326385420"
+    },
+    {
+      "id": "a5f783fa-c61e-81b5-b124-c92f9851b700",
+      "name": "Cityhotel Monopol",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Reeperbahn",
+        "country": "DE",
+        "postalCode": "20359",
+        "houseNumber": "48-52"
+      },
+      "phone": "+4940311770"
+    },
+    {
+      "id": "a617dd99-2754-88d4-bd07-7e7507358700",
+      "name": "Villa Euringer",
+      "address": {
+        "city": "Kastelruth - Castelrotto",
+        "region": "Südtirol",
+        "street": "Compatsch",
+        "country": "IT",
+        "postalCode": "39040",
+        "houseNumber": "53"
+      },
+      "phone": "+390471728097"
+    },
+    {
       "id": "a6205611-c6ea-81cd-b26b-aec93b2bffaa",
       "name": "Panorama-Gasthof Auf dem Auerberg",
       "address": {
@@ -10835,6 +13862,19 @@
         "houseNumber": "2"
       },
       "phone": "+498860235"
+    },
+    {
+      "id": "a6377513-d412-8e21-bb3b-36989c90e7a1",
+      "name": "Hotel Förstlerhof",
+      "address": {
+        "city": "Burgstall - Postal",
+        "region": "Südtirol",
+        "street": "Romstraße",
+        "country": "IT",
+        "postalCode": "39014",
+        "houseNumber": "1"
+      },
+      "phone": "+390473292288"
     },
     {
       "id": "a6519129-d9b0-8436-b4b1-044c5b5ac62f",
@@ -10902,6 +13942,19 @@
       "phone": "+4353335289"
     },
     {
+      "id": "a6ecebc1-3921-8820-b775-a26d60f8442d",
+      "name": "Beim Patzelt",
+      "address": {
+        "city": "Nesselwang",
+        "region": "Bayern",
+        "street": "Wank",
+        "country": "DE",
+        "postalCode": "87484",
+        "houseNumber": "9"
+      },
+      "phone": "+4983614461035"
+    },
+    {
       "id": "a752397f-a010-822a-bffc-23a9ace03ba8",
       "name": "Berghotel Langis",
       "address": {
@@ -10939,6 +13992,19 @@
         "houseNumber": "4a"
       },
       "phone": "+491601564280"
+    },
+    {
+      "id": "a7f650f3-a62b-859c-8583-1dc5e7970ee2",
+      "name": "Hotel Müggelturm",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Waltenbergerstraße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "6"
+      },
+      "phone": "+4983229560900"
     },
     {
       "id": "a83d83bf-982b-8838-9512-b7d930ebb4a9",
@@ -11027,6 +14093,19 @@
       "phone": "+43275252475"
     },
     {
+      "id": "a9511576-b9d7-8710-9fa9-c6c591b908a9",
+      "name": "Alster Au",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Duvenstedter Damm",
+        "country": "DE",
+        "postalCode": "22397",
+        "houseNumber": "6"
+      },
+      "phone": "+49406442400"
+    },
+    {
       "id": "a971f9ed-3f02-80f7-853e-81744a5e2137",
       "name": "Alpen-Adria Stadthotel",
       "address": {
@@ -11053,6 +14132,19 @@
       "phone": "+4353335387"
     },
     {
+      "id": "a9a2b32f-d5b9-847f-b766-49fcc344a39c",
+      "name": "Sommerau",
+      "address": {
+        "city": "Sankt Koloman",
+        "region": "Salzburg",
+        "street": "Sommeraustraße",
+        "country": "AT",
+        "postalCode": "5423",
+        "houseNumber": "231"
+      },
+      "phone": "+436241212"
+    },
+    {
       "id": "a9c8c3b3-8313-8056-b41a-e994f29cef32",
       "name": "Superbude Hotel, Hostel, Home",
       "address": {
@@ -11064,6 +14156,19 @@
         "houseNumber": "2"
       },
       "phone": "+4940855070"
+    },
+    {
+      "id": "a9e94eed-ca5c-822f-99f4-99c124eb8a76",
+      "name": "Harry's Home",
+      "address": {
+        "city": "Hart bei Graz",
+        "region": "Steiermark",
+        "street": "Pachern-Hauptstraße",
+        "country": "AT",
+        "postalCode": "8075",
+        "houseNumber": "95"
+      },
+      "phone": "+435012141190"
     },
     {
       "id": "a9fc22d6-b3f6-8c6f-9bcc-8f43b9e4614b",
@@ -11129,6 +14234,19 @@
       "phone": "+41442505353"
     },
     {
+      "id": "ab2a3a5c-87c1-8b93-9ed6-f67700d4569f",
+      "name": "Residence Steinkellerhof",
+      "address": {
+        "city": "Völlan/Lana",
+        "region": "Südtirol",
+        "street": "Zehentweg",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "14"
+      },
+      "phone": "+390473568096"
+    },
+    {
       "id": "ab489a2b-b753-8e7d-9832-855379bf99fc",
       "name": "Brauwirt Seidl",
       "address": {
@@ -11179,6 +14297,32 @@
       "phone": "+49402094090"
     },
     {
+      "id": "aba3d64f-e135-86b7-8813-4116bee38a32",
+      "name": "Buschenschank Zach",
+      "address": {
+        "city": "Kalsdorf bei Graz",
+        "region": "Steiermark",
+        "street": "Großsulzer Straße",
+        "country": "AT",
+        "postalCode": "8401",
+        "houseNumber": "40"
+      },
+      "phone": "+43313552625"
+    },
+    {
+      "id": "aba4c71e-0d28-8572-9408-badf00844dcb",
+      "name": "Geldernhaus",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Lorettostraße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "16"
+      },
+      "phone": "+498322977570"
+    },
+    {
       "id": "abc41c96-2040-8a38-aa71-50b3687b7079",
       "name": "Oberplatzerhof",
       "address": {
@@ -11214,6 +14358,32 @@
         "houseNumber": "6/1"
       },
       "phone": "+393335463357"
+    },
+    {
+      "id": "ac01495f-5008-8298-a32d-35db1cbd5c85",
+      "name": "Innergruberhof",
+      "address": {
+        "city": "Hafling - Avelengo",
+        "region": "Südtirol",
+        "street": "Falzebenerstraße - Via Falzeben",
+        "country": "IT",
+        "postalCode": "39010",
+        "houseNumber": "40"
+      },
+      "phone": "+390473279331"
+    },
+    {
+      "id": "ac15a21b-969a-8a42-a9b0-49afe16f65e8",
+      "name": "Residence Inn Hamburg Altona",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Kühnehöfe",
+        "country": "DE",
+        "postalCode": "22761",
+        "houseNumber": "10"
+      },
+      "phone": "+49402800831"
     },
     {
       "id": "ac1d73ff-d505-87b3-a215-b6742219e1b7",
@@ -11303,6 +14473,19 @@
       "phone": "+4347132246"
     },
     {
+      "id": "acf1c876-3513-8de7-8a4b-f43dd9c0aad9",
+      "name": "Sonnenhof",
+      "address": {
+        "city": "Eichenberg",
+        "region": "Vorarlberg",
+        "street": "Dorf",
+        "country": "AT",
+        "postalCode": "6911",
+        "houseNumber": "64"
+      },
+      "phone": "+43557445503"
+    },
+    {
       "id": "ad036768-bf75-8d4a-a350-f35a614380c1",
       "name": "Ron’s Guest House",
       "address": {
@@ -11338,6 +14521,19 @@
         "houseNumber": "5/a"
       },
       "phone": "+390473562802"
+    },
+    {
+      "id": "adbe59b7-1c5e-8c51-8d0a-0cd15b5635ea",
+      "name": "Arabelle",
+      "address": {
+        "city": "Bern",
+        "region": "Bern / Berne",
+        "street": "Mittelstrasse",
+        "country": "CH",
+        "postalCode": "3012",
+        "houseNumber": "6"
+      },
+      "phone": "+41313010305"
     },
     {
       "id": "adea975d-d2cf-840a-8d0c-ee22276272c0",
@@ -11427,6 +14623,19 @@
         "houseNumber": "62"
       },
       "phone": "+41918661562"
+    },
+    {
+      "id": "af0d52b1-ae8f-88f3-8f95-29e75dbb7454",
+      "name": "Ferienwohnung Shaki",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Kemptener Straße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "13 1/2"
+      },
+      "phone": "+4915205666395"
     },
     {
       "id": "af1bbb7c-2d8e-8517-a5a7-ae0f499b1238",
@@ -11626,6 +14835,32 @@
       "phone": "+498383921005"
     },
     {
+      "id": "b23165d0-0506-8a68-8d00-d47815b9fab5",
+      "name": "Hotel Zum Engel",
+      "address": {
+        "city": "Sterzing - Vipiteno",
+        "region": "Südtirol",
+        "street": "Deutschhausstraße - Via della Commenda",
+        "country": "IT",
+        "postalCode": "39049",
+        "houseNumber": "20"
+      },
+      "phone": "+390472765132"
+    },
+    {
+      "id": "b241661b-8c91-8d94-b4fb-51d3f0c21d1c",
+      "name": "Wiesgut",
+      "address": {
+        "city": "Völlan",
+        "region": "Südtirol",
+        "street": "Mayenburgstraße",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "4"
+      },
+      "phone": "+390473568099"
+    },
+    {
       "id": "b25270c8-2f1c-84dc-b31a-42120d8b6c6a",
       "name": "Gasthaus Thorwartl",
       "address": {
@@ -11713,6 +14948,32 @@
       "phone": "+390474748624"
     },
     {
+      "id": "b34bc942-e9e0-8768-9000-96b445f9b79b",
+      "name": "Hotel Sulfner",
+      "address": {
+        "city": "Hafling - Avelengo",
+        "region": "Südtirol",
+        "street": "St. Kathreinstraße - Via S. Caterina",
+        "country": "IT",
+        "postalCode": "39010",
+        "houseNumber": "4"
+      },
+      "phone": "+390473279424"
+    },
+    {
+      "id": "b3500ef3-bbd2-8d74-b291-1e884db127d3",
+      "name": "Novotel Bern Expo",
+      "address": {
+        "city": "Bern",
+        "region": "Bern / Berne",
+        "street": "Guisanplatz",
+        "country": "CH",
+        "postalCode": "3014",
+        "houseNumber": "2"
+      },
+      "phone": "+41313390909"
+    },
+    {
       "id": "b379893d-e18e-8f77-80a5-f0224c2b9258",
       "name": "The Home Hotel",
       "address": {
@@ -11724,6 +14985,18 @@
         "houseNumber": "1"
       },
       "phone": "+41442132299"
+    },
+    {
+      "id": "b39fb77e-5d87-8034-8825-80cb21c0ec87",
+      "name": "Gasthof Meyer",
+      "address": {
+        "city": "Annaberg",
+        "region": "Niederösterreich",
+        "country": "AT",
+        "postalCode": "3222",
+        "houseNumber": "8"
+      },
+      "phone": "+436644917015"
     },
     {
       "id": "b3a9b945-984f-87fe-bb67-4b0d2b21322e",
@@ -11789,6 +15062,19 @@
       "phone": "+4334562347"
     },
     {
+      "id": "b472c9a4-c26f-8f81-b87b-bb1791743159",
+      "name": "Hotel Seewald",
+      "address": {
+        "city": "Saarbrücken",
+        "region": "Saarland",
+        "street": "Beethovenstraße",
+        "country": "DE",
+        "postalCode": "66125",
+        "houseNumber": "66-68"
+      },
+      "phone": "+49689795292100"
+    },
+    {
       "id": "b47b6216-522a-829c-ac42-cd52e997b718",
       "name": "Hotel Geblergasse",
       "address": {
@@ -11800,6 +15086,32 @@
         "houseNumber": "21"
       },
       "phone": "+4314063366"
+    },
+    {
+      "id": "b4ab215c-db1c-8305-b96b-a3f443946f52",
+      "name": "Fritz im Pyjama",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Schanzenstraße",
+        "country": "DE",
+        "postalCode": "20357",
+        "houseNumber": "101"
+      },
+      "phone": "+494082222830"
+    },
+    {
+      "id": "b4d22dc5-b8a2-8d82-af46-7d335a777982",
+      "name": "Royal Saint George",
+      "address": {
+        "city": "Interlaken",
+        "region": "Bern / Berne",
+        "street": "Höheweg",
+        "country": "CH",
+        "postalCode": "3800",
+        "houseNumber": "139"
+      },
+      "phone": "+41338227575"
     },
     {
       "id": "b575bde4-bc64-4fa6-a5d6-3623975fb122",
@@ -11865,6 +15177,19 @@
       "phone": "+41315611661"
     },
     {
+      "id": "b5c6d87f-3518-8efa-b4f2-3f87848b55da",
+      "name": "Amethysthotel Mantler",
+      "address": {
+        "city": "Maissau",
+        "region": "Niederösterreich",
+        "street": "Am Berg",
+        "country": "AT",
+        "postalCode": "3712",
+        "houseNumber": "44"
+      },
+      "phone": "+43295882334"
+    },
+    {
       "id": "b5c73dd7-01bb-84c9-8219-9c134833ba16",
       "name": "Hotel Klinglhuber",
       "address": {
@@ -11876,6 +15201,44 @@
         "houseNumber": "10"
       },
       "phone": "+43273286960"
+    },
+    {
+      "id": "b5dec7bd-43bb-8df0-8eba-9dc3eae59b2e",
+      "name": "Towerhotel",
+      "address": {
+        "city": "Waldkirch",
+        "region": "St. Gallen",
+        "street": "Hauptwilerstrasse",
+        "country": "CH",
+        "postalCode": "9205",
+        "houseNumber": "17"
+      },
+      "phone": "+41796343188"
+    },
+    {
+      "id": "b5eb01ca-029e-8bc4-b646-9e6413c35a54",
+      "name": "Rawyl",
+      "address": {
+        "city": "Boltigen",
+        "region": "Bern / Berne",
+        "country": "CH",
+        "postalCode": "3766",
+        "houseNumber": "584A"
+      },
+      "phone": "+41337736043"
+    },
+    {
+      "id": "b629f9bf-6ac6-88e3-929c-c3db0fc77541",
+      "name": "Motel Beauregard",
+      "address": {
+        "city": "Villars-le-Terroir",
+        "region": "Vaud",
+        "street": "Motel Beauregard",
+        "country": "CH",
+        "postalCode": "1040",
+        "houseNumber": "2"
+      },
+      "phone": "+41218811917"
     },
     {
       "id": "b62a384c-2cab-8fdb-ac8f-45cb77e74d79",
@@ -11943,6 +15306,19 @@
       "phone": "+41817203100"
     },
     {
+      "id": "b6c84144-7765-83c7-87fa-ef46ee7808c1",
+      "name": "Bärenhotel",
+      "address": {
+        "city": "Olang - Valdaora",
+        "region": "Südtirol",
+        "street": "Furkelstraße - Via Furcia",
+        "country": "IT",
+        "postalCode": "39030",
+        "houseNumber": "11"
+      },
+      "phone": "+393883288888"
+    },
+    {
       "id": "b6cd4372-a659-83bf-b6cc-ede623deedda",
       "name": "Hotel Alpenjuwel Residenz",
       "address": {
@@ -12003,6 +15379,19 @@
         "houseNumber": "132"
       },
       "phone": "+4365888232"
+    },
+    {
+      "id": "b75de83b-7273-8be9-b898-f646b88d5dc6",
+      "name": "L'Escale",
+      "address": {
+        "city": "Le Châble VS",
+        "region": "Valais / Wallis",
+        "street": "Route de Verbier",
+        "country": "CH",
+        "postalCode": "1934",
+        "houseNumber": "22"
+      },
+      "phone": "+41277762707"
     },
     {
       "id": "b76a8f6f-5dbd-8563-8995-291b20aac98b",
@@ -12081,6 +15470,18 @@
       "phone": "+432863214"
     },
     {
+      "id": "b83fc0e7-eb52-84c8-8ca4-c4fa18433983",
+      "name": "Gasthof Riedmuehle",
+      "address": {
+        "city": "Karlstein an der Thaya",
+        "region": "Niederösterreich",
+        "country": "AT",
+        "postalCode": "3822",
+        "houseNumber": "60"
+      },
+      "phone": "+432844301"
+    },
+    {
       "id": "b846e371-c446-89e3-acf8-18296dd37686",
       "name": "Boutiquehotel Gams",
       "address": {
@@ -12118,6 +15519,19 @@
         "houseNumber": "59"
       },
       "phone": "+498369247"
+    },
+    {
+      "id": "b84fa239-8fac-8a03-ae05-87e1788934e3",
+      "name": "Landgasthof Alte Säge",
+      "address": {
+        "city": "Wiggensbach",
+        "region": "Bayern",
+        "street": "Römerstraße",
+        "country": "DE",
+        "postalCode": "87487",
+        "houseNumber": "2"
+      },
+      "phone": "+498370929990"
     },
     {
       "id": "b86d8073-1946-8221-80c5-a4069a71106b",
@@ -12181,6 +15595,19 @@
       "phone": "+4342472133"
     },
     {
+      "id": "b8f34ff4-d923-85b6-bdf3-327474735d87",
+      "name": "Ayurveda Hotel Sonnhof",
+      "address": {
+        "city": "Thiersee",
+        "region": "Tirol",
+        "street": "Hinterthiersee",
+        "country": "AT",
+        "postalCode": "6335",
+        "houseNumber": "16"
+      },
+      "phone": "+4353765502"
+    },
+    {
       "id": "b8f67c73-78f6-827f-9599-e7cb0fac1bb1",
       "name": "Haus am Kienberg",
       "address": {
@@ -12207,6 +15634,32 @@
       "phone": "+4983209259310"
     },
     {
+      "id": "b917d782-bb05-8e4f-924d-aac7cd5ace81",
+      "name": "Mandarin Oriental Savoy",
+      "address": {
+        "city": "Zürich",
+        "region": "Zürich",
+        "street": "Poststrasse",
+        "country": "CH",
+        "postalCode": "8001",
+        "houseNumber": "12"
+      },
+      "phone": "+41435883888"
+    },
+    {
+      "id": "b97da952-8f3b-88de-9e2f-a92638f314cf",
+      "name": "Haus Zorzi",
+      "address": {
+        "city": "Hafling - Avelengo",
+        "region": "Südtirol",
+        "street": "Falzebenerstraße - Via Falzeben",
+        "country": "IT",
+        "postalCode": "39010",
+        "houseNumber": "130"
+      },
+      "phone": "+390473279465"
+    },
+    {
       "id": "b9ee1b1d-90f5-8a17-aab9-3628f54c5ed4",
       "name": "Ferienhof Fink",
       "address": {
@@ -12218,6 +15671,32 @@
         "houseNumber": "69"
       },
       "phone": "+4983841500"
+    },
+    {
+      "id": "b9fc9085-a78e-8a25-aa6d-0e9a2b6cef0e",
+      "name": "Leilichguat",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "St. Floriangasse",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "3"
+      },
+      "phone": "+390473564439"
+    },
+    {
+      "id": "ba1849ac-356a-8146-b9d8-87d194aae30f",
+      "name": "Gästehaus Böck",
+      "address": {
+        "city": "Roßhaupten",
+        "region": "Bayern",
+        "street": "Seeger Straße",
+        "country": "DE",
+        "postalCode": "87672",
+        "houseNumber": "42"
+      },
+      "phone": "+498367250"
     },
     {
       "id": "ba28bad2-b01f-8421-90c4-4c4172cfb914",
@@ -12281,6 +15760,19 @@
         "houseNumber": "61"
       },
       "phone": "+43662889440"
+    },
+    {
+      "id": "bbe2e725-123e-8703-9e25-c1c52dc40fe8",
+      "name": "Auberge Communale de Meyrin",
+      "address": {
+        "city": "Meyrin",
+        "region": "Genève",
+        "street": "Avenue de Vaudagne",
+        "country": "CH",
+        "postalCode": "1217",
+        "houseNumber": "13 bis"
+      },
+      "phone": "+41227824478"
     },
     {
       "id": "bbe4cb00-0734-814f-80c8-7ae77e547507",
@@ -12403,6 +15895,19 @@
       "phone": "+43645473720"
     },
     {
+      "id": "bce7d5d7-a859-8c11-8dda-70e8fbb0bf57",
+      "name": "Swiss Chocolate by Fassbind",
+      "address": {
+        "city": "Zürich",
+        "region": "Zürich",
+        "street": "Seilergraben",
+        "country": "CH",
+        "postalCode": "8001",
+        "houseNumber": "69"
+      },
+      "phone": "+41442672670"
+    },
+    {
       "id": "bd05db82-4821-8011-b24e-50945199a8b1",
       "name": "Haus Moargütl",
       "address": {
@@ -12451,6 +15956,32 @@
         "houseNumber": "2"
       },
       "phone": "+41279483800"
+    },
+    {
+      "id": "bd646b62-86ba-8654-a533-58364f2ffed9",
+      "name": "Schweizerhof",
+      "address": {
+        "city": "Zürich",
+        "region": "Zürich",
+        "street": "Bahnhofplatz",
+        "country": "CH",
+        "postalCode": "8001",
+        "houseNumber": "7"
+      },
+      "phone": "+41442188888"
+    },
+    {
+      "id": "bd9191cd-244a-8086-8630-a91d90404573",
+      "name": "Hotel Muchele",
+      "address": {
+        "city": "Burgstall - Postal",
+        "region": "Südtirol",
+        "street": "Maiergasse",
+        "country": "IT",
+        "postalCode": "39014",
+        "houseNumber": "1"
+      },
+      "phone": "+390473291135"
     },
     {
       "id": "bdb021e1-f519-8a03-86db-92b977e7569a",
@@ -12542,6 +16073,19 @@
         "houseNumber": "103"
       },
       "phone": "+43316472066"
+    },
+    {
+      "id": "be860455-4356-8f24-9ebf-2cfbb3bcc486",
+      "name": "Jugendherberge Bozen",
+      "address": {
+        "city": "Bolzano - Bozen",
+        "region": "Südtirol",
+        "street": "Via Renon - Rittner Straße",
+        "country": "IT",
+        "postalCode": "39100",
+        "houseNumber": "23"
+      },
+      "phone": "+390471300865"
     },
     {
       "id": "be8923b9-045a-8381-a5e1-cc5575c0ea08",
@@ -12658,6 +16202,19 @@
       "phone": "+41814163222"
     },
     {
+      "id": "bf43872d-5b73-81ce-b775-90313feb0940",
+      "name": "Bannwaldsee",
+      "address": {
+        "city": "Halblech",
+        "region": "Bayern",
+        "street": "Sesselbahnstraße",
+        "country": "DE",
+        "postalCode": "87642",
+        "houseNumber": "10"
+      },
+      "phone": "+4983689000"
+    },
+    {
       "id": "bf4d5323-8ff3-8a62-aab9-272b0f2aff18",
       "name": "Bauernhof Hummel",
       "address": {
@@ -12669,6 +16226,19 @@
         "houseNumber": "5"
       },
       "phone": "+4983671351"
+    },
+    {
+      "id": "bf68ad12-cd88-8274-9afa-6cb48c2128db",
+      "name": "Rableid Alm",
+      "address": {
+        "city": "Schnals-Senales",
+        "region": "Südtirol",
+        "street": "Pfossental",
+        "country": "IT",
+        "postalCode": "39020",
+        "houseNumber": "2"
+      },
+      "phone": "+390473420631"
     },
     {
       "id": "bf92f5e4-ed44-8cf9-96cb-0e630fb0fda7",
@@ -12730,6 +16300,19 @@
       "phone": "+41786929116"
     },
     {
+      "id": "c032c6b5-a85e-86e3-88b0-8d201f74a5e9",
+      "name": "Hafenkran Hamburg by Floatel (Hideaway)",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Am Sandtorkai",
+        "country": "DE",
+        "postalCode": "20457",
+        "houseNumber": "60-62"
+      },
+      "phone": "+493081864591"
+    },
+    {
       "id": "c03f70f4-a661-835d-98c0-231221b6b581",
       "name": "Andermax",
       "address": {
@@ -12756,6 +16339,19 @@
       "phone": "+436643163841"
     },
     {
+      "id": "c0808293-82e8-81b2-810e-c27997cd63e0",
+      "name": "Bildungshaus Breitenstein",
+      "address": {
+        "city": "Kirchschlag bei Linz",
+        "region": "Oberösterreich",
+        "street": "Am Breitenstein",
+        "country": "AT",
+        "postalCode": "4202",
+        "houseNumber": "9-11"
+      },
+      "phone": "+43721520992"
+    },
+    {
       "id": "c081b2b5-e589-8a64-a92b-6bb5dbfdde06",
       "name": "Garni - Hotel Am Burghügel ***",
       "address": {
@@ -12780,6 +16376,19 @@
         "houseNumber": "67"
       },
       "phone": "+49836281362"
+    },
+    {
+      "id": "c0ce7182-b2c8-8f10-90da-fd92cd577bb4",
+      "name": "Eleazar Novum",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Bremer Reihe",
+        "country": "DE",
+        "postalCode": "20099",
+        "houseNumber": "12-14"
+      },
+      "phone": "+49408788770"
     },
     {
       "id": "c0de3050-ed53-8ec0-a4a1-47a706ced4fd",
@@ -13121,6 +16730,19 @@
       "phone": "+390471654101"
     },
     {
+      "id": "c3e22dad-5725-8a6f-a5b6-e7392ea8a9dd",
+      "name": "Auberge Communale de St-Légier - La Chiésaz",
+      "address": {
+        "city": "Saint-Légier-La Chiésaz",
+        "region": "Vaud",
+        "street": "Route des Deux-Villages",
+        "country": "CH",
+        "postalCode": "1806",
+        "houseNumber": "78"
+      },
+      "phone": "+41219431177"
+    },
+    {
       "id": "c422ca78-0d55-8e43-84f0-4c9b132f6890",
       "name": "Turmhotel Victoria",
       "address": {
@@ -13143,6 +16765,19 @@
         "postalCode": "7504"
       },
       "phone": "+41818389595"
+    },
+    {
+      "id": "c449efa2-161f-85c4-92bc-58785710babc",
+      "name": "Hof zur Steinwänd",
+      "address": {
+        "city": "Micheldorf in Oberösterreich",
+        "region": "Oberösterreich",
+        "street": "Kienberg",
+        "country": "AT",
+        "postalCode": "4563",
+        "houseNumber": "42"
+      },
+      "phone": "+437585239"
     },
     {
       "id": "c4805dfb-1ef0-8ca3-ac3c-2ae8540a8ded",
@@ -13357,6 +16992,19 @@
       "phone": "+4983628010"
     },
     {
+      "id": "c6a368e7-8177-8a44-88be-f0af8bd38962",
+      "name": "Zum Goldenen Hirschen",
+      "address": {
+        "city": "Freistadt",
+        "region": "Oberösterreich",
+        "street": "Böhmer Gasse",
+        "country": "AT",
+        "postalCode": "4240",
+        "houseNumber": "8-10"
+      },
+      "phone": "+43794272258"
+    },
+    {
       "id": "c6acb48f-ecaa-835f-8eaf-91c5b95b1cbd",
       "name": "Ferienwohnung Pauly",
       "address": {
@@ -13379,6 +17027,19 @@
         "postalCode": "6490"
       },
       "phone": "+41418871130"
+    },
+    {
+      "id": "c6d0a89a-5ea1-86e8-8ec0-3f905c8c65e0",
+      "name": "Hotel Villa Laurus (ex Sonnklarhof)",
+      "address": {
+        "city": "Meran - Merano",
+        "region": "Südtirol",
+        "street": "Lorbeergasse - Vicolo del Lauro",
+        "country": "IT",
+        "postalCode": "39012",
+        "houseNumber": "25"
+      },
+      "phone": "+390473235530"
     },
     {
       "id": "c6d7575d-abaf-8b8c-957f-e3a6885d586c",
@@ -13433,6 +17094,19 @@
       "phone": "+4983225136"
     },
     {
+      "id": "c6f9afcf-5eba-8153-9d1d-8f0f21ff4016",
+      "name": "Grand Hotel Beau-Rivage",
+      "address": {
+        "city": "Interlaken",
+        "region": "Bern / Berne",
+        "street": "Höheweg",
+        "country": "CH",
+        "postalCode": "3800",
+        "houseNumber": "211"
+      },
+      "phone": "+41338267007"
+    },
+    {
       "id": "c6fec4d2-a66f-8ede-8156-6d5b5e9dc11c",
       "name": "Am Limes",
       "address": {
@@ -13472,6 +17146,19 @@
       "phone": "+49838799160"
     },
     {
+      "id": "c77d9b53-16c9-8818-b851-d38f7fc3b11b",
+      "name": "Swissôtel Kursaal Bern",
+      "address": {
+        "city": "Bern",
+        "region": "Bern / Berne",
+        "street": "Kornhausstrasse",
+        "country": "CH",
+        "postalCode": "3013",
+        "houseNumber": "3"
+      },
+      "phone": "+41313395050"
+    },
+    {
       "id": "c7d40cda-7d41-8425-8f17-173272ba824f",
       "name": "Hotel Walter au Lac",
       "address": {
@@ -13483,6 +17170,19 @@
         "houseNumber": "7"
       },
       "phone": "+41919227425"
+    },
+    {
+      "id": "c81b5383-f24e-8612-beed-dac0bff61440",
+      "name": "Motel One Hamburg am Michel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Ludwig-Erhard-Straße",
+        "country": "DE",
+        "postalCode": "20459",
+        "houseNumber": "26"
+      },
+      "phone": "+494035718900"
     },
     {
       "id": "c830699d-5181-8b37-82ae-072ad7157709",
@@ -13609,6 +17309,32 @@
       "phone": "+41818602005"
     },
     {
+      "id": "c980cdb5-42be-88e8-b390-ccdf47486ce7",
+      "name": "Hotel Luitpoldpark",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Luitpoldstraße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "5 a"
+      },
+      "phone": "+4983629040"
+    },
+    {
+      "id": "c9d666b5-61d1-854f-9566-4ae21acf7134",
+      "name": "Renaissance",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Große Bleichen",
+        "country": "DE",
+        "postalCode": "20354",
+        "houseNumber": "36"
+      },
+      "phone": "+4940349180"
+    },
+    {
       "id": "c9fd71cf-bc2f-8813-bb40-8f64602bcc06",
       "name": "Gasthof Salurn",
       "address": {
@@ -13720,6 +17446,19 @@
       "phone": "+4940441820"
     },
     {
+      "id": "cad13b72-c182-8f6a-9e90-37b1ad0b9114",
+      "name": "Landhaus Pension Christian",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Welfenstraße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "35"
+      },
+      "phone": "+49836238660"
+    },
+    {
       "id": "cb3ce068-0d24-8249-87cc-074b8b0c1c79",
       "name": "Hotel Kronenhof",
       "address": {
@@ -13809,6 +17548,19 @@
       "phone": "+390473240022"
     },
     {
+      "id": "cd195e44-2d97-89d3-9d24-b9a94ef3c819",
+      "name": "Pêle-Mêle",
+      "address": {
+        "city": "Bern",
+        "region": "Bern / Berne",
+        "street": "Altenbergstrasse",
+        "country": "CH",
+        "postalCode": "3013",
+        "houseNumber": "4"
+      },
+      "phone": "+41313480305"
+    },
+    {
       "id": "cd47eacc-c843-8eca-b4ea-767a0f67f506",
       "name": "Huus Gstaad",
       "address": {
@@ -13835,6 +17587,19 @@
       "phone": "+390473561691"
     },
     {
+      "id": "cd4fa6f4-8cb1-856d-8d31-5cdefb3c08b3",
+      "name": "Hotel Hellweger",
+      "address": {
+        "city": "Sand in Taufers - Campo Tures",
+        "region": "Südtirol",
+        "street": "Hugo-von-Taufers-Straße - Via Hugo von Taufers",
+        "country": "IT",
+        "postalCode": "39032",
+        "houseNumber": "22"
+      },
+      "phone": "+390474678370"
+    },
+    {
       "id": "cd6c475f-48b4-89ff-afa9-39ada65e2be1",
       "name": "Trettach",
       "address": {
@@ -13859,6 +17624,19 @@
         "houseNumber": "19c"
       },
       "phone": "+43662841729"
+    },
+    {
+      "id": "cd83ee9d-c42a-818a-90bd-a897d06b8541",
+      "name": "Moxy Hamburg Altona",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Kühnehöfe",
+        "country": "DE",
+        "postalCode": "22761",
+        "houseNumber": "8"
+      },
+      "phone": "+49402800830"
     },
     {
       "id": "cdb8a861-6530-8208-b4f5-7d8cf715c7cc",
@@ -13899,6 +17677,19 @@
       "phone": "+41813071990"
     },
     {
+      "id": "ce33633b-af5b-4667-a7a7-850ed3dffa61",
+      "name": "Hotel Quellenhof",
+      "address": {
+        "city": "Bad Birnbach",
+        "region": "Bayern",
+        "street": "Brunnaderstraße",
+        "country": "DE",
+        "postalCode": "84364",
+        "houseNumber": "11"
+      },
+      "phone": "+4985633070"
+    },
+    {
       "id": "ce4531bb-a551-8640-9b15-fee68e31f098",
       "name": "Appartements Lenzenhof",
       "address": {
@@ -13921,6 +17712,31 @@
         "houseNumber": "2"
       },
       "phone": "+41712275555"
+    },
+    {
+      "id": "cecd9a5a-8f01-8713-8b15-4ad9a4f76139",
+      "name": "Gästehaus Manthey - Zimmer + FeWo",
+      "address": {
+        "city": "Wertach",
+        "region": "Bayern",
+        "street": "Marktstraße",
+        "country": "DE",
+        "postalCode": "87497",
+        "houseNumber": "42"
+      },
+      "phone": "+4983651722"
+    },
+    {
+      "id": "cedaa52d-8364-834f-b94a-f77463fd78a0",
+      "name": "Annas Landhaus",
+      "address": {
+        "city": "Rossatz-Arnsdorf",
+        "region": "Niederösterreich",
+        "country": "AT",
+        "postalCode": "3621",
+        "houseNumber": "5"
+      },
+      "phone": "+436645140205"
     },
     {
       "id": "ceee0c8f-a391-85f6-a732-9a4a9152dfd4",
@@ -14111,6 +17927,19 @@
       "phone": "+43463351950"
     },
     {
+      "id": "d0cd321b-bf43-839a-b56a-cb428239b6de",
+      "name": "Gästehaus Brestrich",
+      "address": {
+        "city": "Oberreute",
+        "region": "Bayern",
+        "street": "Hirschbergstraße",
+        "country": "DE",
+        "postalCode": "88179",
+        "houseNumber": "5"
+      },
+      "phone": "+4983872664"
+    },
+    {
       "id": "d131dce7-8c21-82bf-bad6-bccd08c242c5",
       "name": "La Truite",
       "address": {
@@ -14133,6 +17962,31 @@
         "houseNumber": "46"
       },
       "phone": "+49685290240"
+    },
+    {
+      "id": "d188f253-0138-899d-b3af-91725fc47ffc",
+      "name": "Mercedes",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Steindamm",
+        "country": "DE",
+        "postalCode": "20099",
+        "houseNumber": "51"
+      },
+      "phone": "+49402801218"
+    },
+    {
+      "id": "d1acd2fc-f29c-89f0-a4b8-b7085adad512",
+      "name": "Pension Marianne",
+      "address": {
+        "city": "Obergünzburg",
+        "region": "Bayern",
+        "country": "DE",
+        "postalCode": "87634",
+        "houseNumber": "2"
+      },
+      "phone": "+4983722052"
     },
     {
       "id": "d1ce8c33-1111-873e-aa24-7678430f5feb",
@@ -14198,6 +18052,19 @@
         "houseNumber": "19/a"
       },
       "phone": "+390473561835"
+    },
+    {
+      "id": "d2b6c592-2bf9-8a19-bd52-0e64cc886b71",
+      "name": "Hostel Fangdieck",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Fangdieckstraße",
+        "country": "DE",
+        "postalCode": "22547",
+        "houseNumber": "55"
+      },
+      "phone": "+494054801585"
     },
     {
       "id": "d2ca1e4f-33a9-85c4-82b9-d9250f2ef5d3",
@@ -14312,6 +18179,18 @@
         "houseNumber": "20"
       },
       "phone": "+41413920202"
+    },
+    {
+      "id": "d482b102-9505-81c3-b0b0-3fb9e96925a2",
+      "name": "Naturfreundehaus Les Prés d'Orvin",
+      "address": {
+        "city": "Les Prés-d'Orvin",
+        "region": "Bern / Berne",
+        "country": "CH",
+        "postalCode": "2534",
+        "houseNumber": "33"
+      },
+      "phone": "+41795208623"
     },
     {
       "id": "d4adb073-b665-808b-8d4b-594068174105",
@@ -14514,6 +18393,19 @@
       "phone": "+3904711552020"
     },
     {
+      "id": "d68f9973-2ba5-8d1d-b6f3-77a7f8081675",
+      "name": "Juwel im Allgäu (Ferienhaus)",
+      "address": {
+        "city": "Buchenberg",
+        "region": "Bayern",
+        "street": "Freitags",
+        "country": "DE",
+        "postalCode": "87474",
+        "houseNumber": "78"
+      },
+      "phone": "+4983787722"
+    },
+    {
       "id": "d6b11705-5609-8fae-98cd-722dcc1da5f2",
       "name": "Hotel Sun",
       "address": {
@@ -14536,6 +18428,32 @@
         "houseNumber": "23"
       },
       "phone": "+43273271123"
+    },
+    {
+      "id": "d6f71649-14a2-81ef-8928-de7540628d27",
+      "name": "App. Costaburjada",
+      "address": {
+        "city": "Calfosch - Kolfuschg - Colfosco",
+        "region": "Südtirol",
+        "street": "Streda Pecei",
+        "country": "IT",
+        "postalCode": "39030",
+        "houseNumber": "10"
+      },
+      "phone": "+390471836265"
+    },
+    {
+      "id": "d6fae5eb-e2f7-8473-b836-eaf5e610a36a",
+      "name": "Hotel Frangart",
+      "address": {
+        "city": "Eppan an der Weinstraße - Appiano sulla Strada del Vino",
+        "region": "Südtirol",
+        "street": "Bozner Straße - Via Bolzano",
+        "country": "IT",
+        "postalCode": "39057",
+        "houseNumber": "74"
+      },
+      "phone": "+390471633177"
     },
     {
       "id": "d71ccf68-c64a-803b-9cbb-f693685ef2c5",
@@ -14634,6 +18552,19 @@
       "phone": "+41713771147"
     },
     {
+      "id": "d90859e3-a344-89ad-be8c-c0cc9a8dddaa",
+      "name": "Residence Bachhof",
+      "address": {
+        "city": "Gargazon - Gargazzone",
+        "region": "Südtirol",
+        "street": "Aschlbachstraße - Via Rio Eschio",
+        "country": "IT",
+        "postalCode": "39010",
+        "houseNumber": "1a"
+      },
+      "phone": "+390473291173"
+    },
+    {
       "id": "d94e6598-facb-80bf-adf6-a90b11066ae9",
       "name": "Alpchalet Schwanstein",
       "address": {
@@ -14658,6 +18589,19 @@
         "houseNumber": "11"
       },
       "phone": "+4983862207"
+    },
+    {
+      "id": "d972f831-ec78-82f3-b48a-f8f234b5fa22",
+      "name": "Stahmer's Gasthof Zimmervermietung",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Hasselwerder Straße",
+        "country": "DE",
+        "postalCode": "21129",
+        "houseNumber": "94"
+      },
+      "phone": "+49407452220"
     },
     {
       "id": "d999e3c4-8a66-85f2-8300-62598da56b99",
@@ -14723,6 +18667,19 @@
       "phone": "+49832297740"
     },
     {
+      "id": "da2606ec-ebff-8fef-a103-b0b5f23e18df",
+      "name": "Landgasthof Hasenstrick",
+      "address": {
+        "city": "Dürnten",
+        "region": "Zürich",
+        "street": "Höhenstrasse",
+        "country": "CH",
+        "postalCode": "8635",
+        "houseNumber": "15"
+      },
+      "phone": "+41552501220"
+    },
+    {
       "id": "da2c3501-5807-839c-9bab-2a7a74294243",
       "name": "Hotel-Cafe Frohsinn GmbH",
       "address": {
@@ -14736,6 +18693,32 @@
       "phone": "+498326384930"
     },
     {
+      "id": "da302d6e-4e3b-8d8d-9b33-8da0681b8036",
+      "name": "Eriro",
+      "address": {
+        "city": "Ehrwald",
+        "region": "Tirol",
+        "street": "Ehrwalder Alm",
+        "country": "AT",
+        "postalCode": "6632",
+        "houseNumber": "4"
+      },
+      "phone": "+43567340506"
+    },
+    {
+      "id": "da3d9d68-4e4f-89c7-aa87-8d5f02fde895",
+      "name": "Kim Play",
+      "address": {
+        "city": "Cheyres",
+        "region": "Fribourg / Freiburg",
+        "street": "Chemin des Pointus",
+        "country": "CH",
+        "postalCode": "1468",
+        "houseNumber": "34"
+      },
+      "phone": "+41266634214"
+    },
+    {
       "id": "da79bb56-a9ae-8c00-8641-f110799a880a",
       "name": "Forstgarten",
       "address": {
@@ -14747,6 +18730,19 @@
         "houseNumber": "105"
       },
       "phone": "+436648252323"
+    },
+    {
+      "id": "da89ee91-c2b8-8d51-8bae-ce92a45836dc",
+      "name": "Ferienwohnung Mohren",
+      "address": {
+        "city": "Oberstdorf",
+        "region": "Bayern",
+        "street": "Bachstraße",
+        "country": "DE",
+        "postalCode": "87561",
+        "houseNumber": "3"
+      },
+      "phone": "+4983229120"
     },
     {
       "id": "da90b2b1-761e-8bc5-8741-95d060c96169",
@@ -14784,6 +18780,18 @@
       "phone": "+4983651270"
     },
     {
+      "id": "dacd04b7-1a16-8ebf-bc51-da28f6093666",
+      "name": "Roßkogelhütte",
+      "address": {
+        "city": "Oberperfuss",
+        "region": "Tirol",
+        "country": "AT",
+        "postalCode": "6173",
+        "houseNumber": "1"
+      },
+      "phone": "+43523281419"
+    },
+    {
       "id": "daeb6a6f-c558-8331-be52-3095067b0bb2",
       "name": "Rebhof, Garni",
       "address": {
@@ -14806,6 +18814,19 @@
         "houseNumber": "14"
       },
       "phone": "+433168225210"
+    },
+    {
+      "id": "db410aa7-933e-854f-811c-8457cdb4b132",
+      "name": "Pension Mayr",
+      "address": {
+        "city": "Wald",
+        "region": "Bayern",
+        "street": "Nesselwanger Straße",
+        "country": "DE",
+        "postalCode": "87616",
+        "houseNumber": "46"
+      },
+      "phone": "+498302700"
     },
     {
       "id": "db72e2e2-bf49-8738-990d-2e0d6ff47f47",
@@ -14832,6 +18853,19 @@
         "houseNumber": "14"
       },
       "phone": "+41418111774"
+    },
+    {
+      "id": "dbb49245-780f-81a5-8bb4-514796396f54",
+      "name": "Garni Lasteis",
+      "address": {
+        "city": "Badia - Abtei",
+        "region": "Südtirol",
+        "street": "Strada Boscdaplan",
+        "country": "IT",
+        "postalCode": "39030",
+        "houseNumber": "158"
+      },
+      "phone": "+390471847221"
     },
     {
       "id": "dbc6055c-906e-82da-b97e-b4f8e3667375",
@@ -15164,6 +19198,19 @@
       "phone": "+433585275550"
     },
     {
+      "id": "def2a028-5881-89dd-82fc-cb116ade6743",
+      "name": "Best Western Plus Hotel Zürcherhof",
+      "address": {
+        "city": "Zürich",
+        "region": "Zürich",
+        "street": "Zähringerstrasse",
+        "country": "CH",
+        "postalCode": "8001",
+        "houseNumber": "21"
+      },
+      "phone": "+41442694444"
+    },
+    {
       "id": "df5c4064-c3f5-8e10-b87e-c830ef99c103",
       "name": "Die Inselpension",
       "address": {
@@ -15177,6 +19224,32 @@
       "phone": "+491632434910"
     },
     {
+      "id": "dfa2ee96-362f-82cb-9a4e-66060887d2ab",
+      "name": "Le Chalet d'Adrien",
+      "address": {
+        "city": "Verbier",
+        "region": "Valais / Wallis",
+        "street": "Route des Creux",
+        "country": "CH",
+        "postalCode": "1936",
+        "houseNumber": "91"
+      },
+      "phone": "+41277716200"
+    },
+    {
+      "id": "dfa48ca3-888a-86fa-9e95-89dcf38a45be",
+      "name": "Ebner - Pfiffikus",
+      "address": {
+        "city": "Aldein - Aldino",
+        "region": "Südtirol",
+        "street": "Dorf - Paese",
+        "country": "IT",
+        "postalCode": "39040",
+        "houseNumber": "26"
+      },
+      "phone": "+390471886805"
+    },
+    {
       "id": "dfb14121-d8a3-85a0-bfa3-80023a83327b",
       "name": "Hotel Gschwangut",
       "address": {
@@ -15188,6 +19261,19 @@
         "houseNumber": "12a"
       },
       "phone": "+390473561527"
+    },
+    {
+      "id": "dfbfce83-cd22-4bc3-aa57-e9af57ea712c",
+      "name": "Hotel Rottaler Hof Bad Birnbach",
+      "address": {
+        "city": "Bad Birnbach",
+        "region": "Bayern",
+        "street": "Brunnaderstraße",
+        "country": "DE",
+        "postalCode": "84364",
+        "houseNumber": "4"
+      },
+      "phone": "+498563280"
     },
     {
       "id": "dff0ee8d-0dcb-8082-afdf-15d4ed995bd1",
@@ -15214,6 +19300,32 @@
         "houseNumber": "9"
       },
       "phone": "+4315231345"
+    },
+    {
+      "id": "e0379b10-29c3-8593-861d-1ddabb4c9371",
+      "name": "Hotel City Inn",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Hammer Deich",
+        "country": "DE",
+        "postalCode": "20537",
+        "houseNumber": "8"
+      },
+      "phone": "+494036165165"
+    },
+    {
+      "id": "e055f5b1-8611-8e65-8822-74cc5c8dccfc",
+      "name": "Gretl",
+      "address": {
+        "city": "Krumpendorf am Wörthersee",
+        "region": "Kärnten",
+        "street": "Hauptstraße",
+        "country": "AT",
+        "postalCode": "9201",
+        "houseNumber": "169"
+      },
+      "phone": "+4342292096"
     },
     {
       "id": "e0ad0771-f70d-8653-9ccf-f0e8af656b80",
@@ -15277,6 +19389,19 @@
       "phone": "+390474913480"
     },
     {
+      "id": "e13540fa-1ad2-816b-890c-faece09903f2",
+      "name": "Parkhotel Bellevue",
+      "address": {
+        "city": "Adelboden",
+        "region": "Bern / Berne",
+        "street": "Bellevuestrasse",
+        "country": "CH",
+        "postalCode": "3715",
+        "houseNumber": "15"
+      },
+      "phone": "+41336738000"
+    },
+    {
       "id": "e1568d90-391f-8c56-ab7d-62057e263bba",
       "name": "Kirchenwirt",
       "address": {
@@ -15301,6 +19426,17 @@
         "houseNumber": "191"
       },
       "phone": "+43551620250"
+    },
+    {
+      "id": "e1ab8197-4470-88b2-95e8-96d6b8720dd1",
+      "name": "Filzenalm",
+      "address": {
+        "city": "Rauris",
+        "region": "Salzburg",
+        "country": "AT",
+        "postalCode": "5661"
+      },
+      "phone": "+436649460016"
     },
     {
       "id": "e1cacadf-08d3-83ea-b69f-bbc90edadf72",
@@ -15353,6 +19489,32 @@
         "houseNumber": "29"
       },
       "phone": "+390473679130"
+    },
+    {
+      "id": "e2ac671d-d216-88c0-9f2d-a70840d24d3e",
+      "name": "Crowne Plaza",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Graumannsweg",
+        "country": "DE",
+        "postalCode": "22087",
+        "houseNumber": "10"
+      },
+      "phone": "+4940228060"
+    },
+    {
+      "id": "e2f1a6a3-4e44-8a91-9095-80c4f3497e0d",
+      "name": "Sedartis",
+      "address": {
+        "city": "Thalwil",
+        "region": "Zürich",
+        "street": "Bahnhofstrasse",
+        "country": "CH",
+        "postalCode": "8800",
+        "houseNumber": "16"
+      },
+      "phone": "+41433883300"
     },
     {
       "id": "e30b44d7-49c5-80d1-ba2b-9b7e238d0be2",
@@ -15634,6 +19796,18 @@
       "phone": "+43476281400"
     },
     {
+      "id": "e707a742-7130-8958-b939-a5a8fbef1454",
+      "name": "Naturhotel Waldklause",
+      "address": {
+        "city": "Längenfeld",
+        "region": "Tirol",
+        "country": "AT",
+        "postalCode": "6444",
+        "houseNumber": "190"
+      },
+      "phone": "+4352535455"
+    },
+    {
       "id": "e750fdb7-00e8-876c-87c3-d93a5a696877",
       "name": "Concordia Vitalhotel & Spa",
       "address": {
@@ -15658,6 +19832,19 @@
         "houseNumber": "15"
       },
       "phone": "+4983862077"
+    },
+    {
+      "id": "e75f89cc-ebf9-83e6-ad0e-4e539fafec55",
+      "name": "25hours Hotel Hamburg HafenCity",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Überseeallee",
+        "country": "DE",
+        "postalCode": "20457",
+        "houseNumber": "5"
+      },
+      "phone": "+49402577770"
     },
     {
       "id": "e79d06af-99d4-87e2-b062-aaca02f2eed3",
@@ -15723,6 +19910,19 @@
       "phone": "+49402263660"
     },
     {
+      "id": "e915e4f1-a497-8483-ac4f-4ae12efd507b",
+      "name": "Obergrießenstein",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Tschermserweg",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "5"
+      },
+      "phone": "+390473562079"
+    },
+    {
       "id": "e91a0bd5-c99f-8363-9c55-7c3838956b86",
       "name": "Auberge aux 4 Vents",
       "address": {
@@ -15745,6 +19945,19 @@
         "houseNumber": "41"
       },
       "phone": "+41447458686"
+    },
+    {
+      "id": "e947d432-45ed-8cfc-91e7-f48bfb536d95",
+      "name": "Bären",
+      "address": {
+        "city": "Frauenkappelen",
+        "region": "Bern / Berne",
+        "street": "Murtenstrasse",
+        "country": "CH",
+        "postalCode": "3202",
+        "houseNumber": "78"
+      },
+      "phone": "+41319261023"
     },
     {
       "id": "e9496558-6036-8f01-81b8-8ea15ade7bbb",
@@ -15812,6 +20025,19 @@
       "phone": "+41813841310"
     },
     {
+      "id": "ea1a7ac4-65b8-8c56-9b7d-4c2be56e9933",
+      "name": "B&B Gästehaus Schöberl",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Luitpoldstraße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "14"
+      },
+      "phone": "+498362922411"
+    },
+    {
       "id": "ea784849-e055-8771-a10e-4ba9ff80dbb6",
       "name": "Garni Rubens",
       "address": {
@@ -15832,6 +20058,19 @@
         "postalCode": "39011"
       },
       "phone": "+390473561568"
+    },
+    {
+      "id": "eb3324b3-e083-81d7-afea-630e98d97959",
+      "name": "Pension Apartments Anemone",
+      "address": {
+        "city": "Kastelruth - Castelrotto",
+        "region": "Südtirol",
+        "street": "Compatsch",
+        "country": "IT",
+        "postalCode": "39040",
+        "houseNumber": "56"
+      },
+      "phone": "+390471727963"
     },
     {
       "id": "eb43c21c-f7e8-8215-9b7f-db3104cab85f",
@@ -15882,6 +20121,18 @@
       "phone": "+498379728890"
     },
     {
+      "id": "ebab46c4-ee10-8278-b52e-7e80daf49487",
+      "name": "Hirschen Wald",
+      "address": {
+        "city": "Wald AR",
+        "region": "Appenzell Ausserrhoden",
+        "country": "CH",
+        "postalCode": "9044",
+        "houseNumber": "123"
+      },
+      "phone": "+41718771146"
+    },
+    {
       "id": "ebb5552d-55e2-8c00-9fe2-0d1bb820f6e0",
       "name": "Sohre",
       "address": {
@@ -15908,6 +20159,19 @@
       "phone": "+49836698218"
     },
     {
+      "id": "ebfddd68-ab7d-80da-9256-9f39429cf09f",
+      "name": "YoHo - the young hotel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Moorkamp",
+        "country": "DE",
+        "postalCode": "20357",
+        "houseNumber": "5"
+      },
+      "phone": "+49402841910"
+    },
+    {
       "id": "ec8ed9cb-9865-8ace-a470-5d8c8c4ba8f7",
       "name": "Hotel Gasthof Stangl",
       "address": {
@@ -15921,6 +20185,19 @@
       "phone": "+435223492828"
     },
     {
+      "id": "ec9fb277-e532-87e1-91af-373c48f7e3f6",
+      "name": "Ferienwohnungen Sonnhalde",
+      "address": {
+        "city": "Oberreute",
+        "region": "Bayern",
+        "street": "Sonnhalde",
+        "country": "DE",
+        "postalCode": "88179",
+        "houseNumber": "8"
+      },
+      "phone": "+4993438750"
+    },
+    {
       "id": "eca2dbe8-59ee-8578-a177-94edcceab0d4",
       "name": "Haus Wiesengrund",
       "address": {
@@ -15930,6 +20207,31 @@
         "postalCode": "39010"
       },
       "phone": "+390473292469"
+    },
+    {
+      "id": "ecbe1036-b13e-86f0-a0e5-c5df697fbe7a",
+      "name": "Bayreuther Hütte",
+      "address": {
+        "city": "Münster",
+        "region": "Tirol",
+        "country": "AT",
+        "postalCode": "6232",
+        "houseNumber": "157"
+      },
+      "phone": "+436643425103"
+    },
+    {
+      "id": "ed35d492-fa03-8ac2-a1ff-39b3ca99e826",
+      "name": "FW Karnutsch Zathammer",
+      "address": {
+        "city": "Lana",
+        "region": "Südtirol",
+        "street": "Ifingerstraße - Vicolo Ivigna",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "10"
+      },
+      "phone": "+390473564542"
     },
     {
       "id": "ed80a196-d43e-820d-b23c-0a3f2b306ff3",
@@ -16044,6 +20346,19 @@
       "phone": "+41816811278"
     },
     {
+      "id": "eecc818a-a21d-8a21-a523-610206de56ab",
+      "name": "Hotel Steinmattli",
+      "address": {
+        "city": "Adelboden",
+        "region": "Bern / Berne",
+        "street": "Risetensträssli",
+        "country": "CH",
+        "postalCode": "3715",
+        "houseNumber": "10"
+      },
+      "phone": "+41336733939"
+    },
+    {
       "id": "eee01238-760a-8c6c-888b-b977a380d433",
       "name": "Steinegger",
       "address": {
@@ -16118,6 +20433,19 @@
         "postalCode": "39020"
       },
       "phone": "+390473967108"
+    },
+    {
+      "id": "efc7da2d-26fb-83e0-9f3e-ece6dc9f1ac4",
+      "name": "Sportheim Böck",
+      "address": {
+        "city": "Nesselwang",
+        "region": "Bayern",
+        "street": "Alpspitzweg",
+        "country": "DE",
+        "postalCode": "87484",
+        "houseNumber": "50"
+      },
+      "phone": "+4983623111"
     },
     {
       "id": "efdbc0c4-f253-855c-8049-87f0e13089b7",
@@ -16209,6 +20537,19 @@
       "phone": "+436642227760"
     },
     {
+      "id": "f0ae97cf-19e9-8633-9640-6a28b41a8ce4",
+      "name": "Bundt's Hotel",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Hasselwerder Straße",
+        "country": "DE",
+        "postalCode": "21129",
+        "houseNumber": "85"
+      },
+      "phone": "+49403570310"
+    },
+    {
       "id": "f0bd6b47-2cd7-8d3c-9a8b-be2b1b8e378e",
       "name": "Gasthof Hirschen",
       "address": {
@@ -16233,6 +20574,19 @@
         "houseNumber": "30"
       },
       "phone": "+49683494150"
+    },
+    {
+      "id": "f10dda78-195d-862f-9c1f-c12e57c4d084",
+      "name": "Gasthof Seppi",
+      "address": {
+        "city": "Mühlbach - Rio di Pusteria",
+        "region": "Südtirol",
+        "street": "Richtergasse",
+        "country": "IT",
+        "postalCode": "39037",
+        "houseNumber": "1"
+      },
+      "phone": "+390472849701"
     },
     {
       "id": "f12557ad-e9e2-8d2e-9bc3-eed18171cad1",
@@ -16358,6 +20712,19 @@
         "houseNumber": "43"
       },
       "phone": "+43316712686"
+    },
+    {
+      "id": "f294e176-1bb5-84a8-9c3d-acdb199f492d",
+      "name": "Hôtel de la Fleur de Lys",
+      "address": {
+        "city": "La Chaux-de-Fonds",
+        "region": "Neuchâtel",
+        "street": "Avenue Léopold-Robert",
+        "country": "CH",
+        "postalCode": "2300",
+        "houseNumber": "13"
+      },
+      "phone": "+41329133731"
     },
     {
       "id": "f29d2708-6f29-8f4f-9f03-c898d0e90847",
@@ -16501,6 +20868,19 @@
       "phone": "+41818369696"
     },
     {
+      "id": "f48b492b-9596-84f0-9415-15c6a95f0422",
+      "name": "Goldener Engl",
+      "address": {
+        "city": "Hall in Tirol",
+        "region": "Tirol",
+        "street": "Unterer Stadtplatz",
+        "country": "AT",
+        "postalCode": "6060",
+        "houseNumber": "5"
+      },
+      "phone": "+43522354621"
+    },
+    {
       "id": "f48eb625-8ccf-8142-a64b-bf8ef86541c6",
       "name": "Everness",
       "address": {
@@ -16536,6 +20916,19 @@
         "postalCode": "39052"
       },
       "phone": "+393451889861"
+    },
+    {
+      "id": "f4d54519-9d65-81e4-aa5f-6f6a43f64ee3",
+      "name": "Haus Ratschiller",
+      "address": {
+        "city": "Gargazon - Gargazzone",
+        "region": "Südtirol",
+        "street": "Vöranerweg",
+        "country": "IT",
+        "postalCode": "39010",
+        "houseNumber": "187"
+      },
+      "phone": "+390473291107"
     },
     {
       "id": "f4ebbe7a-16ff-855a-b3f1-3d423f8caaa1",
@@ -16675,6 +21068,32 @@
       "phone": "+4983226797"
     },
     {
+      "id": "f7c8f9f5-7c55-8ee3-8da5-126f979f5c40",
+      "name": "Jugendherberge Füssen",
+      "address": {
+        "city": "Füssen",
+        "region": "Bayern",
+        "street": "Mariahilfer Straße",
+        "country": "DE",
+        "postalCode": "87629",
+        "houseNumber": "5"
+      },
+      "phone": "+4983627754"
+    },
+    {
+      "id": "f7cd29db-a79e-82da-b90a-628011066291",
+      "name": "Garni Fernblick",
+      "address": {
+        "city": "Völlan/Lana",
+        "region": "Südtirol",
+        "street": "St.-Magdalena-Weg - Via Santa Maddalena",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "4"
+      },
+      "phone": "+390473568009"
+    },
+    {
       "id": "f819157a-470f-8e44-9a03-df45b5c257b5",
       "name": "Alpenloft Allgäu",
       "address": {
@@ -16736,6 +21155,19 @@
       "phone": "+390473562618"
     },
     {
+      "id": "f960ef1c-d06a-8406-8f8d-0f58ee3bc925",
+      "name": "Hofmatt",
+      "address": {
+        "city": "Münchenstein",
+        "region": "Basel-Landschaft",
+        "street": "Baselstrasse",
+        "country": "CH",
+        "postalCode": "4142",
+        "houseNumber": "88"
+      },
+      "phone": "+41614160848"
+    },
+    {
       "id": "f9627d2e-f3d0-8d5b-ad31-a4a7a5810dbc",
       "name": "Hotel an der Aare",
       "address": {
@@ -16749,6 +21181,18 @@
       "phone": "+41326262400"
     },
     {
+      "id": "f977bd40-f964-883e-be3e-e9ffef71bd2d",
+      "name": "Hotel Berghof",
+      "address": {
+        "city": "Nesselwängle",
+        "region": "Tirol",
+        "country": "AT",
+        "postalCode": "6672",
+        "houseNumber": "59"
+      },
+      "phone": "+43567520199"
+    },
+    {
       "id": "fa059a4b-f0f9-880b-88db-44e9eac6044d",
       "name": "Berghof Sturmgut",
       "address": {
@@ -16760,6 +21204,19 @@
         "houseNumber": "6"
       },
       "phone": "+4375646006"
+    },
+    {
+      "id": "fa2438d1-cc53-84da-82cd-582b7edacfc7",
+      "name": "Garni Peskoller",
+      "address": {
+        "city": "Bruneck - Brunico",
+        "region": "Südtirol",
+        "street": "Kehlburgweg - Via Kehlburg",
+        "country": "IT",
+        "postalCode": "39031",
+        "houseNumber": "4"
+      },
+      "phone": "+39340352317"
     },
     {
       "id": "fa493d59-9079-808e-b5b7-0fffef84f12d",
@@ -16823,6 +21280,19 @@
         "postalCode": "39032"
       },
       "phone": "+393487038767"
+    },
+    {
+      "id": "fb0bf1f7-3488-8b98-ab9c-d780a3076ecd",
+      "name": "NH Fribourg",
+      "address": {
+        "city": "Fribourg",
+        "region": "Fribourg / Freiburg",
+        "street": "Grand-Places",
+        "country": "CH",
+        "postalCode": "1700",
+        "houseNumber": "14"
+      },
+      "phone": "+41263519191"
     },
     {
       "id": "fb6e0bfd-9f58-8b70-b3cd-136e8dbe4127",
@@ -16925,6 +21395,19 @@
         "houseNumber": "107"
       },
       "phone": "+41818649927"
+    },
+    {
+      "id": "fc50e113-0061-8e44-852f-854c5e4abebc",
+      "name": "Pension Bürgerstuben",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Haldesdorfer Straße",
+        "country": "DE",
+        "postalCode": "22177",
+        "houseNumber": "1"
+      },
+      "phone": "+49406918773"
     },
     {
       "id": "fc548790-08a9-8fbc-abe8-cfcca6db8c21",
@@ -17079,6 +21562,45 @@
       "phone": "+41215523030"
     },
     {
+      "id": "fd360aad-5cd6-8e0f-bb1c-334dd2c1ed1f",
+      "name": "Gasthof Linde",
+      "address": {
+        "city": "Wängi",
+        "region": "Thurgau",
+        "street": "Lommiserstrasse",
+        "country": "CH",
+        "postalCode": "9545",
+        "houseNumber": "1"
+      },
+      "phone": "+41523781215"
+    },
+    {
+      "id": "fd5d9e54-93c3-8d3d-bb9b-e8e60911619c",
+      "name": "Schlosshof",
+      "address": {
+        "city": "Völlan/Lana",
+        "region": "Südtirol",
+        "street": "Mayenburgstr.",
+        "country": "IT",
+        "postalCode": "39011",
+        "houseNumber": "34"
+      },
+      "phone": "+390473568212"
+    },
+    {
+      "id": "fd80c354-c4ca-8510-b8df-3495abefcaea",
+      "name": "Wildstrubel",
+      "address": {
+        "city": "Lenk im Simmental",
+        "region": "Bern / Berne",
+        "street": "Lenkstrasse",
+        "country": "CH",
+        "postalCode": "3775",
+        "houseNumber": "3"
+      },
+      "phone": "+41337363111"
+    },
+    {
       "id": "fda713db-49f8-84d9-a5e2-d1dd1bf54af6",
       "name": "Gasthof Pension Rössl",
       "address": {
@@ -17168,6 +21690,19 @@
       "phone": "+4983691068"
     },
     {
+      "id": "ff4d5337-8d12-8ba0-8517-ab00c813a795",
+      "name": "JMS Holiday Allgäu",
+      "address": {
+        "city": "Oberreute",
+        "region": "Bayern",
+        "street": "Hochgratstraße",
+        "country": "DE",
+        "postalCode": "88179",
+        "houseNumber": "314"
+      },
+      "phone": "+491749413407"
+    },
+    {
       "id": "ff5ec3cd-f83e-8b5f-ab5d-bb90a364e5c2",
       "name": "Hotel Salten",
       "address": {
@@ -17189,6 +21724,31 @@
         "postalCode": "8260"
       },
       "phone": "+41527426161"
+    },
+    {
+      "id": "ffc450d5-6289-8736-b37e-8ebe3b07d6a8",
+      "name": "Rauhekopfhütte",
+      "address": {
+        "city": "Kaunertal",
+        "region": "Tirol",
+        "country": "AT",
+        "postalCode": "6524",
+        "houseNumber": "253"
+      },
+      "phone": "+436642067006"
+    },
+    {
+      "id": "ffe10b4a-428c-8a22-bede-e5bd09c0e63e",
+      "name": "Centro Hotel City Gate",
+      "address": {
+        "city": "Hamburg",
+        "region": "Hamburg",
+        "street": "Steindamm",
+        "country": "DE",
+        "postalCode": "20099",
+        "houseNumber": "49"
+      },
+      "phone": "+494028499220"
     }
   ],
   "additionalMunicipalitySources": [
