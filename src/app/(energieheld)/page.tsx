@@ -5,15 +5,12 @@ import { HomeBannerGroup } from "@/components/advertising/home-banner-group";
 import { homeBannerRows } from '@/lib/home-banner-selection';
 import { staticPremiumAds } from '@/lib/motto-rows';
 import { randomUUID } from "node:crypto";
-import { Suspense } from "react";
 import { selectHomeStays } from "@/lib/home-stays";
 import { MottoRow } from "@/components/portal/motto-row";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
 import { AutumnShowcase } from "@/components/portal/autumn-showcase";
 import { EuropeMap } from "@/components/portal/europe-map";
 import { companyMapLocations } from "@/lib/company-map-locations";
-import { loadBasicMapLocations } from '@/lib/basic-map-locations';
-import type { MapLocation } from '@/lib/europe-map';
 import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
 import { TravelQuicklinks } from "@/components/portal/travel-quicklinks";
@@ -35,11 +32,6 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
 export const dynamic = "force-dynamic";
 import {basicIntegrationEnabled} from '@/lib/basic-public-search';
-
-async function HomeAccommodationMap({ locations }: { locations: MapLocation[] }) {
-  const basicLocations = basicIntegrationEnabled() ? await loadBasicMapLocations() : [];
-  return <EuropeMap locations={[...locations, ...basicLocations]} />;
-}
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const initialValues = readTravelFilterValues(await searchParams);
@@ -69,9 +61,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <AutumnShowcase listings={directory.database} />
 
-    <Suspense fallback={<EuropeMap locations={companyLocations} />}>
-      <HomeAccommodationMap locations={companyLocations} />
-    </Suspense>
+    <EuropeMap locations={companyLocations} loadBasics={basicIntegrationEnabled()} />
 
     <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06", "sidebar_09", "sidebar_10"]} sliderAds={bannerRows[1]} label="Anzeigen nach den Reisezielen" />
 

@@ -30,7 +30,10 @@ test('legacy accent aliases, video/season focus and map pins use the exact share
   assert.match(read(file),/outline: 3px solid var\(--portal-orange\)/);
   assert.doesNotMatch(read(file),/#ff8a4c|#ff8b48/i);
  }
- assert.match(read('src/components/portal/europe-map.tsx'),/fill="var\(--portal-orange\)"/);
+ const map=read('src/components/portal/europe-map.tsx');
+ assert.match(map,/getPropertyValue\('--portal-orange'\)/);
+ assert.match(map,/\|\| portalColors.orange/);
+ assert.match(map,/pen.fillStyle = color/);
  assert.match(read('src/config/energieheld.ts'),/accent: portalColors.orange/);
 });
 test('orange/basalt primary buttons preserve the approved colors and measured contrast',()=>{

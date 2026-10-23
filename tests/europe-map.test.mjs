@@ -70,13 +70,14 @@ test('map SSR preserves public count and controls without duplicating every clie
  const svg=readFileSync(new URL('../public/reiseportal/maps/europe.svg',import.meta.url),'utf8');
  assert.ok(Buffer.byteLength(svg)<150000);assert.doesNotMatch(svg,/<script|<image|href=/);
 });
-test('homepage adds only map immediately after the unchanged seasonal component',()=>{
+test('homepage keeps map placement but does not put the Basic dataset or its queries on the page request',()=>{
  const home=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
- assert.match(home,/<AutumnShowcase listings=\{directory.database\} \/>\s*<Suspense fallback=\{<EuropeMap locations=\{companyLocations\} \/>\}>\s*<HomeAccommodationMap locations=\{companyLocations\} \/>/);
- assert.match(home,/async function HomeAccommodationMap/);
- assert.match(home,/return <EuropeMap locations=\{\[\.\.\.locations, \.\.\.basicLocations\]\} \/>/);
+ assert.match(home,/<AutumnShowcase listings=\{directory.database\} \/>\s*<EuropeMap locations=\{companyLocations\} loadBasics=\{basicIntegrationEnabled\(\)\} \/>/);
+ assert.doesNotMatch(home,/loadBasicMapLocations|basic-map-locations\.json|HomeAccommodationMap/);
  const component=readFileSync(new URL('../src/components/portal/europe-map.tsx',import.meta.url),'utf8');
- assert.doesNotMatch(component,/fetch\(|supabase|setInterval/);
+ assert.doesNotMatch(component,/supabase|setInterval/);
+ assert.match(component,/if \(!pinsVisible \|\| !loadBasics\) return/);
+ assert.match(component,/fetch\('\/api\/map-locations'/);
  const css=readFileSync(new URL('../src/components/portal/europe-map.module.css',import.meta.url),'utf8');
  assert.match(css,/touch-action: pan-y pinch-zoom/);assert.doesNotMatch(css,/animation:|transition:/);
 });
@@ -116,10 +117,37 @@ test('shared teardrop marker tip remains the exact projected position and reset 
  assert.equal(geo.pinTransform(locations[0],geo.INITIAL_MAP_VIEW),`translate(${x} ${y}) scale(0.8)`);
  const html=renderToStaticMarkup(createElement(EuropeMap,{locations}));
  assert.equal((html.match(/<use /g)||[]).length,0);
- assert.match(html,/d="M0 0C-2.5-3.5-7-8-7-12a7 7 0 1 1 14 0C7-8 2.5-3.5 0 0Z"/);
- assert.match(html,/cx="0" cy="-12" r="2.4"/);
+ const component=readFileSync(new URL('../src/components/portal/europe-map.tsx',import.meta.url),'utf8');
+ assert.match(component,/M0 0C-2.5-3.5-7-8-7-12a7 7 0 1 1 14 0C7-8 2.5-3.5 0 0Z/);
+ assert.match(component,/pen.arc\(0, -12, 2.4/);
  assert.match(html,/viewBox="140 62 1120 496"/);
  assert.match(html,/data-zoom="125"/);
+});
+
+test('canvas pins align with SVG slice on desktop/mobile and never sample the 50000-point dataset',async()=>{
+ const canvas=await import('../src/lib/map-canvas.ts');
+ for(const [width,height]of[[1200,1200*620/1400],[390,300]])for(const view of[geo.INITIAL_MAP_VIEW,geo.zoomMap(geo.INITIAL_MAP_VIEW,.5)]){
+  const layout=canvas.canvasMapLayout(view,width,height),point=geo.projectLocation(49,10);
+  assert.ok(Math.abs(point[0]*layout.scale+layout.left-((point[0]-view.x)*layout.scale+(width-view.width*layout.scale)/2))<1e-9);
+  assert.ok(Math.abs(point[1]*layout.scale+layout.top-((point[1]-view.y)*layout.scale+(height-view.height*layout.scale)/2))<1e-9);
+ }
+ const source=Array.from({length:50000},(_,i)=>({id:'canvas-'+i,lat:49,lon:10})),points=canvas.projectMapPoints(source);assert.equal(points.length,100000);
+ let drawn=0;const context={drawImage(_sprite,x,y,w,h){assert([x,y,w,h].every(Number.isFinite));assert(w>0&&h>0);drawn++;}};
+ assert.equal(canvas.paintMapPins(context,{},points,geo.INITIAL_MAP_VIEW,1120,496),50000);assert.equal(drawn,50000);
+ const outside=new Float64Array([-100000,-100000]);assert.equal(canvas.paintMapPins(context,{},outside,geo.INITIAL_MAP_VIEW,1120,496),0);
+ const html=renderToStaticMarkup(createElement(EuropeMap,{locations:source}));assert.equal((html.match(/<canvas/g)||[]).length,1);assert.doesNotMatch(html,/<use /);assert.match(html,/data-location-count="50000"/);
+});
+
+test('map response decoder rejects incomplete/private-shaped or invalid coordinates without discarding valid co-located businesses',async()=>{
+ const {decodeBasicMapPoints}=await import('../src/lib/map-canvas.ts');
+ assert.equal(decodeBasicMapPoints({total:2,points:[[49,10],[49,10]]}).length,2);
+ for(const bad of [null,{total:2,points:[[49,10]]},{total:1,points:[[49,10,42]]},{total:1,points:[{lat:49,lon:10,email:'private'}]},{total:1,points:[[NaN,10]]},{total:1,points:[[49,90]]},{total:1,points:[['49',10]]}])assert.throws(()=>decodeBasicMapPoints(bad));
+});
+
+test('strict map reads report failures instead of returning a falsely complete empty result',async()=>{
+ const {loadBasicMapLocations}=await import('../src/lib/basic-map-locations.ts');
+ globalThis.__mapCalls=[];globalThis.__mapRpcHandler=async()=>({data:null,error:{message:'Unavailable'}});
+ try{await assert.rejects(loadBasicMapLocations({strict:true}),/Public map unavailable/);}finally{delete globalThis.__mapRpcHandler;}
 });
 
 

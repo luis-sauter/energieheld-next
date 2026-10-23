@@ -1,16 +1,24 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
-import { INITIAL_MAP_VIEW, MAP_HEIGHT, MAP_WIDTH, clampMapView, pinTransform, zoomMap, type MapLocation } from "@/lib/europe-map";
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import { INITIAL_MAP_VIEW, MAP_HEIGHT, MAP_WIDTH, clampMapView, zoomMap, type MapLocation } from "@/lib/europe-map";
+import { canvasMapLayout, decodeBasicMapPoints, paintMapPins, projectMapPoints } from '@/lib/map-canvas';
+import { portalColors } from '@/config/portal-colors';
 import styles from "./europe-map.module.css";
 
-export function EuropeMap({ locations }: { locations: MapLocation[] }) {
+export function EuropeMap({ locations, loadBasics = false }: { locations: MapLocation[]; loadBasics?: boolean }) {
   const [view, setView] = useState(INITIAL_MAP_VIEW);
   const [touchActive, setTouchActive] = useState(false);
   const [pinsVisible, setPinsVisible] = useState(false);
+  const [basicLocations, setBasicLocations] = useState<MapLocation[]>([]);
+  const [loadState, setLoadState] = useState<'loading' | 'loaded' | 'error'>(loadBasics ? 'loading' : 'loaded');
+  const [retry, setRetry] = useState(0);
   const svg = useRef<SVGSVGElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const sprite = useRef<{ key: string; canvas: HTMLCanvasElement } | null>(null);
+  const allLocations = useMemo(() => [...locations, ...(loadBasics ? basicLocations : [])], [locations, basicLocations, loadBasics]);
+  const points = useMemo(() => projectMapPoints(allLocations), [allLocations]);
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
-  const pinId = useId();
   const zoomed = view.width < MAP_WIDTH;
   const atDefault = view.x === INITIAL_MAP_VIEW.x && view.y === INITIAL_MAP_VIEW.y && view.width === INITIAL_MAP_VIEW.width;
   const zoom = Math.round(MAP_WIDTH / view.width * 100);
@@ -27,6 +35,53 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
+  useEffect(() => {
+    if (!pinsVisible || !loadBasics) return;
+    const controller = new AbortController();
+    void fetch('/api/map-locations', { signal: controller.signal, cache: 'no-store' })
+      .then(response => { if (!response.ok) throw Error('Map unavailable'); return response.json(); })
+      .then(decodeBasicMapPoints)
+      .then(rows => { if (!controller.signal.aborted) { setBasicLocations(rows); setLoadState('loaded'); } })
+      .catch(() => { if (!controller.signal.aborted) setLoadState('error'); });
+    return () => controller.abort();
+  }, [pinsVisible, loadBasics, retry]);
+  useEffect(() => {
+    const element = canvas.current, map = svg.current;
+    if (!pinsVisible || !element || !map) return;
+    let frame = 0;
+    const paint = () => {
+      const { width, height } = map.getBoundingClientRect();
+      if (!width || !height) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const context = element.getContext('2d');
+      if (!context) return;
+      const pixelWidth = Math.ceil(width * dpr), pixelHeight = Math.ceil(height * dpr);
+      if (element.width !== pixelWidth || element.height !== pixelHeight) { element.width = pixelWidth; element.height = pixelHeight; }
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      context.clearRect(0, 0, width, height);
+      const { pinUnit } = canvasMapLayout(view, width, height);
+      const color = getComputedStyle(element).getPropertyValue('--portal-orange').trim() || portalColors.orange;
+      const key = `${pinUnit}|${dpr}|${color}`;
+      if (sprite.current?.key !== key) {
+        const image = document.createElement('canvas');
+        image.width = Math.ceil(16 * pinUnit * dpr); image.height = Math.ceil(22 * pinUnit * dpr);
+        const pen = image.getContext('2d');
+        if (!pen) return;
+        pen.setTransform(pinUnit * dpr, 0, 0, pinUnit * dpr, 8 * pinUnit * dpr, 21 * pinUnit * dpr);
+        const path = new Path2D('M0 0C-2.5-3.5-7-8-7-12a7 7 0 1 1 14 0C7-8 2.5-3.5 0 0Z');
+        pen.fillStyle = color; pen.strokeStyle = '#fff6e9'; pen.lineWidth = .9; pen.fill(path); pen.stroke(path);
+        pen.beginPath(); pen.arc(0, -12, 2.4, 0, Math.PI * 2); pen.fillStyle = '#fff6e9'; pen.fill();
+        sprite.current = { key, canvas: image };
+      }
+      // One lightweight layer, not tens of thousands of React/SVG nodes. Every
+      // in-view location is painted; this is not sampling or a result limit.
+      element.dataset.renderedPins = String(paintMapPins(context, sprite.current.canvas, points, view, width, height));
+    };
+    const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(paint); };
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
+    observer?.observe(map); window.addEventListener('resize', schedule); schedule();
+    return () => { cancelAnimationFrame(frame); observer?.disconnect(); window.removeEventListener('resize', schedule); };
+  }, [pinsVisible, points, view]);
   useEffect(() => {
     const element = svg.current;
     if (!element) return;
@@ -82,15 +137,10 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
             }
           }}>
           <title id="map-title">Unternehmensstandorte in Europa</title>
-          <desc id="map-description">{locations.length} belegte Standorte veröffentlichter Unterkünfte und aktuell vertretener Werbekunden. Mit Plus und Minus zoomen, mit Pfeiltasten oder Ziehen verschieben, mit Pos1 zurücksetzen. Keine einzelnen Standortlinks.</desc>
-          <defs><g id={pinId} fill="var(--portal-orange)" stroke="#fff6e9" strokeWidth=".9">
-            <path d="M0 0C-2.5-3.5-7-8-7-12a7 7 0 1 1 14 0C7-8 2.5-3.5 0 0Z" />
-            <circle cx="0" cy="-12" r="2.4" fill="#fff6e9" stroke="none" />
-          </g></defs>
+          <desc id="map-description">{allLocations.length} belegte Standorte veröffentlichter Unterkünfte und aktuell vertretener Werbekunden. {loadBasics && loadState !== 'loaded' ? 'Weitere Kartenstandorte sind noch nicht vollständig geladen. ' : ''}Mit Plus und Minus zoomen, mit Pfeiltasten oder Ziehen verschieben, mit Pos1 zurücksetzen. Keine einzelnen Standortlinks.</desc>
           <image href="/reiseportal/maps/europe.svg" x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT} />
-          <g aria-hidden="true">{pinsVisible && locations.map(location => <use key={location.id} data-location-id={location.id}
-            href={`#${pinId}`} transform={pinTransform(location, view)} />)}</g>
         </svg>
+        <canvas ref={canvas} className={styles.pins} aria-hidden="true" data-location-count={allLocations.length} />
         <div className={styles.controls} role="group" aria-label="Kartenansicht">
           <button type="button" aria-label="Karte vergrößern" disabled={zoom >= 500} onClick={() => setView(current => zoomMap(current, .8))}>+</button>
           <button type="button" aria-label="Karte verkleinern" disabled={!zoomed} onClick={() => setView(current => zoomMap(current, 1.25))}>−</button>
@@ -98,6 +148,9 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
         </div>
       </div>
       <div className={styles.footnote}>
+        {loadBasics && loadState !== 'loaded' && <p role="status" className={styles.status}>
+          {loadState === 'error' ? <>Weitere Kartenstandorte konnten nicht geladen werden. <button type="button" onClick={() => { setLoadState('loading'); setRetry(value => value + 1); }}>Erneut laden</button></> : 'Kartenstandorte werden geladen…'}
+        </p>}
         <p>Mit + / − zoomen und die Karte ziehen. Am Computer auch mit Strg + Mausrad.</p>
         <button className={styles.touchButton} type="button" aria-pressed={touchActive} onClick={() => setTouchActive(active => !active)}>
           {touchActive ? "Seitenscrollen aktivieren" : "Karte per Touch verschieben"}

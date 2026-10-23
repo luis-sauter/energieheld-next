@@ -76,63 +76,73 @@ export async function loadPublicCompanyDirectory(options?: { profileIds?: string
   if (options?.profileIds && !options.profileIds.length) return { data: { listings: [], orderRows: [] }, error: null };
   try {
     const client = createPublicClient();
-    const profiles: PublicProfile[] = [];
-    // Avoid silently truncating the directory at the API's default row limit.
-    const pageSize = 500;
-    let streetReadable = true;
-    let galleryReadable = true;
-    for (let offset = 0; ; offset += pageSize) {
-      const query = client
-        .from("company_profiles")
-        .select((streetReadable ? publicFields : publicFieldsWithoutStreet).replace(galleryReadable ? "" : "gallery_initialized,", ""))
-        .eq("status", "approved")
-        .order("id")
-        .range(offset, offset + pageSize - 1);
-      const bounded = options?.directoryPreview ? query.order('sort_order', {referencedTable:'company_profile_images'})
-        .order('id', {referencedTable:'company_profile_images'}).limit(1, {referencedTable:'company_profile_images'}) : query;
-      let { data, error } = await (options?.profileIds ? bounded.in('id', options.profileIds) : bounded);
-      if (galleryReadable && (error?.code === "42703" || error?.code === "PGRST204") && error.message.includes("gallery_initialized")) {
-        galleryReadable = false; offset -= pageSize; continue;
-      }
-      if (error?.code === "42501" && streetReadable) {
-        streetReadable = false;
-        const fallback = client
+    const loadProfiles = async () => {
+      const profiles: PublicProfile[] = [];
+      // Avoid silently truncating the directory at the API's default row limit.
+      const pageSize = 500;
+      let streetReadable = true;
+      let galleryReadable = true;
+      for (let offset = 0; ; offset += pageSize) {
+        const query = client
           .from("company_profiles")
-          .select(publicFieldsWithoutStreet.replace(galleryReadable ? "" : "gallery_initialized,", ""))
+          .select((streetReadable ? publicFields : publicFieldsWithoutStreet).replace(galleryReadable ? "" : "gallery_initialized,", ""))
           .eq("status", "approved")
           .order("id")
           .range(offset, offset + pageSize - 1);
-        const boundedFallback=options?.directoryPreview?fallback.order('sort_order',{referencedTable:'company_profile_images'})
-          .order('id',{referencedTable:'company_profile_images'}).limit(1,{referencedTable:'company_profile_images'}):fallback;
-        ({ data, error } = await (options?.profileIds ? boundedFallback.in('id', options.profileIds) : boundedFallback));
+        const bounded = options?.directoryPreview ? query.order('sort_order', {referencedTable:'company_profile_images'})
+          .order('id', {referencedTable:'company_profile_images'}).limit(1, {referencedTable:'company_profile_images'}) : query;
+        let { data, error } = await (options?.profileIds ? bounded.in('id', options.profileIds) : bounded);
+        if (galleryReadable && (error?.code === "42703" || error?.code === "PGRST204") && error.message.includes("gallery_initialized")) {
+          galleryReadable = false; offset -= pageSize; continue;
+        }
+        if (error?.code === "42501" && streetReadable) {
+          streetReadable = false;
+          const fallback = client
+            .from("company_profiles")
+            .select(publicFieldsWithoutStreet.replace(galleryReadable ? "" : "gallery_initialized,", ""))
+            .eq("status", "approved")
+            .order("id")
+            .range(offset, offset + pageSize - 1);
+          const boundedFallback=options?.directoryPreview?fallback.order('sort_order',{referencedTable:'company_profile_images'})
+            .order('id',{referencedTable:'company_profile_images'}).limit(1,{referencedTable:'company_profile_images'}):fallback;
+          ({ data, error } = await (options?.profileIds ? boundedFallback.in('id', options.profileIds) : boundedFallback));
+        }
+        if (error) throw error;
+        const rows = data as unknown as PublicProfile[];
+        profiles.push(...rows.filter((row) => row.status === "approved" && isPubliclyListed(row)));
+        if (rows.length < pageSize) break;
       }
-      if (error) throw error;
-      const rows = data as unknown as PublicProfile[];
-      profiles.push(...rows.filter((row) => row.status === "approved" && isPubliclyListed(row)));
-      if (rows.length < pageSize) break;
-    }
-    const orderRows: DirectoryOrderRow[] = [];
-    let legacyOrder = false;
-    for (let offset = 0; !options?.directoryPreview; offset += pageSize) {
-      const { data, error } = await client
-        .from("company_directory_order")
-        .select(legacyOrder ? "profile_id,sort_order" : "profile_id,demo_slug,item_key,sort_order")
-        .order(legacyOrder ? "profile_id" : "item_key")
-        .range(offset, offset + pageSize - 1);
-      // The previous migration has no demo_slug/item_key yet.
-      if (!legacyOrder && (error?.code === "42703" || error?.code === "PGRST204")) {
-        legacyOrder = true;
-        offset = -pageSize;
-        orderRows.length = 0;
-        continue;
+      return profiles;
+    };
+    const loadOrder = async () => {
+      const orderRows: DirectoryOrderRow[] = [];
+      const pageSize = 500;
+      let legacyOrder = false;
+      for (let offset = 0; !options?.directoryPreview; offset += pageSize) {
+        const { data, error } = await client
+          .from("company_directory_order")
+          .select(legacyOrder ? "profile_id,sort_order" : "profile_id,demo_slug,item_key,sort_order")
+          .order(legacyOrder ? "profile_id" : "item_key")
+          .range(offset, offset + pageSize - 1);
+        // The previous migration has no demo_slug/item_key yet.
+        if (!legacyOrder && (error?.code === "42703" || error?.code === "PGRST204")) {
+          legacyOrder = true;
+          offset = -pageSize;
+          orderRows.length = 0;
+          continue;
+        }
+        // The public directory remains available until the repository migration is deployed.
+        if (error?.code === "42P01" || error?.code === "PGRST205") break;
+        if (error) throw error;
+        const rows = (data ?? []) as unknown as DirectoryOrderRow[];
+        orderRows.push(...rows);
+        if (rows.length < pageSize) break;
       }
-      // The public directory remains available until the repository migration is deployed.
-      if (error?.code === "42P01" || error?.code === "PGRST205") break;
-      if (error) throw error;
-      const rows = (data ?? []) as unknown as DirectoryOrderRow[];
-      orderRows.push(...rows);
-      if (rows.length < pageSize) break;
-    }
+      return orderRows;
+    };
+    // Independent public reads: avoid a full extra network roundtrip on every
+    // country/theme/search page. Media signing still follows live visibility.
+    const [profiles, orderRows] = await Promise.all([loadProfiles(), loadOrder()]);
     const ordered = sortByDirectoryOrder(profiles, orderRows);
     const media = await signCompanyDirectoryMedia(client, ordered, options?.cardOnly, options?.directoryPreview);
     return {

@@ -13,12 +13,13 @@ export function basicMapFingerprint(address: PublicAddress) {
 // Coordinates are a reviewed build-time projection; the existing public contact
 // visibility rules remain authoritative through the bounded anonymous RPC.
 // Never read acquisition here.
-export async function loadBasicMapLocations() {
+export async function loadBasicMapLocations(options: { strict?: boolean; signal?: AbortSignal } = {}) {
   try {
     const client = createPublicClient();
     const current = new Map<string, string>();
     const ids = Array.from(new Set(locations.map(location => location.id))).sort();
-    if (!ids.length || ids.length > 200000) return [];
+    if (!ids.length) return [];
+    if (ids.length > 200000) throw Error('Map dataset exceeds budget');
     const bounds: (string | null)[] = [null];
     for (let index = 999; index < ids.length - 1; index += 1000) bounds.push(ids[index]);
     let next = 0, requests = 0, failed = false;
@@ -30,7 +31,8 @@ export async function loadBasicMapLocations() {
           const until = bounds[index + 1] ?? null;
           while (!failed) {
             if (++requests > 200) throw Error('Map page budget exceeded');
-            const { data, error } = await client.rpc('public_basic_map_contacts', { p_after: after, p_limit: 1000 });
+            const request = client.rpc('public_basic_map_contacts', { p_after: after, p_limit: 1000 });
+            const { data, error } = await (options.signal ? request.abortSignal(options.signal) : request);
             if (error || !Array.isArray(data) || data.length > 1000) throw Error('Map page unavailable');
             let previous = after;
             for (const row of data) {
@@ -50,8 +52,11 @@ export async function loadBasicMapLocations() {
     // uses the live anonymous visibility/address gate. Continue within a range
     // when newer public rows displace snapshot IDs from its first page.
     const results = await Promise.allSettled(Array.from({ length: Math.min(4, bounds.length) }, () => worker()));
-    if (failed || results.some(result => result.status === 'rejected')) return [];
+    if (failed || results.some(result => result.status === 'rejected')) throw Error('Public map unavailable');
     const valid = locations.filter(location => current.get(location.id) === location.address_fingerprint);
     return publicMapLocations(valid, new Set(valid.map(location => location.id)));
-  } catch { return []; }
+  } catch {
+    if (options.strict) throw Error('Public map unavailable');
+    return [];
+  }
 }
