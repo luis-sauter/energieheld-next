@@ -7,12 +7,26 @@ import styles from "./europe-map.module.css";
 export function EuropeMap({ locations }: { locations: MapLocation[] }) {
   const [view, setView] = useState(INITIAL_MAP_VIEW);
   const [touchActive, setTouchActive] = useState(false);
+  const [pinsVisible, setPinsVisible] = useState(false);
   const svg = useRef<SVGSVGElement>(null);
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
   const pinId = useId();
   const zoomed = view.width < MAP_WIDTH;
   const atDefault = view.x === INITIAL_MAP_VIEW.x && view.y === INITIAL_MAP_VIEW.y && view.width === INITIAL_MAP_VIEW.width;
   const zoom = Math.round(MAP_WIDTH / view.width * 100);
+  useEffect(() => {
+    const element = svg.current;
+    if (!element) return;
+    if (typeof IntersectionObserver === "undefined") {
+      const frame = requestAnimationFrame(() => setPinsVisible(true));
+      return () => cancelAnimationFrame(frame);
+    }
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) { setPinsVisible(true); observer.disconnect(); }
+    }, { rootMargin: "400px" });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     const element = svg.current;
     if (!element) return;
@@ -74,7 +88,7 @@ export function EuropeMap({ locations }: { locations: MapLocation[] }) {
             <circle cx="0" cy="-12" r="2.4" fill="#fff6e9" stroke="none" />
           </g></defs>
           <image href="/reiseportal/maps/europe.svg" x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT} />
-          <g aria-hidden="true">{locations.map(location => <use key={location.id} data-location-id={location.id}
+          <g aria-hidden="true">{pinsVisible && locations.map(location => <use key={location.id} data-location-id={location.id}
             href={`#${pinId}`} transform={pinTransform(location, view)} />)}</g>
         </svg>
         <div className={styles.controls} role="group" aria-label="Kartenansicht">

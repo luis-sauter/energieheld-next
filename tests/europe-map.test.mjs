@@ -59,9 +59,10 @@ test('a stale local snapshot cannot expose an unpublished or moved public profil
  assert.deepEqual(companyMapLocations([{...hafner,isDemo:true}]),[]);
  assert.deepEqual(companyMapLocations([{...hafner,location:{...hafner.location,street:'Andere Adresse 1'}}]),[]);
 });
-test('map SSR includes exact public point count, accessible controls and no point links, names, filters or remote tiles',()=>{
+test('map SSR preserves public count and controls without duplicating every client marker in HTML',()=>{
  const html=renderToStaticMarkup(createElement(EuropeMap,{locations}));
- assert.equal((html.match(/data-location-id=/g)||[]).length,locations.length);
+ assert.equal((html.match(/data-location-id=/g)||[]).length,0);
+ assert.match(html,new RegExp(locations.length+' belegte Standorte'));
  assert.match(html,/Unsere Unterkünfte im Überblick/);
  assert.match(html,/Karte vergrößern/);assert.match(html,/Karte zurücksetzen/);
  assert.match(html,/href="\/reiseportal\/maps\/europe.svg"/);
@@ -71,8 +72,9 @@ test('map SSR includes exact public point count, accessible controls and no poin
 });
 test('homepage adds only map immediately after the unchanged seasonal component',()=>{
  const home=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
- assert.match(home,/<AutumnShowcase listings=\{directory.database\} \/>\s*<EuropeMap locations=\{\[\.\.\.companyMapLocations\(directory.database, searchBanners.banners\), \.\.\.basicLocations\]\} \/>/);
- assert.equal((home.match(/<EuropeMap/g)||[]).length,1);
+ assert.match(home,/<AutumnShowcase listings=\{directory.database\} \/>\s*<Suspense fallback=\{<EuropeMap locations=\{companyLocations\} \/>\}>\s*<HomeAccommodationMap locations=\{companyLocations\} \/>/);
+ assert.match(home,/async function HomeAccommodationMap/);
+ assert.match(home,/return <EuropeMap locations=\{\[\.\.\.locations, \.\.\.basicLocations\]\} \/>/);
  const component=readFileSync(new URL('../src/components/portal/europe-map.tsx',import.meta.url),'utf8');
  assert.doesNotMatch(component,/fetch\(|supabase|setInterval/);
  const css=readFileSync(new URL('../src/components/portal/europe-map.module.css',import.meta.url),'utf8');
@@ -82,6 +84,14 @@ test('homepage adds only map immediately after the unchanged seasonal component'
 test('all original 95 verified positions remain byte-for-byte unchanged',()=>{
  assert.equal(createHash('sha256').update(JSON.stringify(locations.slice(0,95))).digest('hex'),'82fc31f099b83a83dface35f899c53054764916b33448457806a2b40ed9d5688');
  assert.equal(locations.length,106);
+});
+
+test('large public map keeps initial marker HTML bounded for 50000 locations',()=>{
+ const large=Array.from({length:50000},(_,i)=>({id:'public-map-'+i,lat:48+(i%100)/1000,lon:11}));
+ const html=renderToStaticMarkup(createElement(EuropeMap,{locations:large}));
+ assert.ok(Buffer.byteLength(html)<15000,'large marker collections must not inflate the initial HTML');
+ assert.match(html,/50000 belegte Standorte/);
+ assert.doesNotMatch(html,/data-location-id=/);
 });
 test('only public active campaign identities qualify an advertiser without a profile; duplicate campaigns share one site',()=>{
  const register=[{locationId:'advertiser:verified-site',advertiserKey:'domain:example.test',campaignIds:['one','two']}];
@@ -105,7 +115,7 @@ test('shared teardrop marker tip remains the exact projected position and reset 
  const [x,y]=geo.projectLocation(locations[0].lat,locations[0].lon);
  assert.equal(geo.pinTransform(locations[0],geo.INITIAL_MAP_VIEW),`translate(${x} ${y}) scale(0.8)`);
  const html=renderToStaticMarkup(createElement(EuropeMap,{locations}));
- assert.equal((html.match(/<use /g)||[]).length,106);
+ assert.equal((html.match(/<use /g)||[]).length,0);
  assert.match(html,/d="M0 0C-2.5-3.5-7-8-7-12a7 7 0 1 1 14 0C7-8 2.5-3.5 0 0Z"/);
  assert.match(html,/cx="0" cy="-12" r="2.4"/);
  assert.match(html,/viewBox="140 62 1120 496"/);
@@ -116,7 +126,7 @@ test('shared teardrop marker tip remains the exact projected position and reset 
 test('all published Basic coordinates are minimal and live visibility/address guards fail closed',async()=>{
  const {loadBasicMapLocations,basicMapFingerprint}=await import('../src/lib/basic-map-locations.ts');
  const points=JSON.parse(readFileSync(new URL('../src/data/basic-map-locations.json',import.meta.url),'utf8'));
- assert.equal(points.length,1723);assert.equal(new Set(points.map(r=>r.id)).size,1723);
+ assert.equal(points.length,34081);assert.equal(new Set(points.map(r=>r.id)).size,34081);
  for(const row of points){assert.deepEqual(Object.keys(row).sort(),['address_fingerprint','id','lat','lon']);assert.ok(Number.isFinite(row.lat)&&Number.isFinite(row.lon));}
  const snapshot=JSON.parse(readFileSync(new URL('../public/reiseportal/data/basic-contacts-20261018-austria-switzerland.json',import.meta.url),'utf8'));
  const contacts=new Map(snapshot.entries.map(r=>[r.id,r]));
