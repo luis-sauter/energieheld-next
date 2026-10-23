@@ -126,7 +126,7 @@ test('shared teardrop marker tip remains the exact projected position and reset 
 test('all published Basic coordinates are minimal and live visibility/address guards fail closed',async()=>{
  const {loadBasicMapLocations,basicMapFingerprint}=await import('../src/lib/basic-map-locations.ts');
  const points=JSON.parse(readFileSync(new URL('../src/data/basic-map-locations.json',import.meta.url),'utf8'));
- assert.equal(points.length,34081);assert.equal(new Set(points.map(r=>r.id)).size,34081);
+ assert.equal(points.length,36010);assert.equal(new Set(points.map(r=>r.id)).size,36010);
  for(const row of points){assert.deepEqual(Object.keys(row).sort(),['address_fingerprint','id','lat','lon']);assert.ok(Number.isFinite(row.lat)&&Number.isFinite(row.lon));}
  const snapshot=JSON.parse(readFileSync(new URL('../public/reiseportal/data/basic-contacts-20261018-austria-switzerland.json',import.meta.url),'utf8'));
  const contacts=new Map(snapshot.entries.map(r=>[r.id,r]));
