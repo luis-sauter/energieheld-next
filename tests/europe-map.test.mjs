@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 registerHooks({
  resolve(specifier,context,next) {
   if(specifier==='server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
-  if(specifier==='./supabase/public')return {url:'data:text/javascript,export function createPublicClient(){return {async rpc(name,args){globalThis.__mapCalls.push({name,args});return globalThis.__mapPages.shift()??{data:[],error:null}}}}',shortCircuit:true};
+  if(specifier==='./supabase/public')return {url:'data:text/javascript,export function createPublicClient(){return {async rpc(name,args){globalThis.__mapCalls.push({name,args});return globalThis.__mapRpcHandler?globalThis.__mapRpcHandler(name,args):globalThis.__mapPages.shift()??{data:[],error:null}}}}',shortCircuit:true};
   if(specifier.endsWith('.css')) return {url:'data:text/javascript,export default {}',shortCircuit:true};
   if(specifier.startsWith('@/')||specifier.startsWith('.')) {
    const base=specifier.startsWith('@/')?new URL('../src/'+specifier.slice(2),import.meta.url):new URL(specifier,context.parentURL);
@@ -137,4 +137,17 @@ test('all published Basic coordinates are minimal and live visibility/address gu
  globalThis.__mapPages=[{data:null,error:{message:'Unavailable'}}];assert.deepEqual(await loadBasicMapLocations(),[]);
  globalThis.__mapPages=[{data:[],error:null}];assert.deepEqual(await loadBasicMapLocations(),[]);
  assert.ok(globalThis.__mapCalls.every(r=>r.name==='public_basic_map_contacts'));
+});
+
+test('bounded parallel map ranges retain all snapshot points when newer public rows displace a page',async()=>{
+ const {loadBasicMapLocations}=await import('../src/lib/basic-map-locations.ts');
+ const points=JSON.parse(readFileSync(new URL('../src/data/basic-map-locations.json',import.meta.url),'utf8'));
+ const snapshot=JSON.parse(readFileSync(new URL('../public/reiseportal/data/basic-contacts-20261018-austria-switzerland.json',import.meta.url),'utf8'));
+ const contacts=new Map(snapshot.entries.map(r=>[r.id,r]));
+ const added=Array.from({length:1200},(_,i)=>({id:'00000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),address:{city:'Unprojected public fixture'}}));
+ const live=[...added,...points.map(r=>({id:r.id,address:contacts.get(r.id).address}))].sort((a,b)=>a.id.localeCompare(b.id));
+ let active=0,peak=0;globalThis.__mapCalls=[];
+ globalThis.__mapRpcHandler=async(_name,args)=>{active++;peak=Math.max(peak,active);await new Promise(resolve=>setTimeout(resolve,2));active--;return{data:live.filter(r=>!args.p_after||r.id>args.p_after).slice(0,1000),error:null};};
+ try{const shown=await loadBasicMapLocations();assert.equal(shown.length,points.length);assert.equal(new Set(shown.map(r=>r.id)).size,points.length);assert.ok(peak>1&&peak<=4);assert.ok(globalThis.__mapCalls.length<=200);assert.ok(globalThis.__mapCalls.every(r=>r.args.p_limit===1000));}
+ finally{delete globalThis.__mapRpcHandler;}
 });
