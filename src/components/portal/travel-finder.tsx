@@ -63,7 +63,7 @@ export function TravelFinder({ mode, listings, options:existingOptions, values, 
   const queryTotal = completed && !completedSearch.error && completedSearch.total !== undefined ? completedSearch.total
     : liveCount?.status === 'ready' ? liveCount.total : undefined;
   const queryError = Boolean(completed && completedSearch.error || liveCount?.status === 'error');
-  const resultLabel = (total:number) => `${total} ${total === 1 ? 'Ergebnis' : 'Ergebnisse'} anzeigen`;
+  const resultLabel = (total:number) => `${total.toLocaleString('de-DE')} ${total === 1 ? 'Ergebnis' : 'Ergebnisse'} anzeigen`;
   const buttonLabel = searchPending ? 'Suche läuft …' : portalQuery
     ? queryTotal !== undefined ? resultLabel(queryTotal) : queryError ? 'Ergebnisse anzeigen' : 'Ergebnisse werden gezählt …'
     : profileLoading || basicEnabled&&!aggregate.value&&aggregate.loading ? 'Ergebnisse werden geladen …' : aggregate.error ? 'Ergebnisse anzeigen' : resultLabel(count);
