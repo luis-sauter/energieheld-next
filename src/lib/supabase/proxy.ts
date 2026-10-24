@@ -1,10 +1,18 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "./env";
 
 export async function updateSession(request: NextRequest) {
   const { url, publishableKey } = getSupabaseEnv();
   let response = NextResponse.next({ request });
+
+  // Match the SDK's default storage key, including chunked session cookies.
+  // With no session to refresh, do not load the auth SDK into this request.
+  // Protected pages/actions still perform their own verified authorization.
+  const storageKey = `sb-${new URL(url).hostname.split('.')[0]}-auth-token`;
+  if (!request.cookies.getAll().some(({ name }) => name === storageKey || name.startsWith(`${storageKey}.`)))
+    return response;
+
+  const { createServerClient } = await import("@supabase/ssr");
 
   const supabase = createServerClient(url, publishableKey, {
     cookies: {
