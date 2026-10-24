@@ -2,9 +2,8 @@ import type { ReactNode } from "react";
 import type { DiscoveryAdvertisingData } from "@/lib/discovery-advertising";
 import { AdvertisingLayout } from "@/components/portal/trades";
 import { InlineBannerProvider } from "./inline-banner-editor";
-import { CampaignSlot } from "./campaign-view";
+import { ContextualCampaignSlot } from "./contextual-campaign-slot";
 import { defaultSidebarOrder } from "@/lib/sidebar-order";
-import Link from "next/link";
 
 export function DiscoveryAdvertising({ data, children, compact = false }: { data?: DiscoveryAdvertisingData; children: ReactNode; compact?: boolean }) {
   if (!data) return children;
@@ -18,8 +17,7 @@ export function DiscoveryAdvertising({ data, children, compact = false }: { data
     return <InlineBannerProvider options={options}>
       {children}
       {(featured || options) && <div data-destination-promo>
-        <CampaignSlot placement={featured?.placement ?? "top_banner"} ad={featured} editorialPromo compactPremium searchResult={borrowed} />
-        {borrowed && options && <Link className="text-link" href={`/admin/werbung/${featured!.id}`}>Premium-Banner bearbeiten →</Link>}
+        <ContextualCampaignSlot editorOptions={data.editorOptions} placement={featured?.placement ?? "top_banner"} ad={featured} editorialPromo compactPremium searchResult={borrowed} />
       </div>}
       {options && <details data-destination-banner-management>
         <summary>Alle Bannerplätze verwalten</summary>

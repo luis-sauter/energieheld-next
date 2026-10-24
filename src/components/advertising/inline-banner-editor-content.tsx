@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { BannerMediaPicker } from "./banner-media-picker";
 
 import { useEffect, useRef, useState, type ReactNode, type FormEvent } from "react";
@@ -91,6 +90,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
   onRemoved: (warning?: string) => void;
   onMetadataSaved: () => void;
 }) {
+  const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
   const busyRef = useRef(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -298,7 +298,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
 
         </fieldset>
         {error && <p role="alert">{error}</p>}
-        {campaignId && <Link href={`/admin/werbung/${campaignId}`}>Gespeicherten Entwurf öffnen</Link>}
+        {campaignId && <button type="button" className="button" onClick={() => { onClose(); router.refresh(); }}>Zum gespeicherten Entwurf am Banner</button>}
         <div className={styles.actions}><button type="submit" className="button button-primary" disabled={busy || blocked || !archivedId || Boolean(campaignId) || Boolean(options.error)}>{busy ? 'Setzt ein …' : 'Banner einsetzen'}</button><button type="button" className="button" disabled={busy} onClick={onClose}>Abbrechen</button></div>
       </> : <>
       {!selected.banner && <p className={styles.hint}>Das Banner erscheint ab sofort, bis Sie es entfernen.</p>}
@@ -310,7 +310,7 @@ export function InlineBannerDialog({ options, selected, onClose, onSaved, onChan
       <fieldset disabled={busy} className={styles.fields}>
         <BannerSearchFields value={metadata} terms={options.terms ?? []} advertisers={options.advertisers} onChange={setMetadata} />
       </fieldset>
-      {metadataOnly && <p className={styles.hint}>Bei gebuchten oder geteilten Bannern ändern Sie hier nur die Suchdaten. Bild, Ziel-URL und Buchung bleiben unverändert. <Link href={`/admin/werbung/${selected.banner!.id}`}>Banner in der bestehenden Verwaltung bearbeiten</Link></p>}
+      {metadataOnly && <p className={styles.hint}>Bei gebuchten oder geteilten Bannern ändern Sie hier nur die Suchdaten. Bild, Ziel-URL und Buchung bleiben unverändert.</p>}
       <fieldset disabled={busy || metadataOnly} className={styles.fields}>
         <button type="button" className="button" onClick={() => setLibraryOpen(true)}>{preview ? "Bild ersetzen" : "Bild hinzufügen"}</button>
         {file && <p role="status">Bild ausgewählt. Erst „Banner speichern“ übernimmt die Änderung.</p>}

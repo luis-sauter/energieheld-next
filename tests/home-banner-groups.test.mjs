@@ -17,6 +17,7 @@ vm.runInNewContext(transpileModule(file,{compilerOptions:{module:ModuleKind.Comm
  if(name==='next/link')return {default:({children,...props})=>createElement('a',props,children)};
  if(name==='./inline-banner-context')return {useInlineBanners:()=>inline};
  if(name==='./campaign-view')return {CampaignSlot};
+ if(name==='./contextual-campaign-slot')return {ContextualCampaignSlot:CampaignSlot};
  if(name==='../portal/motto-row')return {MottoRow:({children,label})=>createElement('div',{role:'region','aria-label':label},children)};
  if(name==='./advertising-rail')return {AdvertisingRail:({visibleSlots,ads})=>createElement('div',{},visibleSlots.filter(slot=>inline||ads.some(row=>row.placement===slot&&!row.suppressed)).map(slot=>createElement(CampaignSlot,{key:slot,placement:slot,ad:ads.find(row=>row.placement===slot)})))};
  if(name.endsWith('.module.css'))return {default:{partners:'partners'}};
@@ -30,7 +31,7 @@ test('supplementary footer creative keeps its own campaign editing target, indep
  inline=null;let html=renderToStaticMarkup(createElement(loaded.exports.HomeBannerGroup,props));
  assert.match(html,/example.org\/supplementary/);assert.doesNotMatch(html,/example.org\/booked|\/admin\/werbung/);
  inline={overrides:{top_banner:booked}};html=renderToStaticMarkup(createElement(loaded.exports.HomeBannerGroup,props));
- assert.match(html,/href="\/admin\/werbung\/supplementary"/);assert.match(html,/example.org\/supplementary/);assert.doesNotMatch(html,/example.org\/booked/);inline=null;
+ assert.doesNotMatch(html,/\/admin\/werbung/);assert.match(html,/example.org\/supplementary/);assert.doesNotMatch(html,/example.org\/booked/);inline=null;
 });
 
 test('admin retains an add action for an emptied fifth slider slot without resurrecting static banners',()=>{

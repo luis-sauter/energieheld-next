@@ -66,7 +66,7 @@ test('existing-banner picker uses the same insertion action and exposes a recove
  tree=render(props);find(tree,n=>n.type==='select'&&n.props.required).props.onChange({target:{value:'existing'}});
  await find(render(props),n=>n.type==='form').props.onSubmit({preventDefault(){}});
  assert.equal(calls[0].reuse_origin,'existing');assert.equal(calls[0].archived_id,'existing');
- tree=render(props);assert.equal(find(tree,n=>n.props?.href==='/admin/werbung/saved-copy').props.children,'Gespeicherten Entwurf öffnen');
+ tree=render(props);assert.ok(find(tree,n=>n.type==='button'&&n.props.children==='Zum gespeicherten Entwurf am Banner'));assert.equal(find(tree,n=>n.props?.href==='/admin/werbung/saved-copy'),undefined);
  assert.equal(find(tree,n=>n.type==='button'&&n.props.type==='submit').props.disabled,true);
  await find(tree,n=>n.type==='form').props.onSubmit({preventDefault(){}});assert.equal(calls.length,1);
 });

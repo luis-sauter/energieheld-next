@@ -2,6 +2,7 @@ import Link from "@/components/portal/navigation-link";
 import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
 import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
 import { HomeBannerGroup } from "@/components/advertising/home-banner-group";
+import { loadBorrowedBannerEditing } from '@/lib/borrowed-banner-editing';
 import { homeBannerRows } from '@/lib/home-banner-selection';
 import { staticPremiumAds } from '@/lib/motto-rows';
 import { randomUUID } from "node:crypto";
@@ -45,6 +46,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const bannerRows = homeBannerRows(ads);
   const mainPremiumId = ads.find(ad => ad.placement === 'top_banner')?.id;
   const footerPremium = staticPremiumAds([], searchBanners.banners.map(banner => banner.ad).filter(ad => ad.id !== mainPremiumId), 'homepage-footer')[0];
+  const footerEditorOptions = await loadBorrowedBannerEditing(footerPremium ? [footerPremium] : [], searchBanners.banners, bannerOptions);
   const companyLocations = companyMapLocations(directory.database, searchBanners.banners);
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
@@ -75,7 +77,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     </section>
 
 
-    <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige vor dem Gastgeberbereich" instanceId="footer" supplementaryAd={footerPremium} />
+    <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige vor dem Gastgeberbereich" instanceId="footer" supplementaryAd={footerPremium} editorOptions={footerEditorOptions} />
     <section className={`${styles.provider} container`} aria-labelledby="provider-title">
       <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Ihre Unterkunft auf DAS-Reiseportal.com</h2>
         <p>Machen Sie Ihre Unterkunft dort sichtbar, wo neue Reisepläne entstehen. Wir beraten Sie persönlich – unverbindlich und ohne Registrierung.</p></div>

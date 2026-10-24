@@ -26,6 +26,12 @@ export async function loadBannerWorkspacePages(client:SupabaseClient){
 // Navigation only: never creates, approves or retargets a campaign.
 export function campaignInlinePage(c:AdCampaign,today=berlinToday()){
  if(c.archived_at||c.status!=="approved"||!c.approved_start_date||!c.approved_end_date||c.approved_start_date>today||c.approved_end_date<today||c.targets.length!==1)return null;
+ return campaignTargetPage(c);
+}
+// Admin editor navigation also supports unpublished editorial drafts. It does
+// not change their status or make their creative visible to visitors.
+export function campaignTargetPage(c:AdCampaign){
+ if(c.archived_at||c.targets.length!==1)return null;
  const t=c.targets[0];const path=t.target_type==="homepage"?"/":t.target_type==="experts_directory"?"/unterkuenfte-a-z":t.target_type==="portal_area"?"/"+t.target_key:null;
  return path&&inlineAdContext(path)?path:null;
 }

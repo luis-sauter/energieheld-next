@@ -7,8 +7,9 @@ import type { SidebarSlot } from "@/lib/sidebar-order";
 import styles from "@/app/(energieheld)/home.module.css";
 import { MottoRow } from '../portal/motto-row';
 import rowStyles from '../portal/motto-detail.module.css';
-import Link from 'next/link';
-export function HomeBannerGroup({ ads, placements, label, adminOnly = false, sliderAds, instanceId, supplementaryAd }: { ads: ActiveAd[]; placements: AdPlacementId[]; label: string; adminOnly?: boolean; sliderAds?: ActiveAd[]; instanceId?: string; supplementaryAd?: ActiveAd }) {
+import { ContextualCampaignSlot } from './contextual-campaign-slot';
+import type { InlineBannerOptions } from '@/lib/inline-ad-context';
+export function HomeBannerGroup({ ads, placements, label, adminOnly = false, sliderAds, instanceId, supplementaryAd, editorOptions }: { ads: ActiveAd[]; placements: AdPlacementId[]; label: string; adminOnly?: boolean; sliderAds?: ActiveAd[]; instanceId?: string; supplementaryAd?: ActiveAd; editorOptions?: Record<string, InlineBannerOptions> }) {
   const inline = useInlineBanners();
   const visible = Boolean(supplementaryAd?.imageUrl || sliderAds?.length) || placements.some(slot => {
     const ad = inline && Object.hasOwn(inline.overrides, slot) ? inline.overrides[slot] : ads.find(row => row.placement === slot);
@@ -25,8 +26,7 @@ export function HomeBannerGroup({ ads, placements, label, adminOnly = false, sli
   </section>;
   return <section className={`section container ${styles.partners}`} aria-label={label}>
     {placements[0] === "top_banner" ? <>
-      {inline && supplementaryAd && <Link className="text-link" href={`/admin/werbung/${supplementaryAd.id}`}>Banner bearbeiten</Link>}
-      <CampaignSlot compactPremium searchResult={Boolean(supplementaryAd)} instanceId={instanceId} showLabel={false} placement="top_banner" ad={supplementaryAd ?? ads.find(row => row.placement === "top_banner")} />
+      <ContextualCampaignSlot editorOptions={editorOptions} compactPremium searchResult={Boolean(supplementaryAd)} instanceId={instanceId} showLabel={false} placement="top_banner" ad={supplementaryAd ?? ads.find(row => row.placement === "top_banner")} />
     </>
       : <AdvertisingRail slots={placements as SidebarSlot[]} visibleSlots={placements as SidebarSlot[]} ads={displayedAds} showAdvertiseLink={false} />}
   </section>;

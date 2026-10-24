@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdminAccess } from "@/lib/admin";
 import { loadAdCampaigns } from "@/lib/ad-campaigns";
 import { createCampaign } from "@/app/(energieheld)/firma/werbung/actions";
-import { campaignInlinePage } from "@/lib/editorial-workspace";
+import { campaignInlinePage, campaignTargetPage } from "@/lib/editorial-workspace";
 import { inlineAdContext } from "@/lib/inline-ad-context";
 import { loadBannerPresentations } from "@/lib/banner-presentation-loader";
 import { displayPlacement } from "@/lib/banner-presentation";
@@ -101,9 +101,10 @@ export async function CampaignDetail({
   const campaign = "campaigns" in result ? result.campaigns?.[0] : undefined;
   if (!campaign && !("error" in result && result.error)) notFound();
   if (admin && campaign?.request_status) return <main id="hauptinhalt" className={`container ${styles.page}`}><Link href="/admin/werbung?ansicht=pruefung">← Zur Anfragenübersicht</Link><h1>Angebotsanfrage</h1><OfferRequestDetail campaign={campaign}/><Link href="/admin/werbung">Alle Anfragen und Kampagnen</Link></main>;
-  const inlinePath = admin && campaign ? campaignInlinePage(campaign) : null;
+  const inlinePath = admin && campaign ? campaign.is_editorial ? campaignTargetPage(campaign) : campaignInlinePage(campaign) : null;
   const presentation = inlinePath ? await loadBannerPresentations(client, inlineAdContext(inlinePath)!) : null;
   const inlineHref = inlinePath && !presentation?.error ? `${inlinePath}#banner-${displayPlacement(campaign!.targets[0].placement, presentation?.rows ?? [])}` : null;
+  if (inlineHref && campaign?.is_editorial) redirect(inlineHref);
   const metadata = admin && campaign ? await loadBannerMetadata(client, [`campaign:${campaign.id}`]) : undefined;
   return (
     <main id="hauptinhalt" className={`container ${styles.page}`}>

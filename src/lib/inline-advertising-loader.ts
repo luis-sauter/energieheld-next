@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from 'react';
 import { reusableBanners } from './reusable-banners';
 import { createClient } from "./supabase/server";
 import { checkAdmin } from "./admin-review";
@@ -11,21 +12,30 @@ import { displayPlacement, presentedBanners } from "./banner-presentation";
 import { loadBannerMetadata, legacyBannerKey } from './banner-search-metadata';
 import { legacyBannerPages } from '../data/legacy-banner-pages';
 
+// One verified inventory per server render, even when several reused banners
+// need editors bound to different source pages. Never shared between users.
+const loadAdminInventory = cache(async () => {
+  const client = await createClient();
+  if (await checkAdmin(client) !== 'admin') return;
+  const [loaded, booked] = await Promise.all([
+    client.from('company_ad_campaigns').select('*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement)').order('created_at', { ascending: false }),
+    client.rpc('get_ad_slot_availability', { p_start: berlinToday(), p_end: '9999-12-31', p_exclude_campaign_id: null }),
+  ]);
+  return { client, loaded, booked };
+});
+
 export async function loadInlineBannerOptions(path: string): Promise<InlineBannerOptions | undefined> {
   const context = inlineAdContext(path, true);
   if (!context) return;
   try {
-    const client = await createClient();
-    if (await checkAdmin(client) !== "admin") return;
+    const inventory = await loadAdminInventory();
+    if (!inventory) return;
+    const { client, loaded, booked } = inventory;
     if (!inlineAdContext(path)) {
       const areas = await client.rpc('public_banner_search_contexts');
       if (areas.error || !areas.data?.some((area: { path: string }) => area.path === path)) return;
     }
-    const [loaded, booked, settings] = await Promise.all([
-      client.from("company_ad_campaigns").select("*,targets:company_ad_campaign_targets(target_type,category_id,target_key,placement)").order("created_at", { ascending: false }),
-      client.rpc("get_ad_slot_availability", { p_start: berlinToday(), p_end: "9999-12-31", p_exclude_campaign_id: null }),
-      loadBannerPresentations(client, context),
-    ]);
+    const settings = await loadBannerPresentations(client, context);
     const today = berlinToday();
     const rows = ((loaded.data ?? []) as AdCampaign[]).filter((row) =>
       !row.archived_at &&

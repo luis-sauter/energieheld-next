@@ -4,7 +4,7 @@ import type { DiscoveryEntry } from '@/data/reiseportal-discovery';
 import type { Listing } from '@/types/portal';
 import type { DiscoveryAdvertisingData } from '@/lib/discovery-advertising';
 import { InlineBannerProvider } from '../advertising/inline-banner-editor';
-import { CampaignSlot } from '../advertising/campaign-view';
+import { ContextualCampaignSlot } from '../advertising/contextual-campaign-slot';
 import { AdvertisingLayout } from './trades';
 import { AccommodationCard } from './discovery-detail';
 import { Breadcrumbs } from './breadcrumbs';
@@ -51,12 +51,11 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
                 cardEditing={Boolean(advertising?.options)} showImportMarker sizes="(max-width: 600px) 86vw, (max-width: 900px) 45vw, 360px" />)}
             </MottoRow>}
             {bannerRows[i] && <div className={`${styles.bannerRow}${destination || entry.slug === 'skifahren' ? ` ${styles.countryBannerRow}` : ''}`}><MottoRow label={`Banner, Reihe ${i + 1}`} speed={[22, 24][i]} direction={rowDirection}>
-              {bannerRows[i].map(ad => <CampaignSlot key={ad.id} placement={ad.placement} ad={ad}
+              {bannerRows[i].map(ad => <ContextualCampaignSlot editorOptions={advertising?.editorOptions} key={ad.id} placement={ad.placement} ad={ad}
                 searchResult={!advertising?.ads.some(local => local.id === ad.id)} />)}
             </MottoRow></div>}
             {!destination && advertising?.premiumAds?.[i] && <div className={styles.premiumRow} data-static-premium={i + 1}>
-              <CampaignSlot placement="top_banner" ad={advertising.premiumAds[i]} compactPremium searchResult />
-              {advertising.options && <Link className="text-link" href={`/admin/werbung/${advertising.premiumAds[i].id}`}>Premium-Banner bearbeiten →</Link>}
+              <ContextualCampaignSlot editorOptions={advertising.editorOptions} placement="top_banner" ad={advertising.premiumAds[i]} compactPremium searchResult />
             </div>}
           </div>)}
           {!companies.length && <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}

@@ -23,6 +23,8 @@ const stubs = {
  '@/components/advertising/discovery-advertising':'export function DiscoveryAdvertising({children}){return children;}',
 };
 stubs['./advertising-rail']=stubs['@/components/advertising/advertising-rail'];
+stubs['./contextual-campaign-slot']='import {createElement} from "react";export function ContextualCampaignSlot({placement,ad}){return ad ? createElement("aside",{"data-placement":placement},ad.id):null;}';
+stubs['../advertising/contextual-campaign-slot']=stubs['./contextual-campaign-slot'];
 stubs['./campaign-view']=stubs['@/components/advertising/campaign-view'];
 stubs['../advertising/campaign-view']=stubs['@/components/advertising/campaign-view'];
 stubs['../advertising/inline-banner-editor']=stubs['@/components/advertising/inline-banner-editor'];
