@@ -55,7 +55,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
                 searchResult={!advertising?.ads.some(local => local.id === ad.id)} />)}
             </MottoRow></div>}
             {!destination && advertising?.premiumAds?.[i] && <div className={styles.premiumRow} data-static-premium={i + 1}>
-              <ContextualCampaignSlot editorOptions={advertising.editorOptions} placement="top_banner" ad={advertising.premiumAds[i]} compactPremium searchResult />
+              <ContextualCampaignSlot editorOptions={advertising.editorOptions} placement="top_banner" ad={advertising.premiumAds[i]} compactPremium searchResult={!advertising.ads.some(local => local.id === advertising.premiumAds[i].id)} />
             </div>}
           </div>)}
           {!companies.length && <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}

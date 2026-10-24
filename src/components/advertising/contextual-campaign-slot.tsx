@@ -11,7 +11,7 @@ export function ContextualCampaignSlot({ editorOptions, ...props }: ComponentPro
   const banner = options?.banners.find(item => item.id === props.ad?.id);
   // Each appearance owns its preview overrides. Editing a footer or borrowed
   // banner must not replace another banner with the same placement name.
-  return options && banner ? <InlineBannerProvider options={options}>
-    <CampaignSlot {...props} placement={banner.placement} searchResult={false} />
+  return props.searchResult && options && banner ? <InlineBannerProvider key={banner.id} options={options}>
+    <CampaignSlot {...props} placement={banner.placement} instanceId={props.instanceId ?? `campaign-${banner.id}`} searchResult={false} />
   </InlineBannerProvider> : <CampaignSlot {...props} />;
 }
