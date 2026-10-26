@@ -10,8 +10,7 @@ import { selectHomeStays } from "@/lib/home-stays";
 import { MottoRow } from "@/components/portal/motto-row";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
 import { AutumnShowcase } from "@/components/portal/autumn-showcase";
-import { EuropeMap } from "@/components/portal/europe-map";
-import { companyMapLocations } from "@/lib/company-map-locations";
+import { StaticHomeMap } from "@/components/portal/static-home-map";
 import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
 import { TravelQuicklinks } from "@/components/portal/travel-quicklinks";
@@ -47,7 +46,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const mainPremiumId = ads.find(ad => ad.placement === 'top_banner')?.id;
   const footerPremium = staticPremiumAds([], searchBanners.banners.map(banner => banner.ad).filter(ad => ad.id !== mainPremiumId), 'homepage-footer')[0];
   const footerEditorOptions = await loadBorrowedBannerEditing(footerPremium ? [footerPremium] : [], searchBanners.banners, bannerOptions);
-  const companyLocations = companyMapLocations(directory.database, searchBanners.banners);
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>
     <JsonLd data={jsonLdGraph(websiteSchema())} />
@@ -63,7 +61,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <AutumnShowcase listings={directory.database} />
 
-    <EuropeMap locations={companyLocations} loadBasics={basicIntegrationEnabled()} />
+    <StaticHomeMap />
 
     <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06", "sidebar_09", "sidebar_10"]} sliderAds={bannerRows[1]} label="Anzeigen nach den Reisezielen" />
 
