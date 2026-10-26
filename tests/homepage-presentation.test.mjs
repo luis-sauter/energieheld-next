@@ -334,6 +334,29 @@ test('Carola styles are isolated, keep text untruncated and provide keyboard/tou
  const homeCss=read('src/app/(energieheld)/home.module.css');assert.doesNotMatch(homeCss,/accommodation-card-copy|accommodation-card-image/);
 });
 
+test('all four countries interleave the same static Premium format after normal banner rows, with page-specific selection',async()=>{
+ const {staticPremiumAds}=await import('../src/lib/motto-rows.ts');
+ const pool=Array.from({length:6},(_,i)=>({id:`premium-${i}`,placement:'top_banner',imageUrl:`/premium-${i}.webp`,image_path:`campaigns/premium-${i}/creative/banner.webp`,target_url:`https://example.org/${i}`}));
+ const ads=Array.from({length:8},(_,i)=>({id:`normal-${i}`,placement:'sidebar_top',imageUrl:`/normal-${i}.webp`,target_url:`https://example.org/normal/${i}`}));
+ const before=JSON.stringify({pool,ads,profiles}),selections=[];
+ for(const entry of destinations){
+  const premiumAds=staticPremiumAds([],pool,`/reiseziele/${entry.slug}`);
+  selections.push(premiumAds.map(ad=>ad.id).join(','));
+  const html=renderToStaticMarkup(createElement(MottoDetail,{entry,kind:'destination',listings:profiles,seed:'country-check',advertising:{ads,sliderAds:ads,premiumAds,editorOptions:{}}}));
+  assert.equal((html.match(/data-static-premium=/g)||[]).length,2,entry.slug);
+  const first=html.indexOf('data-static-premium="1"'),second=html.indexOf('data-static-premium="2"');
+  assert.ok(html.indexOf('Unterkünfte, Reihe 1')<html.indexOf('Banner, Reihe 1'));
+  assert.ok(html.indexOf('Banner, Reihe 1')<first&&first<html.indexOf('Unterkünfte, Reihe 2'));
+  assert.ok(html.indexOf('Banner, Reihe 2')<second&&second<html.indexOf('Unterkünfte, Reihe 3'));
+  const slots=[...html.matchAll(/data-static-premium="\d">([\s\S]*?)<\/div>/g)];
+  for(let i=0;i<slots.length;i++){assert.match(slots[i][1],/data-placement="top_banner"/);assert.ok(slots[i][1].includes(premiumAds[i].id));assert.doesNotMatch(slots[i][1],/role="region"|data-speed=|<button/);}
+  assert.match(html,new RegExp(`href="/unterkuenfte-a-z\\?ziel=${entry.slug}"`));
+  assert.equal((html.match(/href="\/unterkuenfte\//g)||[]).length,profiles.length);
+ }
+ assert.ok(new Set(selections).size>1);
+ assert.equal(JSON.stringify({pool,ads,profiles}),before);
+});
+
 test('three fade variants are confined to Natur pur company rows, never other themes, destinations, home or banners',()=>{
  const render=(entry,kind='theme')=>renderToStaticMarkup(createElement(MottoDetail,{entry,kind,listings:profiles,seed:'fade-check',advertising:{ads:[{id:'banner',placement:'sidebar_01',imageUrl:'/existing.jpg',target_url:'https://example.org'}]}}));
  const nature=render(travelThemes.find(e=>e.slug==='natur-pur'));
