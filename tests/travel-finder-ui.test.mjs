@@ -67,7 +67,7 @@ test("both routes use the same finder and show actual initial totals", () => {
   assert.match(source("src/components/portal/travel-directory.tsx"), /<TravelFinder mode="directory"/);
   const html = render(readTravelFilterValues({}));
   assert.match(html, /redesign\/unterkuenfte\/hero\.webp/);
-  assert.match(html, /Finde passende Unterkünfte/);
+  assert.match(html, /Finden Sie passende Unterkünfte/);
   assert.doesNotMatch(html, /<video/);
   const homeHtml = render(readTravelFilterValues({}), "home");
   assert.match(homeHtml, /hero-poster\.webp/);

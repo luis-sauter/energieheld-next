@@ -100,15 +100,14 @@ test("travel footer contains only brand, contact and utility links, without disc
   assert.doesNotMatch(html, /Flurstraße|Am Haag|81266|livin-q/);
 });
 
-test("legal pages reproduce the sanitized original WEIDNER body verbatim without claiming a legal approval", async () => {
+test("legal pages preserve the approved sanitized body without an editorial review notice", async () => {
   const sources=JSON.parse(readFileSync(new URL('../src/data/weidner-legal-source.json',import.meta.url),'utf8'));
   const hashes={impressum:'85fef99096c165ea2173c65c0de8b220f217651cb59a9766105d44bf89ab7c72',datenschutz:'8e1468ee53bdd4654a2e9cc17efcd1a82b2a72471f41466319f5bbc247e7ca6a'};
   for (const route of ['impressum', 'datenschutz']) {
     const page = await import('../src/app/(energieheld)/'+route+'/page.tsx');
     assert.equal(page.metadata.robots.index, false);
     const html = renderToStaticMarkup(createElement(page.default));
-    assert.match(html, /Unveränderte Quellenübernahme/);
-    assert.match(html, /Eine rechtliche Prüfung für DAS-Reiseportal.com ist damit nicht erfolgt/);
+    assert.doesNotMatch(html, /Unveränderte Quellenübernahme|Eine rechtliche Prüfung für DAS-Reiseportal.com ist damit nicht erfolgt/);
     assert.ok(html.includes(sources[route].html));
     assert.equal(sources[route].textSha256,hashes[route]);
     assert.doesNotMatch(sources[route].html,/<(?:script|style|iframe|img|form|input|button)\b|\son\w+=|\sstyle=|javascript:/i);
@@ -206,7 +205,7 @@ test("homepage uses the supplied MP4 as the hero background with search above it
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   assert.ok(existsSync(new URL("../public/reiseportal/hero-loop.mp4", import.meta.url)));
   assert.match(source, /<HomeTravelFinder.*listings=/);
-  assert.match(finder, /<section className="travel-hero"[\s\S]*?<HomeHeroMedia[\s\S]*?<h1 id="travel-hero-title">[\s\S]*?Finde deinen passenden Urlaub[\s\S]*?<\/h1>[\s\S]*?renderFinder\(finder\) : finder/);
+  assert.match(finder, /<section className="travel-hero"[\s\S]*?<HomeHeroMedia[\s\S]*?<h1 id="travel-hero-title">[\s\S]*?Finden Sie Ihren passenden Urlaub[\s\S]*?<\/h1>[\s\S]*?renderFinder\(finder\) : finder/);
   assert.match(media, /<source src="\/reiseportal\/hero-loop\.mp4"/);
   assert.match(css, /\.travel-hero > video\s*\{[^}]*object-fit: cover;[^}]*pointer-events: none;/);
   assert.doesNotMatch(source, /<Image src="\/reiseportal\/hero\.jpg"/);
