@@ -5,7 +5,7 @@ globalThis.previewFixture={id:'6cd02ae2-75ab-4273-8cd8-fc62da38b2db',slug:'unter
 registerHooks({resolve(s,c,next){
  if(s==='server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
  if(s.endsWith('.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
- if(s==='next/link')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export default function Link({prefetch,...p}){return createElement("a",p)}'),shortCircuit:true};
+ if(s==='next/link')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export function useLinkStatus(){return {pending:false}};export default function Link({prefetch,...p}){return createElement("a",p)}'),shortCircuit:true};
  if(s==='next/image')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export default function Image({fill,unoptimized,priority,...p}){return createElement("img",p)}'),shortCircuit:true};
  if(s==='next/navigation')return {url:'data:text/javascript,export function notFound(){throw Error("NOT_FOUND")}',shortCircuit:true};
  if(s==='@/components/leads/inquiry-dialog')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export function InquiryDialog({profileId}){return createElement("button",{"data-contact-profile":profileId},"Kontakt aufnehmen")}'),shortCircuit:true};

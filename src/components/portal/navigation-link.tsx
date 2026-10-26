@@ -1,6 +1,6 @@
 "use client";
 
-import NextLink from "next/link";
+import NextLink, { useLinkStatus } from "next/link";
 import type { ComponentProps } from "react";
 
 export function loadsPortalData(href: ComponentProps<typeof NextLink>["href"]) {
@@ -10,6 +10,13 @@ export function loadsPortalData(href: ComponentProps<typeof NextLink>["href"]) {
 
 // These routes load galleries/search data. A visible link must not start that
 // database work in the background, including duplicate desktop/mobile links.
+function NavigationPending() {
+  const { pending } = useLinkStatus();
+  return pending ? <span className="portal-navigation-pending" role="status"><span className="sr-only">Seite wird geladen …</span></span> : null;
+}
+
 export default function NavigationLink(props: ComponentProps<typeof NextLink>) {
-  return <NextLink {...props} prefetch={loadsPortalData(props.href) ? false : props.prefetch} />;
+  return <NextLink {...props} prefetch={loadsPortalData(props.href) ? false : props.prefetch}>
+    {props.children}<NavigationPending />
+  </NextLink>;
 }

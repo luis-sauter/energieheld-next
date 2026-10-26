@@ -9,6 +9,10 @@ const countryNames: Record<string, readonly string[]> = {
   "suedtirol-italien": ["Italien", "Italy", "IT"],
 };
 
+export function discoveryCountryNames(destination: string) {
+  return countryNames[destination];
+}
+
 export function filterTravelDiscovery(
   items: Listing[], destination: string, theme: string,
   audience = "", accommodation = "", feature = "",

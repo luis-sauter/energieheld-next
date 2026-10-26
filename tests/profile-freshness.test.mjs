@@ -10,7 +10,7 @@ registerHooks({
   if(s==='server-only'||s==='next/cache')return {url:'data:text/javascript,export function revalidatePath(){}',shortCircuit:true};
   if(s.endsWith('.module.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
   if(s==='next/navigation')return {url:'data:text/javascript,export function useRouter(){return {refresh(){}}};export function redirect(){throw Error("DENIED")};export const notFound=redirect',shortCircuit:true};
-  if(s==='next/link'||s==='next/image')return {url:`data:text/javascript,export default ${JSON.stringify(s==='next/link'?'a':'img')}`,shortCircuit:true};
+  if(s==='next/link'||s==='next/image')return {url:`data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(s==='next/link'?'a':'img')}`,shortCircuit:true};
   if(s.endsWith('/supabase/server'))return {url:'data:text/javascript,export async function createClient(){return globalThis.freshnessClient}',shortCircuit:true};
   if(s.endsWith('/supabase/public'))return {url:'data:text/javascript,export function createPublicClient(){return globalThis.freshnessPublicClient}',shortCircuit:true};
   if(s.startsWith('@/')||s.startsWith('.')){const b=s.startsWith('@/')?new URL('../src/'+s.slice(2),import.meta.url):new URL(s,c.parentURL);for(const e of ['.ts','.tsx'])if(existsSync(new URL(b.href+e)))return next(b.href+e,c);}

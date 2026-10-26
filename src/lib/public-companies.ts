@@ -72,7 +72,7 @@ async function toListing(
 
 type Result<T> = { data: T; error: null } | { data: null; error: string };
 
-export async function loadPublicCompanyDirectory(options?: { profileIds?: string[]; cardOnly: boolean; directoryPreview?: boolean }): Promise<Result<{ listings: Listing[]; orderRows: DirectoryOrderRow[] }>> {
+export async function loadPublicCompanyDirectory(options?: { profileIds?: string[]; cardOnly: boolean; directoryPreview?: boolean; travelTheme?: string; countries?: readonly string[] }): Promise<Result<{ listings: Listing[]; orderRows: DirectoryOrderRow[] }>> {
   if (options?.profileIds && !options.profileIds.length) return { data: { listings: [], orderRows: [] }, error: null };
   try {
     const client = createPublicClient();
@@ -85,10 +85,12 @@ export async function loadPublicCompanyDirectory(options?: { profileIds?: string
       for (let offset = 0; ; offset += pageSize) {
         const query = client
           .from("company_profiles")
-          .select((streetReadable ? publicFields : publicFieldsWithoutStreet).replace(galleryReadable ? "" : "gallery_initialized,", ""))
+          .select((streetReadable ? publicFields : publicFieldsWithoutStreet).replace(galleryReadable ? "" : "gallery_initialized,", "") + (options?.travelTheme ? ',theme_match:company_profile_travel_terms!inner(term_key)' : ''))
           .eq("status", "approved")
           .order("id")
           .range(offset, offset + pageSize - 1);
+        if (options?.travelTheme) query.eq('theme_match.term_key', `theme:${options.travelTheme}`);
+        if (options?.countries) query.in('country', [...options.countries]);
         const bounded = options?.directoryPreview ? query.order('sort_order', {referencedTable:'company_profile_images'})
           .order('id', {referencedTable:'company_profile_images'}).limit(1, {referencedTable:'company_profile_images'}) : query;
         let { data, error } = await (options?.profileIds ? bounded.in('id', options.profileIds) : bounded);
@@ -99,17 +101,20 @@ export async function loadPublicCompanyDirectory(options?: { profileIds?: string
           streetReadable = false;
           const fallback = client
             .from("company_profiles")
-            .select(publicFieldsWithoutStreet.replace(galleryReadable ? "" : "gallery_initialized,", ""))
+            .select(publicFieldsWithoutStreet.replace(galleryReadable ? "" : "gallery_initialized,", "") + (options?.travelTheme ? ',theme_match:company_profile_travel_terms!inner(term_key)' : ''))
             .eq("status", "approved")
             .order("id")
             .range(offset, offset + pageSize - 1);
+          if (options?.travelTheme) fallback.eq('theme_match.term_key', `theme:${options.travelTheme}`);
+          if (options?.countries) fallback.in('country', [...options.countries]);
           const boundedFallback=options?.directoryPreview?fallback.order('sort_order',{referencedTable:'company_profile_images'})
             .order('id',{referencedTable:'company_profile_images'}).limit(1,{referencedTable:'company_profile_images'}):fallback;
           ({ data, error } = await (options?.profileIds ? boundedFallback.in('id', options.profileIds) : boundedFallback));
         }
         if (error) throw error;
         const rows = data as unknown as PublicProfile[];
-        profiles.push(...rows.filter((row) => row.status === "approved" && isPubliclyListed(row)));
+        profiles.push(...rows.filter((row) => row.status === "approved" && isPubliclyListed(row) &&
+          (!options?.countries || options.countries.includes(row.country ?? ''))));
         if (rows.length < pageSize) break;
       }
       return profiles;

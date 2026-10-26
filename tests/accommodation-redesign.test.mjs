@@ -7,7 +7,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 registerHooks({
   resolve(specifier, context, next) {
-    if (specifier === 'next/link' || specifier === 'next/image') return {url:`data:text/javascript,export default ${JSON.stringify(specifier === 'next/link' ? 'a' : 'img')}`,shortCircuit:true};
+    if (specifier === 'next/link' || specifier === 'next/image') return {url:`data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(specifier === 'next/link' ? 'a' : 'img')}`,shortCircuit:true};
     if (specifier.endsWith('.module.css')) return {url:'data:text/javascript,export default {}',shortCircuit:true};
     if (specifier.endsWith('inline-banner-editor')) return {url:'data:text/javascript,export function InlineBannerProvider({children}){return children};export function InlineBannerDialog(){return null}',shortCircuit:true};
     if (specifier === 'next/navigation') return {url:'data:text/javascript,export const useRouter=()=>({refresh(){}})',shortCircuit:true};

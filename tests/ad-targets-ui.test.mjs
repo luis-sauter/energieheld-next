@@ -29,12 +29,12 @@ registerHooks({
       };
     if (s.endsWith(".module.css"))
       return {
-        url: "data:text/javascript,export default new Proxy({}, {get: (_, name) => String(name)})",
+        url: "data:text/javascript,export function useLinkStatus(){return {pending:false}};export default new Proxy({}, {get: (_, name) => String(name)})",
         shortCircuit: true,
       };
     if (s === "next/link" || s === "next/image")
       return {
-        url: `data:text/javascript,export default ${JSON.stringify(s === "next/link" ? "a" : "img")}`,
+        url: `data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(s === "next/link" ? "a" : "img")}`,
         shortCircuit: true,
       };
     if (s.startsWith("@/") || s.startsWith(".")) {

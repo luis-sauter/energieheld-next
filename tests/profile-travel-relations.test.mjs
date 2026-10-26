@@ -9,7 +9,7 @@ registerHooks({resolve(s,c,next){
  if(s.endsWith('.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
  if(s==='next/image')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export default function Image({fill,unoptimized,...p}){return createElement("img",p)}'),shortCircuit:true};
  if(s==='react'&&c.parentURL?.startsWith('data:'))return next(s,{...c,parentURL:import.meta.url});
- if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
+ if(s==='next/link')return {url:'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default "a"',shortCircuit:true};
  if(s.startsWith('@/')||s.startsWith('.')){const b=s.startsWith('@/')?new URL('../src/'+s.slice(2),import.meta.url):new URL(s,c.parentURL);for(const ext of ['.ts','.tsx'])if(existsSync(new URL(b.href+ext)))return next(b.href+ext,c)}return next(s,c);
 },load(u,c,next){if(/\.tsx?$/.test(u))return {format:'module',shortCircuit:true,source:transpileModule(readFileSync(new URL(u),'utf8'),{compilerOptions:{module:ModuleKind.ESNext,jsx:JsxEmit.ReactJSX,target:ScriptTarget.ES2022}}).outputText};return next(u,c)}});
 const {TravelRelations}=await import('../src/components/portal/travel-relations.tsx');

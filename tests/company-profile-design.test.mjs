@@ -45,7 +45,7 @@ registerHooks({
       };
     if (s === "next/link" || s === "next/image")
       return {
-        url: `data:text/javascript,export default ${JSON.stringify(s === "next/link" ? "a" : "img")}`,
+        url: `data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(s === "next/link" ? "a" : "img")}`,
         shortCircuit: true,
       };
     if (s.startsWith("@/") || s.startsWith(".")) {

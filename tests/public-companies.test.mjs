@@ -30,7 +30,7 @@ registerHooks({
       };
     if (s === "next/link" || s === "next/image")
       return {
-        url: `data:text/javascript,export default ${JSON.stringify(s === "next/link" ? "a" : "img")}`,
+        url: `data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(s === "next/link" ? "a" : "img")}`,
         shortCircuit: true,
       };
     if (s.startsWith("@/") || s.startsWith(".")) {
@@ -459,8 +459,8 @@ test("homepage shows real travel cards and distributes only homepage ads without
   assert.match(html, /Bayerischer Wald/);
   assert.match(html, /Reisen beginnt mit einer guten Idee/);
   assert.match(html, /\d+ (?:Ergebnis|Ergebnisse) anzeigen/);
-  assert.match(html, /hero-loop\.mp4/);
-  assert.doesNotMatch(html, /poster=|hero\.jpg/);
+  assert.match(html, /hero-poster\.webp/);
+  assert.doesNotMatch(html, /<video|hero-loop\.mp4|hero\.jpg/);
   assert.match(html, /name="q"/);
   assert.match(html, /href="\/mottoreisen\/natur-pur"/);
   assert.match(html, /Ausgewählte Unterkünfte/);
@@ -1259,7 +1259,7 @@ test('country cards sign one photo only for matching public providers and retain
  globalThis.fetch=async(input,init)=>{if(new URL(input).pathname==='/storage/v1/object/sign/company-media')signed.push(...JSON.parse(init.body).paths);return fetch(input,init);};
  const results=await loadReiseportalDestination('deutschland');
  assert.equal(results.length,1);assert.equal(results[0].directoryPackage,'premium');assert.deepEqual(signed,['profiles/profile-1/0.jpg']);assert.deepEqual(rows,before);
- assert.ok(requests.some(({url})=>url.searchParams.get('id')==='in.(profile-1)'));
+ assert.ok(requests.some(({url})=>url.searchParams.get('country')==='in.(Deutschland,Germany,DE)'));
 });
 
 

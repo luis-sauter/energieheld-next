@@ -8,7 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 registerHooks({
  resolve(s,c,next){
   if(s==='next/navigation')return {url:'data:text/javascript,export function useRouter(){return {refresh(){}}}',shortCircuit:true};
-  if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
+  if(s==='next/link')return {url:'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default "a"',shortCircuit:true};
   if(s.endsWith('.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
   if(s.endsWith('/admin-review'))return {url:'data:text/javascript,export async function checkAdmin(c){return c.access};export function isProfileId(v){return /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v)}',shortCircuit:true};
   if(s.startsWith('@/')||s.startsWith('.')){const b=s.startsWith('@/')?new URL('../src/'+s.slice(2),import.meta.url):new URL(s,c.parentURL);for(const ext of ['.ts','.tsx'])if(existsSync(new URL(b.href+ext)))return next(b.href+ext,c)}return next(s,c);

@@ -17,7 +17,7 @@ registerHooks({
     if (specifier === "next/navigation")
       return { url: 'data:text/javascript,export function useRouter(){return {refresh(){}}};export function notFound(){throw Error("NOT_FOUND")};export function redirect(path){throw Error("REDIRECT:"+path)};export const permanentRedirect=redirect', shortCircuit: true };
     if (specifier === "next/link" || specifier === "next/image")
-      return { url: `data:text/javascript,export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`, shortCircuit: true };
+      return { url: `data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`, shortCircuit: true };
     if (specifier.endsWith(".module.css"))
       return { url: 'data:text/javascript,export default {}', shortCircuit: true };
     if (specifier.endsWith("/supabase/public"))

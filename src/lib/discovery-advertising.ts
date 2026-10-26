@@ -7,16 +7,20 @@ import { loadTravelSearchBanners } from './public-travel-search-banners';
 import { destinationBanners } from './destination-banners';
 import { loadBorrowedBannerEditing } from './borrowed-banner-editing';
 import { staticPremiumAds } from './motto-rows';
+import { signSelectedPublicBanners } from './public-banner-media';
 
 export async function loadDiscoveryAdvertising(path: string, allPublicBanners = false) {
   const context = inlineAdContext(path);
   if (!context || context.target_type !== "portal_area") return;
   const [ads, sidebarOrder, options, pool] = await Promise.all([
     loadPublicAds(undefined, "portal_area", context.target_key!), loadPublicSidebarOrder(), loadInlineBannerOptions(path),
-    (allPublicBanners && path.startsWith('/reiseziele/')) || path === '/mottoreisen' || path.startsWith('/mottoreisen/') ? loadTravelSearchBanners() : Promise.resolve(null),
+    (allPublicBanners && path.startsWith('/reiseziele/')) || path === '/mottoreisen' || path.startsWith('/mottoreisen/') ? loadTravelSearchBanners(false) : Promise.resolve(null),
   ]);
-  const premiumAds = staticPremiumAds(ads, pool?.banners.map(banner => banner.ad), path);
-  const sliderAds = pool && allPublicBanners ? destinationBanners(ads, pool.banners) : ads;
+  const selectedPremium = staticPremiumAds(ads, pool?.banners.map(banner => banner.ad), path);
+  const selectedSliders = pool && allPublicBanners ? destinationBanners(ads, pool.banners) : ads;
+  const resolved = await signSelectedPublicBanners([...selectedPremium, ...selectedSliders]);
+  const premiumAds = resolved.slice(0, selectedPremium.length);
+  const sliderAds = resolved.slice(selectedPremium.length);
   const editorOptions = await loadBorrowedBannerEditing([...premiumAds, ...sliderAds], pool?.banners ?? [], options);
   return { ads, sidebarOrder, options, premiumAds, sliderAds, editorOptions };
 }

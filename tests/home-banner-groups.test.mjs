@@ -14,7 +14,7 @@ const loaded={exports:{}};
 function CampaignSlot({placement,ad:initial,searchResult}){const row=!searchResult&&inline&&Object.hasOwn(inline.overrides,placement)?inline.overrides[placement]:initial;return createElement('aside',{'data-placement':placement},row&&!row.suppressed?createElement('a',{href:row.target_url},row.headline):'Admin empty slot');}
 vm.runInNewContext(transpileModule(file,{compilerOptions:{module:ModuleKind.CommonJS,jsx:JsxEmit.ReactJSX,target:ScriptTarget.ES2022}}).outputText,{module:loaded,exports:loaded.exports,require:name=>{
  if(name==='react/jsx-runtime')return jsx;
- if(name==='next/link')return {default:({children,...props})=>createElement('a',props,children)};
+ if(name==='next/link')return {useLinkStatus:()=>({pending:false}),default:({children,...props})=>createElement('a',props,children)};
  if(name==='./inline-banner-context')return {useInlineBanners:()=>inline};
  if(name==='./campaign-view')return {CampaignSlot};
  if(name==='./contextual-campaign-slot')return {ContextualCampaignSlot:CampaignSlot};

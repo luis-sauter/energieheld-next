@@ -13,6 +13,7 @@ import { portalBreadcrumbs } from "@/lib/breadcrumbs";
 import { Breadcrumbs } from "@/components/portal/breadcrumbs";
 import { JsonLd } from "@/components/portal/json-ld";
 import { jsonLdGraph, breadcrumbSchema, collectionSchema } from "@/lib/seo-schema";
+import { Suspense } from 'react';
 
 const breadcrumbs = portalBreadcrumbs("Mottoreisen", "/mottoreisen");
 
@@ -29,8 +30,12 @@ export async function generateMetadata({ searchParams }: { searchParams?: Promis
     image: "/reiseportal/mottoreisen-intro.jpg", noindex: Object.values(params ?? {}).some(Boolean) });
 }
 export const dynamic = "force-dynamic";
+async function MottoAdvertising() {
+  const advertising = await loadDiscoveryAdvertising('/mottoreisen');
+  return <DiscoveryAdvertising data={advertising} compact>{null}</DiscoveryAdvertising>;
+}
 export default async function MottoTravelPage({ searchParams }: { searchParams?: Promise<{ gruppe?: string }> } = {}) {
-  const [advertising, params] = await Promise.all([loadDiscoveryAdvertising("/mottoreisen"), searchParams ?? Promise.resolve({ gruppe: undefined })]);
+  const params = await (searchParams ?? Promise.resolve({ gruppe: undefined }));
   return <main id="hauptinhalt" className={styles.page}>
     <JsonLd data={jsonLdGraph([breadcrumbSchema(breadcrumbs), collectionSchema({ name: "Mottoreisen", description: hubDescriptions.themes,
       path: "/mottoreisen", items: travelThemes.map(entry => ({ name: entry.title, path: `/mottoreisen/${entry.slug}` })) })])} />
@@ -57,7 +62,9 @@ export default async function MottoTravelPage({ searchParams }: { searchParams?:
         </MottoFilter>
       </section>
       <div className={styles.advertising}>
-        <DiscoveryAdvertising data={advertising} compact>{null}</DiscoveryAdvertising>
+        <Suspense fallback={<p className="portal-loading-note" role="status">Anzeigen werden geladen …</p>}>
+          <MottoAdvertising />
+        </Suspense>
       </div>
       <section aria-labelledby="inspiration-heading">
         <div className={styles.sectionHeading}>

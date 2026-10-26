@@ -16,9 +16,9 @@ registerHooks({
   if(specifier==='react' && context.parentURL?.endsWith('.tsx'))return{shortCircuit:true,url:'data:text/javascript,'+encodeURIComponent(`import * as R from ${JSON.stringify(reactUrl)};export const Children=R.Children,cloneElement=R.cloneElement,isValidElement=R.isValidElement,useId=R.useId,useMemo=R.useMemo,createContext=R.createContext,useContext=(...args)=>globalThis.__cropHooks.manualContext?null:R.useContext(...args),useActionState=R.useActionState;export const useCallback=v=>v,useState=v=>globalThis.__cropHooks.state(v),useRef=v=>({current:v}),useEffect=()=>{};`)};
   if(specifier.endsWith('/admin/werbung/actions'))return{shortCircuit:true,url:'data:text/javascript,export async function lifecycleCampaign(){throw Error("Unexpected lifecycle mutation during crop test")}'};
   if(specifier==='next/navigation')return{shortCircuit:true,url:'data:text/javascript,export function useRouter(){return {refresh(){}}}'};
-  if(specifier==='next/link')return{shortCircuit:true,url:'data:text/javascript,export default "a"'};
+  if(specifier==='next/link')return{shortCircuit:true,url:'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default "a"'};
   if(specifier.endsWith('/supabase/client'))return{shortCircuit:true,url:'data:text/javascript,export function createClient(){if(globalThis.inlineArchiveMedia)return globalThis.inlineArchiveMedia;throw Error("Unexpected upload")}'};
-  if(specifier.endsWith('.module.css'))return{shortCircuit:true,url:'data:text/javascript,export default new Proxy({}, {get:(_,key)=>key})'};
+  if(specifier.endsWith('.module.css'))return{shortCircuit:true,url:'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default new Proxy({}, {get:(_,key)=>key})'};
   if(specifier.startsWith('@/')||specifier.startsWith('.')){
    const url=specifier.startsWith('@/')?new URL('../src/'+specifier.slice(2),import.meta.url):new URL(specifier,context.parentURL);
    for(const ext of ['.ts','.tsx'])if(existsSync(new URL(url.href+ext)))return next(url.href+ext,context);

@@ -13,7 +13,7 @@ registerHooks({
   if(s==='@/components/portal/travel-finder')return {url:'data:text/javascript,export function SearchTravelFinder(){return null}',shortCircuit:true};
   if(s==='@/components/portal/search-result-stream')return {url:'data:text/javascript,export function SearchResultStream(){return null}',shortCircuit:true};
   if(s==='@/components/portal/search-results')return {url:'data:text/javascript,export function SearchResults(){return null}',shortCircuit:true};
-  if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
+  if(s==='next/link')return {url:'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default "a"',shortCircuit:true};
   if(s==='next/image')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export default function Image({fill,unoptimized,...p}){return createElement("img",p)}'),shortCircuit:true};
   if(s==='react'&&c.parentURL?.startsWith('data:'))return next(s,{...c,parentURL:import.meta.url});
   if(s==='next/navigation')return {url:'data:text/javascript,export function notFound(){throw Error("NOT_FOUND")};export function permanentRedirect(path){throw Error("REDIRECT:"+path)}',shortCircuit:true};

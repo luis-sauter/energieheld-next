@@ -14,7 +14,7 @@ globalThis.__hostDecisions=[];globalThis.__hostSubmission={};
 registerHooks({resolve(s,c,next){
  if(s==='react'&&c.parentURL?.includes('/src/components/'))return {url:'data:text/javascript,export function createContext(){return {}};export const useState=(...a)=>globalThis.__hostHooks.useState(...a);export const useTransition=(...a)=>globalThis.__hostHooks.useTransition(...a);export const useContext=(...a)=>globalThis.__hostHooks.useContext(...a);export const useActionState=(...a)=>globalThis.__hostHooks.useActionState(...a)',shortCircuit:true};
  if(s==='next/navigation')return {url:'data:text/javascript,export function useRouter(){return {refresh(){}}}',shortCircuit:true};
-    if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
+    if(s==='next/link')return {url:'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default "a"',shortCircuit:true};
  if(s.endsWith('.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
  if(s.endsWith('/admin/actions'))return {url:'data:text/javascript,export async function setProfilePublication(id,publish,revision,proposals){globalThis.__hostDecisions.push([publish?"approved":"withdrawn",id,revision,proposals]);return {success:"Published"}};export async function rejectTravelProfile(...a){globalThis.__hostDecisions.push(["rejected",...a]);return {success:"Feedback saved"}}',shortCircuit:true};
  if(s.endsWith('/gestalten/actions'))return {url:'data:text/javascript,export async function submitFirstPublication(){return globalThis.__hostSubmission}',shortCircuit:true};

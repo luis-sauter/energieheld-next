@@ -18,7 +18,7 @@ registerHooks({
   if(s==='react' && (c.parentURL?.endsWith('/travel-directory.tsx') || c.parentURL?.endsWith('/travel-finder.tsx')))return {url:'data:text/javascript,export const Fragment=Symbol.for("react.fragment");export function useState(v){return [v === "" ? globalThis.reviewFilter ?? "" : v,()=>{}]};export function useMemo(f){return f()};export function useEffect(){}',shortCircuit:true};
   if(s.endsWith('.module.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
   if(s==='next/navigation')return {url:'data:text/javascript,export function useRouter(){return {refresh(){}}}',shortCircuit:true};
-  if(s==='next/link'||s==='next/image')return {url:`data:text/javascript,export default ${JSON.stringify(s==='next/link'?'a':'img')}`,shortCircuit:true};
+  if(s==='next/link'||s==='next/image')return {url:`data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(s==='next/link'?'a':'img')}`,shortCircuit:true};
   if(s==='@/lib/admin-review'||(s==='./admin-review'&&c.parentURL?.endsWith('/profile-import.ts')))return {url:'data:text/javascript,export async function checkAdmin(client){return client.verifiedAdmin ? "admin" : "denied"}',shortCircuit:true};
   const loaders={
    '@/lib/reiseportal-directory':'loadReiseportalDirectory', '@/lib/public-travel-taxonomy':'loadPublicTravelTerms',

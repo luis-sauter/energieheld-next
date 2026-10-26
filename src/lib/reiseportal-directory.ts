@@ -12,7 +12,7 @@ import { directoryItemKey } from "./company-directory-order";
 import { loadPublicCompanyBySlug, loadPublicCompanyDirectory, loadPublicCompanyProfileIndex } from "./public-companies";
 import { demoProfileId, demoPublicSlug, demoSourceSlug } from "./reiseportal-demo";
 import { loadPublicTravelAssignments, type TravelAssignments } from "./public-travel-taxonomy";
-import { filterTravelDiscovery } from "./reiseportal-search";
+import { discoveryCountryNames, filterTravelDiscovery } from "./reiseportal-search";
 import { createPublicClient } from "./supabase/public";
 import { providerTravelImage } from './provider-card-media';
 
@@ -159,32 +159,34 @@ export async function loadReiseportalFeatured(slugs: readonly string[]) {
 }
 
 export async function loadReiseportalTheme(theme: string) {
-  // Filter existing public assignments before touching Storage. Rubric cards
-  // need one provider photo, not every gallery of the whole public directory.
-  const matching = filterTravelDiscovery(await loadReiseportalFinderListings(), '', theme);
-  const result = await loadPublicCompanyDirectory({ profileIds: matching.map(listing => listing.id), cardOnly: true });
+  // Apply the existing public taxonomy in PostgREST before reading/signing media.
+  // No full profile index or unrelated paginated assignment inventory is needed.
+  const result = await loadPublicCompanyDirectory({ travelTheme: theme, cardOnly: true });
   if (result.error) throw new Error(result.error);
-  const facts = new Map(matching.map(listing => [listing.id, listing]));
-  const listings = result.data!.listings.filter(travelVisible).map(listing => withLegacyImages({
-    ...listing, travelTermKeys: facts.get(listing.id)?.travelTermKeys,
-  }));
-  return withPublicImportMarkers(await withSavedCardImages(listings));
+  const assignments = await loadPublicTravelAssignments(result.data!.listings.map(row => row.id));
+  const listings = filterTravelDiscovery(result.data!.listings.filter(travelVisible).map(listing => withLegacyImages({
+    ...listing, travelTermKeys: assignments?.get(listing.id) ?? [],
+  })), '', theme);
+  return withPublicCardDetails(listings);
 }
 
 export async function loadReiseportalDestination(destination: string) {
-  // Resolve public eligibility and country before signing any provider photos.
-  const matching = filterTravelDiscovery(await loadReiseportalFinderListings(), destination, "");
-  if (!matching.length) return [];
-  const [result, packages] = await Promise.all([
-    loadPublicCompanyDirectory({ profileIds: matching.map(listing => listing.id), cardOnly: true }),
-    loadDirectoryPackages(matching.map(listing => listing.id)),
-  ]);
+  const countries = discoveryCountryNames(destination);
+  if (!countries) return [];
+  const result = await loadPublicCompanyDirectory({ countries, cardOnly: true });
   if (result.error) throw new Error(result.error);
-  const facts = new Map(matching.map(listing => [listing.id, listing]));
-  return withPublicImportMarkers(await withSavedCardImages(result.data!.listings.filter(listing => facts.has(listing.id) && travelVisible(listing)).map(listing => withLegacyImages({
+  const ids = result.data!.listings.map(row => row.id);
+  const [packages, assignments] = await Promise.all([loadDirectoryPackages(ids), loadPublicTravelAssignments(ids)]);
+  return withPublicCardDetails(filterTravelDiscovery(result.data!.listings.filter(travelVisible).map(listing => withLegacyImages({
     ...listing, directoryPackage: packages.get(listing.id) ?? 'basic',
-    travelTermKeys: facts.get(listing.id)?.travelTermKeys, seasonTeasers: facts.get(listing.id)?.seasonTeasers,
-  }))));
+    travelTermKeys: assignments?.get(listing.id) ?? [], seasonTeasers: assignments?.seasonTeasers?.get(listing.id),
+  })), destination, ''));
+}
+
+async function withPublicCardDetails(listings: Listing[]) {
+  const [cards, marked] = await Promise.all([withSavedCardImages(listings), withPublicImportMarkers(listings)]);
+  const dates = new Map(marked.map(row => [row.id, row.importedAt]));
+  return cards.map(row => dates.get(row.id) ? { ...row, importedAt: dates.get(row.id) } : row);
 }
 
 export async function loadReiseportalListingBySlug(slug: string) {

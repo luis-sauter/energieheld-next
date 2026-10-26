@@ -194,7 +194,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
             </div>}
           {pagination && <AutoLoad hasMore={profileStream.nextCursor!==null} loading={profileStream.loading} showLoading={profileStream.items.length>0} error={profileStream.error} load={profileStream.load} />}
           {basicPagination&&!reviewFilter&&<AutoLoad hasMore={basicStream.nextCursor!==null} loading={basicStream.loading} showLoading={basicStream.items.length>0} error={basicStream.error} load={basicStream.load}/>}
-          {!error && !results.length && <div className="directory-mobile-banner">{advertisements}</div>}
+          {!error && !shownResults.length && <div className="directory-mobile-banner">{advertisements}</div>}
         </section>
       </AdvertisingLayout>
     </div>} />

@@ -33,8 +33,8 @@ registerHooks({
   if(specifier === 'server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
   if(specifier === "react" && context.parentURL?.startsWith("data:"))return next(specifier,{...context,parentURL:import.meta.url});
   if(stubs[specifier])return {url:'data:text/javascript,'+encodeURIComponent(stubs[specifier]),shortCircuit:true};
-  if(specifier.endsWith('.css'))return {url:'data:text/javascript,export default '+encodeURIComponent(JSON.stringify(Object.fromEntries(['page','quicklinks','mosaic','destinations','premium','stays','provider','inspiration','showcase','featuredStay','recommendations','card','row','track','motto','partners','header','controls','rail','scroller'].map(k=>[k,k])))),shortCircuit:true};
-  if(specifier==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
+  if(specifier.endsWith('.css'))return {url:'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default '+encodeURIComponent(JSON.stringify(Object.fromEntries(['page','quicklinks','mosaic','destinations','premium','stays','provider','inspiration','showcase','featuredStay','recommendations','card','row','track','motto','partners','header','controls','rail','scroller'].map(k=>[k,k])))),shortCircuit:true};
+  if(specifier==='next/link')return {url:'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default "a"',shortCircuit:true};
   if(specifier==='next/image')return {url:'data:text/javascript,'+encodeURIComponent('import {createElement} from "react";export default function Image({fill,unoptimized,priority,...p}){return createElement("img",p);}'),shortCircuit:true};
   if(specifier.startsWith('@/')||specifier.startsWith('.')){
    const base=specifier.startsWith('@/')?new URL('../src/'+specifier.slice(2),import.meta.url):new URL(specifier,context.parentURL);

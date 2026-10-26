@@ -22,9 +22,11 @@ import type {DirectoryEntry} from './basic-contact';
 export async function loadBasicDirectoryWindow(values:TravelFilterValues,cursor='',basicsOnly=false,signal?:AbortSignal){
   const page=await loadAccommodationPage('',values,readAccommodationCursor(cursor),{basicsOnly,signal});
   const ids=page.items.flatMap(row=>row.entry.kind==='profile'?[row.entry.id]:[]);
-  const assignments=ids.length?await createPublicClient().from('company_profile_travel_terms').select('profile_id,term_key,seasonal_teaser').in('profile_id',ids):{data:[],error:null};
+  const [assignments,cards]=await Promise.all([
+    ids.length?createPublicClient().from('company_profile_travel_terms').select('profile_id,term_key,seasonal_teaser').in('profile_id',ids):Promise.resolve({data:[],error:null}),
+    loadReiseportalSearchListings(ids,[]),
+  ]);
   if(assignments.error)throw Error('Travel assignments unavailable');
-  const cards=await loadReiseportalSearchListings(ids,[]);
   const byId=new Map(cards.map(card=>[card.id,card]));
   const items:DirectoryEntry[]=page.items.map(({entry})=>{
     if(entry.kind==='basic')return entry;

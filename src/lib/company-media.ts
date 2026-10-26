@@ -91,11 +91,11 @@ export async function signCompanyMedia(
 ): Promise<SignedMedia> {
   const rows = imageRows(profile);
   const paths = imagePaths(profile, rows, includeVideo);
-  const video = includeVideo ? await signProfileVideo(client, profile) : undefined;
+  const [video, { data, error }] = await Promise.all([
+    includeVideo ? signProfileVideo(client, profile) : Promise.resolve(undefined),
+    paths.length ? client.storage.from(MEDIA_BUCKET).createSignedUrls(paths, 3600) : Promise.resolve({ data: [], error: null }),
+  ]);
   if (!paths.length) return video ? { images: [], video } : { images: [] };
-  const { data, error } = await client.storage
-    .from(MEDIA_BUCKET)
-    .createSignedUrls(paths, 3600);
   if (error || !data || data.some((item) => item.error || !item.signedUrl))
     throw new Error("Media unavailable");
   const urls = new Map<string, string>();

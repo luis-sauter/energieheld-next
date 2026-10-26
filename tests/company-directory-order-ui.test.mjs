@@ -12,7 +12,7 @@ registerHooks({
     if (specifier === "server-only") return { url: "data:text/javascript,export {}", shortCircuit: true };
     if (specifier === "next/cache") return { url: 'data:text/javascript,export function revalidatePath(path){globalThis.__orderRevalidated.push(path)}', shortCircuit: true };
     if (specifier === "next/navigation") return { url: 'data:text/javascript,export function useRouter(){return {refresh(){}}}', shortCircuit: true };
-    if (specifier === "next/link" || specifier === "next/image") return { url: `data:text/javascript,export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`, shortCircuit: true };
+    if (specifier === "next/link" || specifier === "next/image") return { url: `data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`, shortCircuit: true };
     if (specifier.endsWith(".module.css")) return { url: "data:text/javascript,export default {}", shortCircuit: true };
     if (specifier.endsWith("/supabase/server")) return { url: 'data:text/javascript,export async function createClient(){globalThis.__orderClientReads++;return globalThis.__orderClient}', shortCircuit: true };
     if (specifier.startsWith("@/") || specifier.startsWith(".")) {

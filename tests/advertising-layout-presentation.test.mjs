@@ -8,7 +8,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 registerHooks({
   resolve(s,c,next) {
     if(s==='react' && c.parentURL?.startsWith('data:')) return next(s,{...c,parentURL:import.meta.url});
-    if(s==='next/link'||s==='next/image') return {url:`data:text/javascript,export default ${JSON.stringify(s==='next/link'?'a':'img')}`,shortCircuit:true};
+    if(s==='next/link'||s==='next/image') return {url:`data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(s==='next/link'?'a':'img')}`,shortCircuit:true};
     if(s.endsWith('/campaign-view')) return {url:'data:text/javascript,import{createElement}from"react";export function CampaignSlot({placement,ad,showLabel=true}){return createElement("section",{"data-slot":placement,"data-campaign":ad?.id,"data-show-label":showLabel})}',shortCircuit:true};
     if(s.endsWith('/inline-banner-context')) return {url:'data:text/javascript,export function useInlineBanners(){return undefined}',shortCircuit:true};
     if(s.endsWith('/directory-edit-mode')) return {url:'data:text/javascript,export function DirectoryEditModeProvider({children}){return children}',shortCircuit:true};

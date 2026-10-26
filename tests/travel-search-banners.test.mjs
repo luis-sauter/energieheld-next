@@ -9,8 +9,8 @@ registerHooks({
  resolve(specifier,context,next){
   if(specifier==='next/navigation')return {shortCircuit:true,url:'data:text/javascript,export const useRouter=()=>({refresh(){}})'};
   if(specifier.endsWith('/admin/mediathek/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function searchLibraryProfiles(){throw Error("Unexpected remote company search")};export async function createLibraryCompany(){throw Error("Unexpected company creation")}'};
-  if(specifier==='next/link'||specifier==='next/image')return {url:`data:text/javascript,export default ${JSON.stringify(specifier==='next/link'?'a':'img')}`,shortCircuit:true};
-  if(specifier.endsWith('.module.css'))return {url:'data:text/javascript,export default new Proxy({}, {get:(_,key)=>key})',shortCircuit:true};
+  if(specifier==='next/link'||specifier==='next/image')return {url:`data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(specifier==='next/link'?'a':'img')}`,shortCircuit:true};
+  if(specifier.endsWith('.module.css'))return {url:'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default new Proxy({}, {get:(_,key)=>key})',shortCircuit:true};
   if(specifier.startsWith('@/')||specifier.startsWith('.')){
    const base=specifier.startsWith('@/')?new URL('../src/'+specifier.slice(2),import.meta.url):new URL(specifier,context.parentURL);
    for(const ext of ['.ts','.tsx'])if(existsSync(new URL(base.href+ext)))return next(base.href+ext,context);

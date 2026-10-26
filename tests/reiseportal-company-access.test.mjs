@@ -9,7 +9,7 @@ import { transpileModule, ModuleKind, JsxEmit } from "typescript";
 registerHooks({
   resolve(specifier, context, next) {
     const virtual = {
-      "next/link": 'export default "a"',
+      "next/link": 'export function useLinkStatus(){return {pending:false}};export default "a"',
       "next/image": 'export default "img"',
       "next/navigation": 'export function redirect(path){throw Error("REDIRECT:"+path)}',
     };

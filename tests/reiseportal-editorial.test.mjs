@@ -31,12 +31,16 @@ test("selected Joomla provider media refer only to existing local originals", ()
   }
 });
 
-test("hero loading, errors and reduced motion use a neutral background without the retired photo", () => {
+test("hero uses a frame from the existing video before playback and respects reduced motion without the retired photo", () => {
   const home = readFileSync(new URL("../src/app/(energieheld)/page.tsx", import.meta.url), "utf8");
   const finder = readFileSync(new URL("../src/components/portal/travel-finder.tsx", import.meta.url), "utf8");
+  const media = readFileSync(new URL("../src/components/portal/home-hero-media.tsx", import.meta.url), "utf8");
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   assert.match(home, /<HomeTravelFinder/);
-  assert.match(finder, /<video autoPlay muted loop playsInline preload="metadata"/);
+  assert.match(finder, /<HomeHeroMedia/);
+  assert.match(media, /play && <video autoPlay muted loop playsInline preload="none"/);
+  assert.match(media, /motion\.matches.*connection\?\.saveData/);
+  assert.ok(existsSync(asset('/reiseportal/hero-poster.webp')));
   assert.doesNotMatch(home, /hero\.jpg|poster=/);
   assert.match(css, /\.travel-hero\s*\{[^}]*background: var\(--portal-surface\);/);
   assert.doesNotMatch(css, /hero\.jpg/);

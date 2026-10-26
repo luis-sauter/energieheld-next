@@ -24,15 +24,17 @@ export const loadPublicTravelTerms = cache(async (): Promise<PublicTravelTerm[]>
 
 // null means the prepared migration has not reached the Cloud yet. An empty
 // map means it is installed and there are genuinely no matching assignments.
-export const loadPublicTravelAssignments = cache(async (): Promise<TravelAssignments | null> => {
+export const loadPublicTravelAssignments = cache(async (profileIds?: string[]): Promise<TravelAssignments | null> => {
   const client = createPublicClient();
   const assignments: TravelAssignments = new Map<string, string[]>();
   assignments.seasonTeasers = new Map();
+  if (profileIds && !profileIds.length) return assignments;
   for (let offset = 0; ; offset += 500) {
-    const { data, error } = await client.from("company_profile_travel_terms")
+    const query = client.from("company_profile_travel_terms")
       .select("profile_id,term_key,seasonal_teaser")
       .order("profile_id").order("term_key")
       .range(offset, offset + 499);
+    const { data, error } = await (profileIds ? query.in('profile_id', profileIds) : query);
     if (error) {
       if (error.code === "PGRST205" || error.code === "42P01") return null;
       throw new Error("Die Reisethemen konnten nicht geladen werden.");

@@ -16,6 +16,7 @@ import { useLiveTravelCount } from './use-live-travel-count';
 import type { LiveCountState } from '@/lib/live-travel-count';
 import {useAccommodationFacets,type AccommodationFacetState} from './use-accommodation-facets';
 import {destinations,travelThemes} from '@/data/reiseportal-discovery';
+import { HomeHeroMedia } from './home-hero-media';
 
 type Options = ReturnType<typeof availableTravelFilters>;
 type CompletedSearch = { values: TravelFilterValues; total?: number; error?: string };
@@ -125,10 +126,7 @@ export function TravelFinder({ mode, listings, options:existingOptions, values, 
       </form>;
 
   return <section className="travel-hero" aria-labelledby="travel-hero-title">
-    {mode !== "home" ? <Image src="/reiseportal/redesign/unterkuenfte/hero.webp" alt="" fill sizes="100vw" priority className="directory-hero-image" /> : <video autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1}>
-      <source src="/reiseportal/hero-loop-mobile.mp4" media="(max-width: 700px)" type="video/mp4" />
-      <source src="/reiseportal/hero-loop.mp4" type="video/mp4" />
-    </video>}
+    {mode !== "home" ? <Image src="/reiseportal/redesign/unterkuenfte/hero.webp" alt="" fill sizes="100vw" priority className="directory-hero-image" /> : <HomeHeroMedia />}
     <div className="travel-hero-content container">
       {mode !== "home" && <Breadcrumbs items={portalBreadcrumbs(mode === "search" ? "Suchergebnisse" : "Unterkünfte A–Z", mode === "search" ? "/suche" : "/unterkuenfte-a-z")} />}
       <p className="eyebrow">{mode === "home" ? "DAS-Reiseportal.com · Reiseideen seit 2010" : mode === "directory" ? "UNTERKÜNFTE A–Z" : "DAS-Reiseportal.com"}</p>

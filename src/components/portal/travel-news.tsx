@@ -14,7 +14,7 @@ export function TravelNews() {
         {travelNews.map(item => <a key={item.id} className={`${styles.card}${item.featured ? ` ${styles.lead}` : ''}`}
           href={item.sourceUrl} target="_blank" rel="noopener noreferrer" data-news-id={item.id}>
           <div className={styles.media}>
-            <Image src={item.image} alt={item.imageAlt} fill loading="lazy" unoptimized
+            <Image src={item.image} alt={item.imageAlt} fill loading="lazy"
               sizes={item.featured ? '(max-width: 760px) calc(100vw - 32px), (max-width: 1200px) 58vw, 760px' : '(max-width: 760px) calc(100vw - 32px), (max-width: 1200px) 36vw, 460px'} />
             <span className={styles.category}>{item.category}</span>
           </div>

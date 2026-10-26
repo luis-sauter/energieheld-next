@@ -7,7 +7,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import './helpers/load-ts.mjs';
 registerHooks({resolve(s,c,next){
  if(s==='server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
- if(s==='next/link')return {url:'data:text/javascript,export default "a"',shortCircuit:true};
+ if(s==='next/link')return {url:'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default "a"',shortCircuit:true};
  if(s==='next/navigation')return {url:'data:text/javascript,export function redirect(p){throw Error("REDIRECT:"+p)};export function notFound(){throw Error("NOT_FOUND")}',shortCircuit:true};
  if(s.endsWith('.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
  if(s.endsWith('/supabase/server'))return {url:'data:text/javascript,export async function createClient(){return globalThis.workspaceClient}',shortCircuit:true};

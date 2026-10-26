@@ -24,6 +24,7 @@ import { pageMetadata, type SearchParameters } from "@/lib/seo";
 import { jsonLdGraph, websiteSchema } from "@/lib/seo-schema";
 import { JsonLd } from "@/components/portal/json-ld";
 import { travelFinderListings, travelFinderBanners } from '@/lib/travel-finder-data';
+import { signSelectedPublicBanners } from '@/lib/public-banner-media';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParameters> }) {
   return pageMetadata({ title: "DAS-Reiseportal.com – Reiseideen seit 2010", description: "Reiseideen seit 2010: Entdecken Sie Reiseziele, Mottoreisen und Unterkünfte für Ihre nächste Auszeit. Lernen Sie Gastgeber und ihre Angebote kennen.", path: "/", home: true,
@@ -39,12 +40,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     loadPublicAds(undefined, "homepage"),
     loadReiseportalDirectory({ cardOnly: true }),
     loadPublicTravelTerms(),
-    loadInlineBannerOptions("/"), loadTravelSearchBanners(),
+    loadInlineBannerOptions("/"), loadTravelSearchBanners(false),
   ]);
   const featured = selectHomeStays(directory.database, randomUUID());
   const bannerRows = homeBannerRows(ads);
   const mainPremiumId = ads.find(ad => ad.placement === 'top_banner')?.id;
-  const footerPremium = staticPremiumAds([], searchBanners.banners.map(banner => banner.ad).filter(ad => ad.id !== mainPremiumId), 'homepage-footer')[0];
+  const footerSelection = staticPremiumAds([], searchBanners.banners.map(banner => banner.ad).filter(ad => ad.id !== mainPremiumId), 'homepage-footer').slice(0,1);
+  const [footerPremium] = await signSelectedPublicBanners(footerSelection);
   const footerEditorOptions = await loadBorrowedBannerEditing(footerPremium ? [footerPremium] : [], searchBanners.banners, bannerOptions);
 
   return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`editorial-home discovery-home ${styles.page}`}>

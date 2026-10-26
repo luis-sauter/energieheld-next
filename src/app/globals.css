@@ -3197,6 +3197,7 @@ h6 {
   /* Neutral before playback, on media errors and with reduced motion. */
   background: var(--portal-surface);
 }
+.travel-hero > .home-hero-poster,
 .travel-hero > video {
   position: absolute;
   inset: 0;
@@ -3207,6 +3208,18 @@ h6 {
   object-position: center 55%;
   pointer-events: none;
 }
+
+.portal-navigation-pending {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--portal-orange, #F7902F);
+  z-index: 10000;
+  pointer-events: none;
+}
+.portal-loading { min-height: 60vh; padding-block: 48px; }
+.portal-loading-placeholder { min-height: 220px; margin-top: 24px; border-radius: 12px; background: var(--portal-surface, #F4F4F4); }
+.portal-loading-note { min-height: 80px; display: flex; align-items: center; }
 .travel-hero > .directory-hero-image {
   z-index: -2;
   object-fit: cover;

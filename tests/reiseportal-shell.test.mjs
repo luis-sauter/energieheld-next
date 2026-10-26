@@ -8,7 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 registerHooks({
   resolve(specifier, context, next) {
-    if (specifier.endsWith('/weidner-legal-source.json')) return { url: 'data:text/javascript,export default '+encodeURIComponent(readFileSync(new URL('../src/data/weidner-legal-source.json',import.meta.url),'utf8')), shortCircuit: true };
+    if (specifier.endsWith('/weidner-legal-source.json')) return { url: 'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default '+encodeURIComponent(readFileSync(new URL('../src/data/weidner-legal-source.json',import.meta.url),'utf8')), shortCircuit: true };
     if(specifier.endsWith('/admin/mediathek/actions'))return {shortCircuit:true,url:'data:text/javascript,export async function searchLibraryProfiles(){throw Error("Unexpected company lookup during public shell render")};export async function createLibraryCompany(){throw Error("Unexpected company creation")}'};
     if (specifier.endsWith("card-image-editor")) return {url:'data:text/javascript,export function CardImageEditor(){return null;}',shortCircuit:true};
     if (specifier.endsWith("profile-card-images")) return {url:'data:text/javascript,export async function loadCardEditing(){return false;}export async function withSavedCardImages(rows){return rows;}',shortCircuit:true};
@@ -20,7 +20,7 @@ registerHooks({
       shortCircuit: true,
     };
     if (specifier === "next/link" || specifier === "next/image") return {
-      url: `data:text/javascript,export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`,
+      url: `data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`,
       shortCircuit: true,
     };
     if (specifier.endsWith("/auth-actions")) return { url: 'data:text/javascript,export async function logout(){return {}}', shortCircuit: true };
@@ -202,10 +202,12 @@ test("account button and dropdown groups use server-provided access without perm
 test("homepage uses the supplied MP4 as the hero background with search above it", () => {
   const source = readFileSync(new URL("../src/app/(energieheld)/page.tsx", import.meta.url), "utf8");
   const finder = readFileSync(new URL("../src/components/portal/travel-finder.tsx", import.meta.url), "utf8");
+  const media = readFileSync(new URL("../src/components/portal/home-hero-media.tsx", import.meta.url), "utf8");
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   assert.ok(existsSync(new URL("../public/reiseportal/hero-loop.mp4", import.meta.url)));
   assert.match(source, /<HomeTravelFinder.*listings=/);
-  assert.match(finder, /<section className="travel-hero"[\s\S]*?<video autoPlay muted loop playsInline preload="metadata"[\s\S]*?<source src="\/reiseportal\/hero-loop\.mp4"[\s\S]*?<h1 id="travel-hero-title">[\s\S]*?Finde deinen passenden Urlaub[\s\S]*?<\/h1>[\s\S]*?renderFinder\(finder\) : finder/);
+  assert.match(finder, /<section className="travel-hero"[\s\S]*?<HomeHeroMedia[\s\S]*?<h1 id="travel-hero-title">[\s\S]*?Finde deinen passenden Urlaub[\s\S]*?<\/h1>[\s\S]*?renderFinder\(finder\) : finder/);
+  assert.match(media, /<source src="\/reiseportal\/hero-loop\.mp4"/);
   assert.match(css, /\.travel-hero > video\s*\{[^}]*object-fit: cover;[^}]*pointer-events: none;/);
   assert.doesNotMatch(source, /<Image src="\/reiseportal\/hero\.jpg"/);
 });

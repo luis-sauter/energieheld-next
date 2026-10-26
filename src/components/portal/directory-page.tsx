@@ -47,9 +47,15 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
   if (mode === "travel" && !adminClient) {
     const initialValues=readTravelFilterValues(params);
     const loaded=await (async()=>{
-      const [index,terms,sidebarOrder]=await Promise.all([loadPublicDirectoryIndex(),loadPublicTravelTerms(),loadPublicSidebarOrder()]);
+      const basic=basicIntegrationEnabled();
+      // The keyset RPC owns profile eligibility, ranking and totals. Its public
+      // filter UI uses taxonomy/facets, not a second complete profile inventory.
+      const [index,terms,sidebarOrder,initialProfiles]=await Promise.all([
+        loadPublicDirectoryIndex(!basic),loadPublicTravelTerms(),loadPublicSidebarOrder(),
+        basic?loadBasicDirectoryWindow(initialValues):Promise.resolve(null),
+      ]);
       const windows=directoryWindows(index,initialValues);
-      const [profiles,advertisements]=await Promise.all([basicIntegrationEnabled()?loadBasicDirectoryWindow(initialValues):hydrateDirectoryWindow(windows.profiles,index.facts),hydrateBannerWindow(windows.advertisements)]);
+      const [profiles,advertisements]=await Promise.all([initialProfiles??hydrateDirectoryWindow(windows.profiles,index.facts),hydrateBannerWindow(windows.advertisements)]);
       return {index,terms,sidebarOrder,profiles,advertisements};
     })().catch(()=>null);
     if(!loaded) {

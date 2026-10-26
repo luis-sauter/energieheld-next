@@ -8,7 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 registerHooks({
   resolve(specifier, context, next) {
-    if (specifier === "next/link" || specifier === "next/image") return { url: `data:text/javascript,export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`, shortCircuit: true };
+    if (specifier === "next/link" || specifier === "next/image") return { url: `data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`, shortCircuit: true };
     if (specifier.startsWith("@/") || specifier.startsWith(".")) {
       const base = specifier.startsWith("@/")
         ? new URL("../src/" + specifier.slice(2), import.meta.url) : new URL(specifier, context.parentURL);
@@ -69,7 +69,9 @@ test("both routes use the same finder and show actual initial totals", () => {
   assert.match(html, /redesign\/unterkuenfte\/hero\.webp/);
   assert.match(html, /Finde passende Unterkünfte/);
   assert.doesNotMatch(html, /<video/);
-  assert.match(render(readTravelFilterValues({}), "home"), /hero-loop\.mp4/);
+  const homeHtml = render(readTravelFilterValues({}), "home");
+  assert.match(homeHtml, /hero-poster\.webp/);
+  assert.doesNotMatch(homeHtml, /<video|\.mp4/);
   assert.match(html, /2 Ergebnisse anzeigen/);
   assert.match(html, /aria-live="polite"/);
   assert.doesNotMatch(html, /Jahreszeit|Zeitraum/);

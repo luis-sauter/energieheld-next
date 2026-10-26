@@ -7,7 +7,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 registerHooks({
  resolve(s,c,n){
-  const mocks={ 'server-only':'export {}', 'next/link':'export default "a"', 'next/headers':'export async function headers(){return new Map([["origin",globalThis.__origin]])}', 'next/navigation':'export function redirect(p){throw Error("REDIRECT:"+p)}', 'next/server':'export const NextResponse={redirect:url=>({url:url.href,headers:new Map()})}' };
+  const mocks={ 'server-only':'export {}', 'next/link':'export function useLinkStatus(){return {pending:false}};export default "a"', 'next/headers':'export async function headers(){return new Map([["origin",globalThis.__origin]])}', 'next/navigation':'export function redirect(p){throw Error("REDIRECT:"+p)}', 'next/server':'export const NextResponse={redirect:url=>({url:url.href,headers:new Map()})}' };
   if(s.endsWith('/supabase/server'))return {url:'data:text/javascript,export async function createClient(){return globalThis.__authTestClient}',shortCircuit:true};
   if(s.endsWith('.css'))return {url:'data:text/javascript,export default {}',shortCircuit:true};
   if(mocks[s])return {url:'data:text/javascript,'+mocks[s],shortCircuit:true};

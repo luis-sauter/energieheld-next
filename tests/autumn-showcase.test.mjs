@@ -8,8 +8,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 registerHooks({
  resolve(specifier, context, next) {
-  if (specifier.endsWith('.css')) return { url: 'data:text/javascript,export default ' + encodeURIComponent(JSON.stringify({ section:'section',card:'card',header:'header',editorial:'editorial',photo:'photo',copy:'copy' })), shortCircuit:true };
-  if (specifier === 'next/link') return { url:'data:text/javascript,' + encodeURIComponent('import {createElement} from "react";export default function Link({prefetch,...p}){return createElement("a",p)}'), shortCircuit:true };
+  if (specifier.endsWith('.css')) return { url: 'data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ' + encodeURIComponent(JSON.stringify({ section:'section',card:'card',header:'header',editorial:'editorial',photo:'photo',copy:'copy' })), shortCircuit:true };
+  if (specifier === 'next/link') return { url:'data:text/javascript,' + encodeURIComponent('import {createElement} from "react";export function useLinkStatus(){return {pending:false}};export default function Link({prefetch,...p}){return createElement("a",p)}'), shortCircuit:true };
   if (specifier === 'next/image') return { url:'data:text/javascript,' + encodeURIComponent('import {createElement} from "react";export default function Image({fill,unoptimized,...p}){return createElement("img",p)}'), shortCircuit:true };
   if (specifier === 'react' && context.parentURL?.startsWith('data:')) return next(specifier, {...context,parentURL:import.meta.url});
   if (specifier.startsWith('@/') || specifier.startsWith('.')) {

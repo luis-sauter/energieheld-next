@@ -14,7 +14,7 @@ registerHooks({
     if (specifier === "next/headers") return { url: "data:text/javascript,export async function headers(){return new Map()}", shortCircuit: true };
     if (specifier === "next/navigation") return { url: 'data:text/javascript,export function redirect(path){throw Error("REDIRECT:"+path)};export function notFound(){throw Error("NOT_FOUND")};export function useRouter(){return {refresh(){}}}', shortCircuit: true };
     if (specifier.endsWith("/supabase/server")) return { url: 'data:text/javascript,export async function createClient(){return globalThis.__accountClient}', shortCircuit: true };
-    if (specifier === "next/link" || specifier === "next/image") return { url: `data:text/javascript,export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`, shortCircuit: true };
+    if (specifier === "next/link" || specifier === "next/image") return { url: `data:text/javascript,export function useLinkStatus(){return {pending:false}};export default ${JSON.stringify(specifier === "next/link" ? "a" : "img")}`, shortCircuit: true };
     if (specifier.startsWith("@/") || specifier.startsWith(".")) {
       const base = specifier.startsWith("@/")
         ? new URL("../src/" + specifier.slice(2), import.meta.url) : new URL(specifier, context.parentURL);
