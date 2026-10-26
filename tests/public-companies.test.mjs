@@ -1110,21 +1110,20 @@ test("old Höflehner URL redirects to the ASCII slug", async () => {
   }
 });
 
-test("real approved profile has an inquiry dialog even without public email; demos remain disabled", async () => {
-  api([travelRow]);
+test("real approved profile links directly to its website without an inquiry dialog; demos have no website CTA", async () => {
+  api([{...travelRow,website:"https://example.org/hotel"}]);
   const real = renderToStaticMarkup(
     await Detail({ params: Promise.resolve({ slug: row.slug }) }),
   );
-  assert.match(real, /<dialog/);
-  assert.match(real, /name="consent"/);
-  assert.match(real, /name="website"/);
-  assert.match(real, /Anfrage senden/);
+  assert.doesNotMatch(real, /<dialog|Kontakt aufnehmen|Anfrage senden/);
+  assert.ok(real.includes('class="button button-primary" href="https://example.org/hotel" target="_blank" rel="noopener noreferrer">Webseite besuchen</a>'));
+  assert.equal((real.match(/Webseite besuchen/g)||[]).length,1);
   api([demoRow]);
   const demo = renderToStaticMarkup(
     await Detail({ params: Promise.resolve({ slug: "demo-gmbh" }) }),
   );
   assert.doesNotMatch(demo, /<dialog|Anfrage senden/);
-  assert.match(demo, /disabled=""/);
+  assert.doesNotMatch(demo, /Webseite besuchen/);
 });
 
 test("quality data stays in the public query while travel UI avoids the energy-branded seal", async () => {

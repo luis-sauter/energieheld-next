@@ -31,14 +31,13 @@ export function InlineProfileEditor(props: React.ComponentProps<typeof ProfileEd
 
 const formId = "inline-admin-profile-form";
 
-function ProfileEditor({ listing, categories, values, media, rows, contactAction, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness, travelError, imported }: {
+function ProfileEditor({ listing, categories, values, media, rows, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness, travelError, imported }: {
   listing: Listing;
   imported?: boolean;
   categories: Category[];
   values: ProfileValues;
   media: SignedMedia;
   rows: MediaRow[];
-  contactAction?: React.ReactNode;
   saveProfile: (form: FormData) => Promise<ProfileFormState & { freshness?: ContentFreshness }>;
   saveMedia: (form: FormData) => Promise<MediaState>;
   contentBlocks: ProfileContentBlock[];
@@ -205,7 +204,6 @@ function ProfileEditor({ listing, categories, values, media, rows, contactAction
       allowDemoMap={allowDemoMap}
       mapLocation={editing ? mapLocation : undefined}
       originalDemoMedia={originalDemoMedia}
-      contactAction={editing ? undefined : contactAction}
       adminAction={editing ? undefined : <div className="profile-admin-actions">
         <button type="button" className={`button ${styles.editButton}`} onClick={() => { setFeedback({}); setEditing(true); }}>Profil bearbeiten</button>
         {freshness && <ProfileFreshness imported={imported} state={freshness} disabled={false} compact />}

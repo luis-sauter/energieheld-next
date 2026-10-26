@@ -7,7 +7,6 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { loadAccommodationPage } from "@/lib/accommodation-page";
 import { ListingDetail } from "@/components/portal/listing-detail";
-import { InquiryDialog } from "@/components/leads/inquiry-dialog";
 import { createClient } from "@/lib/supabase/server";
 import { checkAdmin, canReviewProfiles, isProfileId, loadReviewProfile } from "@/lib/admin-review";
 import { signCompanyMedia, type MediaRow, type SignedMedia } from "@/lib/company-media";
@@ -114,7 +113,6 @@ export default async function AccommodationDetail({
         values={editorData.values}
         media={editorData.media}
         rows={editorData.rows}
-        contactAction={!listing.isDemo ? <InquiryDialog profileId={listing.id} companyName={listing.name} /> : undefined}
         saveProfile={saveInlineProfile.bind(null, listing.id, slug)}
         saveMedia={saveInlineMedia.bind(null, listing.id, slug)}
         contentBlocks={editorContent.blocks}
@@ -137,11 +135,6 @@ export default async function AccommodationDetail({
         businessHeading={presentedContent.businessHeading}
         editorialContent={content.available && (listing.description || listing.businessAreas || presentedContent.blocks.length)
           ? <ProfileEditorialContent items={presentedContent.items} listing={listing} /> : undefined}
-        contactAction={
-          !listing.isDemo && !listing.isPreview ? (
-            <InquiryDialog profileId={listing.id} companyName={listing.name} />
-          ) : undefined
-        }
       />}
       <TravelRelations presentation="profile" title="Reiseinformationen und passende Rubriken" links={[...relations.destinations, ...relations.themes]} facts={result.terms} />
       <Link className="text-link back-link" href="/unterkuenfte-a-z">

@@ -27,13 +27,11 @@ function safeWebsite(value: string): string | null {
 
 export function ContactSection({
   listing,
-  contactAction,
   logoEditor,
   contactPersonEditor,
   inlineFields,
 }: {
   listing: Listing;
-  contactAction?: React.ReactNode;
   logoEditor?: React.ReactNode;
   contactPersonEditor?: React.ReactNode;
   inlineFields?: InlineProfileFields;
@@ -116,42 +114,10 @@ export function ContactSection({
           </>
         )}
       </dl>
-      {inlineFields ? null : listing.isDemo ? (
-        <>
-          <button className="button button-primary" disabled>
-            <Icon name="mail" size={18} />
-            Kontakt aufnehmen
-          </button>
-          <p className="small muted">
-            {listing.slug === "demo-gmbh"
-              ? "Testprofil: Kontaktaufnahme ist nicht verfügbar."
-              : listing.isPreview
-              ? "Für dieses Testprofil sind keine Kontaktdaten hinterlegt. Kontaktaufnahme ist nicht verfügbar."
-              : "Beispielprofil: Kontaktdaten sind fiktiv. Kontaktaufnahme ist in dieser Vorschau nicht verfügbar."}
-          </p>
-        </>
-      ) : (
-        <>
-          {contactAction ??
-            (listing.contact.email && (
-              <a
-                className="button button-primary"
-                href={`mailto:${listing.contact.email}`}
-              >
-                Kontakt aufnehmen
-              </a>
-            ))}
-          {website && (
-            <a
-              className="text-link"
-              href={website}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Website besuchen
-            </a>
-          )}
-        </>
+      {!inlineFields && !listing.isDemo && website && (
+        <a className="button button-primary" href={website} target="_blank" rel="noopener noreferrer">
+          Webseite besuchen
+        </a>
       )}
     </section>
   );
@@ -175,7 +141,6 @@ export function ListingDetail({
   businessHeadingEditor,
   contentBlocks,
   editorialContent,
-  contactAction,
   showMap = false,
   mapLocation,
   allowDemoMap = false,
@@ -204,7 +169,6 @@ export function ListingDetail({
   businessHeadingEditor?: React.ReactNode;
   contentBlocks?: React.ReactNode;
   editorialContent?: React.ReactNode;
-  contactAction?: React.ReactNode;
 }) {
   const Heading = headingLevel === 1 ? "h1" : "h2";
   const location = mapLocation ?? listing.location;
@@ -250,7 +214,6 @@ export function ListingDetail({
       </div>
         <ContactSection
           listing={listing}
-          contactAction={contactAction}
           logoEditor={logoEditor}
           contactPersonEditor={contactPersonEditor}
           inlineFields={inlineFields}

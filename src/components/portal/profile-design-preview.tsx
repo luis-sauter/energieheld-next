@@ -2,7 +2,6 @@ import Image from 'next/image';
 import { ProfileLocation } from './profile-location';
 import Link from './navigation-link';
 import { ImageGallery } from './image-gallery';
-import { InquiryDialog } from '@/components/leads/inquiry-dialog';
 import { ProfileEditorialContent, TextImageSection } from './profile-content-blocks';
 import { ThemeScroller } from './theme-scroller';
 import { TravelThemeIcon } from './travel-theme-icon';
@@ -55,8 +54,7 @@ export function ProfileDesignPreview({ listing, blocks = [] }: { listing: Listin
             {listing.contact.email && <a href={`mailto:${listing.contact.email}`}><Icon name="mail" />{listing.contact.email}</a>}
             {listing.contact.website && <a href={listing.contact.website} target="_blank" rel="noopener noreferrer"><Icon name="globe" />{listing.contact.website}</a>}
           </div>
-          <InquiryDialog profileId={listing.id} companyName={listing.name} />
-          {listing.contact.website && <a className={styles.website} href={listing.contact.website} target="_blank" rel="noopener noreferrer">Website besuchen <span aria-hidden="true">↗</span></a>}
+          {listing.contact.website && <a className="button button-primary" href={listing.contact.website} target="_blank" rel="noopener noreferrer">Webseite besuchen</a>}
         </aside>
       </div>
       {map && <ProfileLocation name={listing.name} location={listing.location} map={map} />}
