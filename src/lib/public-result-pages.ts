@@ -5,7 +5,7 @@ import { sortByDirectoryOrder, type DirectoryOrderRow } from './company-director
 import { withPublicImportMarkers } from './public-profile-imports';
 import { loadPublicAds } from './public-ads';
 import { loadTravelSearchBanners } from './public-travel-search-banners';
-import { travelSearchResults } from './travel-search-banners';
+import { matchTravelSearchBanners } from './travel-search-banners';
 import { filterTravelListings } from './reiseportal-facets';
 import { directoryBannerPool } from './directory-banner-layout';
 import { signAdImages } from './ad-campaigns';
@@ -75,10 +75,10 @@ export function directoryWindows(index: Awaited<ReturnType<typeof loadPublicDire
   const filters = { ...values, query: '', location: '' };
   const rows = filterTravelListings(index.facts, filters);
   const ordered = [...rows.filter(row => row.directoryPackage === 'premium'), ...rows.filter(row => row.directoryPackage !== 'premium')];
-  const advertisers = travelSearchResults(index.facts, index.banners, filters).advertisers;
+  const creatives = matchTravelSearchBanners(index.directoryBanners ?? index.banners, filters);
   return {
     profiles: resultWindow(ordered, offset),
-    advertisements: resultWindow(directoryBannerPool([...index.ads, ...advertisers.map(row => row.ad)]), bannerOffset),
+    advertisements: resultWindow(directoryBannerPool([...index.ads, ...creatives.map(row => row.ad)]), bannerOffset),
   };
 }
 

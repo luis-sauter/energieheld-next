@@ -20,8 +20,8 @@ export function SearchAdCard({ banner, geometry, onGeometry, onEdit, loading = f
     <a className={`${grid.creative} ${styles.interactiveCreative}`} href={href} target={href.startsWith('/') ? undefined : '_blank'} rel="sponsored noopener noreferrer" aria-label={banner.ad.headline}>
       {/* Original creative is contained, never stretched or cropped by slot geometry. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={directory ? banner.ad.mobile_image?.imageUrl ?? banner.ad.imageUrl : banner.ad.imageUrl} alt={banner.ad.headline}
-        width={(directory ? banner.ad.mobile_image?.width : undefined) ?? (dimensions.width || undefined)} height={(directory ? banner.ad.mobile_image?.height : undefined) ?? (dimensions.height || undefined)}
+      <img src={banner.ad.imageUrl} alt={banner.ad.headline}
+        width={dimensions.width || undefined} height={dimensions.height || undefined}
         crossOrigin={directory ? "anonymous" : undefined}
         loading={directory ? 'lazy' : dimensions.width && dimensions.height ? 'lazy' : 'eager'} decoding="async"
         onLoad={event => { onGeometry?.({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight }); onCreativeLoaded?.(banner.ad, event.currentTarget); }} />

@@ -16,6 +16,14 @@ test('directory has no campaign/path/token/crop duplicate, excludes invalid deli
  assert.equal(directoryBannerPool([ad('only','one')]).length,1);
  assert.doesNotMatch(source('src/components/portal/travel-directory.tsx'),/directoryBannerSequence|DirectoryBannerContinuation/);
 });
+
+test('directory excludes Premium before deduplication so a normal variant survives',()=>{
+ const normal=ad('same','normal');
+ const pool=directoryBannerPool([{...normal,placement:'top_banner'},normal,
+   {...ad('premium','premium'),placement:'top_banner'},
+   {...ad('legacy','legacy'),source:'legacy'},ad('second','second'),normal]);
+ assert.deepEqual(pool.map(row=>row.id),['same','second']);
+});
 test('optional period distinguishes partial native badInput from empty and validates paired range',()=>{
  const input=value=>({value,validity:{badInput:false},message:'',setCustomValidity(message){this.message=message}});
  const start=input(''),end=input('');assert.equal(validateOfferPeriod(start,end),'');

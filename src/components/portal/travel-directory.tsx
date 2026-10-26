@@ -21,7 +21,7 @@ import { filterTravelListings, travelFilterUrl } from "@/lib/reiseportal-facets"
 import { AdvertisingLayout } from "./trades";
 import { ListingRow } from "./listing-row";
 import { SearchAdResults } from "@/components/advertising/search-ad-results";
-import { travelResultNoun, travelSearchResults, type TravelSearchBanner } from "@/lib/travel-search-banners";
+import { matchTravelSearchBanners, travelResultNoun, travelSearchResults, type TravelSearchBanner } from "@/lib/travel-search-banners";
 import { TravelFinder, useTravelSearchPending } from "./travel-finder";
 import { useLiveTravelCount } from './use-live-travel-count';
 import dynamic from 'next/dynamic.js';
@@ -35,7 +35,7 @@ import {BasicSourceCredit} from './basic-source-credit';
 import {useAccommodationFacets} from './use-accommodation-facets';
 
 export function TravelDirectory({ initialValues, database, preview, terms, error, ads, sidebarOrder,
-  canReorder, cardEditing = false, freshnessStatuses, importedProfileIds, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions, banners = [], bannerError, pagination,basicEnabled=false,basicPagination }: {
+  canReorder, cardEditing = false, freshnessStatuses, importedProfileIds, hiddenOrderKeys, saveOrder, saveSidebarOrder, bannerOptions, banners = [], directoryBanners = banners, bannerError, pagination,basicEnabled=false,basicPagination }: {
   cardEditing?: boolean;
   basicPagination?:ResultBatch<DirectoryEntry,string|number>;
   basicEnabled?:boolean;
@@ -47,6 +47,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   error: string | null;
   ads: ActiveAd[];
   banners?: TravelSearchBanner[];
+  directoryBanners?: TravelSearchBanner[];
   bannerError?: string | null;
   sidebarOrder: SidebarSlot[];
   canReorder: boolean;
@@ -87,13 +88,14 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
   const shownResults=pagination?profileStream.items:[...results,...extraBasics];
   const count = (pagination ? profileStream.total : results.length+(basicPagination&&!reviewFilter?basicStream.total:0)) + matched.banners.length;
   const [samples, setSamples] = useState<CreativeSamples>({});
-  const bannerPool = useMemo(() => directoryBannerPool(pagination?bannerStream.items:[...ads, ...matched.advertisers.map(banner => banner.ad)], samples), [ads, matched.advertisers, samples, pagination, bannerStream.items]);
+  const matchingCreatives = matchTravelSearchBanners(directoryBanners, filterValues);
+  const bannerPool = directoryBannerPool(pagination ? bannerStream.items : [...ads, ...matchingCreatives.map(banner => banner.ad)], samples);
   function recordCreative(ad: ActiveAd, image: HTMLImageElement) {
     const key = directoryImageKey(ad), value = sampleDirectoryCreative(image);
     if (value.length) setSamples(current => current[key] ? current : { ...current, [key]: value });
   }
   function asBanner(ad: ActiveAd): TravelSearchBanner {
-    const matchedBanner=matched.advertisers.find(banner => banner.ad.id === ad.id);
+    const matchedBanner=matchingCreatives.find(banner => banner.ad.id === ad.id);
     return matchedBanner ? {...matchedBanner,ad} : {
       banner_key: ad.id, advertiser_key: ad.id, profile_id: null, postal_code: "", city: "", term_keys: [], source_path: "/unterkuenfte-a-z", ad,
     };

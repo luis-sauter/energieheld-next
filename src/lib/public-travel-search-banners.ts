@@ -7,7 +7,7 @@ import type { PublicTravelTerm } from './reiseportal-filter-options';
 import type { TravelSearchBanner } from './travel-search-banners';
 
 type Metadata = BannerSearchData & Partial<TravelSearchBanner> & { term_keys: string[]; profile_id: string | null };
-export const loadTravelSearchBanners = cache(async (sign = true): Promise<{banners: TravelSearchBanner[]; terms: PublicTravelTerm[]; error: string | null}> => {
+export const loadTravelSearchBanners = cache(async (sign = true): Promise<{banners: TravelSearchBanner[]; directoryBanners?: TravelSearchBanner[]; terms: PublicTravelTerm[]; error: string | null}> => {
   try {
     const client = createPublicClient();
     const {data,error} = await client.rpc('public_travel_search_banners');
@@ -20,14 +20,18 @@ export const loadTravelSearchBanners = cache(async (sign = true): Promise<{banne
     const urls = new Map(signed.map(ad => [ad.image_path,ad.imageUrl]));
     const ads = payload.ads.map(ad => ({...ad,imageUrl: urls.get(ad.image_path),image_available: Boolean(urls.get(ad.image_path))}));
     const unique = new Map<string, TravelSearchBanner>();
+    const compact = new Map<string, TravelSearchBanner>();
     for (const {ad,identity,details,path} of publicBannerCreatives(ads,payload.presentations,payload.metadata)) {
-      if (!ad.imageUrl || sign && ad.imageUrl === 'public-creative' || !details || unique.has(identity)) continue;
+      if (!ad.imageUrl || sign && ad.imageUrl === 'public-creative' || !details) continue;
       const metadata = details as Metadata;
-      unique.set(identity,{...metadata,banner_key:identity,source_path:path,profile_id:metadata.profile_id,postal_code:metadata.postal_code,city:metadata.city,term_keys:metadata.term_keys,ad:{...ad,headline:metadata.name}});
+      const banner = {...metadata,banner_key:identity,source_path:path,profile_id:metadata.profile_id,postal_code:metadata.postal_code,city:metadata.city,term_keys:metadata.term_keys,ad:{...ad,headline:metadata.name}};
+      if (!unique.has(identity)) unique.set(identity, banner);
+      // A Premium placement encountered first must not hide a normal variant.
+      if (ad.placement !== 'top_banner' && !compact.has(identity)) compact.set(identity, banner);
     }
-    return {banners:[...unique.values()],terms:payload.terms ?? [],error:null};
+    return {banners:[...unique.values()],directoryBanners:[...compact.values()],terms:payload.terms ?? [],error:null};
   } catch {
-    return {banners:[],terms:[],error:'Die Anzeigen für diese Suche konnten nicht geladen werden. Bitte laden Sie die Seite erneut.'};
+    return {banners:[],directoryBanners:[],terms:[],error:'Die Anzeigen für diese Suche konnten nicht geladen werden. Bitte laden Sie die Seite erneut.'};
   }
 });
 

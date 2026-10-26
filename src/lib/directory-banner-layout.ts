@@ -39,7 +39,7 @@ export function directoryBannerPool(ads: ActiveAd[], samples: CreativeSamples = 
   const accepted: CreativeSample[][] = [];
   return ads.filter(ad => {
     const key = directoryImageKey(ad), fingerprint = samples[key];
-    if (ad.suppressed || !ad.imageUrl || !adTargetUrl(ad.target_url) || ad.status && ad.status !== "approved" ||
+    if (ad.placement === 'top_banner' || ad.source === 'legacy' || ad.suppressed || !ad.imageUrl || !adTargetUrl(ad.target_url) || ad.status && ad.status !== "approved" ||
       ad.approved_start_date && ad.approved_start_date > today || ad.approved_end_date && ad.approved_end_date < today || seen.has(ad.id) || paths.has(key) ||
       fingerprint?.length && accepted.some(previous => sameCreative(previous, fingerprint))) return false;
     seen.add(ad.id); paths.add(key); if (fingerprint?.length) accepted.push(fingerprint); return true;

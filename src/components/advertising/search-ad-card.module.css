@@ -9,5 +9,5 @@
 .card[data-panoramic] { grid-column: 1 / -1; }
 .creative:focus-visible, .edit:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 3px; }
 .card[data-format="directory"] { padding: 0; border: 0; box-shadow: none; background: transparent; }
-.card[data-format="directory"] .creative { aspect-ratio: 350 / 120; background: #fff; }
-.card[data-format="directory"] .creative img { height: 100%; object-fit: contain; }
+.card[data-format="directory"] .creative { aspect-ratio: auto; background: transparent; }
+.card[data-format="directory"] .creative img { height: auto; object-fit: contain; }

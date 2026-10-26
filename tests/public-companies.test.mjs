@@ -1276,6 +1276,19 @@ test("hidden profiles leave directory, direct URL and sitemap index before media
 });
 
 
+test('directory banner pages retain all normal creatives including profile links without changing advertiser counts',async()=>{
+ const {directoryWindows}=await import('../src/lib/public-result-pages.ts');
+ const {readTravelFilterValues}=await import('../src/lib/reiseportal-filter-options.ts');
+ const banners=Array.from({length:27},(_,i)=>({banner_key:'campaign:'+i,profile_id:'same-profile',advertiser_key:'same-advertiser',term_keys:[],postal_code:'',city:'',ad:{id:'ad-'+i,placement:'sidebar_top',source:'campaign',headline:'Motive '+i,target_url:'https://das-reiseportal.com/unterkuenfte/real',image_path:'unique-'+i,imageUrl:'public-creative'}}));
+ const premium={...banners[0].ad,id:'premium',placement:'top_banner',image_path:'premium'};
+ const index={facts:[],ads:[premium],banners:[],directoryBanners:banners};
+ const first=directoryWindows(index,readTravelFilterValues({}));
+ assert.equal(first.advertisements.total,27);assert.equal(first.advertisements.items.length,20);assert.equal(first.advertisements.nextCursor,20);
+ const last=directoryWindows(index,readTravelFilterValues({}),0,20);
+ assert.equal(last.advertisements.items.length,7);assert.equal(last.advertisements.nextCursor,null);
+ assert.equal(new Set([...first.advertisements.items,...last.advertisements.items].map(ad=>ad.id)).size,27);
+});
+
 test('public directory page hydrates twenty IDs and one gallery preview per profile, preserving order and source data',async()=>{
  const rows=Array.from({length:106},(_,i)=>({...travelRow,id:'pagination-'+i,slug:'pagination-'+i,display_name:'Pagination '+i,gallery_initialized:true,company_profile_images:Array.from({length:40},(_,n)=>({id:'image-'+n,sort_order:n,storage_path:'profiles/pagination-'+i+'/gallery/'+n+'.jpg',alt_text:'Existing'}))}));
  const before=JSON.stringify(rows);const requests=api(rows);const {loadPublicDirectoryIndex,directoryWindows,hydrateDirectoryWindow}=await import('../src/lib/public-result-pages.ts');
