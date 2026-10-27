@@ -26,11 +26,11 @@ test('isolated preview preserves real text/media and exposes gallery, contact, M
  assert.match(html,/https:\/\/www.google.com\/maps\?/);assert.match(html,/In Google Maps öffnen/);assert.match(html,/href="\/mottoreisen\/natur-pur"/);assert.match(html,/href="\/mottoreisen\/romantik-zu-zweit"/);
  assert.doesNotMatch(html,/InlineProfileEditor|Bearbeitungsmodus|Banner bearbeiten/);assert.equal(JSON.stringify(globalThis.previewFixture),before);
 });
-test('preview is noindex, absent from sitemap and visible only through an explicitly non-prefetched footer link',()=>{
+test('preview is noindex, absent from sitemap and not linked in the public footer',()=>{
  assert.equal(metadata.robots.index,false);
  const sitemap=sitemapEntries([globalThis.previewFixture],{indexable:true,canonicalOrigin:'https://das-reiseportal.com',siteName:'DAS Reiseportal'});
  assert.ok(sitemap.every(row=>!row.url.includes('designvorschau')));
- const chrome=readFileSync(new URL('../src/components/portal/chrome.tsx',import.meta.url),'utf8');assert.match(chrome,/Profil-Designvorschau/);assert.match(chrome,/href="\/designvorschau\/unternehmensprofil" prefetch=\{false\}/);
+ const chrome=readFileSync(new URL('../src/components/portal/chrome.tsx',import.meta.url),'utf8');assert.doesNotMatch(chrome,/Profil-Designvorschau|href="\/designvorschau\/unternehmensprofil"/);
  const route=readFileSync(new URL('../src/app/(energieheld)/designvorschau/unternehmensprofil/page.tsx',import.meta.url),'utf8');assert.doesNotMatch(route,/save|update\(|insert\(|delete\(|checkAdmin|user_metadata/);assert.match(route,/loadAccommodationPage\('unternehmen-6cd02/);
 });
 

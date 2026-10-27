@@ -93,7 +93,8 @@ test("approved anniversary logo is shared by header, footer and metadata without
 
 test("travel footer contains only brand, contact and utility links, without discovery or service columns", () => {
   const html = renderToStaticMarkup(createElement(PortalFooter, { brand: reiseportal }));
-  for (const route of ['/impressum', '/datenschutz', '/login?next=/admin', '/designvorschau/unternehmensprofil']) assert.ok(html.includes('href="'+route+'"'));
+  for (const route of ['/impressum', '/datenschutz', '/login?next=/admin']) assert.ok(html.includes('href="'+route+'"'));
+  assert.doesNotMatch(html,/href="\/designvorschau\/|Profil-Designvorschau/);
   assert.doesNotMatch(html,/Entdecken|Service|Reiseziele|Mottoreisen|Für Gastgeber|Angebot anfragen|Werbung im Reiseportal|href="\/unterkuenfte-a-z"/);
   assert.ok(html.includes('href="'+portalIdentity.phoneHref+'"'));
   assert.ok(html.includes('href="mailto:'+portalIdentity.email+'"'));

@@ -62,7 +62,6 @@ export function PortalFooter({ brand }: { brand: BrandConfig }) {
       <nav aria-label="Rechtliches und Redaktion" className={styles.legalLinks}>
         <Link href="/impressum" prefetch={false}>Impressum</Link><Link href="/datenschutz" prefetch={false}>Datenschutz</Link>
         <Link href="/login?next=/admin" prefetch={false}>Redaktion / Login</Link>
-        <Link href="/designvorschau/unternehmensprofil" prefetch={false}>Profil-Designvorschau</Link>
       </nav>
     </div>
   </footer>;
