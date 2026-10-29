@@ -4,19 +4,21 @@
 .image img { object-fit: cover; }
 .fallback { display: grid; height: 45%; place-items: center; color: #e7f3fa; font-size: 3rem; font-weight: 700; }
 .copy { width: 100%; min-width: 0; padding: clamp(16px, 2vw, 24px); overflow-wrap: anywhere; text-shadow: 0 1px 3px #000, 0 0 2px #000; }
-.copy h3 { margin: 0; color: #fff; font-size: clamp(1.1rem, 1.5vw, 1.5rem); line-height: 1.2; font-weight: var(--font-heading-weight); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.titleRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px; min-height: 3.6em; margin-bottom: 8px; }
+.copy h3 { margin: 0; min-height: 2.4em; color: #fff; font-size: clamp(1.1rem, 1.5vw, 1.5rem); line-height: 1.2; font-weight: var(--font-heading-weight); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.titleRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px; min-height: 3.6em; margin-bottom: 8px; }
 .copy .signals { min-height: 5.2rem; }
 .location { margin: 0 0 .4rem; color: #e6edf0; font-size: .65rem; line-height: 1.45; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; }
 .copy .signals ul { gap: 5px; margin: .65rem 0 .9rem; }
 .copy .signals li { color: #fff; background: rgb(255 255 255 / 8%); border: 1px solid rgb(255 255 255 / 36%); padding: 4px 7px; font-size: .68rem; }
 .copy .signals svg { width: 15px; height: 15px; flex-basis: 15px; }
-.details { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 10px; margin-left: 0; border-radius: 8px; background: var(--portal-button); color: #fff; text-shadow: none; font-size: .75rem; font-weight: 650; transition: background-color .18s ease; white-space: nowrap; }
+.details { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 6px 10px; margin-left: 0; border: 1px solid rgb(255 255 255 / 55%); border-radius: 999px; background: var(--portal-button); color: #fff; box-shadow: 0 2px 7px rgb(0 0 0 / 18%); text-shadow: none; font-size: .75rem; font-weight: 650; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; white-space: nowrap; }
+.details > span { display: inline-block; transition: transform .18s ease; }
 .card.card:focus-visible { outline-color: #2394d5; outline-offset: 3px; box-shadow: 0 5px 20px #102b4230; }
 .card.card:focus-visible .details { outline: 2px solid #fff; outline-offset: 2px; }
-@media (hover: hover) and (pointer: fine) { .card:hover .photo { transform: scale(1.035); } .card:hover { outline-color: #2394d5; box-shadow: 0 5px 20px #102b4230; } .card:hover .details { background: var(--portal-button); margin-left: 0; text-shadow: none; } }
+.card.card:focus-visible .details > span { transform: translateX(3px); }
+@media (hover: hover) and (pointer: fine) { .card:hover .photo { transform: scale(1.035); } .card:hover { outline-color: #2394d5; box-shadow: 0 5px 20px #102b4230; } .card:hover .details { border-color: #fff; box-shadow: 0 6px 14px rgb(0 0 0 / 30%); transform: translateY(-2px); } .card:hover .details > span { transform: translateX(3px); } }
 @media (hover: none) { .details { background: var(--portal-button); margin-left: 0; text-shadow: none; } }
-@media (prefers-reduced-motion: reduce) { .card, .details, .photo { transition: none; } .card:hover .photo { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card, .details, .details > span, .photo { transition: none; } .card:hover .photo { transform: none; } .card:hover .details, .card:hover .details > span, .card.card:focus-visible .details > span { transform: none; } }
 
 .edit { position: absolute; z-index: 2; top: 10px; right: 10px; min-width: 44px; min-height: 44px; border: 1px solid #fff; border-radius: 50%; color: #174761; background: #fff; cursor: pointer; }
 .motto { min-height: 0; aspect-ratio: 1.18; }
@@ -24,7 +26,7 @@
 .motto .copy h3 { font-size: 1.13rem; margin-bottom: 0; }
 .motto .location { font-size: .6rem; margin-bottom: 4px; }
 .motto .copy .signals ul { margin: 7px 0 2px; }
-.motto .details { font-size: .75rem; padding: 8px 10px; }
+.motto .details { font-size: .75rem; padding: 6px 10px; }
 .edit:focus-visible { outline: 3px solid #2394d5; outline-offset: 3px; }
 .importMarker { position: absolute; top: 12px; left: 12px; max-width: calc(100% - 80px); pointer-events: none; }
 .newBadge { position: absolute; top: 12px; left: 12px; }
