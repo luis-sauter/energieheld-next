@@ -30,6 +30,13 @@ export function NearbyHomeMap() {
  if(!location||overview)return <div ref={root}><StaticHomeMap/>{location&&<div className="container"><button className="button" onClick={()=>setOverview(false)}>Unterkünfte in meiner Umgebung</button></div>}</div>;
  const [x,y]=projectLocation(location.lat,location.lon),[nx,ny]=projectLocation(location.lat+radius/111.32,location.lon);
  const r=Math.hypot(nx-x,ny-y),height=r*2.5,width=height*aspect,compact=aspect<2;
+ const fontSize=width/(compact?35:90),labelBoxes:{left:number;right:number;top:number;bottom:number}[]=[];
+ const labels=(data?.labels??[]).slice(0,compact?4:8).flatMap(label=>{
+  const [px,py]=projectLocation(label.lat,label.lon),left=px+width/(compact?50:150),bottom=py-width/(compact?100:250);
+  const box={left,right:left+label.name.length*fontSize*.67,top:bottom-fontSize*1.2,bottom:bottom+fontSize*.25};
+  if(labelBoxes.some(b=>box.left<b.right+fontSize&&box.right>b.left-fontSize&&box.top<b.bottom&&box.bottom>b.top))return [];
+  labelBoxes.push(box);return [{...label,x:left,y:bottom}];
+ });
  return <div ref={root}><section className={styles.section} aria-labelledby="locations-title" data-company-map data-nearby-map>
   <div className="container"><header className={styles.header}><h2 id="locations-title">Unterkünfte in Ihrer Nähe</h2><p>{location.city?`${location.city} · `:''}Ungefährer Standort anhand Ihrer IP-Adresse. Die Ortung kann abweichen.</p>
    <div role="group" aria-label="Umkreis auswählen">{[20,50].map(km=><button key={km} className={radius===km?'button button-primary':'button'} aria-pressed={radius===km} onClick={()=>{if(radius!==km){setData(null);setError('');setRadius(km);}}}>{km} km</button>)} <button className="button" onClick={()=>setOverview(true)}>Gesamtübersicht</button></div>
@@ -38,7 +45,7 @@ export function NearbyHomeMap() {
    <circle cx={x} cy={y} r={r} fill="#13237f08" stroke="#13237f" strokeWidth={width/900} strokeDasharray={`${width/160} ${width/200}`}/>
    {data?.points.map(([lat,lon],i)=>{const [px,py]=projectLocation(lat,lon);return <circle key={i} cx={px} cy={py} r={width/(compact?100:250)} fill="#f7902f" stroke="#fff" strokeWidth={width/(compact?450:1200)}/>;})}
    <circle cx={x} cy={y} r={width/(compact?70:180)} fill="#13237f" stroke="#fff" strokeWidth={width/(compact?300:700)}/>
-   {data?.labels?.slice(0,compact?4:8).map(label=>{const [px,py]=projectLocation(label.lat,label.lon);return <text key={label.name} x={px+width/(compact?50:150)} y={py-width/(compact?100:250)} fontSize={width/(compact?35:90)} fill="#174761" stroke="#faf8f4" strokeWidth={width/(compact?140:400)} paintOrder="stroke" fontWeight="650">{label.name}</text>;})}
+   {labels.map(label=><text key={label.name} x={label.x} y={label.y} fontSize={fontSize} fill="#174761" stroke="#faf8f4" strokeWidth={width/(compact?140:400)} paintOrder="stroke" fontWeight="650">{label.name}</text>)}
   </svg></div><div className={styles.footnote}><p role="status">{error||(!data?'Unterkünfte im Umkreis werden geladen …':data.points.length?`${data.points.length} dargestellte Standorte${data.limited?' · Auswahl der nächstgelegenen Unterkünfte':''}`:'In diesem Umkreis sind derzeit keine belegten Kartenstandorte verfügbar.')}</p><p>Blau: ungefährer Ausgangspunkt · Orange: Unterkünfte · Luftlinie</p><p className={styles.credit}>Karte: <a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noopener noreferrer">Natural Earth</a> · Standorte: Betreiberangaben, © swisstopo / © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap-Mitwirkende</a></p></div>
   <p><a className={styles.link} href="/unterkuenfte-a-z">Alle Unterkünfte entdecken →</a></p></div>
  </section></div>;
