@@ -61,7 +61,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige" />
 
-    <AutumnShowcase listings={directory.database} />
+    <AutumnShowcase listings={directory.database} cardEditing={Boolean(bannerOptions)} />
 
     <NearbyHomeMap />
 

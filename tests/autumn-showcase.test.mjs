@@ -100,10 +100,16 @@ test('partial selection collapses absent providers without placeholders; content
 
 test('homepage reuses its public directory without another loader and excludes the retired four-card season section',()=>{
  const page=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
- assert.match(page,/<AutumnShowcase listings=\{directory.database\} \/>/);
+ assert.match(page,/<AutumnShowcase listings=\{directory.database\} cardEditing=\{Boolean\(bannerOptions\)\} \/>/);
  assert.doesNotMatch(page,/<TravelSeasons|import \{ TravelSeasons \}/);
  assert.equal((page.match(/loadReiseportalDirectory\(\{ cardOnly: true \}\)/g)||[]).length,1);
  const componentSource=readFileSync(new URL('../src/components/portal/autumn-showcase.tsx',import.meta.url),'utf8');
  assert.doesNotMatch(componentSource,/createPublicClient|createSignedUrl|fetch\(|useEffect|useState/);
  assert.ok(existsSync(new URL('../public/reiseportal/seasons/herbst-auszeit.webp',import.meta.url)));
+});
+
+test('saved preview overrides seasonal gallery choice and uses its persisted crop on public reload',()=>{
+ const listing={...fixtures()[0],cardImageAssetId:'72293128-44e9-4596-96ff-67ba9e85c384',travelImage:{src:'/saved-preview.jpg',alt:'Redaktionelles Vorschaubild'},cardImageCrop:{focus_x:31,focus_y:64,zoom:1.25}};
+ const selected=selectAutumnStays([listing])[0];assert.equal(selected.image.src,'/saved-preview.jpg');assert.deepEqual(selected.crop,listing.cardImageCrop);assert.equal(selected.assetId,listing.cardImageAssetId);
+ const html=renderToStaticMarkup(createElement(AutumnShowcase,{listings:[listing]}));assert.match(html,/saved-preview.jpg/);assert.doesNotMatch(html,/actual-0.jpg|Vorschaubild bearbeiten/);assert.match(html,/object-position:31% 64%/);assert.match(html,/scale\(1.25\)/);
 });

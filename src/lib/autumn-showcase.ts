@@ -43,7 +43,8 @@ export function selectAutumnStays(publicListings: readonly Listing[]) {
   return eligible.sort((a, b) => rank(a.id) - rank(b.id)).flatMap(listing => {
     const selection = seasonalSelections.find(row => row.profileId === listing.id);
     const curated = selection && listing.images.find(row => row.id === selection.imageId && row.src && row.src !== listing.logo?.src);
-    const image = curated ? { ...curated, alt: selection.alt } : providerCardImage(listing, 'travel');
-    return image?.src && image.src !== listing.logo?.src ? [{ listing, image }] : [];
+    const saved = listing.cardImageAssetId ? providerCardImage(listing, 'travel') : undefined;
+    const image = saved ?? (curated ? { ...curated, alt: selection.alt } : providerCardImage(listing, 'travel'));
+    return image?.src && image.src !== listing.logo?.src ? [{ listing, image, crop: saved ? listing.cardImageCrop : undefined, assetId: saved ? listing.cardImageAssetId : undefined }] : [];
   });
 }

@@ -7,9 +7,12 @@ import { AUTUMN_HREF, selectAutumnStays } from '@/lib/autumn-showcase';
 import { SPECIAL_TOPIC_TERM } from '@/lib/travel-editorial';
 import type { Listing } from '@/types/portal';
 import styles from './autumn-showcase.module.css';
+import { CardImageSurface, CardImagePhoto, CardImageEditButton } from './card-image-surface';
+import { imageCropStyle } from '@/lib/image-crop';
 
-export function AutumnShowcase({ listings }: { listings: readonly Listing[] }) {
+export function AutumnShowcase({ listings, cardEditing = false }: { listings: readonly Listing[]; cardEditing?: boolean }) {
   const stays = selectAutumnStays(listings);
+  const Card = cardEditing ? CardImageSurface : 'article';
   if (!stays.length) return null;
   return <section className={styles.section} aria-labelledby="autumn-title" data-autumn-showcase>
     <div className="container">
@@ -36,9 +39,9 @@ export function AutumnShowcase({ listings }: { listings: readonly Listing[] }) {
           </div>
         </aside>
         <ThemeScroller count={stays.length} label="Sonderthemen-Unterkünfte" edgeNavigation pageSize={4} autoPlay={false}>
-          {stays.map(({ listing, image }) => <article className={styles.card} key={listing.id} data-autumn-profile={listing.id} data-editorial-term={SPECIAL_TOPIC_TERM}>
+          {stays.map(({ listing, image, crop, assetId }) => <Card className={styles.card} key={listing.id} data-autumn-profile={listing.id} data-editorial-term={SPECIAL_TOPIC_TERM}>
             <Link href={`/unterkuenfte/${listing.slug}`} className={styles.cardLink} aria-label={`${listing.name} – Unternehmensprofil ansehen`}>
-              <div className={styles.photo}><Image src={image.src} alt={image.alt} fill unoptimized={image.src.startsWith('http')} loading="lazy" sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" /></div>
+              <div className={styles.photo}>{cardEditing ? <CardImagePhoto image={image} crop={crop} sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" /> : <Image src={image.src} alt={image.alt} fill style={crop ? imageCropStyle(crop) : undefined} unoptimized={image.src.startsWith('http')} loading="lazy" sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" />}</div>
               <div className={styles.copy}>
                 <h3>{listing.name}</h3>
                 <p className={styles.location}>{[listing.location.city, listing.location.country].filter(Boolean).join(' · ')}</p>
@@ -51,7 +54,8 @@ export function AutumnShowcase({ listings }: { listings: readonly Listing[] }) {
                 <span className={styles.arrow} aria-hidden="true">→</span>
               </div>
             </Link>
-          </article>)}
+            {cardEditing && <CardImageEditButton profileId={listing.id} profileName={listing.name} crop={crop} image={image} assetId={assetId} ratio={16 / 10} />}
+          </Card>)}
         </ThemeScroller>
       </div>
     </div>

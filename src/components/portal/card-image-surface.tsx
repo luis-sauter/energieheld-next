@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, type ReactNode, type ComponentProps } from "react";
+import { createContext, useContext, useState, type ComponentProps } from "react";
 import Image from "next/image";
 import type { PortalImage } from "@/types/portal";
 import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";
@@ -11,9 +11,9 @@ type SavedImage = { image: PortalImage; assetId: string; crop: ImageCrop };
 const Context = createContext<{ value: SavedImage | null; saved: (value: SavedImage) => void } | null>(null);
 
 // Server-rendered card copy stays unchanged; only the admin image needs local state.
-export function CardImageSurface({ children, className = "accommodation-card" }: { children: ReactNode; className?: string }) {
+export function CardImageSurface({ children, className = "accommodation-card", ...attributes }: ComponentProps<"article">) {
   const [value, saved] = useState<SavedImage | null>(null);
-  return <Context.Provider value={{ value, saved }}><article className={className}>{children}</article></Context.Provider>;
+  return <Context.Provider value={{ value, saved }}><article {...attributes} className={className}>{children}</article></Context.Provider>;
 }
 export function CardImagePhoto({ image, crop, sizes, initials, fit = "cover" }: { image?: PortalImage; crop?: ImageCrop; sizes?: string; initials?: string; fit?: "cover" | "contain" }) {
   const context = useContext(Context);
