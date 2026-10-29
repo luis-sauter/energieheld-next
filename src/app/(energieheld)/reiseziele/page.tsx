@@ -48,11 +48,10 @@ export const metadata = pageMetadata({ title: "Reiseziele – Vier Länder. Viel
 export const dynamic = "force-dynamic";
 export default function DestinationsPage() {
   return <main id="hauptinhalt" className={styles.page}>
+    <div className={styles.backdrop} aria-hidden="true"><Image src={`${imageRoot}/hero-flusstal-v3.webp`} alt="" fill sizes="100vw" preload /></div>
     <JsonLd data={jsonLdGraph([breadcrumbSchema(breadcrumbs), collectionSchema({ name: "Reiseziele", description: hubDescriptions.destinations,
       path: "/reiseziele", items: destinations.map(entry => ({ name: entry.title, path: `/reiseziele/${entry.slug}` })) })])} />
     <section className={styles.hero} aria-labelledby="reiseziele-title">
-      <Image className={styles.heroImage} src={`${imageRoot}/hero-flusstal-v3.webp`} alt="Grünes Alpental mit Fluss, Wiesen und Bergen"
-        fill sizes="100vw" preload />
       <div className={`${styles.heroContent} container`}>
         <Breadcrumbs items={breadcrumbs} className={styles.breadcrumbs} />
         <h1 id="reiseziele-title" className={styles.heading}>Vier Länder.<br />Viele Möglichkeiten.</h1>

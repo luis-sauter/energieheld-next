@@ -18,13 +18,13 @@ import { providerCardImage } from '@/lib/provider-card-media';
 import { imageCropStyle } from "@/lib/image-crop";
 import cardStyles from './accommodation-card.module.css';
 import { ProfileImportBadge } from "@/components/admin/profile-import-badge";
+import { NewPlacementBadge } from './new-placement-badge';
 
-export type AccommodationFade = 'soft-dark' | 'soft-light' | 'lighter-dark';
-export function AccommodationCard({ listing, rotating = false, sizes, cardEditing = false, showImportMarker = false, motto = false, fade }: { listing: Listing; rotating?: boolean; sizes?: string; cardEditing?: boolean; showImportMarker?: boolean; motto?: boolean; fade?: AccommodationFade }) {
+export function AccommodationCard({ listing, rotating = false, sizes, cardEditing = false, showImportMarker = false, motto = false }: { listing: Listing; rotating?: boolean; sizes?: string; cardEditing?: boolean; showImportMarker?: boolean; motto?: boolean }) {
   const image = providerCardImage(listing, 'travel');
   const content = <>
     <Link href={`/unterkuenfte/${listing.slug}`} className={`${cardStyles.card}${motto ? ` ${cardStyles.motto}` : ''}`}
-      data-photo-fade={fade} aria-label={`${listing.name} – Details ansehen`}>
+      data-photo-fade="soft-dark" aria-label={`${listing.name} – Details`}>
       <div className={`accommodation-card-image ${cardStyles.image}${image ? "" : " accommodation-card-image--empty"}`}>
         {image || cardEditing ? <div className={cardStyles.photo}>{cardEditing ? <CardImagePhoto image={image} initials={listing.initials} crop={listing.cardImageCrop} sizes={sizes} /> : image && <Image src={image.src} alt={image.alt} fill loading="lazy"
           style={listing.cardImageCrop ? imageCropStyle(listing.cardImageCrop) : undefined}
@@ -34,11 +34,11 @@ export function AccommodationCard({ listing, rotating = false, sizes, cardEditin
           : <span className={cardStyles.fallback} aria-hidden="true">{listing.initials}</span>}
       </div>
       {showImportMarker && cardEditing && listing.importedAt && <span className={cardStyles.importMarker}><ProfileImportBadge imported /></span>}
+      <NewPlacementBadge id={listing.id} className={cardStyles.newBadge}/>
       <div className={`accommodation-card-copy ${cardStyles.copy}`}>
         <p className={cardStyles.location}>{[listing.location.city, listing.location.region, listing.location.country].filter(Boolean).filter((value, index, all) => all.indexOf(value) === index).join(" · ")}</p>
-        <h3>{listing.name}</h3>
+        <div className={cardStyles.titleRow}><h3>{listing.name}</h3><span className={cardStyles.details}>Details <span aria-hidden="true">→</span></span></div>
         <div className={cardStyles.signals}><TravelSignals termKeys={listing.travelTermKeys} /></div>
-        <span className={cardStyles.details}>Details ansehen <span aria-hidden="true">→</span></span>
       </div>
     </Link>
     {cardEditing && <CardImageEditButton profileId={listing.id} profileName={listing.name} crop={listing.cardImageCrop} image={image} assetId={listing.cardImageAssetId} />}

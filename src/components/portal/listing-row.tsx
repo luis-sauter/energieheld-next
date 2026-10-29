@@ -1,4 +1,5 @@
 import { TravelSignals } from "./travel-signals";
+import { NewPlacementBadge } from './new-placement-badge';
 import Link from "./navigation-link";
 import type { Listing, Category } from "@/types/portal";
 import { CompanyImage } from "./company-image";
@@ -63,7 +64,7 @@ export function ListingRow({
       )}
       <div className="row-content">
         <div className="row-heading">
-          <h3><Link href={href}>{listing.name}</Link></h3>
+          <h3><Link href={href}>{listing.name}<NewPlacementBadge id={listing.id}/></Link></h3>
           {adminStatus}
           {showVerification && !listing.isDemo && listing.verification?.status === "verified" && (
             <QualitySeal note={listing.verification.public_note} />

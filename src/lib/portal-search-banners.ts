@@ -5,6 +5,7 @@ import type { ActiveAd } from './ad-values';
 import { matchSearchDocument, searchExcerpt, type SearchDocument, type SearchHit } from './portal-search-values';
 import { legacyBannerPages } from '../data/legacy-banner-pages';
 import { legacyBannerKey } from './banner-search-metadata';
+import { excludedAgencyTarget } from './travel-provider-eligibility';
 
 export type SearchAdSource = ActiveAd & { path: string; rank: number; image_available?: boolean };
 export type SearchPresentation = BannerPresentation & { path: string };
@@ -23,7 +24,7 @@ export function publicBannerCreatives(ads: SearchAdSource[], presentations: Sear
     if (!context) return [];
     const sources = ads.filter(ad => ad.path === path).map(ad => ({ ...ad, imageUrl: ad.image_path && ad.image_available !== false ? ad.imageUrl ?? 'public-creative' : undefined }));
     return presentedBanners(sources, presentations.filter(row => row.path === path), path, false).flatMap(ad => {
-      if (ad.suppressed || !ad.headline.trim() || !/^https?:\/\//i.test(ad.target_url)) return [];
+      if (ad.suppressed || excludedAgencyTarget(ad.target_url) || !ad.headline.trim() || !/^https?:\/\//i.test(ad.target_url)) return [];
       const original = ad.source === 'legacy' ? legacyBannerPages[path]?.find(row => row.id === ad.id)?.targetUrl : undefined;
       const identity = bannerSearchIdentity({ ...ad, target_url: original ?? ad.target_url });
       const details = metadata?.find(row => row.banner_key === identity && row.path === path);

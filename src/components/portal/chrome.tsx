@@ -10,6 +10,7 @@ import { headerNavigation } from "./navigation-data";
 import { AccountMenu, type AccountIdentity } from "./account-menu";
 import { portalIdentity } from "@/config/portal-identity";
 import styles from "./chrome.module.css";
+import { FooterLogo } from './footer-logo';
 
 export function PortalHeader({ brand, access = "unauthenticated", identity, hasCompany = false, taskCounts, taskError }: { brand: BrandConfig; access?: AdminAccess; identity?: AccountIdentity; hasCompany?: boolean; taskCounts?: EditorialCounts; taskError?: string }) {
   const cta = accountCta({ access, hasCompany });
@@ -48,7 +49,7 @@ export function PortalFooter({ brand }: { brand: BrandConfig }) {
     <div className={`container ${styles.main}`}>
       <div className={styles.brandBlock}>
         <Link href="/" prefetch={false} className={styles.logoSurface} aria-label={`${brand.name} – Startseite`}>
-          <Image {...portalIdentity.logo} alt={`${brand.name} – 15 Jahre`} unoptimized loading="lazy" />
+          <FooterLogo />
         </Link>
         <p className={styles.tagline}>{brand.tagline}</p>
       </div>

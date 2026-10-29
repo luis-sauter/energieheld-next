@@ -21,7 +21,9 @@ export function validateOfferRequest(form: FormData) {
  const bookingError=validateAdBooking(targets);if(bookingError)return {error:bookingError};
  if(!consent)return {error:"Bitte stimmen Sie der Verarbeitung Ihrer Angaben zur Bearbeitung der Anfrage zu."};if(fax)return {error:"Die Anfrage konnte nicht gesendet werden."};
  const key=get("request_key");if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(key))return {error:"Bitte laden Sie das Formular neu."};
- return {data:{company_name,contact_name,contact_email,contact_phone,website:target_url,message,fax,consent,details:{internal_name,target_url,requested_start_date:start,requested_end_date:end,targets}},key};
+ const imageName=get('image_name');
+ if(imageName.length>255||/[\r\n\x00-\x1f]/.test(imageName))return {error:'Ungültiger Dateiname.'};
+ return {data:{company_name,contact_name,contact_email,contact_phone,website:target_url,message,fax,consent,details:{internal_name,target_url,requested_start_date:start,requested_end_date:end,targets,...(imageName?{image_name:imageName}:{})}},key};
 }
 export async function submitOfferRequest(client:SupabaseClient,form:FormData):Promise<AdFormState>{const value=validateOfferRequest(form);if(value.error||!value.data)return {error:value.error};const {error}=await client.rpc("submit_portal_offer_request",{p_data:{...value.data,...(typeof form.get("uploaded_path")==="string"?{uploaded_path:form.get("uploaded_path")}:{})},p_key:value.key});if(error)return {error:error.message.includes("rate limit")?"Bitte warten Sie etwas, bevor Sie erneut anfragen.":"Die Anfrage konnte gerade nicht gespeichert werden. Bitte versuchen Sie es erneut."};
  // Notifications belong after successful durable storage; currently no mail is sent.

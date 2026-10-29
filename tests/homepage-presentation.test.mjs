@@ -89,14 +89,14 @@ test('rendered homepage preserves the exact autumn component and removes only th
 
 test('homepage brand history is visible before the headline and finder, with matching home-only metadata',async()=>{
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
- assert.match(html,/<p class="eyebrow">DAS-Reiseportal.com · Reiseideen seit 2010<\/p>/);
- assert.ok(html.indexOf('Reiseideen seit 2010')<html.indexOf('<h1'));
+ assert.match(html,/<p class="eyebrow">DAS-Reiseportal.com · Reiseideen seit über 15 Jahren<\/p>/);
+ assert.ok(html.indexOf('Reiseideen seit über 15 Jahren')<html.indexOf('<h1'));
  assert.equal((html.match(/<h1\b/g)||[]).length,1);
  assert.match(html,/Reisen beginnt mit einer guten Idee/);
  assert.doesNotMatch(html,/Deine Unterkunft|Lass dich|Sag uns/);
  const meta=await homeMetadata({searchParams:Promise.resolve({})});
- assert.deepEqual(meta.title,{absolute:'DAS-Reiseportal.com – Reiseideen seit 2010'});
- assert.match(meta.description,/seit 2010/);assert.equal(meta.openGraph.description,meta.description);
+ assert.deepEqual(meta.title,{absolute:'DAS-Reiseportal.com – Reiseideen seit über 15 Jahren'});
+ assert.match(meta.description,/seit über 15 Jahren/);assert.equal(meta.openGraph.description,meta.description);
 });
 test('public shared import badge is opt-in for discovery cards; protected homepage stays unchanged',async()=>{
  const listing={...profiles[0],importedAt:'2026-10-11T00:00:00Z'};
@@ -309,7 +309,7 @@ test('Carola accommodation card has one whole-card profile link, true signals an
  assert.equal((html.match(/<a\b/g)||[]).length,1);assert.match(html,/href="\/unterkuenfte\/golfhotel-andreus"/);
  assert.match(html,/<h3>Ein sehr langer belegter Unterkunftsname mit mehreren Wörtern<\/h3>/);
  assert.match(html,/Dorf · Region · Deutschland/);assert.match(html,/data-travel-term="theme:natur-pur"/);
- assert.match(html,/Details ansehen/);assert.doesNotMatch(html,/<button|Merkliste|Favorit|Bewertung|★/);
+ assert.match(html,/Details/);assert.doesNotMatch(html,/<button|Merkliste|Favorit|Bewertung|★/);
  assert.equal(JSON.stringify(listing),before);
 });
 test('same accommodation presentation for home, themes and destinations; no photo or term is invented',()=>{
@@ -318,17 +318,17 @@ test('same accommodation presentation for home, themes and destinations; no phot
  const rotated=renderToStaticMarkup(createElement(AccommodationCard,{listing,rotating:true,sizes:'430px'}));
  assert.equal(ordinary,rotated);assert.match(ordinary,/Vorhandenes Foto/);
  const empty=renderToStaticMarkup(createElement(AccommodationCard,{listing:{...listing,travelImage:null,travelTermKeys:[]}}));
- assert.doesNotMatch(empty,/<img|data-travel-term=/);assert.match(empty,/accommodation-card-image--empty/);assert.match(empty,/Details ansehen/);
+ assert.doesNotMatch(empty,/<img|data-travel-term=/);assert.match(empty,/accommodation-card-image--empty/);assert.match(empty,/Details/);
  assert.match(read('src/app/(energieheld)/reiseziele/[slug]/page.tsx'),/<MottoDetail[^]*kind="destination"/);
  assert.match(read('src/app/(energieheld)/mottoreisen/[slug]/page.tsx'),/<MottoDetail/);
  assert.match(read('src/components/portal/motto-detail.tsx'),/<AccommodationCard/);
 });
-test('Carola styles are isolated, keep text untruncated and provide keyboard/touch/reduced-motion parity',()=>{
+test('shared company cards use the selected dark treatment and retain keyboard/touch/reduced-motion parity',()=>{
  const css=read('src/components/portal/accommodation-card.module.css');
- assert.match(css,/aspect-ratio: 35 \/ 32/);assert.match(css,/object-fit: cover/);assert.doesNotMatch(css,/\.card::after|\.motto::after/);
- for(const rule of css.matchAll(/([^{}]+)\{[^{}]*gradient\([^{}]*\}/g))assert.match(rule[1],/\[data-photo-fade=/);
+ assert.match(css,/aspect-ratio: 35 \/ 32/);assert.match(css,/object-fit: cover/);assert.match(css,/\.card::after/);
+ assert.match(css,/rgb\(0 0 0 \/ 58%\)/);assert.doesNotMatch(css,/soft-light|lighter-dark/);
  assert.match(css,/\.card:focus-visible/);assert.match(css,/\.card:hover/);assert.match(css,/hover: none/);assert.match(css,/prefers-reduced-motion: reduce/);
- assert.match(css,/overflow-wrap: anywhere/);assert.doesNotMatch(css,/line-clamp|text-overflow: ellipsis/);
+ assert.match(css,/overflow-wrap: anywhere/);assert.match(css,/line-clamp: 2/);
  const home=read('src/app/(energieheld)/page.tsx');assert.match(home,/<MottoRow label="Ausgewählte Unterkünfte" speed=\{18\}/);assert.doesNotMatch(home,/styles.featuredStay|styles.recommendations/);
  const directory=read('src/components/portal/travel-directory.tsx');assert.match(directory,/<ListingRow/);assert.doesNotMatch(directory,/\bAccommodationCard\b/);
  const homeCss=read('src/app/(energieheld)/home.module.css');assert.doesNotMatch(homeCss,/accommodation-card-copy|accommodation-card-image/);
@@ -357,14 +357,14 @@ test('all four countries interleave the same static Premium format after normal 
  assert.equal(JSON.stringify({pool,ads,profiles}),before);
 });
 
-test('three fade variants are confined to Natur pur company rows, never other themes, destinations, home or banners',()=>{
+test('all accommodation cards share the selected first Natur pur fade, without fading banner images',()=>{
  const render=(entry,kind='theme')=>renderToStaticMarkup(createElement(MottoDetail,{entry,kind,listings:profiles,seed:'fade-check',advertising:{ads:[{id:'banner',placement:'sidebar_01',imageUrl:'/existing.jpg',target_url:'https://example.org'}]}}));
  const nature=render(travelThemes.find(e=>e.slug==='natur-pur'));
- assert.deepEqual([...nature.matchAll(/data-photo-fade="([^"]+)"/g)].map(m=>m[1]),['soft-dark','soft-dark','soft-light','lighter-dark']);
+ assert.deepEqual([...nature.matchAll(/data-photo-fade="([^"]+)"/g)].map(m=>m[1]),profiles.map(()=>'soft-dark'));
  assert.equal((nature.match(/data-placement=/g)||[]).length,1);
- for(const theme of travelThemes.filter(e=>e.slug!=='natur-pur'))assert.doesNotMatch(render(theme),/data-photo-fade/);
- for(const destination of destinations)assert.doesNotMatch(render(destination,'destination'),/data-photo-fade/);
- assert.doesNotMatch(renderToStaticMarkup(createElement(AccommodationCard,{listing:profiles[0],motto:true})),/data-photo-fade/);
+ for(const theme of travelThemes.filter(e=>e.slug!=='natur-pur'))assert.match(render(theme),/data-photo-fade="soft-dark"/);
+ for(const destination of destinations)assert.match(render(destination,'destination'),/data-photo-fade="soft-dark"/);
+ assert.match(renderToStaticMarkup(createElement(AccommodationCard,{listing:profiles[0],motto:true})),/data-photo-fade="soft-dark"/);
  assert.equal((nature.match(/href="\/unterkuenfte\//g)||[]).length,profiles.length);
 });
 
@@ -372,7 +372,7 @@ test('three fade variants are confined to Natur pur company rows, never other th
  const css=read('src/components/portal/accommodation-card.module.css');
  assert.match(css,/min-height: 16rem; aspect-ratio: 35 \/ 32/);assert.match(css,/\.card:hover \.photo \{ transform: scale\(1\.035\)/);
  assert.match(css,/@media \(hover: hover\) and \(pointer: fine\)/);assert.match(css,/\.card:hover \.photo \{ transform: none/);
- assert.doesNotMatch(css,/line-clamp|text-overflow|\.card:hover \{ transform/);
+ assert.match(css,/line-clamp: 2/);assert.doesNotMatch(css,/\.card:hover \{ transform/);
  const grid=read('src/app/(energieheld)/home.module.css');assert.doesNotMatch(grid,/\.showcase/); assert.match(read("src/components/portal/motto-detail.module.css"),/grid-auto-columns: calc\(\(100% - 36px\) \/ 3\)/);
  assert.match(read('src/components/portal/profile-rotation.module.css'),/--card-height: 20.8rem/);
 });

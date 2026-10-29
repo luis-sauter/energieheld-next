@@ -17,6 +17,8 @@ import {
 import { offerRequestStatuses } from "@/lib/offer-requests";
 import styles from "./advertising.module.css";
 import { energieheld } from "@/config/energieheld";
+import { bannerRegions } from '@/data/banner-regions';
+import { excludedAgencyTarget } from '@/lib/travel-provider-eligibility';
 
 function CreativeImage({ src, alt, width, height, mobile, crop, onDimensions }: { src: string; alt: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"]; crop?: ActiveAd["crop"]; onDimensions?: (width: number, height: number) => void }) {
   // Signed uploads have unknown dimensions; the browser must use each image's intrinsic ratio.
@@ -59,6 +61,7 @@ export function CampaignSlot({
   const inline = searchResult ? null : context;
   const ad = inline && !preview && !reordering && Object.hasOwn(inline.overrides, placement) ? inline.overrides[placement] ?? undefined : initialAd;
   if (!preview && !inline && ad?.suppressed) return null;
+  if (!preview && !inline && ad && excludedAgencyTarget(ad.target_url)) return null;
   const displayAd = !preview && (ad?.suppressed || !ad?.imageUrl) ? undefined : ad;
   const destination = adTargetHref(displayAd?.target_url ?? "");
   const href = destination ?? "#";
@@ -118,6 +121,7 @@ export function CampaignSlot({
             target={portalDestination ? undefined : "_blank"}
           >
             {content}
+            {bannerRegions[displayAd.id] && <span className={styles.regionBadge} data-banner-region>{bannerRegions[displayAd.id]}</span>}
             {promo && <div className={styles.promoCopy}>
               <span className={styles.promoLabel}>Reiseinspiration</span>
               <strong>{displayAd.headline}</strong>

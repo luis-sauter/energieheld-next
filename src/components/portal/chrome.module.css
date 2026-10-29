@@ -1,13 +1,30 @@
 .headerRow:global(.header-inner) { height: 96px; }
-.headerRow .brandLogo { width: 240px; height: auto; }
+.headerRow .brandLogo { width: 288px; height: auto; }
+.headerRow :global(.desktop-nav) { gap: 14px; padding-right: 14px; }
+.headerRow :global(.desktop-nav > a), .headerRow :global(.desktop-nav-group > a) { font-size: clamp(1.1rem, 1.65vw, 1.5rem); font-weight: 700; }
+@media (max-width: 1200px) {
+  .headerRow :global(.desktop-nav) { display: none; }
+  .headerRow :global(.mobile-menu) { display: block; }
+}
+@media (min-width: 1051px) and (max-width: 1200px) {
+  .headerRow :global(.header-cta) { margin-left: auto; }
+  .headerRow :global(.mobile-menu summary) { list-style: none; display: flex; align-items: center; gap: 8px; padding: 12px; cursor: pointer; }
+  .headerRow :global(.mobile-menu summary::-webkit-details-marker) { display: none; }
+  .headerRow :global(.mobile-menu nav) { position: absolute; top: 100%; left: 0; right: 0; display: flex; flex-direction: column; gap: 10px; max-height: calc(100dvh - 96px); overflow-y: auto; padding: 20px 28px; border-bottom: 1px solid var(--line); background: var(--white); box-shadow: 0 16px 20px #13237f15; }
+  .headerRow :global(.mobile-nav-row) { display: flex; align-items: center; }
+  .headerRow :global(.mobile-nav-row > a) { flex: 1; padding: 12px; }
+  .headerRow :global(.mobile-nav-row button) { width: 44px; height: 44px; }
+  .headerRow :global(.mobile-nav-submenu) { display: grid; max-height: 48vh; overflow-y: auto; border-left: 1px solid var(--line); padding-left: 12px; margin-left: 12px; }
+  .headerRow :global(.mobile-nav-submenu a) { display: flex; align-items: center; min-height: 44px; padding: 8px 12px; }
+}
 .footer:global(.site-footer) {
   background: var(--portal-basalt);
   color: var(--portal-white);
   border-top: 3px solid var(--portal-orange);
 }
-.main { --logo-surface: #f7f7f7; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 32px 64px; padding-block: 40px 32px; }
-.logoSurface { display: inline-flex; max-width: 100%; padding: 10px; background: var(--logo-surface); border-radius: 10px; }
-.logoSurface img { display: block; width: 240px; max-width: 100%; height: auto; }
+.main { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 32px 64px; padding-block: 40px 32px; }
+.logoSurface { display: inline-flex; max-width: 100%; padding: 0; }
+.logoSurface svg { display: block; width: 288px; max-width: 100%; height: auto; }
 .footer .tagline { max-width: 280px; margin: 16px 0 0; color: var(--portal-white); font-size: .9rem; line-height: 1.65; }
 .footer .heading { margin: 0 0 16px; font-size: .82rem; line-height: 1.5; letter-spacing: .08em; text-transform: uppercase; color: var(--portal-white); }
 .heading::before { content: ""; display: block; width: 28px; height: 2px; margin-bottom: 12px; background: var(--portal-orange); }
@@ -21,7 +38,7 @@
 .legalLinks a { display: inline-flex; align-items: center; min-height: 32px; }
 @media (max-width: 700px) {
   .headerRow:global(.header-inner) { height: 82px; }
-  .headerRow .brandLogo { width: 198px; max-width: 100%; }
+  .headerRow .brandLogo { width: 238px; max-width: 100%; }
   .main { padding-block: 32px; gap: 28px 20px; }
   .brandBlock, .contactBlock { width: 100%; }
   .contact a, .legalLinks a { min-height: 44px; }

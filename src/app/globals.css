@@ -3097,10 +3097,10 @@ h6 {
   --portal-surface: var(--portal-light-gray);
   --portal-ink: var(--portal-basalt);
   --portal-card: var(--portal-white);
-  --portal-button: var(--portal-orange);
-  --portal-button-text: var(--portal-basalt);
-  --portal-button-hover: var(--portal-orange);
-  --portal-button-active: var(--portal-orange);
+  --portal-button: #bf5700;
+  --portal-button-text: var(--portal-white);
+  --portal-button-hover: #a84c00;
+  --portal-button-active: #974400;
   --brand-accent-hover: var(--portal-button-hover);
   --brand-accent-light: var(--portal-light-orange);
   --brand-secondary: var(--portal-primary-deep);
@@ -3568,3 +3568,4 @@ h6 {
 
 .profile-review-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .profile-import-badge { display: inline-flex; align-items: center; border: 1px solid #cfe1eb; border-radius: 999px; padding: 4px 9px; color: #185976; background: #eef7fc; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+.new-placement-badge { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: 20px; color: #fff; background: #bf5700; font-size: .75rem; font-weight: 700; line-height: 1.4; text-shadow: none; vertical-align: middle; }

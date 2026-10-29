@@ -11,11 +11,11 @@ const source=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 function load(p,stubs){const loaded={exports:{}};vm.runInNewContext(transpileModule(source(p),{compilerOptions:{module:ModuleKind.CommonJS,target:ScriptTarget.ES2022,jsx:JsxEmit.ReactJSX}}).outputText,{module:loaded,exports:loaded.exports,require:n=>{if(n in stubs)return stubs[n];throw Error(n);},console});return loaded.exports;}
 const all=n=>Array.isArray(n)?n.flatMap(all):n&&typeof n==='object'?[n,...all(n.props?.children)]:[];
 test('request status remains controlled after React resets successful form; failure preserves selection and reports error',async()=>{
- let status='new',state={},action,error=false,saves=0;
- const react={useState:init=>[status??init,value=>status=value],useActionState:fn=>{action=async form=>{state=await fn(state,form)};return[state,action,false]}};
- const {OfferRequestDetail}=load('src/components/advertising/offer-request-form.tsx',{'react':react,'react/jsx-runtime':jsx,'next/image':'img','@/app/(energieheld)/angebot-anfragen/actions':{updateOfferRequest:async(_state,form)=>{saves++;return error?{error:'Der Status konnte nicht gespeichert werden.'}:{success:'Status gespeichert.',requestStatus:form.get('request_status')}}},'@/lib/offer-requests':{offerRequestStatuses},'@/lib/ad-values':{adPlacements:{}},'@/lib/ad-target-areas':{portalAdAreaLabel:()=>''},'@/components/auth/auth.module.css':{default:{}}});
+ let state={},action,error=false,saves=0,cursor=0;const hooks=[];
+ const react={useState:init=>{const i=cursor++;if(!(i in hooks))hooks[i]=init;return[hooks[i],value=>hooks[i]=value]},useActionState:fn=>{action=async form=>{state=await fn(state,form)};return[state,action,false]}};
+ const {OfferRequestDetail}=load('src/components/advertising/offer-request-form.tsx',{'react':react,'react/jsx-runtime':jsx,'next/image':'img','next/navigation':{useRouter:()=>({refresh(){}})},'@/lib/offer-request-workspace':{offerWorkspaceFields:{}},'@/app/(energieheld)/angebot-anfragen/actions':{updateOfferRequest:async(_state,form)=>{saves++;return error?{error:'Der Status konnte nicht gespeichert werden.'}:{success:'Status gespeichert.',requestStatus:form.get('request_status')}}},'@/lib/offer-requests':{offerRequestStatuses},'@/lib/ad-values':{adPlacements:{}},'@/lib/ad-target-areas':{portalAdAreaLabel:()=>''},'@/components/auth/auth.module.css':{default:{}}});
  const campaign={id:'qa',created_at:'2026-10-12T00:00:00Z',request_status:'new'};
- const render=()=>all(OfferRequestDetail({campaign}));
+ const render=()=>{cursor=0;return all(OfferRequestDetail({campaign}))};
  render().find(n=>n.type==='select').props.onChange({target:{value:'done'}});
  render();const f=new FormData();f.set('request_status','done');await action(f);
  let prevented=false;render().find(n=>n.type==='form').props.onReset({preventDefault(){prevented=true}});assert.equal(prevented,true);

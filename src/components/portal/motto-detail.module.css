@@ -35,5 +35,5 @@
 
 .titlePart { white-space: nowrap; hyphens: none; }
 .countryBannerRow :global([data-placement] > a) { width: 100%; aspect-ratio: 350 / 120; height: auto; overflow: hidden; }
-.countryBannerRow :global([data-placement] > a > span) { width: 100%; height: 100%; }
+.countryBannerRow :global([data-placement] > a > span:not([data-banner-region])) { width: 100%; height: 100%; }
 .countryBannerRow :global([data-placement] img) { width: 100%; height: 100%; object-fit: contain; }

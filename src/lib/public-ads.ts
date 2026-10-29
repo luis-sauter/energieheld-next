@@ -6,6 +6,7 @@ import { loadBannerPresentations } from "./banner-presentation-loader";
 import { presentedBanners } from "./banner-presentation";
 import { inlineAdContext } from "./inline-ad-context";
 import { defaultSidebarOrder } from "./sidebar-order";
+import { excludedAgencyTarget } from './travel-provider-eligibility';
 // One anonymous projection query + one batched signing request per page, never per slot.
 export async function loadPublicAds(categoryId?: string, page: "directory" | "homepage" | "portal_area" = "directory", targetKey?: string, sign = true): Promise<ActiveAd[]> {
   try {
@@ -16,7 +17,7 @@ export async function loadPublicAds(categoryId?: string, page: "directory" | "ho
       p_category_id: page === "portal_area" ? targetKey ?? null : categoryId ?? null,
     }), context ? loadBannerPresentations(client, context) : Promise.resolve({ rows: [], error: null })]);
     if (error || !data || settings.error) throw Error("Banner delivery unavailable");
-    return presentedBanners(sign ? await signAdImages(client, data as ActiveAd[]) : (data as ActiveAd[]).map(ad=>({...ad,imageUrl:ad.image_path?"public-creative":undefined})), settings.rows, context?.path ?? "", false);
+    return presentedBanners(sign ? await signAdImages(client, data as ActiveAd[]) : (data as ActiveAd[]).map(ad=>({...ad,imageUrl:ad.image_path?"public-creative":undefined})), settings.rows, context?.path ?? "", false).map(ad=>excludedAgencyTarget(ad.target_url)?{...ad,suppressed:true,imageUrl:undefined}:ad);
   } catch {
     // Do not resurrect a deleted static fallback when its persisted state is unavailable.
     return ["top_banner", ...defaultSidebarOrder].map((placement) => ({ id: `hidden:${placement}`,

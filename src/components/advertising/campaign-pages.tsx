@@ -14,6 +14,7 @@ import { OfferRequestDetail } from "./offer-request-form";
 import styles from "./advertising.module.css";
 import { loadBannerMetadata } from '@/lib/banner-search-metadata';
 import { CampaignLifecycle } from './campaign-lifecycle';
+import type { OfferWorkspace } from '@/lib/offer-request-workspace';
 type Params = { seite?: string; fehler?: string; archiv?: string; ansicht?: string };
 export async function CampaignIndex({
   admin = false,
@@ -100,7 +101,10 @@ export async function CampaignDetail({
   if ("access" in result) requireAdminAccess(result.access ?? "forbidden");
   const campaign = "campaigns" in result ? result.campaigns?.[0] : undefined;
   if (!campaign && !("error" in result && result.error)) notFound();
-  if (admin && campaign?.request_status) return <main id="hauptinhalt" className={`container ${styles.page}`}><Link href="/admin/werbung?ansicht=pruefung">← Zur Anfragenübersicht</Link><h1>Angebotsanfrage</h1><OfferRequestDetail campaign={campaign}/><Link href="/admin/werbung">Alle Anfragen und Kampagnen</Link></main>;
+  if (admin && campaign?.request_status) {
+    const workspace=await client.from('portal_offer_request_workspaces').select('details,notes,revision').eq('request_id',campaign.id).maybeSingle();
+    return <main id="hauptinhalt" className={`container ${styles.page}`}><Link href="/admin/werbung?ansicht=pruefung">← Zur Anfragenübersicht</Link><h1>Angebotsanfrage</h1><OfferRequestDetail campaign={campaign} workspace={workspace.data as OfferWorkspace|null} workspaceError={Boolean(workspace.error)}/><Link href="/admin/werbung">Alle Anfragen und Kampagnen</Link></main>;
+  }
   const inlinePath = admin && campaign ? campaign.is_editorial ? campaignTargetPage(campaign) : campaignInlinePage(campaign) : null;
   const presentation = inlinePath ? await loadBannerPresentations(client, inlineAdContext(inlinePath)!) : null;
   const inlineHref = inlinePath && !presentation?.error ? `${inlinePath}#banner-${displayPlacement(campaign!.targets[0].placement, presentation?.rows ?? [])}` : null;

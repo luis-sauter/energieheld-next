@@ -19,8 +19,26 @@ before(async()=>{
  await db.exec(await read('20261010090721_public_offer_requests.sql'));
  await db.exec(await read('20261010100250_restore_original_offer_form.sql'));
  await db.exec(await read('20261010104719_offer_image_storage_preflight.sql'));
+ await db.exec(await read('20261029153903_portal_offer_request_workspaces.sql'));
  await db.exec('grant select on company_quality_requests to authenticated');
 });after(async()=>db?.close());beforeEach(async()=>db.exec('begin'));afterEach(async()=>db.exec('rollback'));
+
+test('internal request edits and notes persist without replacing the submission; stale edits are rejected',async()=>{
+ const id=crypto.randomUUID();await actor();await submit(data,id);
+ await actor('authenticated',admin);
+ const save=(status,details,note,revision)=>db.query('select save_portal_offer_request_workspace($1,$2,$3,$4,$5) revision',[id,status,details,note,revision]);
+ assert.equal((await save('in_progress',{contact_name:'Ergänzter Kontakt'},'Telefonat: Rückruf vereinbart.',0)).rows[0].revision,1);
+ await denied('select save_portal_offer_request_workspace($1,$2,$3,$4,$5)',[id,'done',{},'Veralteter Entwurf',0],/request_changed/);
+ assert.equal((await save('done',{contact_name:'Ergänzter Kontakt'},'Rückruf erledigt.',1)).rows[0].revision,2);
+ const w=(await db.query('select * from portal_offer_request_workspaces where request_id=$1',[id])).rows[0];
+ assert.equal(w.notes.length,2);assert.equal(w.details.contact_name,'Ergänzter Kontakt');
+ const original=(await db.query('select contact_name,request_message,request_status from company_ad_campaigns where id=$1',[id])).rows[0];
+ assert.equal(original.contact_name,data.contact_name);assert.equal(original.request_message,data.message);assert.equal(original.request_status,'done');
+ await actor('authenticated',owner);assert.deepEqual((await db.query('select * from portal_offer_request_workspaces')).rows,[]);
+ await denied('select save_portal_offer_request_workspace($1,$2,$3,$4,$5)',[id,'new',{},'Fremd',2],/not authorized/);
+ await actor();await denied('select * from portal_offer_request_workspaces');
+ await denied('select save_portal_offer_request_workspace($1,$2,$3,$4,$5)',[id,'new',{},'Anonym',2]);
+});
 test('anonymous submission persists once without profile/banner/targets; no anonymous read or direct insert',async()=>{
  const key=crypto.randomUUID();await actor();await submit(data,key);await submit(data,key);
  await denied('select * from company_ad_campaigns');await denied("insert into company_ad_campaigns(internal_name) values('bypass')");

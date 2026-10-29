@@ -87,6 +87,7 @@ export function CampaignForm({
         form.set("request_key", publicRequestKey);
         const file=form.get("image");form.delete("image");
         if(file instanceof File && file.name){
+          form.set('image_name',file.name.slice(0,255));
           const prepared=await prepareOfferImage(form,file.type,file.size);
           if(!prepared.uploadPath)return prepared;
           const { createClient } = await import('@/lib/supabase/client');

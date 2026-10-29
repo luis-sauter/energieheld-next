@@ -263,6 +263,7 @@
   margin-bottom: 6px;
 }
 .creative {
+  position: relative;
   display: block;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -535,3 +536,4 @@
 .requestAssurance { margin: 0; color: #455864; font-size: 13px; line-height: 1.55; }
 .requestSubmit { display: flex; justify-content: flex-end; }
 @media (max-width: 700px) { .requestFooter { padding: 16px; } .requestSubmit > button { width: 100%; } }
+.creative .regionBadge { position: absolute; top: 8px; right: 8px; z-index: 1; max-width: calc(100% - 16px); margin: 0; padding: 5px 9px; border-radius: 20px; background: rgb(0 0 0 / 70%); color: #fff; font-size: .7rem; line-height: 1.35; font-weight: 650; text-shadow: none; pointer-events: none; }

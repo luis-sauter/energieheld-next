@@ -111,7 +111,7 @@ test('public request reuses original field groups, required contacts/URL, option
 });
 test('general admin detail contains contact/status without booking editor, creative or approval',()=>{
  const html=renderToStaticMarkup(createElement(OfferRequestDetail,{campaign:{id:'id',request_status:'new',request_company_name:'QA Company',contact_name:'Contact',contact_email:'qa@example.test',created_at:'2026-10-10T10:00:00Z',request_message:'<private>'}}));
- for(const text of ['QA Company','Contact','qa@example.test','Neu','In Bearbeitung','Erledigt','Status speichern'])assert.ok(html.includes(text));assert.match(html,/&lt;private&gt;/);assert.doesNotMatch(html,/Freigabe|name="targets"|type="file"/);
+ for(const text of ['QA Company','Contact','qa@example.test','Neu','In Bearbeitung','Erledigt','Anfrage speichern','Interne Bearbeitung','Gesprächsnotiz hinzufügen'])assert.ok(html.includes(text));assert.match(html,/&lt;private&gt;/);assert.doesNotMatch(html,/Freigabe|name="targets"|type="file"/);
 });
 
 const {sendOfferRequest,prepareOfferImage}=await import('../src/app/(energieheld)/angebot-anfragen/actions.ts');

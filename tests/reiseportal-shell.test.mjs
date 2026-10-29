@@ -77,7 +77,7 @@ const { headerNavigation } = await import("../src/components/portal/navigation-d
 const { portalIdentity } = await import("../src/config/portal-identity.ts");
 const { accountMenuGroups } = await import("../src/components/portal/account-menu.tsx");
 
-test("approved anniversary logo is shared by header, footer and metadata without alteration", async () => {
+test("anniversary source stays intact; header retains it and footer renders accessible white/orange ink", async () => {
   const { createHash } = await import('node:crypto');
   const bytes = readFileSync(new URL('../public' + portalIdentity.logo.src, import.meta.url));
   assert.equal(createHash('sha256').update(bytes).digest('hex'), 'cbb09865551e28b4ca9c69261b77eaa89389691ed141245d09326cf1f98250d3');
@@ -85,7 +85,7 @@ test("approved anniversary logo is shared by header, footer and metadata without
     const html = renderToStaticMarkup(createElement(component, { brand: reiseportal }));
     assert.ok(html.includes(portalIdentity.logo.src));
     assert.match(html, /width="1600" height="533"/);
-    assert.match(html, /alt="DAS-Reiseportal.com – 15 Jahre"/);
+    assert.match(html, /(?:alt="DAS-Reiseportal.com – 15 Jahre"|aria-label="DAS Reiseportal.com – 15 Jahre")/);
     assert.doesNotMatch(html, /das-reiseportal-logo\.png/);
     assert.match(html, /href="\/"/);
   }

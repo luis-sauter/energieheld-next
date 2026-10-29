@@ -129,7 +129,7 @@ export function TravelFinder({ mode, listings, options:existingOptions, values, 
     {mode !== "home" ? <Image src="/reiseportal/redesign/unterkuenfte/hero.webp" alt="" fill sizes="100vw" priority className="directory-hero-image" /> : <HomeHeroMedia />}
     <div className="travel-hero-content container">
       {mode !== "home" && <Breadcrumbs items={portalBreadcrumbs(mode === "search" ? "Suchergebnisse" : "Unterkünfte A–Z", mode === "search" ? "/suche" : "/unterkuenfte-a-z")} />}
-      <p className="eyebrow">{mode === "home" ? "DAS-Reiseportal.com · Reiseideen seit 2010" : mode === "directory" ? "UNTERKÜNFTE A–Z" : "DAS-Reiseportal.com"}</p>
+      <p className="eyebrow">{mode === "home" ? "DAS-Reiseportal.com · Reiseideen seit über 15 Jahren" : mode === "directory" ? "UNTERKÜNFTE A–Z" : "DAS-Reiseportal.com"}</p>
       <h1 id="travel-hero-title">{mode === "home" ? "Reisen beginnt mit einer guten Idee" : mode === "directory" ? "Finden Sie passende Unterkünfte" : "Finden Sie Ihren passenden Urlaub"}</h1>
       <p>{mode === "home" ? "Ein stiller See, ein Weg in die Berge, ein Ort, den Sie noch nicht kennen. Finden Sie Reiseziele und Gastgeber, die zu Ihren Plänen passen." : mode === "directory" ? "Hotels, Pensionen, Ferienwohnungen und mehr – entdecken Sie besondere Orte für Ihren nächsten Urlaub." : "Sagen Sie uns, wie Sie reisen möchten – wir zeigen Ihnen passende Orte, Unterkünfte und Erlebnisse."}</p>
       {renderFinder ? renderFinder(finder) : finder}

@@ -10,7 +10,7 @@ import { selectHomeStays } from "@/lib/home-stays";
 import { MottoRow } from "@/components/portal/motto-row";
 import { AccommodationCard } from "@/components/portal/discovery-detail";
 import { AutumnShowcase } from "@/components/portal/autumn-showcase";
-import { StaticHomeMap } from "@/components/portal/static-home-map";
+import { NearbyHomeMap } from "@/components/portal/nearby-home-map";
 import { loadReiseportalDirectory } from "@/lib/reiseportal-directory";
 import { loadPublicTravelTerms } from "@/lib/public-travel-taxonomy";
 import { TravelQuicklinks } from "@/components/portal/travel-quicklinks";
@@ -27,7 +27,7 @@ import { travelFinderListings, travelFinderBanners } from '@/lib/travel-finder-d
 import { signSelectedPublicBanners } from '@/lib/public-banner-media';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParameters> }) {
-  return pageMetadata({ title: "DAS-Reiseportal.com – Reiseideen seit 2010", description: "Reiseideen seit 2010: Entdecken Sie Reiseziele, Mottoreisen und Unterkünfte für Ihre nächste Auszeit. Lernen Sie Gastgeber und ihre Angebote kennen.", path: "/", home: true,
+  return pageMetadata({ title: "DAS-Reiseportal.com – Reiseideen seit über 15 Jahren", description: "Reiseideen seit über 15 Jahren: Entdecken Sie Reiseziele, Mottoreisen und Unterkünfte für Ihre nächste Auszeit. Lernen Sie Gastgeber und ihre Angebote kennen.", path: "/", home: true,
     noindex: Object.values(await searchParams).some(Boolean) });
 }
 
@@ -63,7 +63,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <AutumnShowcase listings={directory.database} />
 
-    <StaticHomeMap />
+    <NearbyHomeMap />
 
     <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06", "sidebar_09", "sidebar_10"]} sliderAds={bannerRows[1]} label="Anzeigen nach den Reisezielen" />
 

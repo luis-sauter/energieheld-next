@@ -72,7 +72,7 @@ test('map SSR preserves public count and controls without duplicating every clie
 });
 test('homepage keeps map placement but does not put the Basic dataset or its queries on the page request',()=>{
  const home=readFileSync(new URL('../src/app/(energieheld)/page.tsx',import.meta.url),'utf8');
- assert.match(home,/<AutumnShowcase listings=\{directory.database\} \/>\s*<StaticHomeMap \/>/);
+ assert.match(home,/<AutumnShowcase listings=\{directory.database\} \/>\s*<NearbyHomeMap \/>/);
  assert.doesNotMatch(home,/companyMapLocations|<EuropeMap/);
  assert.doesNotMatch(home,/loadBasicMapLocations|basic-map-locations\.json|HomeAccommodationMap/);
  const component=readFileSync(new URL('../src/components/portal/europe-map.tsx',import.meta.url),'utf8');

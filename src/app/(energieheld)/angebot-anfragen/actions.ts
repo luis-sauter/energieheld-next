@@ -5,6 +5,7 @@ import { checkAdmin, isProfileId } from "@/lib/admin-review";
 import { validateMediaFile } from "@/lib/company-media";
 import { revalidatePath } from "next/cache";
 import type { AdFormState } from "@/lib/ad-values";
+import { validateOfferWorkspace } from '@/lib/offer-request-workspace';
 export async function sendOfferRequest(_state:AdFormState, form:FormData):Promise<AdFormState> {
  try {
  const client=await createClient(),uploaded=form.get("uploaded_path"),key=form.get("request_key");
@@ -21,12 +22,14 @@ export async function sendOfferRequest(_state:AdFormState, form:FormData):Promis
 export async function updateOfferRequest(_state:AdFormState,form:FormData):Promise<AdFormState> {
  const id=String(form.get("id")??""),status=String(form.get("request_status")??"");
  if(!isProfileId(id)||!Object.hasOwn(offerRequestStatuses,status)) return {error:"Bitte wählen Sie einen gültigen Status."};
+ const checked=validateOfferWorkspace(form);
+ if(checked.error||!checked.details) return {error:checked.error};
  try {
  const client=await createClient();if(await checkAdmin(client)!=="admin") return {error:"Keine Berechtigung."};
- const {error}=await client.rpc("set_portal_offer_request_status",{p_id:id,p_status:status});
- if(error) return {error:"Der Status konnte nicht gespeichert werden."};
+ const {data,error}=await client.rpc("save_portal_offer_request_workspace",{p_id:id,p_status:status,p_details:checked.details,p_note:checked.note,p_revision:checked.revision});
+ if(error) return {error:error.message.includes('request_changed')?'Die Anfrage wurde inzwischen bearbeitet. Bitte laden Sie sie neu, bevor Sie Ihre Ergänzungen speichern.':'Die Anfrage konnte nicht gespeichert werden.'};
  revalidatePath("/admin");revalidatePath("/admin/werbung");revalidatePath("/admin/werbung/"+id);
- return {success:"Status gespeichert.", requestStatus:status as keyof typeof offerRequestStatuses};
+ return {success:"Anfrage gespeichert.", requestStatus:status as keyof typeof offerRequestStatuses,revision:typeof data==='number'?data:undefined};
  } catch {return {error:"Der Status konnte nicht gespeichert werden."};}
 }
 

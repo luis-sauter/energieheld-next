@@ -1,7 +1,10 @@
-.page { background: var(--portal-white); padding-bottom: 48px; }
-.hero { position: relative; isolation: isolate; background: #edf7fb; }
+.page { position: relative; isolation: isolate; background: #faf9f6; padding-bottom: 48px; }
+.backdrop { position: absolute; z-index: -1; inset: 0; overflow: hidden; }
+.backdrop img { object-fit: cover; object-position: center top; }
+.backdrop::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #faf9f699, #faf9f605 65%), linear-gradient(180deg, #faf9f614 0%, #faf9f629 20%, #faf9f666 48%, #faf9f6c7 76%, #faf9f6 100%); }
+.hero { position: relative; }
 .heroImage { z-index: -2; object-fit: cover; object-position: center 58%; }
-.hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgb(250 253 255 / 97%), rgb(250 253 255 / 88%) 31%, rgb(250 253 255 / 26%) 64%, transparent 85%), linear-gradient(0deg, var(--portal-white), transparent 25%); }
+.hero::after { content: none; }
 .heroContent { padding-block: 24px 100px; }
 .breadcrumbs { margin-bottom: 30px; font-size: .88rem; color: var(--portal-blue); }
 .breadcrumbs a { padding-block: 8px; text-decoration: none; }
@@ -22,7 +25,7 @@
 .discover { display: flex; align-items: center; gap: 12px; color: var(--portal-blue); font-size: .86rem; font-weight: 700; flex-shrink: 0; }
 .arrow { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: #eaf6fd; color: var(--portal-blue); }
 .countryCard:hover .arrow, .themeLink:hover .arrow, .quicklink:hover .arrow { background: var(--portal-light-orange); }
-.inspirationArea { position: relative; isolation: isolate; padding-block: 18px 0; background: linear-gradient(#f3faff, var(--portal-white) 65%); }
+.inspirationArea { position: relative; isolation: isolate; padding-block: 18px 0; background: transparent; }
 .sectionHeading { margin-bottom: 20px; }
 .eyebrow { display: flex; align-items: center; gap: 9px; margin: 0 0 9px; color: var(--portal-blue); font-size: .73rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .eyebrow::before { content: ""; width: 23px; height: 3px; background: var(--portal-orange); border-radius: 2px; flex-shrink: 0; }

@@ -14,6 +14,7 @@ test('map RPC exposes only current public IDs/addresses, uses bounded keysets an
   const sql=readFileSync(new URL('../supabase/migrations/20261019144149_public_basic_map_contacts.sql',import.meta.url),'utf8');
   assert.doesNotMatch(sql,/acquisition\./);
   await db.exec(sql);
+  await db.exec(readFileSync(new URL('../supabase/migrations/20261029155523_nearby_public_map_contacts.sql',import.meta.url),'utf8'));
   const before=await db.query('SELECT md5(string_agg(t::text,\'\' ORDER BY id)) hash FROM public.basic_accommodation_contacts t');
   for(const role of ['anon','authenticated']){
    await db.exec('SET ROLE '+role);
@@ -22,6 +23,10 @@ test('map RPC exposes only current public IDs/addresses, uses bounded keysets an
    const second=(await db.query('SELECT * FROM public.public_basic_map_contacts($1,1000)',[first.at(-1).id])).rows;
    assert.equal(second.length,5);assert.equal(new Set([...first,...second].map(r=>r.id)).size,1005);
    assert.ok([...first,...second].every(r=>r.address.city==='Public town'));
+   const selected=(await db.query('SELECT * FROM public.public_basic_map_contacts_by_ids($1)',[[first[0].id,first[0].id,'10000000-0000-0000-0000-000000000000','20000000-0000-0000-0000-000000000000']])).rows;
+   assert.equal(selected.length,1);assert.deepEqual(selected[0],first[0]);
+   await assert.rejects(db.query('SELECT * FROM public.public_basic_map_contacts_by_ids($1)',[Array(501).fill(first[0].id)]),/invalid map candidates/);
+   await assert.rejects(db.query('SELECT * FROM public.public_basic_map_contacts_by_ids(null)'),/invalid map candidates/);
    for(const size of [0,-1,1001,null])await assert.rejects(db.query('SELECT * FROM public.public_basic_map_contacts(null,$1)',[size]),/invalid map page size/);
    await assert.rejects(db.query('SELECT * FROM public.basic_accommodation_contacts'),/permission denied/);
    await db.exec('RESET ROLE');
