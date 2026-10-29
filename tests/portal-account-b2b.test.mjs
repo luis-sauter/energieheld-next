@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 registerHooks({
   resolve(specifier, context, next) {
+    if (specifier === "next/server") return {url:'data:text/javascript,export function after(){throw Error("after not expected during SSR-only tests")}',shortCircuit:true};
     if (specifier === "server-only") return { url: "data:text/javascript,export {}", shortCircuit: true };
     if (specifier.endsWith(".module.css")) return { url: "data:text/javascript,export default {}", shortCircuit: true };
     if (specifier === "next/cache") return { url:"data:text/javascript,export function revalidatePath(){}",shortCircuit:true };

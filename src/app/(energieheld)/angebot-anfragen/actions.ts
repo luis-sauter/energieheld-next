@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { submitOfferRequest, validateOfferRequest, offerRequestStatuses } from "@/lib/offer-requests";
 import { checkAdmin, isProfileId } from "@/lib/admin-review";
 import { validateMediaFile } from "@/lib/company-media";
+import { after } from "next/server";
+import { notifyOfferRequest } from "@/lib/offer-notification.server";
 import { revalidatePath } from "next/cache";
 import type { AdFormState } from "@/lib/ad-values";
 import { validateOfferWorkspace } from '@/lib/offer-request-workspace';
@@ -16,7 +18,7 @@ export async function sendOfferRequest(_state:AdFormState, form:FormData):Promis
   const checked=await validateMediaFile(new File([result.data],"upload",{type:result.data.type}));
   if(!checked.file||!checked.extension||!uploaded.endsWith("."+checked.extension))return {error:checked.error||"Dateiformat und Bildpfad stimmen nicht überein."};
  }
- return await submitOfferRequest(client,form);
+ return await submitOfferRequest(client,form,key=>after(()=>notifyOfferRequest(client,key)));
 } catch {return {error:"Die Anfrage ist gerade nicht erreichbar. Bitte versuchen Sie es erneut."};}
 }
 export async function updateOfferRequest(_state:AdFormState,form:FormData):Promise<AdFormState> {

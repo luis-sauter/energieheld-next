@@ -7,6 +7,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 registerHooks({
   resolve(s, c, next) {
+    if (s === "next/server") return {url:'data:text/javascript,export function after(){throw Error("after not expected during SSR-only tests")}',shortCircuit:true};
     if (s === "next/headers")
       return {
         url: 'data:text/javascript,export async function headers(){throw Error("Headers not expected during render")}',

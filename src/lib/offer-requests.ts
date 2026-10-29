@@ -25,6 +25,7 @@ export function validateOfferRequest(form: FormData) {
  if(imageName.length>255||/[\r\n\x00-\x1f]/.test(imageName))return {error:'Ungültiger Dateiname.'};
  return {data:{company_name,contact_name,contact_email,contact_phone,website:target_url,message,fax,consent,details:{internal_name,target_url,requested_start_date:start,requested_end_date:end,targets,...(imageName?{image_name:imageName}:{})}},key};
 }
-export async function submitOfferRequest(client:SupabaseClient,form:FormData):Promise<AdFormState>{const value=validateOfferRequest(form);if(value.error||!value.data)return {error:value.error};const {error}=await client.rpc("submit_portal_offer_request",{p_data:{...value.data,...(typeof form.get("uploaded_path")==="string"?{uploaded_path:form.get("uploaded_path")}:{})},p_key:value.key});if(error)return {error:error.message.includes("rate limit")?"Bitte warten Sie etwas, bevor Sie erneut anfragen.":"Die Anfrage konnte gerade nicht gespeichert werden. Bitte versuchen Sie es erneut."};
- // Notifications belong after successful durable storage; currently no mail is sent.
+export async function submitOfferRequest(client:SupabaseClient,form:FormData,onStored?:(key:string)=>void):Promise<AdFormState>{const value=validateOfferRequest(form);if(value.error||!value.data)return {error:value.error};const {error}=await client.rpc("submit_portal_offer_request",{p_data:{...value.data,...(typeof form.get("uploaded_path")==="string"?{uploaded_path:form.get("uploaded_path")}:{})},p_key:value.key});if(error)return {error:error.message.includes("rate limit")?"Bitte warten Sie etwas, bevor Sie erneut anfragen.":"Die Anfrage konnte gerade nicht gespeichert werden. Bitte versuchen Sie es erneut."};
+ // Schedule only after durable storage; notification failure never reverses success.
+ try{onStored?.(value.key);}catch{/* Saved request remains successful. */}
  return {success:offerRequestSuccess};}

@@ -20,6 +20,7 @@ before(async()=>{
  await db.exec(await read('20261010100250_restore_original_offer_form.sql'));
  await db.exec(await read('20261010104719_offer_image_storage_preflight.sql'));
  await db.exec(await read('20261029153903_portal_offer_request_workspaces.sql'));
+ await db.exec(await read('20261029200937_offer_request_mail_receipts.sql'));
  await db.exec('grant select on company_quality_requests to authenticated');
 });after(async()=>db?.close());beforeEach(async()=>db.exec('begin'));afterEach(async()=>db.exec('rollback'));
 
@@ -98,4 +99,22 @@ test('Storage preflight contentLength and completed size both require exact rese
  for(const metadata of [{mimetype:'image/png',contentLength:8},{mimetype:'image/png',size:8}]){
   await db.exec('savepoint storage_probe');await db.query('insert into storage.objects(bucket_id,name,metadata) values($1,$2,$3)',['ad-media',path,metadata]);await db.exec('rollback to savepoint storage_probe;release savepoint storage_probe');
  }
+});
+
+test('mail claim is single-use, requires stored complete request and cannot expose receipts',async()=>{
+ const id=crypto.randomUUID();await actor();
+ assert.equal((await db.query('select claim_offer_request_mail($1) token',[id])).rows[0].token,null);
+ await submit(data,id);const token=(await db.query('select claim_offer_request_mail($1) token',[id])).rows[0].token;assert.ok(token);
+ assert.equal((await db.query('select claim_offer_request_mail($1) token',[id])).rows[0].token,null);
+ await denied('select * from private.offer_request_mail_receipts',[],/permission denied/);
+ await db.query('select finish_offer_request_mail($1,$2,true)',[id,crypto.randomUUID()]);
+ await actor('postgres');assert.equal((await db.query('select state from private.offer_request_mail_receipts where request_id=$1',[id])).rows[0].state,'sending');
+ await actor();await db.query('select finish_offer_request_mail($1,$2,false)',[id,token]);
+ await db.query('select finish_offer_request_mail($1,$2,true)',[id,token]);
+ await actor('postgres');assert.equal((await db.query('select state from private.offer_request_mail_receipts where request_id=$1',[id])).rows[0].state,'failed');
+ await actor();assert.equal((await db.query('select claim_offer_request_mail($1) token',[id])).rows[0].token,null);
+});
+test('prepared image request cannot send mail before the image is attached',async()=>{
+ const id=crypto.randomUUID();await actor();await db.query('select prepare_portal_offer_image($1,$2)',[{...data,image_type:'image/png',image_size:1234},id]);
+ assert.equal((await db.query('select claim_offer_request_mail($1) token',[id])).rows[0].token,null);
 });

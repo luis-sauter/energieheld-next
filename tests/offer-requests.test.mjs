@@ -8,3 +8,10 @@ test('persist first and report success only after RPC succeeds; no account check
 test('optional dates accept neither/one/both and reject reversed or invalid dates',()=>{for(const dates of [{},{requested_start_date:'2026-11-01'},{requested_end_date:'2026-11-02'},{requested_start_date:'2026-11-01',requested_end_date:'2026-11-02'}]){const f=form();for(const [k,v] of Object.entries(dates))f.set(k,v);assert.ok(validateOfferRequest(f).data);}for(const dates of [{requested_start_date:'2026-02-30'},{requested_start_date:'2026-11-02',requested_end_date:'2026-11-01'}]){const f=form();for(const [k,v] of Object.entries(dates))f.set(k,v);assert.ok(validateOfferRequest(f).error);}});
 
 test('empty or whitespace company name is rejected before any submission RPC',async()=>{for(const name of ['', '   ']){const f=form();f.set('company_name',name);let calls=0;const result=await submitOfferRequest({rpc:async()=>{calls++;return {error:null}}},f);assert.ok(result.error);assert.equal(calls,0);}});
+
+test('notification schedules only after successful storage and scheduling failure does not undo success',async()=>{
+ let stored=false,scheduled=0;const client={rpc:async()=>{stored=true;return {error:null}}};
+ assert.ok((await submitOfferRequest(client,form(),()=>{assert.equal(stored,true);scheduled++;throw Error('scheduler');})).success);assert.equal(scheduled,1);
+ await submitOfferRequest({rpc:async()=>({error:{message:'down'}})},form(),()=>scheduled++);assert.equal(scheduled,1);
+ const invalid=form();invalid.delete('consent');await submitOfferRequest(client,invalid,()=>scheduled++);assert.equal(scheduled,1);
+});
