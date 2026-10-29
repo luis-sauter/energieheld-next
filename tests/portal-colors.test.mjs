@@ -36,7 +36,7 @@ test('legacy accent aliases, video/season focus and map pins use the exact share
  assert.match(map,/pen.fillStyle = color/);
  assert.match(read('src/config/energieheld.ts'),/accent: portalColors.orange/);
 });
-test('white-on-orange primary buttons retain brand accents and meet normal-text contrast',()=>{
+test('white-on-orange primary buttons retain the exact requested corporate orange',()=>{
   assert.ok(Math.abs(contrast(portalColors.orange,portalColors.white)-2.3372)<0.001);
   assert.ok(Math.abs(contrast(portalColors.basalt,portalColors.white)-8.276)<0.001);
   assert.ok(contrast(portalColors.basalt,portalColors.white)>=4.5);
@@ -45,8 +45,7 @@ test('white-on-orange primary buttons retain brand accents and meet normal-text 
   assert.equal(Object.keys(portalColors).length,6);
   const css=read('src/app/globals.css');
   for(const name of ['button','button-hover','button-active']) {
-    const value=css.match(new RegExp(`--portal-${name}: (#[0-9a-f]{6});`))[1];
-    assert.ok(contrast(value,portalColors.white)>=4.5);
+    assert.ok(css.includes(`--portal-${name}: var(--portal-orange);`));
   }
   assert.ok(css.includes('--portal-button-text: var(--portal-white);'));
   for(const background of ['white','light-gray','light-orange'])assert.ok(contrast(portalColors.blue,portalColors[background])>=3);

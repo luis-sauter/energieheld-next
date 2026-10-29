@@ -1,7 +1,7 @@
 .headerRow:global(.header-inner) { height: 96px; }
 .headerRow .brandLogo { width: 288px; height: auto; }
 .headerRow :global(.desktop-nav) { gap: 14px; padding-right: 14px; }
-.headerRow :global(.desktop-nav > a), .headerRow :global(.desktop-nav-group > a) { font-size: clamp(1.1rem, 1.65vw, 1.5rem); font-weight: 700; }
+.headerRow :global(.desktop-nav > a), .headerRow :global(.desktop-nav-group > a) { font-size: clamp(1rem, 1.45vw, 1.3rem); font-weight: 700; }
 @media (max-width: 1200px) {
   .headerRow :global(.desktop-nav) { display: none; }
   .headerRow :global(.mobile-menu) { display: block; }
