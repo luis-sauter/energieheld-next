@@ -30,6 +30,7 @@ stubs['../advertising/campaign-view']=stubs['@/components/advertising/campaign-v
 stubs['../advertising/inline-banner-editor']=stubs['@/components/advertising/inline-banner-editor'];
 registerHooks({
  resolve(specifier,context,next){
+  if(specifier==='next/dynamic')return {url:'data:text/javascript,export default function dynamic(){return function ClientOnlyMap(){return null}}',shortCircuit:true};
   if(specifier === 'server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
   if(specifier === "react" && context.parentURL?.startsWith("data:"))return next(specifier,{...context,parentURL:import.meta.url});
   if(stubs[specifier])return {url:'data:text/javascript,'+encodeURIComponent(stubs[specifier]),shortCircuit:true};

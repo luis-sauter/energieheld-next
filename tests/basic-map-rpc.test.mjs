@@ -3,6 +3,26 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 
+test('named map entries expose only existing public directory records, never expired or private candidates',async()=>{
+ const db=new PGlite();try{
+  await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;
+   CREATE TABLE public.basic_accommodation_contacts(id uuid PRIMARY KEY,name varchar(500),address jsonb,is_listed boolean,rights_valid_until timestamptz);
+   ALTER TABLE public.basic_accommodation_contacts ENABLE ROW LEVEL SECURITY;
+   INSERT INTO public.basic_accommodation_contacts VALUES
+   ('00000000-0000-0000-0000-000000000001','Actual portal hotel','{"city":"Munich"}',true,null),
+   ('00000000-0000-0000-0000-000000000002','Private hotel','{}',false,null),
+   ('00000000-0000-0000-0000-000000000003','Expired hotel','{}',true,now()-interval '1 second');`);
+  const sql=readFileSync(new URL('../supabase/migrations/20261029185939_named_public_map_entries.sql',import.meta.url),'utf8');assert.doesNotMatch(sql,/acquisition\./);await db.exec(sql);
+  const ids=[1,1,2,3,4].map(i=>'00000000-0000-0000-0000-'+String(i).padStart(12,'0'));
+  for(const role of ['anon','authenticated']){await db.exec('SET ROLE '+role);
+   assert.deepEqual((await db.query('SELECT * FROM public.public_basic_map_entries_by_ids($1)',[ids])).rows,[{id:ids[0],name:'Actual portal hotel',address:{city:'Munich'}}]);
+   await assert.rejects(db.query('SELECT * FROM public.public_basic_map_entries_by_ids($1)',[Array(501).fill(ids[0])]),/invalid map candidates/);
+   await assert.rejects(db.query('SELECT * FROM public.public_basic_map_entries_by_ids(null)'),/invalid map candidates/);
+   await assert.rejects(db.query('SELECT * FROM public.basic_accommodation_contacts'),/permission denied/);await db.exec('RESET ROLE');
+  }
+ }finally{await db.close();}
+});
+
 test('map RPC exposes only current public IDs/addresses, uses bounded keysets and grants no table access', async () => {
  const db=new PGlite();
  try {

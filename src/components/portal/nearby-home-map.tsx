@@ -1,52 +1,45 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {StaticHomeMap} from './static-home-map';
-import {projectLocation,MAP_WIDTH,MAP_HEIGHT} from '@/lib/europe-map';
-import styles from './europe-map.module.css';
+import dynamic from 'next/dynamic';
+import {validPortalMapData,type PortalMapData} from '@/lib/portal-map-entries';
+import styles from './openstreetmap-map.module.css';
+const OpenStreetMap=dynamic(()=>import('./openstreetmap-map'),{ssr:false,loading:()=> <div className={styles.loading}>Karte wird geladen …</div>});
 type Location={lat:number;lon:number;city:string};
-type Points={points:number[][];labels?:{lat:number;lon:number;name:string}[];limited:boolean};
 export function NearbyHomeMap() {
- const root=useRef<HTMLDivElement>(null);
- const [location,setLocation]=useState<Location|null>(null),[radius,setRadius]=useState(50),[data,setData]=useState<Points|null>(null);
- const [error,setError]=useState(''),[overview,setOverview]=useState(false);
- const [aspect,setAspect]=useState(MAP_WIDTH/MAP_HEIGHT);
- useEffect(()=>{if(!root.current||typeof ResizeObserver==='undefined')return;const observer=new ResizeObserver(([entry])=>setAspect(entry.contentRect.width<=600?1.3:MAP_WIDTH/MAP_HEIGHT));observer.observe(root.current);return()=>observer.disconnect();},[]);
+ const root=useRef<HTMLElement>(null);
+ const [ready,setReady]=useState(false),[geoReady,setGeoReady]=useState(false),[location,setLocation]=useState<Location|null>(null);
+ const [radius,setRadius]=useState(50),[overview,setOverview]=useState(false),[data,setData]=useState<PortalMapData|null>(null),[error,setError]=useState('');
+ useEffect(()=>{if(!root.current)return;const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){setReady(true);observer.disconnect();}},{rootMargin:'250px'});observer.observe(root.current);return()=>observer.disconnect();},[]);
  useEffect(()=>{
-  const controller=new AbortController();let started=false;
-  async function load(){if(started)return;started=true;try{const r=await fetch('/api/visitor-location',{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error();const d=await r.json();if(d.location&&Number.isFinite(d.location.lat)&&Number.isFinite(d.location.lon))setLocation(d.location);}catch{/* Keep the overview when IP location is unavailable. */}}
-  if(typeof IntersectionObserver==='undefined'){void load();return()=>controller.abort();}
-  const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();void load();}},{rootMargin:'300px'});
-  if(root.current)observer.observe(root.current);
-  return()=>{controller.abort();observer.disconnect();};
- },[]);
- useEffect(()=>{
-  if(!location||overview)return;
-  const controller=new AbortController();
-  void fetch(`/api/nearby-map?lat=${location.lat}&lon=${location.lon}&radius=${radius}`,{cache:'no-store',signal:controller.signal})
-   .then(async r=>{if(!r.ok)throw Error();const d=await r.json();if(!Array.isArray(d.points)||d.points.length>500||d.points.some((p:unknown)=>!Array.isArray(p)||p.length!==2||p.some(n=>typeof n!=='number'||!Number.isFinite(n))))throw Error();if(!controller.signal.aborted){setData(d);setError('');}})
-   .catch(()=>{if(!controller.signal.aborted)setError('Die Standorte im Umkreis konnten nicht geladen werden.');});
+  if(!ready)return;const controller=new AbortController();
+  void fetch('/api/visitor-location',{cache:'no-store',signal:controller.signal}).then(async response=>{
+   const d=await response.json(),l=d.location;
+   if(l&&Number.isFinite(l.lat)&&Number.isFinite(l.lon)&&l.lat>=34&&l.lat<=72&&l.lon>=-25&&l.lon<=45)setLocation({lat:l.lat,lon:l.lon,city:typeof l.city==='string'?l.city:''});else setOverview(true);
+  }).catch(()=>{if(!controller.signal.aborted)setOverview(true);}).finally(()=>{if(!controller.signal.aborted)setGeoReady(true);});
   return()=>controller.abort();
- },[location,radius,overview]);
- if(!location||overview)return <div ref={root}><StaticHomeMap/>{location&&<div className="container"><button className="button" onClick={()=>setOverview(false)}>Unterkünfte in meiner Umgebung</button></div>}</div>;
- const [x,y]=projectLocation(location.lat,location.lon),[nx,ny]=projectLocation(location.lat+radius/111.32,location.lon);
- const r=Math.hypot(nx-x,ny-y),height=r*2.5,width=height*aspect,compact=aspect<2;
- const fontSize=width/(compact?35:90),labelBoxes:{left:number;right:number;top:number;bottom:number}[]=[];
- const labels=(data?.labels??[]).slice(0,compact?4:8).flatMap(label=>{
-  const [px,py]=projectLocation(label.lat,label.lon),left=px+width/(compact?50:150),bottom=py-width/(compact?100:250);
-  const box={left,right:left+label.name.length*fontSize*.67,top:bottom-fontSize*1.2,bottom:bottom+fontSize*.25};
-  if(labelBoxes.some(b=>box.left<b.right+fontSize&&box.right>b.left-fontSize&&box.top<b.bottom&&box.bottom>b.top))return [];
-  labelBoxes.push(box);return [{...label,x:left,y:bottom}];
- });
- return <div ref={root}><section className={styles.section} aria-labelledby="locations-title" data-company-map data-nearby-map>
-  <div className="container"><header className={styles.header}><h2 id="locations-title">Unterkünfte in Ihrer Nähe</h2><p>{location.city?`${location.city} · `:''}Ungefährer Standort anhand Ihrer IP-Adresse. Die Ortung kann abweichen.</p>
-   <div role="group" aria-label="Umkreis auswählen">{[20,50].map(km=><button key={km} className={radius===km?'button button-primary':'button'} aria-pressed={radius===km} onClick={()=>{if(radius!==km){setData(null);setError('');setRadius(km);}}}>{km} km</button>)} <button className="button" onClick={()=>setOverview(true)}>Gesamtübersicht</button></div>
-  </header><div className={styles.frame}><svg className={styles.map} viewBox={`${x-width/2} ${y-height/2} ${width} ${height}`} role="img" aria-label={`Unterkunftsstandorte im Umkreis von ${radius} Kilometern`}>
-   <image href="/reiseportal/maps/europe.svg" x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT}/>
-   <circle cx={x} cy={y} r={r} fill="#13237f08" stroke="#13237f" strokeWidth={width/900} strokeDasharray={`${width/160} ${width/200}`}/>
-   {data?.points.map(([lat,lon],i)=>{const [px,py]=projectLocation(lat,lon);return <circle key={i} cx={px} cy={py} r={width/(compact?100:250)} fill="#f7902f" stroke="#fff" strokeWidth={width/(compact?450:1200)}/>;})}
-   <circle cx={x} cy={y} r={width/(compact?70:180)} fill="#13237f" stroke="#fff" strokeWidth={width/(compact?300:700)}/>
-   {labels.map(label=><text key={label.name} x={label.x} y={label.y} fontSize={fontSize} fill="#174761" stroke="#faf8f4" strokeWidth={width/(compact?140:400)} paintOrder="stroke" fontWeight="650">{label.name}</text>)}
-  </svg></div><div className={styles.footnote}><p role="status">{error||(!data?'Unterkünfte im Umkreis werden geladen …':data.points.length?`${data.points.length} dargestellte Standorte${data.limited?' · Auswahl der nächstgelegenen Unterkünfte':''}`:'In diesem Umkreis sind derzeit keine belegten Kartenstandorte verfügbar.')}</p><p>Blau: ungefährer Ausgangspunkt · Orange: Unterkünfte · Luftlinie</p><p className={styles.credit}>Karte: <a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noopener noreferrer">Natural Earth</a> · Standorte: Betreiberangaben, © swisstopo / © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap-Mitwirkende</a></p></div>
-  <p><a className={styles.link} href="/unterkuenfte-a-z">Alle Unterkünfte entdecken →</a></p></div>
- </section></div>;
+ },[ready]);
+ useEffect(()=>{
+  if(!geoReady)return;const controller=new AbortController();
+  const query=overview||!location?'view=overview':`lat=${location.lat}&lon=${location.lon}&radius=${radius}`;
+  void fetch('/api/nearby-map?'+query,{cache:'no-store',signal:controller.signal}).then(async response=>{
+   if(!response.ok)throw Error();const result=await response.json();if(!validPortalMapData(result))throw Error();
+   if(!controller.signal.aborted){setData(result);setError('');}
+  }).catch(()=>{if(!controller.signal.aborted)setError('Die Unterkünfte konnten gerade nicht geladen werden. Bitte versuchen Sie es später erneut.');});
+  return()=>controller.abort();
+ },[geoReady,location,overview,radius]);
+ function select(km:number){if(overview||radius!==km){setData(null);setError('');setRadius(km);setOverview(false);}}
+ const title=location&&!overview?'Unterkünfte in Ihrer Nähe':'Unterkünfte auf der Karte';
+ return <section ref={root} className={styles.section} aria-labelledby="locations-title" data-company-map data-nearby-map>
+  <div className="container"><header className={styles.header}><div><p className="eyebrow">Gastgeber entdecken</p><h2 id="locations-title">{title}</h2><p>{location&&!overview?`${location.city?location.city+' · ':''}Ihr ungefährer Standort anhand der IP-Adresse.`:'Entdecken Sie Gastgeber in Deutschland, Österreich, der Schweiz und Südtirol.'}</p></div>
+   <div className={styles.radii} role="group" aria-label="Kartenausschnitt auswählen">
+    {location&&[20,50].map(km=><button key={km} aria-pressed={!overview&&radius===km} onClick={()=>select(km)}>{km} km</button>)}
+    <button aria-pressed={overview} onClick={()=>{if(!overview){setData(null);setError('');setOverview(true);}}}>Gesamtübersicht</button>
+   </div></header>
+   <div className={styles.frame}>{ready&&geoReady?<OpenStreetMap entries={data?.entries??[]} location={overview?null:location} radius={radius} overview={overview}/>:<div className={styles.loading}>Unterkünfte und Karte werden geladen …</div>}</div>
+   <div className={styles.footer}><p role="status">{error||(!data?'Unterkünfte werden geladen …':`${data.entries.length} Unterkünfte aus unserem Portal${data.limited?' · Auswahl der Standorte':''}`)}</p>
+   </div>
+   <p className={styles.hint}>Orange Punkte zeigen Unterkunftsstandorte. Zahlen fassen mehrere Unterkünfte zusammen. Der Umkreis zeigt die Luftlinie.</p>
+   <a className={styles.directory} href="/unterkuenfte-a-z">Alle Unterkünfte entdecken <span aria-hidden="true">→</span></a>
+  </div>
+ </section>;
 }

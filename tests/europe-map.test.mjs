@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createHash } from 'node:crypto';
 registerHooks({
  resolve(specifier,context,next) {
+  if(specifier==='next/dynamic')return {url:'data:text/javascript,export default function dynamic(){return function ClientOnlyMap(){return null}}',shortCircuit:true};
   if(specifier==='server-only')return {url:'data:text/javascript,export {}',shortCircuit:true};
   if(specifier==='./supabase/public')return {url:'data:text/javascript,export function createPublicClient(){return {async rpc(name,args){globalThis.__mapCalls.push({name,args});return globalThis.__mapRpcHandler?globalThis.__mapRpcHandler(name,args):globalThis.__mapPages.shift()??{data:[],error:null}}}}',shortCircuit:true};
   if(specifier.endsWith('.css')) return {url:'data:text/javascript,export default {}',shortCircuit:true};

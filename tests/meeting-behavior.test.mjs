@@ -1,4 +1,10 @@
 import test from 'node:test';import assert from 'node:assert/strict';import './helpers/load-ts.mjs';
+const {validPortalMapData}=await import('../src/lib/portal-map-entries.ts');
+test('portal map rejects duplicate identities, bogus coordinates and oversized responses',()=>{
+ const entry={id:'00000000-0000-0000-0000-000000000001',lat:48.14,lon:11.58,kind:'basic'};
+ const data={entries:[entry],limited:false,overview:false};assert(validPortalMapData(data));
+ for(const entries of [[entry,entry],Array(501).fill(entry),[{...entry,id:'-'.repeat(36)}],[{...entry,lat:NaN}],[{...entry,lon:180}],[{...entry,kind:'private'}]])assert.equal(validPortalMapData({...data,entries}),false);
+});
 const {distanceKm,readNearbyQuery}=await import('../src/lib/nearby-map.ts');
 const {excludedAgencyTarget}=await import('../src/lib/travel-provider-eligibility.ts');
 const {validateOfferWorkspace,offerWorkspaceFields}=await import('../src/lib/offer-request-workspace.ts');

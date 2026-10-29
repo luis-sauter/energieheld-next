@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 const source = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
 registerHooks({
   resolve(s, c, next) {
+    if(s==='next/dynamic')return {url:'data:text/javascript,export default function dynamic(){return function ClientOnlyMap(){return null}}',shortCircuit:true};
     if (s.endsWith("card-image-editor")) return {url:'data:text/javascript,export function CardImageEditor(){return null;}',shortCircuit:true};
     if (s.endsWith("profile-card-images")) return {url:'data:text/javascript,export async function loadCardEditing(){return false;}export async function withSavedCardImages(rows){return rows;}',shortCircuit:true};
     if (s.endsWith(".module.css"))
