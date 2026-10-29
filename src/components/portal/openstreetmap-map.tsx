@@ -15,7 +15,7 @@ export default function OpenStreetMap({entries,location,radius,overview}:Props){
   instance.attributionControl.setPrefix(false);
   L.control.zoom({position:'topright',zoomInTitle:'Vergrößern',zoomOutTitle:'Verkleinern'}).addTo(instance);
   L.control.scale({imperial:false,position:'bottomleft'}).addTo(instance);
-  L.tileLayer(tileUrl,{maxZoom:19,keepBuffer:0,updateWhenIdle:true,referrerPolicy:'strict-origin-when-cross-origin',attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap-Mitwirkende</a>'}).on('tileerror',()=>setTileError(true)).addTo(instance);
+  L.tileLayer(tileUrl,{maxZoom:19,keepBuffer:0,updateWhenIdle:true,referrerPolicy:'strict-origin-when-cross-origin',attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap-Mitwirkende</a> · Standorte: Betreiberangaben / © swisstopo'}).on('tileerror',()=>setTileError(true)).addTo(instance);
   points.current=L.layerGroup().addTo(instance);radiusLayer.current=L.layerGroup().addTo(instance);
   const observer=new ResizeObserver(()=>instance.invalidateSize({pan:false}));observer.observe(element.current);
   return()=>{observer.disconnect();instance.remove();map.current=null;points.current=null;radiusLayer.current=null;};
