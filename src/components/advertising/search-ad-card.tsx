@@ -3,6 +3,7 @@ import { adTargetHref } from '@/lib/ad-values';
 import styles from './advertising.module.css';
 import grid from './search-ad-card.module.css';
 import { searchAdFormat, type CreativeGeometry } from '@/lib/search-ad-layout';
+import { bannerRegions } from '@/data/banner-regions';
 
 // Search geometry is independent of booking placement, size and presentation crop.
 export function SearchAdCard({ banner, geometry, onGeometry, onEdit, loading = false, directory = false, onCreativeLoaded }: {
@@ -25,6 +26,7 @@ export function SearchAdCard({ banner, geometry, onGeometry, onEdit, loading = f
         crossOrigin={directory ? "anonymous" : undefined}
         loading={directory ? 'lazy' : dimensions.width && dimensions.height ? 'lazy' : 'eager'} decoding="async"
         onLoad={event => { onGeometry?.({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight }); onCreativeLoaded?.(banner.ad, event.currentTarget); }} />
+      {bannerRegions[banner.ad.id] && <span className={styles.regionBadge} data-banner-region>{bannerRegions[banner.ad.id]}</span>}
     </a>
   </article>;
 }

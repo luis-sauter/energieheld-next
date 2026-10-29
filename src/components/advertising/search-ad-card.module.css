@@ -2,7 +2,7 @@
 .header { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-bottom: 8px; }
 .edit { border: 1px solid #dce7ec; border-radius: 7px; padding: 7px 10px; color: var(--brand-primary); background: #f7fafb; font: inherit; font-size: .8rem; cursor: pointer; }
 .edit:disabled { cursor: wait; opacity: .7; }
-.creative { display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; background: #f7fafb; }
+.creative { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; background: #f7fafb; }
 .creative img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .card[data-format="wide"] .creative { aspect-ratio: auto; }
 .card[data-format="wide"] .creative img { height: auto; }
