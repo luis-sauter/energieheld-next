@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import {validPortalMapData,type PortalMapData} from '@/lib/portal-map-entries';
 import styles from './openstreetmap-map.module.css';
 const OpenStreetMap=dynamic(()=>import('./openstreetmap-map'),{ssr:false,loading:()=> <div className={styles.loading}>Karte wird geladen …</div>});
-type Location={lat:number;lon:number;city:string};
+type Location={lat:number;lon:number;city:string;source?:'db-ip'};
 export function NearbyHomeMap() {
  const root=useRef<HTMLElement>(null);
  const [ready,setReady]=useState(false),[geoReady,setGeoReady]=useState(false),[location,setLocation]=useState<Location|null>(null);
@@ -14,7 +14,7 @@ export function NearbyHomeMap() {
   if(!ready)return;const controller=new AbortController();
   void fetch('/api/visitor-location',{cache:'no-store',signal:controller.signal}).then(async response=>{
    const d=await response.json(),l=d.location;
-   if(l&&Number.isFinite(l.lat)&&Number.isFinite(l.lon)&&l.lat>=34&&l.lat<=72&&l.lon>=-25&&l.lon<=45)setLocation({lat:l.lat,lon:l.lon,city:typeof l.city==='string'?l.city:''});
+   if(l&&Number.isFinite(l.lat)&&Number.isFinite(l.lon)&&l.lat>=34&&l.lat<=72&&l.lon>=-25&&l.lon<=45)setLocation({lat:l.lat,lon:l.lon,city:typeof l.city==='string'?l.city:'',...(d.source==='db-ip'?{source:'db-ip' as const}:{})});
   }).catch(()=>{}).finally(()=>{if(!controller.signal.aborted)setGeoReady(true);});
   return()=>controller.abort();
  },[ready]);
@@ -32,6 +32,7 @@ export function NearbyHomeMap() {
    <div className={styles.frame}>{ready&&geoReady?location?<OpenStreetMap entries={data?.entries??[]} location={location} radius={50}/>:<div className={styles.loading}>Ihr Standort ist derzeit nicht verfügbar.</div>:<div className={styles.loading}>Unterkünfte und Karte werden geladen …</div>}</div>
    <div className={styles.footer}><p role="status">{error||(geoReady&&!location?'Bitte versuchen Sie es später erneut.':!data?'Unterkünfte werden geladen …':data.entries.length===0?'In diesem Umkreis sind derzeit keine Unterkunftsstandorte verfügbar.':'Unterkunftsstandorte im Umkreis von 50 km · Luftlinie')}</p></div>
    {data&&data.entries.length>0&&<p className={styles.hint}>Standortauswahl aus unserem Portal. Vergrößern Sie die Karte, um weitere nah beieinanderliegende Pins zu sehen.</p>}
+   {location?.source==='db-ip'&&<p className={styles.hint}>Standortbestimmung: <a href="https://db-ip.com" target="_blank" rel="noopener noreferrer">DB-IP</a></p>}
    <a className={styles.directory} href="/unterkuenfte-a-z">Alle Unterkünfte entdecken <span aria-hidden="true">→</span></a>
   </div>
  </section>;
