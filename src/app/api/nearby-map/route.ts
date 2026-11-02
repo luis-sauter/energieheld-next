@@ -1,7 +1,7 @@
 import candidates from '@/data/basic-map-locations.json';
 import { createPublicClient } from '@/lib/supabase/public';
 import { basicMapFingerprint } from '@/lib/basic-map-locations';
-import { distanceKm,readNearbyQuery } from '@/lib/nearby-map';
+import { distanceKm,readNearbyQuery,selectNearbyLocations } from '@/lib/nearby-map';
 import companyLocations from '@/data/company-locations.json';
 import companyAddresses from '@/data/company-location-addresses.json';
 import {createHash} from 'node:crypto';
@@ -17,7 +17,7 @@ export async function GET(request:Request) {
   const inRadius=overview?candidates:candidates.map(row=>({...row,distance:distanceKm(center!,row)})).filter(row=>row.distance<=center!.radius).sort((a,b)=>a.distance-b.distance);
   const budget=Math.max(0,500-profiles.length);
   // Overview is an explicitly labelled, deterministic selection, never invented locations.
-  const chosen=overview?Array.from({length:Math.min(budget,inRadius.length)},(_,i)=>inRadius[Math.floor(i*inRadius.length/Math.min(budget,inRadius.length))]):inRadius.slice(0,budget);
+  const chosen=overview?Array.from({length:Math.min(budget,inRadius.length)},(_,i)=>inRadius[Math.floor(i*inRadius.length/Math.min(budget,inRadius.length))]):selectNearbyLocations(inRadius,budget,center!);
   const client=createPublicClient();
   const [{data,error},profileResult]=await Promise.all([
    client.rpc('public_basic_map_entries_by_ids',{p_ids:chosen.map(row=>row.id)}).abortSignal(AbortSignal.timeout(8000)),

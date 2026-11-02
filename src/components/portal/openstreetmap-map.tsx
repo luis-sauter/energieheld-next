@@ -14,7 +14,6 @@ export default function OpenStreetMap({entries,location,radius}:Props){
   const instance=L.map(element.current,{scrollWheelZoom:false,minZoom:4,maxZoom:18,zoomControl:false,attributionControl:true});map.current=instance;
   instance.attributionControl.setPrefix(false);
   L.control.zoom({position:'topright',zoomInTitle:'Vergrößern',zoomOutTitle:'Verkleinern'}).addTo(instance);
-  L.control.scale({imperial:false,position:'topleft'}).addTo(instance);
   L.tileLayer(tileUrl,{maxZoom:19,keepBuffer:0,updateWhenIdle:true,referrerPolicy:'strict-origin-when-cross-origin',attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap-Mitwirkende</a> · Standorte: Betreiberangaben / © swisstopo'}).on('tileerror',()=>setTileError(true)).addTo(instance);
   points.current=L.layerGroup().addTo(instance);radiusLayer.current=L.layerGroup().addTo(instance);
   const observer=new ResizeObserver(()=>instance.invalidateSize({pan:false}));observer.observe(element.current);
@@ -45,5 +44,5 @@ export default function OpenStreetMap({entries,location,radius}:Props){
   };
   draw();instance.on('zoomend',draw);return()=>{instance.off('zoomend',draw);layer.clearLayers();};
  },[entries]);
- return <><div ref={element} className={styles.map} aria-label="OpenStreetMap mit Unterkünften aus dem Reiseportal" data-osm-map/>{tileError&&<p className={styles.tileError}>Einzelne Kartenteile konnten nicht geladen werden. Bitte versuchen Sie es später erneut.</p>}</>;
+ return <><div ref={element} className={styles.map} aria-label="OpenStreetMap mit Unterkünften aus dem Reiseportal" data-osm-map/><p className={styles.radiusIndicator}>Umkreis: {radius} km</p>{tileError&&<p className={styles.tileError}>Einzelne Kartenteile konnten nicht geladen werden. Bitte versuchen Sie es später erneut.</p>}</>;
 }
