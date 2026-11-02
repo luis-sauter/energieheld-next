@@ -20,6 +20,7 @@ import { availableTravelFilters, readTravelFilterValues, type PublicTravelTerm, 
 import { filterTravelListings, travelFilterUrl } from "@/lib/reiseportal-facets";
 import { AdvertisingLayout } from "./trades";
 import { ListingRow } from "./listing-row";
+import { equalPremiumCards } from "./equal-premium-cards";
 import { SearchAdResults } from "@/components/advertising/search-ad-results";
 import { matchTravelSearchBanners, travelResultNoun, travelSearchResults, type TravelSearchBanner } from "@/lib/travel-search-banners";
 import { TravelFinder, useTravelSearchPending } from "./travel-finder";
@@ -139,7 +140,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
     return () => window.removeEventListener("popstate", restore);
   }, []);
 
-  return <InlineBannerProvider options={bannerOptions}><main id="hauptinhalt" className={`travel-directory-page ${styles.page} ${cardStyles.rows}`}>
+  return <InlineBannerProvider options={bannerOptions}><main ref={equalPremiumCards} data-equal-premium-cards id="hauptinhalt" className={`travel-directory-page ${styles.page} ${cardStyles.rows}`}>
     <TravelFinder mode="directory" basicEnabled={basicEnabled} terms={terms} aggregate={aggregate} {...pending} liveCount={liveCount} profileTotal={pagination ? profileStream.total : undefined} profileLoading={Boolean(pagination && profileStream.loading && !profileStream.items.length||basicPagination&&basicStream.loading)} banners={banners} listings={listings} options={options} values={values} onChange={setValues} error={error ?? bannerError} renderFinder={(finder) =>
     <div className="trade-page travel-directory-content">
       <AdvertisingLayout ads={ads} sidebarOrder={sidebarOrder} editorEnabled={editingAvailable} premiumInSidebar showEmptySlots={Boolean(bannerOptions)}

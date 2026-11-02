@@ -27,7 +27,7 @@
 .countryCard:hover .arrow, .themeLink:hover .arrow, .quicklink:hover .arrow { background: var(--portal-light-orange); }
 .inspirationArea { position: relative; isolation: isolate; padding-block: 18px 0; background: transparent; }
 .sectionHeading { margin-bottom: 20px; }
-.heroCopy { max-width:620px; padding:20px; background:#fff; border-radius:var(--portal-radius,5px); }
+.heroCopy { max-width:620px; }
 .eyebrow { display: flex; align-items: center; gap: 9px; margin: 0 0 9px; color: var(--portal-blue); font-size: .73rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .eyebrow::before { content: ""; width: 23px; height: 3px; background: var(--portal-orange); border-radius: var(--portal-radius, 5px); flex-shrink: 0; }
 .sectionHeading h2, .partner h2 { margin: 0 0 8px; font-size: clamp(1.7rem, 2.7vw, 2.3rem); line-height: 1.15; letter-spacing: -.035em; }

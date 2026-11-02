@@ -10,7 +10,7 @@
 .regionGrid > a > div { padding: 16px; }
 .sectionTitle { margin: 0 0 10px; font-size: clamp(1.8rem, 3.1vw, 2.6rem); line-height: 1.15; letter-spacing: -.025em; }
 .sectionHeading { margin-bottom: 26px; }
-.heroCopy { max-width:620px; padding:20px; background:#fff; border-radius:var(--portal-radius,5px); }
+.heroCopy { max-width:620px; }
 .sectionHeading p { padding:16px 20px; background:#fff; border-radius:var(--portal-radius,5px); }
 .sectionHeading p { margin: 0; color: var(--portal-ink); line-height: 1.6; }
 .regionGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }

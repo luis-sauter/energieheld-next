@@ -2,6 +2,7 @@
 .rows :global(.listing-rows) { gap: 10px; }
 .rows :global(.listing-row) { background: #fff; border: 1px solid #deeaef; border-radius: var(--portal-radius, 5px); box-shadow: 0 5px 20px rgb(31 74 99 / 4%); align-items: center; }
 .rows :global(.listing-row--premium) { grid-template-columns: minmax(160px, 220px) minmax(0, 1fr); padding: 8px; border-left: 1px solid #deeaef; align-items: stretch; }
+.rows:global([data-equal-premium-cards]) :global(.listing-row--premium) { min-height: var(--premium-card-height, 0px); }
 .rows :global(.listing-row--premium .row-logo) { grid-row: 1 / span 2; }
 .rows :global(.row-logo) { width: min(100%, 400px); padding: 0; aspect-ratio: 1; border-radius: var(--portal-radius, 5px); overflow: hidden; margin: 0; background: #fff; align-self: start; color: var(--portal-blue); }
 .rows :global(.travel-premium-badge) { position: absolute; top: 12px; left: 12px; border-radius: var(--portal-radius, 5px); padding: 6px 12px; color: #593910; background: #ffda83; font-size: .75rem; font-weight: 700; }

@@ -359,7 +359,7 @@ export function CampaignForm({
         <p className={styles.sectionHint}>Jeder Bannerplatz gilt nur für die ausgewählte Seite. Belegte Plätze können nicht neu gewählt werden.</p>
       </fieldset>
       <fieldset className={styles.formSection}>
-        <legend>Haben Sie bereits ein Bannerbild?</legend>
+        <legend>Haben Sie bereits ein Bannerbild? (optional)</legend>
         <p className={styles.sectionHint}>Laden Sie Ihr Bannerbild gerne direkt mit hoch. Falls noch kein passendes Motiv vorhanden ist, melden wir uns bei Ihnen und unterstützen Sie gerne bei der Erstellung.</p>
         {admin ? <><button type="button" className="button" disabled={busy || Boolean(campaign.archived_at)} onClick={() => setLibraryOpen(true)}>{campaign.image_path || selectedImage ? 'Bild ersetzen' : 'Bild hinzufügen'}</button>
           {selectedPreview && <><Image src={selectedPreview} alt="Ausgewähltes Bannerbild" width={0} height={0} unoptimized style={{width:'100%',height:'auto',objectFit:'contain'}} /><p role="status">Bild ausgewählt. Übernahme erst beim Speichern.</p><button type="button" className="button" onClick={() => { setSelectedImage(null); setSelectedPreview(''); }}>Bildauswahl verwerfen</button></>}

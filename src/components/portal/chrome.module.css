@@ -6,6 +6,12 @@
 .headerRow :global(.brand) { margin-right: auto; justify-content: flex-start; }
 .headerRow :global(.mobile-menu nav) { max-height: calc(100dvh - 115px); font-size: 1.15rem; }
 .headerRow :global(.mobile-nav-row > a) { font-weight: 700; }
+/* Only the public inquiry page aligns its header with the narrower form. */
+:global(body:has(main[data-offer-request])) .headerRow { max-width:1100px; gap:12px; container-type:inline-size; }
+:global(body:has(main[data-offer-request])) .headerRow :global(.desktop-nav) { gap:8px; padding-right:8px; }
+:global(body:has(main[data-offer-request])) .headerRow :global(.desktop-nav > a),
+:global(body:has(main[data-offer-request])) .headerRow :global(.desktop-nav-group > a) { font-size:clamp(1.2rem,2cqi,1.56rem); white-space:nowrap; }
+:global(body:has(main[data-offer-request])) .headerRow :global(.header-cta) { white-space:nowrap; flex-shrink:0; }
 @media (max-width: 1200px) {
   .headerRow :global(.desktop-nav) { display: none; }
   .headerRow :global(.mobile-menu) { display: block; }
