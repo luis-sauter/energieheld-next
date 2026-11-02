@@ -18,6 +18,7 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
   const [open, setOpen] = useState(false), [selected, setSelected] = useState<{ id: string; src: string; alt: string } | null>(null);
   const [crop, setCrop] = useState<ImageCrop>(savedCrop ?? DEFAULT_IMAGE_CROP);
   const [busy, setBusy] = useState(false), [error, setError] = useState("");
+  const [previewRatio, setPreviewRatio] = useState(ratio);
   useEffect(() => { if (!open) return; dialog.current?.showModal(); return () => returnFocus.current?.focus({ preventScroll: true }); }, [open]);
   function close() { if (!busy) dialog.current?.close(); }
   function choose(asset: MediaAsset) {
@@ -41,7 +42,7 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
   }
   return <>
     <button type="button" className={styles.edit} title="Vorschaubild bearbeiten" aria-label="Vorschaubild bearbeiten"
-      onClick={event => { returnFocus.current = event.currentTarget; setError(""); setSelected(assetId && image ? { id: assetId, src: image.src, alt: image.alt } : null); setCrop(savedCrop ?? DEFAULT_IMAGE_CROP); setOpen(true); }}>
+      onClick={event => { const frame = event.currentTarget.closest?.(".row-logo")?.getBoundingClientRect(); setPreviewRatio(frame && frame.width > 0 && frame.height > 0 ? frame.width / frame.height : ratio); returnFocus.current = event.currentTarget; setError(""); setSelected(assetId && image ? { id: assetId, src: image.src, alt: image.alt } : null); setCrop(savedCrop ?? DEFAULT_IMAGE_CROP); setOpen(true); }}>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a3 3 0 0 0-4-4L4 15Z" /></svg>
     </button>
     {open && <dialog ref={dialog} className="media-library-dialog" style={{ fontSize: "1rem" }} aria-labelledby="media-library-title"
@@ -51,7 +52,7 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
       {selected ? <div style={{ padding: "1.5rem" }}><h2 id="media-library-title">Vorschaubild ändern</h2><p>{profileName}</p>
         <p>Das Vorschaubild wird in A–Z und auf den Unterkunftskarten verwendet. Galerie und Medienoriginal bleiben erhalten.</p>
         {fit === "contain" && <p>Bei 100 % ist das ganze Bild sichtbar. Freie Flächen im quadratischen Rahmen bleiben weiß.</p>}
-        <CropControls crop={crop} setCrop={setCrop} ratio={ratio} alt={selected.alt} disabled={busy}
+        <CropControls crop={crop} setCrop={setCrop} ratio={previewRatio} alt={selected.alt} disabled={busy}
           renderImage={value => {
             // eslint-disable-next-line @next/next/no-img-element
             return <img src={selected.src} alt={selected.alt} style={{ ...imageCropStyle(value, fit), background: fit === "contain" ? "#fff" : undefined }} />;

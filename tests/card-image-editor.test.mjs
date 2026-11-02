@@ -31,14 +31,14 @@ test('save validates verified admin, IDs and crop, writes only separate card ref
  assert.equal(writes.length,1);assert.equal(writes[0].asset_id,asset);assert.equal(writes[0].profile_id,profile);assert.equal(refreshes.length,0);
  assert.doesNotMatch(source('src/app/(energieheld)/card-image-actions.ts'),/company_profile_images|\.storage|service_role/);
 });
-function harness(){
+function harness(frame){
  const state=[],refs=[],effects=[];let cursor=0,refcursor=0,saves=0,refreshes=0,focused=0,modal=false,current;
  const dialog={showModal(){modal=true;},close(){modal=false;current.props.onClose({target:dialog,currentTarget:dialog});}};
  const react={useState(init){const i=cursor++;if(!(i in state))state[i]=init;return [state[i],v=>{state[i]=typeof v==='function'?v(state[i]):v;}];},useRef(init){const i=refcursor++;refs[i]??={current:init};return refs[i];},useEffect(fn){effects.push(fn);}};
  const {CardImageEditor}=load('src/components/portal/card-image-editor.tsx',{'react':react,'react/jsx-runtime':jsx,'next/dynamic.js':()=> 'LazyTool','next/navigation':{useRouter:()=>({refresh(){refreshes++;}})},'@/app/(energieheld)/card-image-actions':{saveCardImage:async()=>{saves++;return {success:'saved'};}},'@/lib/image-crop':crop,'./accommodation-card.module.css':{default:{edit:'edit'}}});
  const all=n=>Array.isArray(n)?n.flatMap(all):n&&typeof n==='object'?[n,...all(n.props?.children)]:[];
  function render(){cursor=0;refcursor=0;effects.length=0;const tree=CardImageEditor({profileId:profile,profileName:'Real provider'});current=all(tree).find(n=>n.type==='dialog');if(current)current.props.ref.current=dialog;for(const effect of effects)effect();return all(tree);}
- function open(){const button=render().find(n=>n.type==='button');button.props.onClick({currentTarget:{focus(){focused++;},dispatchEvent(){}}});return render();}
+ function open(){const button=render().find(n=>n.type==='button');button.props.onClick({currentTarget:{focus(){focused++;},dispatchEvent(){},closest(){return frame?{getBoundingClientRect:()=>frame}:null;}}});return render();}
  return {render,open,dialog,counts:()=>({saves,refreshes,focused,modal})};
 }
 test('actual card edit/cancel closes native dialog and ignores descendant close/cancel events; reopen works',()=>{
@@ -56,6 +56,15 @@ test('library selection and crop are preview-only until explicit save; unrelated
  assert.throws(()=>browser.props.onSelected({...image,profile_id:'foreign'}));assert.throws(()=>browser.props.onSelected({...image,bucket_id:'ad-media'}));
  browser.props.onSelected(image);let nodes=h.render();assert.equal(h.counts().saves,0);assert.equal(nodes.find(n=>n.type==='LazyTool').props.ratio,35/32);
  const save=nodes.find(n=>n.type==='button'&&n.props.children==='Vorschaubild speichern');await save.props.onClick();assert.equal(h.counts().saves,1);assert.equal(h.counts().refreshes,0);assert.equal(h.counts().modal,false);assert.equal(h.render().filter(n=>n.type==='dialog').length,0);
+});
+
+test('directory crop preview follows the actual full-height photo frame and updates after a responsive layout change',()=>{
+ const frame={width:220,height:319},h=harness(frame);
+ const choose=()=>h.open().find(n=>n.type==='LazyTool').props.onSelected({id:asset,profile_id:profile,kind:'gallery',bucket_id:'company-media',src:'/real.png',alt_text:'Real',archived_at:null});
+ choose();assert.equal(h.render().find(n=>n.type==='LazyTool').props.ratio,220/319);
+ h.render().find(n=>n.type==='button'&&n.props.children==='Abbrechen').props.onClick();
+ frame.width=321;frame.height=321;choose();assert.equal(h.render().find(n=>n.type==='LazyTool').props.ratio,1);
+ assert.equal(h.counts().saves,0);
 });
 
 test('saved images load once in a signed batch and override only travel cards, with safe pre-migration fallback',async()=>{
