@@ -3264,8 +3264,8 @@ h6 {
   font-size: clamp(1rem, 1.5vw, 1.14rem);
   margin-bottom: 28px;
 }
-.reiseportal-shell .travel-intro-copy:not([data-home]) { width: fit-content; max-width: 100%; padding: clamp(20px, 3vw, 28px); margin-bottom: 24px; background: #fff; border-radius: var(--portal-radius); }
-.reiseportal-shell .travel-intro-copy:not([data-home]) > p:last-child { margin-bottom: 0; }
+.reiseportal-shell .travel-intro-copy:not([data-home]):not([data-directory]) { width: fit-content; max-width: 100%; padding: clamp(20px, 3vw, 28px); margin-bottom: 24px; background: #fff; border-radius: var(--portal-radius); }
+.reiseportal-shell .travel-intro-copy:not([data-home]):not([data-directory]) > p:last-child { margin-bottom: 0; }
 .travel-hero:has(.reise-finder) { min-height: 600px; }
 .travel-hero:has(.reise-finder) .travel-hero-content { transform: none; }
 .reise-finder {

@@ -44,7 +44,7 @@ export default async function MottoTravelPage({ searchParams }: { searchParams?:
         fill sizes="(max-width: 600px) 1440px, 100vw" preload />
       <div className={`${styles.heroContent} container`}>
         <Breadcrumbs items={breadcrumbs} className={styles.breadcrumbs} />
-        <div className={styles.heroCopy}><h1 id="motto-heading" className={styles.heading}>Mottoreisen</h1>
+        <h1 id="motto-heading" className={styles.heading}>Mottoreisen</h1><div className={styles.heroCopy}>
         <p>Vielleicht geht es Ihnen aber gar nicht so sehr um ein bestimmtes Ziel, sondern Sie möchten eher einem speziellen Motto folgen? Auch damit kann DAS-Reiseportal.com dienen.</p>
         <p className={styles.introDetail}>Suchen Sie sich Ihr Traumziel unter den Golfreisen, den Wellnessangeboten, Geschäftsreisen oder unter den Reisen rund um das Wasser.</p></div>
       </div>

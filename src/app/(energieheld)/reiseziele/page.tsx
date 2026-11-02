@@ -54,7 +54,7 @@ export default function DestinationsPage() {
     <section className={styles.hero} aria-labelledby="reiseziele-title">
       <div className={`${styles.heroContent} container`}>
         <Breadcrumbs items={breadcrumbs} className={styles.breadcrumbs} />
-        <div className={styles.heroCopy}><h1 id="reiseziele-title" className={styles.heading}>Vier Länder.<br />Viele Möglichkeiten.</h1>
+        <h1 id="reiseziele-title" className={styles.heading}>Vier Länder.<br />Viele Möglichkeiten.</h1><div className={styles.heroCopy}>
         <p>Entdecken Sie Deutschland, Österreich, die Schweiz und Südtirol / Italien – vier einzigartige Regionen mit atemberaubender Natur, faszinierenden Kulturen und unvergesslichen Erlebnissen.</p></div>
       </div>
     </section>

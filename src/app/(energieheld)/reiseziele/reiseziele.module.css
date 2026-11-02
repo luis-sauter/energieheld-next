@@ -26,12 +26,12 @@
 .arrow { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: #eaf6fd; color: var(--portal-blue); }
 .countryCard:hover .arrow, .themeLink:hover .arrow, .quicklink:hover .arrow { background: var(--portal-light-orange); }
 .inspirationArea { position: relative; isolation: isolate; padding-block: 18px 0; background: transparent; }
-.sectionHeading { margin-bottom: 20px; padding:24px; background:#fff; border-radius:var(--portal-radius,5px); }
-.heroCopy { max-width:920px; padding:28px; background:#fff; border-radius:var(--portal-radius,5px); }
+.sectionHeading { margin-bottom: 20px; }
+.heroCopy { max-width:620px; padding:20px; background:#fff; border-radius:var(--portal-radius,5px); }
 .eyebrow { display: flex; align-items: center; gap: 9px; margin: 0 0 9px; color: var(--portal-blue); font-size: .73rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .eyebrow::before { content: ""; width: 23px; height: 3px; background: var(--portal-orange); border-radius: var(--portal-radius, 5px); flex-shrink: 0; }
 .sectionHeading h2, .partner h2 { margin: 0 0 8px; font-size: clamp(1.7rem, 2.7vw, 2.3rem); line-height: 1.15; letter-spacing: -.035em; }
-.sectionHeading > p:last-child:not(.eyebrow) { margin: 0; max-width: 1080px; font-size: 1.05rem; line-height: 1.5; color: var(--portal-ink); }
+.sectionHeading > p:last-child:not(.eyebrow) { margin: 0; max-width: 1080px; padding:16px 20px; background:#fff; border-radius:var(--portal-radius,5px); font-size: 1.05rem; line-height: 1.5; color: var(--portal-ink); }
 .inspirationGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
 .inspirationCard { min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
 .themeLink { display: block; text-decoration: none; flex: 1; }
