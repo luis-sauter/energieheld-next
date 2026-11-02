@@ -10,7 +10,7 @@
   background: rgb(255 255 255 / 86%);
   border: 0;
   box-shadow: 0 12px 36px rgb(23 71 97 / 10%);
-  border-radius: 16px;
+  border-radius: var(--portal-radius, 5px);
 }
 .page :global(.reise-finder input), .page :global(.reise-finder select) { border-color: rgb(30 90 122 / 16%); }
 .page :global(.reise-finder input:focus-visible), .page :global(.reise-finder select:focus-visible) { border-color: var(--portal-primary); }
@@ -22,7 +22,7 @@
 .page :global(.section-heading .eyebrow) { margin-bottom: 10px; }
 .page :global(.section-heading .text-link) { flex-shrink: 0; }
 .destinations { background: var(--brand-surface); }
-.destinations :global(.discovery-card) { border: 0; border-radius: 14px; box-shadow: 0 4px 16px rgb(23 71 97 / 4%); }
+.destinations :global(.discovery-card) { border: 0; border-radius: var(--portal-radius, 5px); box-shadow: 0 4px 16px rgb(23 71 97 / 4%); }
 .destinations :global(.discovery-card-image) { aspect-ratio: 1.25; }
 .destinations :global(.discovery-card-title) { padding: 20px; font-size: 1.1rem; }
 .page .partners { background: transparent; padding-block: 20px; margin-bottom: 0; }
@@ -47,7 +47,7 @@
 .partners :global(.advertising-rail > div:has(button[aria-label$="verschieben"])) { display: block; }
 .partners :global(.advertising-rail > div:has(button[aria-label$="verschieben"]) [data-sidebar-slot]) { max-width: 400px; margin-bottom: 18px; }
 .partners :global(.advertise-link) { margin-top: 22px; }
-.provider { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(24px, 4vw, 48px); margin-bottom: 0; border-radius: 16px; background: var(--category-blue); }
+.provider { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: clamp(24px, 4vw, 48px); margin-bottom: 0; border-radius: var(--portal-radius, 5px); background: var(--category-blue); }
 .provider h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); line-height: 1.2; margin-bottom: 12px; }
 .provider p:not(:global(.eyebrow)) { max-width: 620px; margin-bottom: 0; }
 .provider :global(.button) { flex-shrink: 0; }

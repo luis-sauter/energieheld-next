@@ -3249,7 +3249,7 @@ h6 {
   .travel-hero-content { transform: translateY(30px); }
 }
 .travel-hero .eyebrow,
-.travel-hero-content > p:not(.eyebrow) {
+.travel-intro-copy > p:not(.eyebrow) {
   color: var(--portal-primary-deep);
 }
 .travel-hero h1 {
@@ -3259,11 +3259,13 @@ h6 {
   line-height: 1.06;
   margin-bottom: 14px;
 }
-.travel-hero-content > p:not(.eyebrow) {
+.travel-intro-copy > p:not(.eyebrow) {
   max-width: 570px;
   font-size: clamp(1rem, 1.5vw, 1.14rem);
   margin-bottom: 28px;
 }
+.reiseportal-shell .travel-intro-copy:not([data-home]) { width: fit-content; max-width: 100%; padding: clamp(20px, 3vw, 28px); margin-bottom: 24px; background: #fff; border-radius: var(--portal-radius); }
+.reiseportal-shell .travel-intro-copy:not([data-home]) > p:last-child { margin-bottom: 0; }
 .travel-hero:has(.reise-finder) { min-height: 600px; }
 .travel-hero:has(.reise-finder) .travel-hero-content { transform: none; }
 .reise-finder {

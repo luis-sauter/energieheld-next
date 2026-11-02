@@ -15,7 +15,7 @@
 .page :global(.breadcrumbs) { margin-bottom: 24px; font-size: .82rem; }
 .page :global(.travel-hero h1) { max-width: 1000px; font-size: clamp(2.2rem, 4vw, 3.7rem); letter-spacing: -.035em; color: var(--portal-blue); }
 .page :global(.travel-hero .eyebrow) { font-size: .75rem; letter-spacing: .16em; }
-.page :global(.travel-hero-content > p:not(.eyebrow)) { max-width: 700px; margin-bottom: 25px; color: var(--portal-basalt); line-height: 1.55; }
+.page :global(.travel-intro-copy > p:not(.eyebrow)) { max-width: 700px; color: var(--portal-basalt); line-height: 1.55; }
 .page :global(.reise-finder) { position: relative; margin-bottom: 28px; background: rgb(255 255 255 / 96%); border-radius: var(--portal-radius, 5px); border: 1px solid #e6edf1; box-shadow: 0 12px 36px rgb(31 74 99 / 9%); padding: 24px; }
 .page :global(.reise-finder-grid) { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .page :global(.reise-finder label) { color: var(--portal-blue); font-size: .86rem; }
