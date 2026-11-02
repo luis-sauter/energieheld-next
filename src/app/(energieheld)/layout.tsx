@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { reiseportal } from "@/config/reiseportal";
 import { portalColorVariables } from '@/config/portal-colors';
 import { PortalHeader, PortalFooter } from "@/components/portal/chrome";
+import { SignedImageRecovery } from '@/components/portal/signed-image-recovery';
 import { getPortalAccount } from "@/lib/portal-account-server";
 
 import { getEditorialQueue } from "@/lib/editorial-queue-server";
@@ -32,6 +33,7 @@ export default async function ReiseportalLayout({
   } as CSSProperties;
   return (
     <div className="reiseportal-shell" style={style}>
+      <SignedImageRecovery />
       <PortalHeader brand={reiseportal} access={access} hasCompany={hasCompany} identity={identity} taskCounts={queue?.counts} taskError={queue?.error} />
       {children}
       <PortalFooter brand={reiseportal} />
