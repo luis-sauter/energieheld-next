@@ -3298,6 +3298,10 @@ h6 {
 .reise-finder-grid .reise-finder-submit { grid-column: span 3; }
 .reise-finder-submit { min-height: 54px; width: 100%; font-size: 1.05rem; font-weight: 700; white-space: normal; line-height: 1.4; }
 .reise-finder > #reise-finder-hint { margin-top: 12px; }
+.reise-finder-actions { display: flex; justify-content: flex-end; margin-top: 4px; }
+.reise-finder .reise-finder-reset-quiet { min-height: 44px; padding: 6px 2px; border: 0; background: transparent; color: var(--portal-blue); font-size: .85rem; text-underline-offset: 3px; }
+.reise-finder .reise-finder-reset-quiet:hover:not(:disabled) { background: transparent; text-decoration-thickness: 2px; }
+.reise-finder .reise-finder-reset-quiet:disabled { opacity: .5; text-decoration: none; cursor: default; }
 .reise-finder-active { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
 .reise-finder-chip, .reise-finder-reset {
   min-height: 42px;

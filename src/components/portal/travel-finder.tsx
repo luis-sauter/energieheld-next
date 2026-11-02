@@ -117,11 +117,17 @@ export function TravelFinder({ mode, listings, options:existingOptions, values, 
             {buttonLabel}
           </button>
         </div>
+        <div className="reise-finder-actions">
+          <button type="button" className="reise-finder-reset reise-finder-reset-quiet" onClick={reset}
+            disabled={!Object.values(values).some(Boolean) || searchPending}
+            title={Object.values(values).some(Boolean) ? "Reiseauswahl und Suchbegriff zurücksetzen" : "Keine Filter aktiv"}>
+            Alle Filter zurücksetzen
+          </button>
+        </div>
         <p id="reise-finder-hint">{portalQuery ? "Freitext durchsucht das gesamte Portal. Gewählte Reisefilter grenzen die Suche auf Unterkünfte ein." : "Mit einem Suchbegriff finden Sie auch Reiseziele, Mottoreisen und weitere Inhalte im gesamten Portal."}</p>
         {active.length > 0 && <div className="reise-finder-active" aria-label="Aktive Filter">
           {active.map(({ key, label }) => <button key={key} type="button" className="reise-finder-chip"
             onClick={() => update(key, "")} aria-label={`${label} entfernen`}>{label} <span aria-hidden="true">×</span></button>)}
-          <button type="button" className="reise-finder-reset" onClick={reset}>Alle Filter zurücksetzen</button>
         </div>}
       </form>;
 
