@@ -1,10 +1,10 @@
 /* Canonical A–Z company rows, shared with search. No page layout rules. */
 .rows :global(.listing-rows) { gap: 10px; }
-.rows :global(.listing-row) { background: #fff; border: 1px solid #deeaef; border-radius: 14px; box-shadow: 0 5px 20px rgb(31 74 99 / 4%); align-items: center; }
+.rows :global(.listing-row) { background: #fff; border: 1px solid #deeaef; border-radius: var(--portal-radius, 5px); box-shadow: 0 5px 20px rgb(31 74 99 / 4%); align-items: center; }
 .rows :global(.listing-row--premium) { grid-template-columns: minmax(160px, 220px) minmax(0, 1fr); padding: 8px; border-left: 1px solid #deeaef; align-items: stretch; }
 .rows :global(.listing-row--premium .row-logo) { grid-row: 1 / span 2; }
-.rows :global(.row-logo) { width: min(100%, 400px); padding: 0; aspect-ratio: 1; border-radius: 10px; overflow: hidden; margin: 0; background: #fff; align-self: start; color: var(--portal-blue); }
-.rows :global(.travel-premium-badge) { position: absolute; top: 12px; left: 12px; border-radius: 99px; padding: 6px 12px; color: #593910; background: #ffda83; font-size: .75rem; font-weight: 700; }
+.rows :global(.row-logo) { width: min(100%, 400px); padding: 0; aspect-ratio: 1; border-radius: var(--portal-radius, 5px); overflow: hidden; margin: 0; background: #fff; align-self: start; color: var(--portal-blue); }
+.rows :global(.travel-premium-badge) { position: absolute; top: 12px; left: 12px; border-radius: var(--portal-radius, 5px); padding: 6px 12px; color: #593910; background: #ffda83; font-size: .75rem; font-weight: 700; }
 .rows :global(.row-content) { padding: 10px 14px; }
 .rows :global(.listing-row--premium .row-content) { display: flex; flex-direction: column; }
 .rows :global(.listing-row--premium .travel-card-tags) { margin-top: auto; padding-top: 12px; }
@@ -15,10 +15,10 @@
 .rows :global(.row-content .row-business-areas) { display: none; }
 .rows :global(.row-categories:empty) { display: none; }
 .rows :global(.travel-card-tags) { display: flex; gap: 7px; flex-wrap: wrap; padding: 0; margin: 8px 0 0; list-style: none; }
-.rows :global(.travel-card-tags li) { padding: 4px 8px; border-radius: 99px; color: var(--portal-blue); background: var(--portal-light-orange); font-size: .75rem; }
+.rows :global(.travel-card-tags li) { padding: 4px 8px; border-radius: var(--portal-radius, 5px); color: var(--portal-blue); background: var(--portal-light-orange); font-size: .75rem; }
 .rows :global(.row-contact), .rows :global(.listing-row--premium .row-contact), .rows :global(.listing-row--basic .row-contact) { grid-column: 2; margin: 0 20px 16px; padding: 14px 0 0; border-left: 0; border-top: 1px solid #e3edf2; font-size: .8rem; gap: 8px; }
 .rows :global(.row-contact p), .rows :global(.row-contact a:not(.row-profile-link)) { color: var(--portal-basalt); }
-.rows :global(.row-contact .row-profile-link) { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; white-space: normal; text-align: center; border-radius: 7px; padding: 10px 14px; color: var(--portal-blue); font-size: .85rem; }
+.rows :global(.row-contact .row-profile-link) { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; white-space: normal; text-align: center; border-radius: var(--portal-radius, 5px); padding: 10px 14px; color: var(--portal-blue); font-size: .85rem; }
 .rows :global(.listing-row--premium .row-profile-link) { background: var(--portal-button); color: var(--portal-button-text); align-self: stretch; }
 .rows :global(.listing-row--basic) { grid-template-columns: 72px minmax(0, 1fr) minmax(180px, 30%); padding: 8px; }
 .rows :global(.listing-row--basic .row-content) { padding: 6px 12px; }
@@ -26,7 +26,7 @@
 .rows :global(.listing-row--basic .row-profile-link) { border: 1px solid #dce8ef; margin-top: 8px; }
 .rows :global(.listing-row--basic .row-tagline) { -webkit-line-clamp: 2; font-size: .8rem; }
 .rows :global(.listing-row--basic .travel-card-tags) { margin-top: 8px; }
-.rows :global(.row-logo--contain img) { padding: 12px; }
+.rows :global(.row-logo--contain img) { padding: 0; }
 .rows :global(.travel-image-fallback) { display: grid; place-items: center; width: 100%; height: 100%; background: #edf7fc; color: var(--portal-blue); }
 .rows :global(.row-contact) { overflow-wrap: anywhere; }
 .rows :global(.row-content .row-tagline) { overflow: visible; }
@@ -42,7 +42,7 @@
 @media (max-width: 600px) {
   .rows :global(.listing-row--premium) { grid-template-columns: minmax(0, 1fr); }
   .rows :global(.row-logo) { margin-inline: auto; }
-  .rows :global(.listing-row--premium .row-logo) { width: 160px; }
+  .rows :global(.listing-row--premium .row-logo) { width: 100%; }
   .rows :global(.listing-row--premium .row-logo) { grid-row: auto; }
   .rows :global(.listing-row--premium .row-contact) { grid-column: 1; margin-inline: 14px; }
   .rows :global(.listing-row--basic) { grid-template-columns: 64px minmax(0, 1fr); }

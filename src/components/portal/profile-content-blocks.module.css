@@ -6,7 +6,7 @@
 .grid[data-columns="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .grid[data-columns="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .grid[data-columns="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.tile { position: relative; width: 100%; aspect-ratio: 1.5; overflow: hidden; border-radius: 6px; background: var(--surface); }
+.tile { position: relative; width: 100%; aspect-ratio: 1.5; overflow: hidden; border-radius: var(--portal-radius, 5px); background: var(--surface); }
 .tile img { object-fit: cover; }
 .figure { min-width: 0; margin: 0; }
 .caption { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; white-space: pre-wrap; }
@@ -30,7 +30,7 @@
 /* Paragraphs and editable textareas both retain their natural line box.
    Match the image edge to the capital-height edge inside that first line. */
 .editorialPair:is([data-flow="standard"], [data-flow="beside"]) .editorialImage { font-size: 16px; line-height: 1.7; margin-block-start: calc((1lh - 1cap) / 2); }
-.editorialImage .tile { border-radius: 12px; }
+.editorialImage .tile { border-radius: var(--portal-radius, 5px); }
 @media (max-width: 640px) {
   .editorialPair { grid-template-columns: minmax(0, 1fr) !important; gap: 20px; padding: 16px; }
 }
@@ -42,7 +42,7 @@
 .flowIntro h2 { margin: 0 0 12px; color: var(--brand-primary); }
 .flowIntro p { margin: 0; line-height: 1.7; white-space: pre-wrap; }
 .flowIntro :global(.profile-content-block) { margin: 0 !important; padding: 0 !important; }
-.flowTextEditor { margin: 8px 0 20px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+.flowTextEditor { margin: 8px 0 20px; padding: 12px; border: 1px solid var(--line); border-radius: var(--portal-radius, 5px); }
 .flowTextEditor summary { color: var(--brand-primary); cursor: pointer; font-weight: 600; }
 @media (min-width: 641px) {
   .editorialPair[data-flow="beside"], .editorialPair[data-flow="around"] { display: flow-root; }

@@ -12,7 +12,7 @@ export function providerTravelImage(listing: Listing, legacyPhoto?: PortalImage 
 // Travel cards are independent of package and may show a verified provider photo.
 export function providerCardImage(listing: Listing, context: 'directory' | 'travel'): PortalImage | undefined {
   if (context === 'directory') return listing.directoryPackage === 'basic' ? undefined :
-    (listing.cardImageAssetId ? listing.travelImage ?? undefined : undefined) ?? listing.directoryImage ?? listing.logo ?? listing.images[0];
+    listing.travelImage ?? listing.images.find(image => image.src !== listing.logo?.src) ?? listing.directoryImage ?? listing.logo ?? listing.images[0];
   return listing.travelImage === undefined ? listing.images.find(image => image.src !== listing.logo?.src) :
     listing.travelImage ?? undefined;
 }

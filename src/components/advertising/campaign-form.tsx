@@ -241,8 +241,8 @@ export function CampaignForm({
       <fieldset className={styles.formSection}>
         <legend>{admin ? "Kampagnenziel" : "Angaben zur Anzeige"}</legend>
         <div className={styles.formFields}>
-          <label>{admin ? "Interner Kampagnenname" : "Bezeichnung der Angebotsanfrage"}{publicRequestKey ? " *" : ""}
-            <input name="internal_name" required maxLength={120} value={values.internal_name} onChange={(e) => set("internal_name", e.target.value)} />
+          <label>{admin ? "Interner Kampagnenname" : "Bezeichnung der Angebotsanfrage"}{publicRequestKey ? " (optional)" : ""}
+            <input name="internal_name" required={!publicRequestKey} maxLength={120} value={values.internal_name} onChange={(e) => set("internal_name", e.target.value)} />
           </label>
           <label>Ziel-URL{publicRequestKey ? " *" : ""}
             <input type="url" name="target_url" required maxLength={2048} placeholder="https://www.ihre-firma.de" value={values.target_url} onChange={(e) => set("target_url", e.target.value)} />

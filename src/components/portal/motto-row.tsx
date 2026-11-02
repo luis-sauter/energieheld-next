@@ -6,7 +6,7 @@ import { useRotationMotion } from './use-rotation-motion';
 import styles from './motto-detail.module.css';
 
 // Recycle unique keyed cards, without cloning links or fetching server data.
-export function MottoRow({ children, label, speed = 18, direction = 'left' }: {
+export function MottoRow({ children, label, speed = 18, direction = 'right' }: {
   children: ReactNode; label: string; speed?: number; direction?: 'left' | 'right';
 }) {
   const items = Children.toArray(children);

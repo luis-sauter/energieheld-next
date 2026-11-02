@@ -6,9 +6,10 @@ import styles from "./theme-scroller.module.css";
 
 export const themeScrollerDelay = 3000;
 export const compactScrollSpeed = 30; // Pixels/second, independent of display refresh rate.
-export function continuousThemeScroll(left: number, seconds: number, max: number, direction: number) {
-  const next = Math.max(0, Math.min(max, left + direction * compactScrollSpeed * seconds));
-  return { left: next, direction: next >= max ? -1 : next <= 0 ? 1 : direction };
+export function continuousThemeScroll(left: number, seconds: number, max: number) {
+  const next = left - compactScrollSpeed * seconds;
+  // Automatic motion stays left-to-right; manual arrow direction is independent.
+  return { left: max <= 0 ? 0 : next < 0 ? max : Math.min(max, next), direction: -1 };
 }
 export function nextThemeScroll(left: number, step: number, max: number, direction: number) {
   if (max <= 0) return 0;
@@ -25,7 +26,6 @@ export function ThemeScroller({ children, count, label, compact = false, heading
   const [overflowing, setOverflowing] = useState(false);
   const manualUntil = useRef(0);
   const autoLeft = useRef<number | null>(null);
-  const direction = useRef(1);
   const pageItems = pageSize ? Children.toArray(children) : [];
   const move = useCallback((direction: number, smooth: boolean) => {
     const element = rail.current;
@@ -41,7 +41,7 @@ export function ThemeScroller({ children, count, label, compact = false, heading
       element.scrollWidth - element.clientWidth, direction), behavior: smooth ? "smooth" : "instant" });
     setInteraction(value => value + 1);
   }, [compact, pageSize]);
-  const advance = useCallback(() => move(1, true), [move]);
+  const advance = useCallback(() => move(-1, true), [move]);
   const { root, handlers, reducedMotion, interact, canPlay } = useRotationMotion(overflowing ? count : 1, advance, interaction, themeScrollerDelay, !compact && autoPlay);
   useEffect(() => {
     if (!compact || !canPlay || !autoPlay) return;
@@ -50,8 +50,7 @@ export function ThemeScroller({ children, count, label, compact = false, heading
       const element = rail.current;
       if (element && previous !== undefined && now >= manualUntil.current) {
         const next = continuousThemeScroll(position, Math.min(now - previous, 64) / 1000,
-          element.scrollWidth - element.clientWidth, direction.current);
-        direction.current = next.direction;
+          element.scrollWidth - element.clientWidth);
         position = next.left;
         element.scrollLeft = next.left;
         autoLeft.current = element.scrollLeft;

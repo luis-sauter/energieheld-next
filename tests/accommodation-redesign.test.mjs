@@ -106,7 +106,7 @@ test('structured zero state is honest while free text still submits globally wit
   assert.doesNotMatch(html,/name="ort"/);assert.match(html,/name="q"/);
 });
 
- test('shared advertising columns contain finder before results, with neutral fallbacks and contained real logos',()=>{
+ test('shared advertising columns contain finder before results, with neutral fallbacks and filled preview frames',()=>{
  const code=source('src/components/portal/travel-directory.tsx');
  assert.ok(code.indexOf('{finder}') < code.indexOf('<section id="unterkunft-ergebnisse"'));
  assert.match(code,/renderFinder=/);
@@ -114,7 +114,7 @@ test('structured zero state is honest while free text still submits globally wit
  assert.match(fallback,/travel-image-fallback/);assert.match(fallback,/<svg/);assert.doesNotMatch(fallback,/>AB</);
  const item=listing('logo',true);item.logo=item.directoryImage;
  const html=renderToStaticMarkup(createElement(ListingRow,{listing:item,categories:[],href:'/logo',travel:true}));
- assert.match(html,/row-logo--contain/);assert.match(html,/object-fit:contain/);
+ assert.match(html,/row-logo--contain/);assert.match(html,/object-fit:cover/);
  const css=source('src/components/portal/travel-directory.module.css')+source('src/components/portal/directory-listing-rows.module.css');
  assert.match(css,/220px/);assert.match(css,/72px/);assert.match(css,/background: rgb\(255 255 255 \/ 96%\)/);
  assert.match(code,/premiumInSidebar showEmptySlots=\{Boolean\(bannerOptions\)\}/);

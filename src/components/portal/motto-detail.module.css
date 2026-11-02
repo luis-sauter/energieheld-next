@@ -4,11 +4,11 @@
 .backdrop::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #faf9f640, #faf9f60a), linear-gradient(180deg, #faf9f62b 0%, #faf9f650 20%, #faf9f6c9 48%, #faf9f6f2 76%, #faf9f6 100%); }
 .page[data-motto-detail] .backdrop::after { background: linear-gradient(90deg, #faf9f699, #faf9f605 65%), linear-gradient(180deg, #faf9f614 0%, #faf9f629 20%, #faf9f666 48%, #faf9f6c7 76%, #faf9f6 100%); }
 .content { position: relative; padding-top: 18px; }
-.hero { padding: clamp(50px, 8vw, 100px) 0 30px; max-width: 690px; }
+.hero { padding: 28px; margin:clamp(28px,5vw,60px) 0 24px; max-width: 750px; background:#fff; border-radius:var(--portal-radius,5px); }
 .hero h1 { margin: 0 0 12px; color: #0b4969; font-size: clamp(2.6rem, 6vw, 4.3rem); line-height: 1.05; }
 .hero > p:last-child { max-width: 60ch; font-size: 1.08rem; color: #244d61; line-height: 1.65; }
-.stays h2 { color: #0b4969; margin: 5px 0 12px; font-size: clamp(1.5rem, 3vw, 2rem); }
-.count { margin-bottom: 22px; color: #345d72; font-size: .9rem; }
+.stays h2 { color: #0b4969; margin: 5px 0 12px; font-size: clamp(1.5rem, 3vw, 2rem); padding: 16px; background: #fff; border-radius: var(--portal-radius, 5px); }
+.count { margin-bottom: 22px; color: #345d72; font-size: .9rem; padding:12px 16px; background:#fff; border-radius:var(--portal-radius,5px); }
 .pair { margin-bottom: 22px; }
 .row { position: relative; min-width: 0; }
 .track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 36px) / 3); gap: 18px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; overflow-anchor: none; padding: 5px 2px 10px; }
@@ -22,9 +22,9 @@
 .premiumRow { margin: 24px 0 34px; }
 .bannerRow :global([data-placement]) { width: 100%; margin: 0; min-height: 0; background: transparent; box-shadow: none; border: 0; }
 .bannerRow :global([data-placement] img) { max-width: 100%; }
-.management { margin: 24px 0; padding: 14px; border: 1px solid #dce7ec; border-radius: 10px; background: white; }
+.management { margin: 24px 0; padding: 14px; border: 1px solid #dce7ec; border-radius: var(--portal-radius, 5px); background: white; }
 .management > summary { cursor: pointer; }
-.editorial { margin-top: 54px; padding: clamp(24px, 4vw, 44px); border: 1px solid #e4eaeb; border-radius: 18px; background: #fff; }
+.editorial { margin-top: 54px; padding: clamp(24px, 4vw, 44px); border: 1px solid #e4eaeb; border-radius: var(--portal-radius, 5px); background: #fff; }
 .editorial h2 { max-width: 34ch; color: #0b4969; font-size: clamp(1.7rem, 3vw, 2.25rem); }
 .lead { max-width: 78ch; line-height: 1.8; color: #345d72; }
 .editorialGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; margin-top: 28px; }

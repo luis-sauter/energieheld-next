@@ -1,6 +1,6 @@
 .filter { scroll-margin-top: 20px; }
 .navigation { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-.navigation a { display: flex; align-items: center; justify-content: center; flex: 1 1 125px; gap: 10px; min-height: 48px; padding: 10px 14px; border-radius: 999px; background: #f1f7fa; color: #145d80; text-decoration: none; font-size: .9rem; white-space: nowrap; }
+.navigation a { display: flex; align-items: center; justify-content: center; flex: 1 1 125px; gap: 10px; min-height: 48px; padding: 10px 14px; border-radius: var(--portal-radius, 5px); background: #f1f7fa; color: #145d80; text-decoration: none; font-size: .9rem; white-space: nowrap; }
 .navigation svg { width: 24px; height: 24px; flex: 0 0 24px; }
 .navigation a:hover { box-shadow: inset 0 0 0 1px #217ca3; }
 .navigation a:focus-visible { outline: 3px solid #217ca3; outline-offset: 3px; }

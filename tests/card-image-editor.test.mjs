@@ -5,9 +5,22 @@ import {transpileModule,ModuleKind,JsxEmit,ScriptTarget} from 'typescript';
 import vm from 'node:vm';
 import * as jsx from 'react/jsx-runtime';
 import * as crop from '../src/lib/image-crop.ts';
+import {correctProviderPreview} from '../src/lib/provider-preview-corrections.ts';
+import previewCorrections from '../src/data/provider-preview-corrections.json' with {type:'json'};
 const source=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 function load(p,stubs){const loaded={exports:{}};vm.runInNewContext(transpileModule(source(p),{compilerOptions:{module:ModuleKind.CommonJS,target:ScriptTarget.ES2022,jsx:JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,{module:loaded,exports:loaded.exports,require:name=>{if(name in stubs)return stubs[name];throw Error('Unexpected '+name);},console,CustomEvent:class {constructor(type,options){this.type=type;this.options=options;}}});return loaded.exports;}
 const profile='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',asset='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+
+test('reviewed preview corrections preserve galleries and yield to every later editorial selection',()=>{
+ for(const [id,correction] of Object.entries(previewCorrections)){
+  const original={id,images:[{src:'/original-gallery.jpg',alt:'Original'}],cardImageAssetId:correction.replacesAssetId??undefined,cardImageCrop:crop.DEFAULT_IMAGE_CROP};
+  const revised=correctProviderPreview(original);
+  assert.equal(revised.travelImage.src,correction.src);assert.equal(revised.cardImageAssetId,undefined);assert.equal(revised.cardImageCrop,undefined);
+  assert.equal(revised.images,original.images);assert.equal(original.travelImage,undefined);
+  const later={...original,cardImageAssetId:'later-editor-selection',travelImage:{src:'/later.jpg',alt:'Later'}};
+  assert.equal(correctProviderPreview(later),later);
+ }
+});
 test('save validates verified admin, IDs and crop, writes only separate card reference, refreshes only on success',async()=>{
  let access='forbidden',writes=[],refreshes=[];
  const client={from(name){assert.equal(name,'company_profile_card_images');return {async upsert(row){writes.push(row);return {error:null};}}}};
@@ -49,7 +62,7 @@ test('saved images load once in a signed batch and override only travel cards, w
  const listings=[{id:profile,images:[{src:'/gallery.png',alt:'Gallery'}],directoryImage:{src:'/directory.png',alt:'Directory'}},{id:asset,images:[]}];
  let rows=[{profile_id:profile,asset_id:asset,bucket_id:'company-media',storage_path:'profiles/'+profile+'/gallery/a.png',alt_text:'Chosen',focus_x:30,focus_y:60,zoom:1.3},{profile_id:asset,asset_id:asset,bucket_id:'project-media',storage_path:'/reiseportal/real.jpg',alt_text:'Historic',focus_x:50,focus_y:50,zoom:1}],queries=0,signings=0;
  const client={from(name){assert.equal(name,'company_profile_card_images');queries++;return {select(){return this;},async in(){return {data:rows,error:null};}};},storage:{from(bucket){assert.equal(bucket,'company-media');return {async createSignedUrls(paths){signings++;assert.equal(paths.length,1);return {data:paths.map(path=>({path,signedUrl:'https://signed.test/'+path}))};}};}}};
- const {withSavedCardImages}=load('src/lib/profile-card-images.ts',{'server-only':{},'react':{cache:fn=>fn},'./supabase/server':{createClient:async()=>client},'./supabase/public':{createPublicClient:()=>client},'./admin-review':{checkAdmin:async()=> 'forbidden'},'./image-crop':crop});
+ const {withSavedCardImages}=load('src/lib/profile-card-images.ts',{'server-only':{},'react':{cache:fn=>fn},'./supabase/server':{createClient:async()=>client},'./supabase/public':{createPublicClient:()=>client},'./admin-review':{checkAdmin:async()=> 'forbidden'},'./image-crop':crop,'./provider-preview-corrections':{correctProviderPreview}});
  const original=JSON.stringify(listings),saved=await withSavedCardImages(listings);
  assert.equal(queries,1);assert.equal(signings,1);assert.equal(saved[0].travelImage.alt,'Chosen');assert.equal(saved[0].cardImageCrop.zoom,1.3);assert.equal(saved[1].travelImage.src,'/reiseportal/real.jpg');assert.equal(JSON.stringify(listings),original);assert.deepEqual(saved[0].images,listings[0].images);assert.deepEqual(saved[0].directoryImage,listings[0].directoryImage);
  rows=[];assert.deepEqual(await withSavedCardImages(listings),listings);

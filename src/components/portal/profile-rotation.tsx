@@ -9,7 +9,7 @@ import styles from "./profile-rotation.module.css";
 export function ProfileRotation({ groups, count }: { groups: ReactNode[]; count: number }) {
   const [page, setPage] = useState(0);
   const [interaction, setInteraction] = useState(0);
-  const advance = useCallback(() => setPage(value => nextProfileGroup(value, 1, groups.length)), [groups.length]);
+  const advance = useCallback(() => setPage(value => nextProfileGroup(value, -1, groups.length)), [groups.length]);
   const { root, handlers, focused, paused, reducedMotion, toggle } = useRotationMotion(groups.length, advance, `${page}:${interaction}`);
   function move(direction: number) {
     setPage((value) => nextProfileGroup(value, direction, groups.length));

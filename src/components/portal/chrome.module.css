@@ -1,7 +1,11 @@
-.headerRow:global(.header-inner) { height: 96px; }
-.headerRow .brandLogo { width: 288px; height: auto; }
+.headerRow:global(.header-inner) { height: 115px; justify-content: flex-start; }
+.headerRow .brandLogo { width: 346px; height: auto; }
 .headerRow :global(.desktop-nav) { gap: 14px; padding-right: 14px; }
-.headerRow :global(.desktop-nav > a), .headerRow :global(.desktop-nav-group > a) { font-size: clamp(1rem, 1.45vw, 1.3rem); font-weight: 700; }
+.headerRow :global(.desktop-nav > a), .headerRow :global(.desktop-nav-group > a) { font-size: clamp(1.2rem, 1.7vw, 1.56rem); font-weight: 700; }
+.headerRow :global(.header-cta) { font-size: 1.2rem; }
+.headerRow :global(.brand) { margin-right: auto; justify-content: flex-start; }
+.headerRow :global(.mobile-menu nav) { max-height: calc(100dvh - 115px); font-size: 1.15rem; }
+.headerRow :global(.mobile-nav-row > a) { font-weight: 700; }
 @media (max-width: 1200px) {
   .headerRow :global(.desktop-nav) { display: none; }
   .headerRow :global(.mobile-menu) { display: block; }
@@ -10,7 +14,7 @@
   .headerRow :global(.header-cta) { margin-left: auto; }
   .headerRow :global(.mobile-menu summary) { list-style: none; display: flex; align-items: center; gap: 8px; padding: 12px; cursor: pointer; }
   .headerRow :global(.mobile-menu summary::-webkit-details-marker) { display: none; }
-  .headerRow :global(.mobile-menu nav) { position: absolute; top: 100%; left: 0; right: 0; display: flex; flex-direction: column; gap: 10px; max-height: calc(100dvh - 96px); overflow-y: auto; padding: 20px 28px; border-bottom: 1px solid var(--line); background: var(--white); box-shadow: 0 16px 20px #13237f15; }
+  .headerRow :global(.mobile-menu nav) { position: absolute; top: 100%; left: 0; right: 0; display: flex; flex-direction: column; gap: 10px; max-height: calc(100dvh - 115px); overflow-y: auto; padding: 20px 28px; border-bottom: 1px solid var(--line); background: var(--white); box-shadow: 0 16px 20px #13237f15; }
   .headerRow :global(.mobile-nav-row) { display: flex; align-items: center; }
   .headerRow :global(.mobile-nav-row > a) { flex: 1; padding: 12px; }
   .headerRow :global(.mobile-nav-row button) { width: 44px; height: 44px; }
@@ -30,15 +34,16 @@
 .heading::before { content: ""; display: block; width: 28px; height: 2px; margin-bottom: 12px; background: var(--portal-orange); }
 .footer a { color: var(--portal-white); text-decoration: none; text-underline-offset: 4px; overflow-wrap: anywhere; }
 .footer a:hover { color: var(--portal-white); text-decoration: underline; text-decoration-color: var(--portal-orange); }
-.footer:global(.site-footer) a:focus-visible { outline: 3px solid var(--portal-white); outline-offset: 4px; border-radius: 2px; }
+.footer:global(.site-footer) a:focus-visible { outline: 3px solid var(--portal-white); outline-offset: 4px; border-radius: var(--portal-radius, 5px); }
 .contact a { display: inline; font-size: inherit; }
 .contact { display: grid; gap: 12px; align-content: start; font-style: normal; font-size: .95rem; line-height: 1.55; }
 .bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; padding-block: 24px; border-top: 1px solid rgb(255 255 255 / 35%); font-size: .8rem; }
 .legalLinks { display: flex; flex-wrap: wrap; gap: 8px 24px; }
 .legalLinks a { display: inline-flex; align-items: center; min-height: 32px; }
 @media (max-width: 700px) {
-  .headerRow:global(.header-inner) { height: 82px; }
-  .headerRow .brandLogo { width: 238px; max-width: 100%; }
+  .headerRow:global(.header-inner) { height: 98px; }
+  .headerRow :global(.mobile-menu nav) { max-height: calc(100dvh - 98px); }
+  .headerRow .brandLogo { width: 286px; max-width: min(100%, calc(100vw - 96px)); }
   .main { padding-block: 32px; gap: 28px 20px; }
   .brandBlock, .contactBlock { width: 100%; }
   .legalLinks a { min-height: 44px; }

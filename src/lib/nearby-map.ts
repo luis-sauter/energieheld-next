@@ -5,6 +5,6 @@ export function distanceKm(a:{lat:number;lon:number},b:{lat:number;lon:number}) 
 }
 export function readNearbyQuery(url:URL) {
  const lat=Number(url.searchParams.get('lat')),lon=Number(url.searchParams.get('lon')),radius=Number(url.searchParams.get('radius'));
- if(!url.searchParams.has('lat')||!url.searchParams.has('lon')||!Number.isFinite(lat)||!Number.isFinite(lon)||lat<34||lat>72||lon< -25||lon>45||![20,50].includes(radius))return null;
+ if(!url.searchParams.has('lat')||!url.searchParams.has('lon')||!Number.isFinite(lat)||!Number.isFinite(lon)||lat<34||lat>72||lon< -25||lon>45||![20,50,75,100].includes(radius))return null;
  return {lat,lon,radius};
 }
