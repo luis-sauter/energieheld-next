@@ -5,8 +5,10 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({ title: "Impressum", description: "Anbieterkennzeichnung und rechtliche Informationen zu DAS-Reiseportal.com.", path: "/impressum", noindex: true });
 
 export default function ImprintPage() {
+  // Remove empty legacy spacer paragraphs only; preserve every text/address line.
+  const html = sources.impressum.html.replace(/<p>(?:\s|&nbsp;|<\/?span>|<br\s*\/?>)*<\/p>/gi, '');
   return <LegalPage title="Impressum">
     {/* Checked-in, allowlist-sanitized source text, never runtime third-party HTML. */}
-    <div data-legal-source="impressum" dangerouslySetInnerHTML={{ __html: sources.impressum.html }} />
+    <div data-legal-source="impressum" dangerouslySetInnerHTML={{ __html: html }} />
   </LegalPage>;
 }

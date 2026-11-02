@@ -96,9 +96,11 @@ test("travel footer contains only brand, contact and utility links, without disc
   for (const route of ['/impressum', '/datenschutz', '/login?next=/admin']) assert.ok(html.includes('href="'+route+'"'));
   assert.doesNotMatch(html,/href="\/designvorschau\/|Profil-Designvorschau/);
   assert.doesNotMatch(html,/Entdecken|Service|Reiseziele|Mottoreisen|Für Gastgeber|Angebot anfragen|Werbung im Reiseportal|href="\/unterkuenfte-a-z"/);
-  assert.ok(html.includes('href="'+portalIdentity.phoneHref+'"'));
-  assert.ok(html.includes('href="mailto:'+portalIdentity.email+'"'));
-  assert.doesNotMatch(html, /Flurstraße|Am Haag|81266|livin-q/);
+  assert.ok(!html.includes('href="'+portalIdentity.phoneHref+'"'));
+  assert.ok(html.includes('href="mailto:wir@das-reiseportal.com"'));
+  assert.match(html, /WEIDNER Energie \| Beratung \| Medien/);
+  assert.match(html, /Am Haag 8/);
+  assert.doesNotMatch(html, /Flurstraße|81266|livin-q|tel:/);
 });
 
 test("legal pages preserve the approved sanitized body without an editorial review notice", async () => {
@@ -109,7 +111,8 @@ test("legal pages preserve the approved sanitized body without an editorial revi
     assert.equal(page.metadata.robots.index, false);
     const html = renderToStaticMarkup(createElement(page.default));
     assert.doesNotMatch(html, /Unveränderte Quellenübernahme|Eine rechtliche Prüfung für DAS-Reiseportal.com ist damit nicht erfolgt/);
-    assert.ok(html.includes(sources[route].html));
+    const text = value => value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    assert.ok(text(html).includes(text(sources[route].html)), 'Every approved source word remains visible');
     assert.equal(sources[route].textSha256,hashes[route]);
     assert.doesNotMatch(sources[route].html,/<(?:script|style|iframe|img|form|input|button)\b|\son\w+=|\sstyle=|javascript:/i);
     assert.match(html, /href="\/impressum"/);assert.match(html, /href="\/datenschutz"/);

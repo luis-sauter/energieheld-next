@@ -31,8 +31,8 @@
 .footer a { color: var(--portal-white); text-decoration: none; text-underline-offset: 4px; overflow-wrap: anywhere; }
 .footer a:hover { color: var(--portal-white); text-decoration: underline; text-decoration-color: var(--portal-orange); }
 .footer:global(.site-footer) a:focus-visible { outline: 3px solid var(--portal-white); outline-offset: 4px; border-radius: 2px; }
-.contact a { display: inline-flex; align-items: center; min-height: 32px; font-size: .9rem; line-height: 1.5; }
-.contact { display: grid; gap: 8px; align-content: start; font-style: normal; line-height: 1.6; }
+.contact a { display: inline; font-size: inherit; }
+.contact { display: grid; gap: 12px; align-content: start; font-style: normal; font-size: .95rem; line-height: 1.55; }
 .bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; padding-block: 24px; border-top: 1px solid rgb(255 255 255 / 35%); font-size: .8rem; }
 .legalLinks { display: flex; flex-wrap: wrap; gap: 8px 24px; }
 .legalLinks a { display: inline-flex; align-items: center; min-height: 32px; }
@@ -41,7 +41,7 @@
   .headerRow .brandLogo { width: 238px; max-width: 100%; }
   .main { padding-block: 32px; gap: 28px 20px; }
   .brandBlock, .contactBlock { width: 100%; }
-  .contact a, .legalLinks a { min-height: 44px; }
+  .legalLinks a { min-height: 44px; }
   .bottom { align-items: flex-start; flex-direction: column; }
 }
 /* Match the approved JPEG's measured, uniform corner/background pixels. */

@@ -3121,6 +3121,8 @@ h6 {
   border-color: var(--portal-button);
   background: var(--portal-button);
   color: var(--portal-button-text);
+  font-size: 1rem;
+  white-space: normal;
 }
 .reiseportal-shell .company-profile .detail-title { color: var(--portal-primary-deep); }
 .reiseportal-shell .company-profile .button-primary { color: var(--portal-button-text); }
@@ -3294,7 +3296,7 @@ h6 {
 .reise-finder-facets { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: inherit; }
 .reise-finder-grid .reise-finder-query { grid-column: auto; }
 .reise-finder-grid .reise-finder-submit { grid-column: span 3; }
-.reise-finder-submit { min-height: 54px; width: 100%; font-size: 1rem; }
+.reise-finder-submit { min-height: 54px; width: 100%; font-size: 1.05rem; font-weight: 700; white-space: normal; line-height: 1.4; }
 .reise-finder > #reise-finder-hint { margin-top: 12px; }
 .reise-finder-active { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
 .reise-finder-chip, .reise-finder-reset {

@@ -60,6 +60,8 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
 }) {
   const [reviewFilter, setReviewFilter] = useState("");
   const [values, setValues] = useState(initialValues);
+  const filtersActive = Object.values(values).some(Boolean) || Boolean(reviewFilter);
+  function resetFilters() { setValues(readTravelFilterValues({})); setReviewFilter(""); }
   const aggregate=useAccommodationFacets(values,basicEnabled);
   const pending = useTravelSearchPending(values, 'directory');
   const liveCount = useLiveTravelCount(values);
@@ -151,7 +153,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
           <div className="results-heading travel-results-heading">
             <div>
               <p className="eyebrow">Unterkünfte A–Z</p>
-              <h2 id="travel-results-title" aria-live="polite">{pagination && profileStream.loading && !profileStream.items.length ? "Unterkünfte" : `${count} ${travelResultNoun(count, matched.advertisers.length)}`}</h2>
+              <h2 id="travel-results-title" aria-live="polite">{pagination && profileStream.loading && !profileStream.items.length ? "Unterkünfte" : `${count.toLocaleString('de-DE')} ${travelResultNoun(count, matched.advertisers.length)}`}</h2>
               <p>Entdecken Sie Gastgeber und besondere Orte für Ihre nächste Reise.</p>
             </div>
             <div className="travel-results-tools">
@@ -163,7 +165,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
                   {publicImportPresentation.enabled && <option value="imported">Neu importiert zuerst</option>}
                 </select>
               </label>
-              <button type="button" className="reise-finder-reset" onClick={() => setValues(readTravelFilterValues({}))}>
+              <button type="button" className="reise-finder-reset" onClick={resetFilters} disabled={!filtersActive} title={filtersActive ? "Alle gewählten Filter zurücksetzen" : "Keine Filter aktiv"}>
                 Filter zurücksetzen
               </button>
             </div>
