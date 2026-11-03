@@ -231,7 +231,7 @@ export function ListingDetail({
           <div className="detail-grid">
             <div>
               {(listing.description || inlineFields?.description) && (
-                <section className="detail-section">
+                <section className="detail-section" data-profile-text>
                   {!presentation && <p className="eyebrow">Ein guter erster Eindruck</p>}
                   {aboutHeadingEditor ?? <h2>{aboutHeading ?? `Über ${listing.name}`}</h2>}
                   {inlineFields?.description ?? <p>{listing.description}</p>}
@@ -245,7 +245,7 @@ export function ListingDetail({
       <div className="detail-grid">
         <div>
           {!editorialContent && (listing.businessAreas || inlineFields?.business_areas) && (
-            <section className="detail-section">
+            <section className="detail-section" data-profile-text>
               {businessHeadingEditor ?? <h2>
                 {presentation === "company"
                   ? businessHeading ?? "Tätigkeitsbereiche"
@@ -255,7 +255,7 @@ export function ListingDetail({
             </section>
           )}
           {listing.services.length > 0 && (
-            <section className="detail-section">
+            <section className="detail-section" data-profile-text>
               <h2>Leistungen im Überblick</h2>
               <ul className="service-list">
                 {listing.services.map((service) => (

@@ -198,6 +198,20 @@
   overflow-wrap: anywhere;
   margin: 0;
 }
+/* One readable surface for every description, including the inline editor.
+   Paired text belongs to its existing shared text/image surface. */
+.company-profile [data-profile-text] {
+  box-sizing: border-box;
+  padding: clamp(20px, 2.5vw, 28px) !important;
+  border: 1px solid var(--profile-border) !important;
+  border-radius: var(--portal-radius, 5px);
+  background: #fff !important;
+}
+.company-profile [data-text-image] [data-profile-text] {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
 .company-profile .contact-card {
   position: static;
   border: 1px solid var(--profile-border);

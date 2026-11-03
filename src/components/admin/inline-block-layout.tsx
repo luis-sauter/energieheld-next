@@ -211,6 +211,7 @@ export function InlineBlockLayout({ block, busy, first, last, save, children, se
       </details>
     </div> : toolbar}
     <section className={`detail-section profile-content-block ${styles.editableBlock}`}
+      data-profile-text={!pairedPart && !pair && !editorialPair && block.type !== "image_grid" || undefined}
       data-spacing-top={previewSpacing.top} data-spacing-bottom={previewSpacing.bottom}
       data-hidden={sectionHidden || undefined}
       style={{ width: pairedPart ? "100%" : `${preview.width}%`, marginLeft: pairedPart ? 0 : `${preview.offset}%`,
