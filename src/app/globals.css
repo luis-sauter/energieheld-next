@@ -3581,3 +3581,6 @@ h6 {
 .profile-review-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .profile-import-badge { display: inline-flex; align-items: center; border: 1px solid #cfe1eb; border-radius: var(--portal-radius, 5px); padding: 4px 9px; color: #185976; background: #eef7fc; font-size: .75rem; font-weight: 600; white-space: nowrap; }
 .new-placement-badge { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: var(--portal-radius, 5px); color: #fff; background: var(--portal-orange); font-size: .75rem; font-weight: 700; line-height: 1.4; text-shadow: none; vertical-align: middle; }
+.row-title-link { display: inline-flex; flex-wrap: wrap; align-items: center; column-gap: 12px; row-gap: 6px; max-width: 100%; }
+.row-title-name { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.row-title-link .new-placement-badge { flex: none; white-space: nowrap; }
