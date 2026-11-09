@@ -28,14 +28,15 @@
   .headerRow :global(.mobile-nav-submenu a) { display: flex; align-items: center; min-height: 44px; padding: 8px 12px; }
 }
 .footer:global(.site-footer) {
+  padding-top: 22px;
   background: var(--portal-basalt);
   color: var(--portal-white);
   border-top: 3px solid var(--portal-orange);
 }
 .main { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 32px 64px; padding-block: 20px 32px; }
-.logoSurface { display: inline-flex; max-width: 100%; padding: 0; }
+.logoSurface { display: flex; width: max-content; max-width: 100%; padding: 0; }
 .logoSurface svg { display: block; width: 288px; max-width: 100%; height: auto; }
-.footer .tagline { max-width: 280px; margin: -4px 0 0; color: var(--portal-white); font-size: .9rem; line-height: 1.65; }
+.footer .tagline { max-width: 280px; margin: -8px 0 0; color: var(--portal-white); font-size: .9rem; line-height: 1.65; }
 .footer .heading { margin: 0 0 16px; font-size: .82rem; line-height: 1.5; letter-spacing: .08em; text-transform: uppercase; color: var(--portal-white); }
 .heading::before { content: ""; display: block; width: 28px; height: 2px; margin-bottom: 12px; background: var(--portal-orange); }
 .footer a { color: var(--portal-white); text-decoration: none; text-underline-offset: 4px; overflow-wrap: anywhere; }
