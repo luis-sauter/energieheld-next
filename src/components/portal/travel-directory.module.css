@@ -19,7 +19,7 @@
 .page :global(.reise-finder) { position: relative; margin-bottom: 28px; background: rgb(255 255 255 / 96%); border-radius: var(--portal-radius, 5px); border: 1px solid #e6edf1; box-shadow: 0 12px 36px rgb(31 74 99 / 9%); padding: 24px; }
 .page :global(.reise-finder-grid) { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .page :global(.reise-finder label) { color: var(--portal-blue); font-size: .86rem; }
-.page :global(.reise-finder :is(input, select)) { border-color: #d5e4ed; border-radius: var(--portal-radius, 5px); min-height: 44px; color: #274b64; background: #fbfdff; }
+.page :global(.reise-finder :is(input, select)) { border-color: #d5e4ed; border-radius: var(--portal-radius, 5px); min-height: 44px; color: var(--portal-blue); background: #fbfdff; }
 .page :global(.reise-finder-query) { grid-column: auto; }
 .page :global(.reise-finder-grid .reise-finder-submit) { grid-column: span 3; }
 .page :global(.reise-finder-submit) { background: var(--portal-button); color: var(--portal-button-text); min-height: 44px; border: 1px solid var(--portal-button); border-radius: var(--portal-radius, 5px); }
@@ -29,7 +29,7 @@
 .page :global(.commercial-layout) { margin-top: 0; }
 .page :global(.commercial-columns) { grid-template-columns: minmax(0, 3.5fr) minmax(240px, 1fr); gap: 24px; margin-top: 0; }
 .page :global(.commercial-sidebar.advertising-rail) { display: block; padding: 16px; background: #fff; border: 1px solid #e2ebef; border-radius: var(--portal-radius, 5px); }
-.page :global(.advertising-rail-label) { color: #587487; font-size: .7rem; }
+.page :global(.advertising-rail-label) { color: var(--portal-basalt); font-size: .7rem; }
 .page :global(.travel-results-heading) { align-items: center; margin-bottom: 24px; padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: var(--portal-radius, 5px); }
 .page :global(.travel-results-heading h3) { font-size: 1.25rem; font-weight: var(--font-heading-weight); color: var(--portal-blue); }
 .page :global(.travel-results-heading p) { font-size: .85rem; line-height: 1.5; color: var(--portal-basalt); }

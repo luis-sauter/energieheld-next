@@ -1,7 +1,7 @@
 import { Icon } from "@/components/portal/icon";
 import { CardImageSurface, CardImagePhoto, CardImageEditButton } from "./card-image-surface";
 import { TravelSignals } from "./travel-signals";
-import Image from "next/image";
+import Image from './responsive-image';
 import Link from "./navigation-link";
 import type { DiscoveryEntry } from "@/data/reiseportal-discovery";
 import type { Listing } from "@/types/portal";

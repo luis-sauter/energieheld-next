@@ -1,4 +1,5 @@
 "use client";
+import { mediaImageUrl, mediaImageAttributes } from '@/lib/responsive-media';
 import { useRef, useState } from "react";
 import { externalVideoEmbed } from "@/lib/external-video";
 import styles from "./portal-video.module.css";
@@ -23,8 +24,8 @@ export function PortalVideo({ src, name, external = false, poster, onError }: {
       referrerPolicy="strict-origin-when-cross-origin" /> : poster ?
       // The poster is an existing portal image, never a third-party thumbnail request.
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={poster} alt="" /> : <div className={styles.placeholder} aria-hidden="true" /> :
-      <video ref={video} src={src} poster={poster} controls={playing} playsInline
+      <img {...mediaImageAttributes(poster)} alt="" /> : <div className={styles.placeholder} aria-hidden="true" /> :
+      <video ref={video} src={src} poster={poster ? mediaImageUrl(poster, 960) : undefined} controls={playing} playsInline
         preload="metadata" aria-label={name} onError={onError} />}
     {!playing && <button type="button" className={styles.play} onClick={play} aria-label={`${name} abspielen`}>
       <span className={styles.playIcon} aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></span>

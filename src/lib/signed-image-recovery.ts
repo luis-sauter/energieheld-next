@@ -1,3 +1,4 @@
+import { unwrapMediaImage, renewMediaAttribute } from './responsive-media';
 type ImageTarget = HTMLImageElement;
 type Reference = { bucket: string; path: string; original: string };
 
@@ -52,20 +53,23 @@ export function installSignedImageRecovery(doc: Document, origin: string, publis
 
   async function recover(image: ImageTarget) {
     const original = image.currentSrc || image.src;
-    const reference = signedImageReference(original, origin);
+    const reference = signedImageReference(unwrapMediaImage(original), origin);
     if (!reference) return;
     const tried = attempts.get(image) ?? new Set<string>();
     // Two independent failures per element at most; never an error/retry loop.
     if (tried.has(original) || tried.size >= 2) return;
     tried.add(original); attempts.set(image, tried);
+    image.setAttribute('data-portal-image-recovering', 'true');
     const fresh = await renew(reference);
-    if (disposed || !fresh || (image.currentSrc || image.src) !== original || !image.isConnected) return;
+    image.removeAttribute('data-portal-image-recovering');
+    if (disposed || (image.currentSrc || image.src) !== original || !image.isConnected) return;
+    if (!fresh) { image.dispatchEvent(new Event('portal-image-unavailable')); return; }
     // A responsive banner may have selected its <source>, rather than img.src.
     const sources = image.parentElement?.tagName === 'PICTURE'
       ? [...image.parentElement.querySelectorAll('source')] : [];
-    for (const source of sources) if (source.srcset === original) source.srcset = fresh;
-    if (image.srcset === original) image.srcset = fresh;
-    if (image.src === original) image.src = fresh;
+    for (const source of sources) source.srcset = renewMediaAttribute(source.srcset, reference.original, fresh);
+    if (image.srcset) image.srcset = renewMediaAttribute(image.srcset, reference.original, fresh);
+    image.src = renewMediaAttribute(image.src, reference.original, fresh);
   }
 
   const onError = (event: Event) => {

@@ -1,5 +1,5 @@
 import { TravelSignals } from "./travel-signals";
-import Image from "next/image";
+import Image from './responsive-image';
 import Link from "./navigation-link";
 import type { Category, Listing, QualityBadge } from "@/types/portal";
 import { Icon } from "./icon";

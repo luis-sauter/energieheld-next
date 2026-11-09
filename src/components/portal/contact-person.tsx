@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from './responsive-image';
 import type { Listing } from "@/types/portal";
 
 export function ContactPerson({ contact }: { contact: Listing["contact"] }) {

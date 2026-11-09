@@ -3,7 +3,7 @@ import { Icon } from "@/components/portal/icon";
 
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import Image from './responsive-image';
 import type { PortalImage } from "@/types/portal";
 
 export function scheduleGalleryAdvance(advance: () => void) {
@@ -113,6 +113,7 @@ export function ImageGallery({
                     src={image.src}
                     alt=""
                     loading="lazy"
+                    sizes="96px"
                     width={150}
                     height={90}
                     unoptimized={!image.src.startsWith('/reiseportal/')}

@@ -20,7 +20,7 @@
   .headerRow :global(.header-cta) { margin-left: auto; }
   .headerRow :global(.mobile-menu summary) { list-style: none; display: flex; align-items: center; gap: 8px; padding: 12px; cursor: pointer; }
   .headerRow :global(.mobile-menu summary::-webkit-details-marker) { display: none; }
-  .headerRow :global(.mobile-menu nav) { position: absolute; top: 100%; left: 0; right: 0; display: flex; flex-direction: column; gap: 10px; max-height: calc(100dvh - 115px); overflow-y: auto; padding: 20px 28px; border-bottom: 1px solid var(--line); background: var(--white); box-shadow: 0 16px 20px #13237f15; }
+  .headerRow :global(.mobile-menu nav) { position: absolute; top: 100%; left: 0; right: 0; display: flex; flex-direction: column; gap: 10px; max-height: calc(100dvh - 115px); overflow-y: auto; padding: 20px 28px; border-bottom: 1px solid var(--line); background: var(--white); box-shadow: 0 16px 20px color-mix(in srgb, var(--portal-blue) 8.24%, transparent); }
   .headerRow :global(.mobile-nav-row) { display: flex; align-items: center; }
   .headerRow :global(.mobile-nav-row > a) { flex: 1; padding: 12px; }
   .headerRow :global(.mobile-nav-row button) { width: 44px; height: 44px; }

@@ -2,7 +2,7 @@ import { Children, cloneElement, isValidElement, type ReactNode, type CSSPropert
 import {PortalVideo} from './portal-video';
 import type { ProfileContentBlock, ProfileBlockImage, EditorialItem } from "@/lib/profile-content";
 import type { Listing } from "@/types/portal";
-import Image from "next/image";
+import Image from './responsive-image';
 import { normalizeImageGridConfig, publicImageGridColumns, editorialImageAspectRatio } from "@/lib/image-grid-layout";
 import { normalizeBlockLayout, normalizeTextBlockLayout, type TextAlignment, type TextImageFlow, splitFlowText } from "@/lib/content-block-layout";
 import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";

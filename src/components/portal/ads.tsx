@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from './responsive-image';
 import Link from "next/link";
 import type { AdCreative, AdPlacement } from "@/types/portal";
 import { Icon } from "./icon";

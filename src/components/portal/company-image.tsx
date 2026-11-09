@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
+import Image from './responsive-image';
 import type { PortalImage } from "@/types/portal";
 import { imageCropStyle, type ImageCrop } from "@/lib/image-crop";
 

@@ -1,5 +1,5 @@
 import { Icon } from "@/components/portal/icon";
-import Image from 'next/image';
+import Image from './responsive-image';
 import Link from './navigation-link';
 import { TravelSignals } from './travel-signals';
 import { TravelThemeIcon } from './travel-theme-icon';

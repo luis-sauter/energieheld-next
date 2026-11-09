@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { installSignedImageRecovery, signedImageReference } from '../src/lib/signed-image-recovery.ts';
+import {registerHooks} from 'node:module';
+import {existsSync} from 'node:fs';
+registerHooks({resolve(s,c,next){if(s.startsWith('.')&&!s.endsWith('.ts')){const u=new URL(s+'.ts',c.parentURL);if(existsSync(u))return next(u.href,c);}return next(s,c);}});
+const {installSignedImageRecovery,signedImageReference}=await import('../src/lib/signed-image-recovery.ts');
 
 const origin='https://portal.supabase.co';
 const path='profiles/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/gallery/photo.jpg';
@@ -8,7 +11,7 @@ const relative=`/object/sign/company-media/${path}?token=fresh`;
 const old=`${origin}/storage/v1/object/sign/company-media/${path}?token=expired`;
 const fresh=`${origin}/storage/v1${relative}`;
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-function image(src=old){return {tagName:'IMG',src,currentSrc:src,srcset:'',complete:false,naturalWidth:0,isConnected:true};}
+function image(src=old){const attributes=new Map();return {tagName:'IMG',src,currentSrc:src,srcset:'',complete:false,naturalWidth:0,isConnected:true,events:[],setAttribute(n,v){attributes.set(n,v)},removeAttribute(n){attributes.delete(n)},hasAttribute(n){return attributes.has(n)},dispatchEvent(e){this.events.push(e.type)}};}
 function document(images=[]){let listener;return {images,addEventListener(type,fn,capture){assert.equal(type,'error');assert.equal(capture,true);listener=fn;},removeEventListener(){listener=null;},fail(target){listener?.({target});}};}
 
 test('only own signed image buckets and canonical paths can be renewed',()=>{
@@ -49,4 +52,12 @@ test('responsive banner refreshes the selected source while preserving the deskt
 
 test('untrusted signing response cannot switch host, bucket or image',async()=>{
  const a=image(),doc=document();const dispose=installSignedImageRecovery(doc,origin,'public',async()=>({ok:true,json:async()=>({signedURL:relative.replace('photo.jpg','private.jpg')})}));doc.fail(a);await tick();assert.equal(a.src,old);dispose();
+});
+
+
+test('optimized responsive images remain mounted during renewal and refresh all size candidates',async()=>{
+ const previous=process.env.NEXT_PUBLIC_SUPABASE_URL;process.env.NEXT_PUBLIC_SUPABASE_URL=origin;
+ try{const {mediaImageAttributes,unwrapMediaImage}=await import('../src/lib/responsive-media.ts');const attrs=mediaImageAttributes(old,'320px'),a=image(attrs.src);a.srcset=attrs.srcSet;const doc=document();let finish;
+ const dispose=installSignedImageRecovery(doc,origin,'public',()=>new Promise(r=>finish=r));doc.fail(a);assert.equal(a.hasAttribute('data-portal-image-recovering'),true);finish({ok:true,json:async()=>({signedURL:relative})});await tick();assert.equal(a.hasAttribute('data-portal-image-recovering'),false);assert.equal(unwrapMediaImage(a.src),fresh);assert.ok(a.srcset.includes(encodeURIComponent(fresh)));assert.deepEqual(a.events,[]);dispose();
+ }finally{if(previous===undefined)delete process.env.NEXT_PUBLIC_SUPABASE_URL;else process.env.NEXT_PUBLIC_SUPABASE_URL=previous;}
 });

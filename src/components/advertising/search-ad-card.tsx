@@ -1,3 +1,4 @@
+import { mediaImageAttributes } from '@/lib/responsive-media';
 import type { TravelSearchBanner } from '@/lib/travel-search-banners';
 import { adTargetHref } from '@/lib/ad-values';
 import styles from './advertising.module.css';
@@ -21,7 +22,7 @@ export function SearchAdCard({ banner, geometry, onGeometry, onEdit, loading = f
     <a className={`${grid.creative} ${styles.interactiveCreative}`} href={href} target={href.startsWith('/') ? undefined : '_blank'} rel="sponsored noopener noreferrer" aria-label={banner.ad.headline}>
       {/* Original creative is contained, never stretched or cropped by slot geometry. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={banner.ad.imageUrl} alt={banner.ad.headline}
+      <img {...mediaImageAttributes(banner.ad.imageUrl, directory ? '(max-width: 700px) 92vw, 320px' : '(max-width: 700px) 92vw, 640px')} alt={banner.ad.headline}
         width={dimensions.width || undefined} height={dimensions.height || undefined}
         crossOrigin={directory ? "anonymous" : undefined}
         loading={directory ? 'lazy' : dimensions.width && dimensions.height ? 'lazy' : 'eager'} decoding="async"

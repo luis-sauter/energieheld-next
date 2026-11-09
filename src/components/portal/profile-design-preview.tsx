@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image from './responsive-image';
 import { ProfileLocation } from './profile-location';
 import Link from './navigation-link';
 import { ImageGallery } from './image-gallery';

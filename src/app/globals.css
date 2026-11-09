@@ -1,10 +1,10 @@
 :root {
   color-scheme: light;
-  --brand-primary: #13237f;
+  --brand-primary: var(--portal-blue);
   --brand-accent: var(--portal-orange, #F7902F);
   --brand-accent-hover: var(--portal-orange, #F7902F);
   --brand-accent-light: var(--portal-light-orange, #FDF1E4);
-  --category-blue: #769efc;
+  --category-blue: var(--portal-blue);
   --white: #ffffff;
   --surface: #f8f9fa;
   --brand-surface: var(--surface);
@@ -3496,7 +3496,7 @@ h6 {
 
 .commercial-columns--no-rail { grid-template-columns: minmax(0, 1fr); }
 
-.profile-video { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: contain; background: #1a2731; border-radius: var(--portal-radius, 5px); }
+.profile-video { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: contain; background: var(--portal-blue); border-radius: var(--portal-radius, 5px); }
 .profile-video-editor { min-width: 0; }
 .profile-freshness-editor { margin-block: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: .75rem; background: var(--surface); }
 .profile-freshness-editor p { margin-block: .45rem; }
@@ -3529,7 +3529,7 @@ h6 {
 .profile-freshness-confirm .button { white-space: normal; max-width: 100%; margin: .25rem .4rem .25rem 0; }
 
 /* Shared, private media picker; native dialog keeps focus within the editor. */
-.media-library-dialog{width:min(1200px,96vw);max-width:96vw;max-height:92dvh;padding:0;border:1px solid #d5e5ed;border-radius:1rem;overflow:auto;box-shadow:0 20px 80px #17476135}.media-library-dialog::backdrop{background:#102b4266}
+.media-library-dialog{width:min(1200px,96vw);max-width:96vw;max-height:92dvh;padding:0;border:1px solid #d5e5ed;border-radius:1rem;overflow:auto;box-shadow:0 20px 80px color-mix(in srgb, var(--portal-blue) 20.78%, transparent)}.media-library-dialog::backdrop{background:color-mix(in srgb, var(--portal-blue) 40.00%, transparent)}
 
 /* Profile discovery uses assigned facts and server-rendered internal links. */
 .travel-relations { padding: clamp(20px, 3vw, 32px); border: 1px solid var(--portal-border, #dce8ef); border-radius: var(--portal-radius, 5px); background: linear-gradient(125deg, #f4faff, #fff 65%); }
@@ -3551,13 +3551,13 @@ h6 {
 @media (prefers-reduced-motion: reduce) { .travel-relations-group a { transition: none; } }
 
 /* Public profile closing section; discovery/rubric pages retain their layout. */
-.profile-discover { margin-block: clamp(32px, 5vw, 64px) 28px; padding: clamp(22px, 4vw, 44px); border: 1px solid #dce8ed; border-radius: var(--portal-radius, 5px); background: linear-gradient(135deg, #f0f8fc, #fff 55%, #fff6ef); color: #174761; }
+.profile-discover { margin-block: clamp(32px, 5vw, 64px) 28px; padding: clamp(22px, 4vw, 44px); border: 1px solid #dce8ed; border-radius: var(--portal-radius, 5px); background: linear-gradient(135deg, #f0f8fc, #fff 55%, #fff6ef); color: var(--portal-blue); }
 .profile-discover-heading { max-width: 660px; margin-bottom: 28px; }
 .profile-discover-heading h2 { margin: 10px 0 12px; font-size: clamp(1.55rem, 2.4vw, 2rem); line-height: 1.2; letter-spacing: -.025em; }
-.profile-discover-heading p { margin: 0; color: #536c7a; line-height: 1.65; }
+.profile-discover-heading p { margin: 0; color: var(--portal-basalt); line-height: 1.65; }
 .profile-discover-facts { display: flex; flex-wrap: wrap; gap: 18px 32px; margin-bottom: 28px; }
 .profile-discover-facts:empty { display: none; }
-.profile-discover-facts h3 { margin: 0 0 10px; font-size: .8rem; font-weight: var(--font-heading-weight); color: #587180; }
+.profile-discover-facts h3 { margin: 0 0 10px; font-size: .8rem; font-weight: var(--font-heading-weight); color: var(--portal-basalt); }
 .profile-discover ul { padding: 0; margin: 0; list-style: none; }
 .profile-discover-facts ul { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-discover-facts a, .profile-discover-facts li > span { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px; background: #fff; border: 1px solid #dce8ed; border-radius: var(--portal-radius, 5px); font-size: .9rem; text-decoration: none; }
@@ -3565,21 +3565,21 @@ h6 {
 .profile-discover-ideas:empty { display: none; }
 .profile-discover-ideas section { min-width: 0; }
 .profile-discover-ideas h3 { font-size: 1.15rem; margin: 0 0 6px; }
-.profile-discover-ideas header p { font-size: .9rem; color: #587180; margin: 0 0 16px; }
+.profile-discover-ideas header p { font-size: .9rem; color: var(--portal-basalt); margin: 0 0 16px; }
 .profile-discover-ideas ul { display: grid; gap: 10px; }
-.profile-discover-ideas a { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: var(--portal-radius, 5px); border: 1px solid #e2ebef; background: #fff; text-decoration: none; box-shadow: 0 3px 14px #17476105; transition: border-color .2s, box-shadow .2s; }
-.profile-discover-icon { display: inline-flex; flex: 0 0 48px; height: 48px; align-items: center; justify-content: center; border-radius: var(--portal-radius, 5px); background: #edf7fb; color: #1e5a7a; }
-.profile-discover-ideas [data-kind="destination"] .profile-discover-icon { background: #fff0e4; color: #a85327; }
+.profile-discover-ideas a { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: var(--portal-radius, 5px); border: 1px solid #e2ebef; background: #fff; text-decoration: none; box-shadow: 0 3px 14px color-mix(in srgb, var(--portal-blue) 1.96%, transparent); transition: border-color .2s, box-shadow .2s; }
+.profile-discover-icon { display: inline-flex; flex: 0 0 48px; height: 48px; align-items: center; justify-content: center; border-radius: var(--portal-radius, 5px); background: #edf7fb; color: var(--portal-blue); }
+.profile-discover-ideas [data-kind="destination"] .profile-discover-icon { background: #fff0e4; color: var(--portal-basalt); }
 .profile-discover-ideas a > span:nth-child(2) { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .profile-discover-ideas strong { display: block; font-size: 1rem; }
-.profile-discover-ideas small { display: block; margin-top: 4px; color: #587180; font-size: .8rem; }
+.profile-discover-ideas small { display: block; margin-top: 4px; color: var(--portal-basalt); font-size: .8rem; }
 .profile-discover-arrow { font-size: 1.2rem; }
-.profile-discover a:hover, .profile-discover a:focus-visible { border-color: #8cafc1; box-shadow: 0 5px 18px #1747610c; }
+.profile-discover a:hover, .profile-discover a:focus-visible { border-color: var(--portal-blue); box-shadow: 0 5px 18px color-mix(in srgb, var(--portal-blue) 4.71%, transparent); }
 @media (max-width: 600px) { .profile-discover { border-radius: var(--portal-radius, 5px); } .profile-discover-ideas { grid-template-columns: minmax(0, 1fr); gap: 24px; } .profile-discover-ideas a { padding: 13px; } }
 @media (prefers-reduced-motion: reduce) { .profile-discover a { transition: none; } }
 
 .profile-review-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.profile-import-badge { display: inline-flex; align-items: center; border: 1px solid #cfe1eb; border-radius: var(--portal-radius, 5px); padding: 4px 9px; color: #185976; background: #eef7fc; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+.profile-import-badge { display: inline-flex; align-items: center; border: 1px solid #cfe1eb; border-radius: var(--portal-radius, 5px); padding: 4px 9px; color: var(--portal-blue); background: #eef7fc; font-size: .75rem; font-weight: 600; white-space: nowrap; }
 .new-placement-badge { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: var(--portal-radius, 5px); color: #fff; background: #00B050; font-size: .75rem; font-weight: 700; line-height: 1.4; text-shadow: none; vertical-align: middle; }
 .row-title-link { display: inline-flex; flex-wrap: wrap; align-items: center; column-gap: 12px; row-gap: 6px; max-width: 100%; }
 .row-title-name { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
@@ -3587,3 +3587,8 @@ h6 {
 
 .reiseportal-shell svg[data-chevron] { flex-shrink: 0; vertical-align: middle; }
 .reiseportal-shell button:has(> svg[data-chevron]:only-child) { display: inline-grid; place-items: center; padding: 0; line-height: 1; }
+
+/* Shared corporate section hierarchy; photo-overlay card titles stay white. */
+.reiseportal-shell { --portal-section-title-size: clamp(1.8rem, 3vw, 2.5rem); }
+.reiseportal-shell main :is(h1, h2) { hyphens: none; text-wrap: balance; }
+.reiseportal-shell main :is(.section-heading, [data-autumn-showcase] header, [data-nearby-map] header) h2 { font-size: var(--portal-section-title-size); line-height: 1.15; }

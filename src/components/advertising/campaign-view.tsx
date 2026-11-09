@@ -1,4 +1,5 @@
 "use client";
+import { mediaImageAttributes } from '@/lib/responsive-media';
 import { Icon } from "@/components/portal/icon";
 
 
@@ -22,14 +23,14 @@ import { energieheld } from "@/config/energieheld";
 import { bannerRegions } from '@/data/banner-regions';
 import { excludedAgencyTarget } from '@/lib/travel-provider-eligibility';
 
-function CreativeImage({ src, alt, width, height, mobile, crop, onDimensions }: { src: string; alt: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"]; crop?: ActiveAd["crop"]; onDimensions?: (width: number, height: number) => void }) {
+function CreativeImage({ src, alt, width, height, mobile, crop, sizes, onDimensions }: { src: string; alt: string; sizes: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"]; crop?: ActiveAd["crop"]; onDimensions?: (width: number, height: number) => void }) {
   // Signed uploads have unknown dimensions; the browser must use each image's intrinsic ratio.
   // eslint-disable-next-line @next/next/no-img-element
-  const image = <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async"
+  const image = <img {...mediaImageAttributes(src, sizes)} alt={alt} width={width} height={height} loading="lazy" decoding="async"
     ref={image => { if (image?.complete && image.naturalWidth && image.naturalHeight) onDimensions?.(image.naturalWidth, image.naturalHeight); }}
     onLoad={event => onDimensions?.(event.currentTarget.naturalWidth, event.currentTarget.naturalHeight)}
     className={crop ? styles.cropImage : undefined} style={crop ? imageCropStyle(crop) : undefined} />;
-  return mobile ? <picture><source media="(max-width: 760px)" srcSet={mobile.imageUrl}
+  return mobile ? <picture><source media="(max-width: 760px)" srcSet={mediaImageAttributes(mobile.imageUrl, '92vw').srcSet ?? mobile.imageUrl} sizes="auto, 92vw"
     width={mobile.width} height={mobile.height} />{image}</picture> : image;
 }
 
@@ -59,6 +60,7 @@ export function CampaignSlot({
     if (width > 0 && height > 0) setNaturalRatio(width / height);
   }, []);
   const compact = compactPremium && placement === "top_banner";
+  const creativeSizes = '(max-width: 760px) 92vw, 1240px';
   const context = useInlineBanners();
   const inline = searchResult ? null : context;
   const ad = inline && !preview && !reordering && Object.hasOwn(inline.overrides, placement) ? inline.overrides[placement] ?? undefined : initialAd;
@@ -74,7 +76,7 @@ export function CampaignSlot({
     displayAd.imageUrl ? (
       crop || compact ? <span className={styles.cropFrame}
         style={compact ? { aspectRatio: naturalRatio / 0.8 } : crop && placement !== "top_banner" ? {aspectRatio:bannerCropRatio(displayAd.banner_size ?? "large",placement)} : undefined}>
-      <CreativeImage
+      <CreativeImage sizes={creativeSizes}
         key={displayAd.imageUrl}
         src={displayAd.imageUrl}
         alt={displayAd.headline}
@@ -84,8 +86,8 @@ export function CampaignSlot({
         onDimensions={compact ? measureImage : undefined}
       />
       {/* Fill the previous compact frame; never letterbox a banner creative. */}
-      <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline} mobile={displayAd.mobile_image} crop={crop ?? { focus_x: 50, focus_y: 50, zoom: 1 }} />
-      </span> : <CreativeImage src={displayAd.imageUrl} alt={displayAd.headline}
+      <CreativeImage sizes={creativeSizes} src={displayAd.imageUrl} alt={displayAd.headline} mobile={displayAd.mobile_image} crop={crop ?? { focus_x: 50, focus_y: 50, zoom: 1 }} />
+      </span> : <CreativeImage sizes={creativeSizes} src={displayAd.imageUrl} alt={displayAd.headline}
         width={displayAd.image_width} height={displayAd.image_height} mobile={displayAd.mobile_image} />
     ) : (
       <div>

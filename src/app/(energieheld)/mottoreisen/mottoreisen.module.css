@@ -8,7 +8,7 @@
 .hero .heading { max-width: 760px; margin: 0 0 22px; color: var(--portal-primary-deep); font-size: clamp(2.7rem, 4.6vw, 4rem); line-height: 1.05; letter-spacing: -.035em; }
 .hero p { max-width: 475px; margin: 0; color: var(--portal-ink); font-size: clamp(1.05rem, 1.8vw, 1.25rem); line-height: 1.65; }
 .regionGrid > a > div { padding: 16px; }
-.sectionTitle { margin: 0 0 10px; font-size: clamp(1.8rem, 3.1vw, 2.6rem); line-height: 1.15; letter-spacing: -.025em; }
+.sectionTitle { margin: 0 0 10px; font-size: var(--portal-section-title-size); line-height: 1.15; letter-spacing: -.025em; }
 .sectionHeading { margin-bottom: 26px; }
 .heroCopy { max-width:620px; }
 .sectionHeading p { padding:0; background:transparent; }
@@ -45,8 +45,8 @@
 }
 
 .regionGrid > a { background: #fff; border: 0; box-shadow: 0 8px 24px rgb(33 124 163 / 5%); border-radius: var(--portal-radius, 5px); }
-.regionGrid [aria-hidden="true"] { background: #edf8fd; color: #14678e; }
-.regionGrid a:hover [aria-hidden="true"] { background: #fff0e6; color: #914516; }
+.regionGrid [aria-hidden="true"] { background: #edf8fd; color: var(--portal-blue); }
+.regionGrid a:hover [aria-hidden="true"] { background: #fff0e6; color: var(--portal-basalt); }
 .regionGrid img { filter: brightness(1.06); }
 
 /* Motto-specific cards and filters. */
@@ -60,8 +60,8 @@
 .themeGrid h3 { font-size: 1rem; margin: 0; }
 .themeGrid a > div > div { flex: 1; min-width: 0; }
 .themeGrid a > div > span:last-child { flex-basis: 28px; width: 28px; height: 28px; font-size: 1.3rem; }
-.themeGrid [data-groups~="natur"] a > div > span:first-child { background: #f0f8e5; color: #4b711f; }
-.themeGrid [data-groups~="erholung"] a > div > span:first-child { background: #fff1e8; color: #9d431c; }
+.themeGrid [data-groups~="natur"] a > div > span:first-child { background: #f0f8e5; color: var(--portal-basalt); }
+.themeGrid [data-groups~="erholung"] a > div > span:first-child { background: #fff1e8; color: var(--portal-basalt); }
 @media (max-width: 1000px) { .themeGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .themeGrid { grid-template-columns: minmax(0, 1fr); } .themes { margin-top: -24px; } }
-.page .introDetail { font-size: 1rem; margin-top: 12px; }
+.page .introDetail { font-size: clamp(1.05rem, 1.8vw, 1.25rem); line-height: 1.65; margin-top: 12px; }
