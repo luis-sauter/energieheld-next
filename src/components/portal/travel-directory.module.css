@@ -81,3 +81,7 @@
 @media (max-width: 600px) {
   .page :global(.travel-hero::after) { background: linear-gradient(180deg, #faf7f2a6 0%, #faf7f2d9 45%, #faf7f2 78%); }
 }
+
+/* Keep pseudo-element sizing separate: :is() cannot match pseudo-elements. */
+@media (max-width: 900px) { .page :global(.travel-hero)::after { min-height: 820px; } }
+@media (max-width: 600px) { .page :global(.travel-hero)::after { min-height: 1120px; } }
