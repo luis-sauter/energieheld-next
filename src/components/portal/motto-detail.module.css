@@ -7,10 +7,10 @@
 .content { position: relative; padding-top: 18px; }
 .hero { margin:clamp(28px,5vw,60px) 0 24px; max-width: 750px; }
 .hero h1 { margin: 0 0 12px; color: var(--portal-blue); font-size: clamp(2.6rem, 6vw, 4.3rem); line-height: 1.05; }
-.hero > p:last-child { max-width: 60ch; padding:0; background:transparent; font-size: 1.08rem; color: var(--portal-blue); line-height: 1.65; }
+.hero > p:last-child { max-width: 60ch; font-size: 1.08rem; color: var(--portal-blue); line-height: 1.65; }
 /* Theme introductions follow the overview; destination copy keeps its own surface. */
 .page[data-motto-detail] .hero h1 { margin-bottom: 22px; color: var(--portal-blue); font-size: clamp(2.7rem, 4.6vw, 4rem); letter-spacing: -.035em; }
-.page[data-motto-detail] .hero > p:last-child { padding: 0; margin-bottom: 0; background: transparent; border-radius: 0; color: var(--portal-ink); font-size: clamp(1.05rem, 1.8vw, 1.25rem); }
+.page[data-motto-detail] .hero > p:last-child { margin-bottom: 0; color: var(--portal-ink); font-size: clamp(1.05rem, 1.8vw, 1.25rem); }
 .page[data-motto-detail] .stays h2 { color: var(--portal-blue); }
 .page[data-motto-detail] .count { color: var(--portal-ink); }
 .stays h2 { color: var(--portal-blue); margin: 5px 0 12px; font-size: var(--portal-section-title-size); }
@@ -47,4 +47,22 @@
 @media (max-width: 600px) {
   .page[data-motto-detail] .hero h1 { font-size: clamp(2.4rem, 10vw, 3rem); }
   .page[data-motto-detail] .hero > p:last-child { font-size: 1.05rem; }
+  .page[data-motto-detail="campingurlaub"] .hero h1 { font-size: clamp(1.5rem, 8vw, 3rem); }
+  .page[data-motto-detail="campingurlaub"] .backdrop img { object-position: left top; }
+}
+
+/* Only Campingurlaub needs a calmer desktop text area. Keep the tree/photo
+   vivid on the right instead of placing foliage underneath the copy. */
+@media (min-width: 601px) {
+  .page[data-motto-detail="campingurlaub"] .backdrop img { object-position: left top; }
+  .page[data-motto-detail="campingurlaub"] .backdrop::after {
+    background: linear-gradient(90deg, #faf9f6f5 0%, #faf9f6e6 42%, #faf9f6cc 62%, #faf9f600 86%),
+      linear-gradient(180deg, #faf9f60a 0%, #faf9f614 20%, #faf9f640 48%, #faf9f6a6 76%, #faf9f6 100%);
+  }
+}
+@media (min-width: 601px) and (max-width: 1000px) {
+  .page[data-motto-detail="campingurlaub"] .backdrop::after {
+    background: linear-gradient(90deg, #faf9f6f2, #faf9f6d9 82%, #faf9f699),
+      linear-gradient(180deg, #faf9f600 40%, #faf9f6 100%);
+  }
 }

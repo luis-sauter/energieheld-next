@@ -17,6 +17,7 @@ import { mottoEditorial } from '@/data/motto-editorial';
 import { mottoGroups, orderMottoItems, visibleMottoAds } from '@/lib/motto-rows';
 import { MottoRow } from './motto-row';
 import styles from './motto-detail.module.css';
+import introStyles from './mobile-intro.module.css';
 
 export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme' }: {
   entry: DiscoveryEntry; listings: Listing[]; advertising?: DiscoveryAdvertisingData; seed: string; kind?: 'theme' | 'destination';
@@ -38,7 +39,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
         about: destination ? { '@type': 'Place', name: entry.title } : { '@type': 'DefinedTerm', name: entry.title, termCode: `theme:${entry.slug}` },
         items: companies.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <Breadcrumbs items={breadcrumbs} />
-      <header className={styles.hero}><p className="eyebrow">{sectionTitle}</p><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p>{editorial.intro}</p></header>
+      <header className={styles.hero}><p className="eyebrow">{sectionTitle}</p><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p className={introStyles.panel}>{editorial.intro}</p></header>
       <section className={styles.stays} aria-labelledby="motto-stays">
         <p className="eyebrow">Aus dem Reiseportal</p><h2 id="motto-stays">Passende Unterkünfte</h2>
         <p className={styles.count}>{companies.length} passende {companies.length === 1 ? 'Unterkunft' : 'Unterkünfte'} · Entdecken Sie Ihre Gastgeber</p>
