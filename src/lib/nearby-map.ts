@@ -5,7 +5,7 @@ export function distanceKm(a:{lat:number;lon:number},b:{lat:number;lon:number}) 
 }
 export function readNearbyQuery(url:URL) {
  const lat=Number(url.searchParams.get('lat')),lon=Number(url.searchParams.get('lon')),radius=Number(url.searchParams.get('radius'));
- if(!url.searchParams.has('lat')||!url.searchParams.has('lon')||!Number.isFinite(lat)||!Number.isFinite(lon)||lat<34||lat>72||lon< -25||lon>45||![20,50,75,100].includes(radius))return null;
+ if(!url.searchParams.has('lat')||!url.searchParams.has('lon')||!Number.isFinite(lat)||!Number.isFinite(lon)||lat<34||lat>72||lon< -25||lon>45||!Number.isInteger(radius)||radius<1||radius>100)return null;
  return {lat,lon,radius};
 }
 
@@ -29,4 +29,11 @@ export function selectNearbyLocations<T extends {lat:number;lon:number}>(rows:re
   if(!found)break;
  }
  return selected;
+}
+
+export type MapViewportQuery={lat:number;lon:number;radius:number};
+// Rounded, bounded request keys avoid a new request for sub-pixel map movement.
+export function mapViewportQuery(center:{lat:number;lon:number},corners:{lat:number;lon:number}[]):MapViewportQuery {
+ const radius=Math.ceil(Math.max(1,...corners.map(corner=>distanceKm(center,corner))));
+ return {lat:Math.round(center.lat*1000)/1000,lon:Math.round(center.lon*1000)/1000,radius:Math.min(100,radius)};
 }

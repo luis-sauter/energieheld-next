@@ -11,7 +11,7 @@
 .sectionTitle { margin: 0 0 10px; font-size: clamp(1.8rem, 3.1vw, 2.6rem); line-height: 1.15; letter-spacing: -.025em; }
 .sectionHeading { margin-bottom: 26px; }
 .heroCopy { max-width:620px; }
-.sectionHeading p { padding:16px 20px; background:#fff; border-radius:var(--portal-radius,5px); }
+.sectionHeading p { padding:0; background:transparent; }
 .sectionHeading p { margin: 0; color: var(--portal-ink); line-height: 1.6; }
 .regionGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
 .advertising { margin-bottom: 0; }
@@ -44,7 +44,7 @@
   .advertising :global(.advertising-rail-creatives) { grid-template-columns: minmax(0, 1fr); }
 }
 
-.regionGrid > a { background: #fff; border-color: #e9f1f5; box-shadow: 0 8px 24px rgb(33 124 163 / 5%); border-radius: var(--portal-radius, 5px); }
+.regionGrid > a { background: #fff; border: 0; box-shadow: 0 8px 24px rgb(33 124 163 / 5%); border-radius: var(--portal-radius, 5px); }
 .regionGrid [aria-hidden="true"] { background: #edf8fd; color: #14678e; }
 .regionGrid a:hover [aria-hidden="true"] { background: #fff0e6; color: #914516; }
 .regionGrid img { filter: brightness(1.06); }

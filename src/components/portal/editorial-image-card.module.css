@@ -1,4 +1,4 @@
-.card { display: block; min-width: 0; padding: 12px; background: var(--portal-card); border: 1px solid rgb(23 71 97 / 6%); border-radius: var(--portal-radius, 5px); box-shadow: 0 8px 30px rgb(23 71 97 / 6%); text-decoration: none; transition: box-shadow .2s, transform .2s; }
+.card { display: block; min-width: 0; padding: 0; overflow: hidden; background: var(--portal-card); border: 0; border-radius: var(--portal-radius, 5px); box-shadow: 0 8px 30px rgb(23 71 97 / 6%); text-decoration: none; transition: box-shadow .2s, transform .2s; }
 .image { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--portal-radius, 5px); background: #e6f2f6; }
 .image img { object-fit: cover; }
 .content { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 21px 10px 13px; }

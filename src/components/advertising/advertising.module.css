@@ -542,3 +542,10 @@
 .imageCreative { overflow:hidden; }
 .imageCreative img { scale:1.025; }
 @media(prefers-reduced-motion:reduce){.regionBadge.regionBadge{transition:none;}}
+
+/* The public inquiry is one form, without nested white/beige outer panels. */
+.page[data-offer-request] { padding-top: 24px; }
+.page[data-offer-request] > .card { padding: 0; margin-top: 24px; border: 0; background: transparent; box-shadow: none; }
+.page[data-offer-request] .requestForm { padding: clamp(18px, 3vw, 28px); background: #fff; }
+.page[data-offer-request] .requestForm .formSection { padding: 0 0 24px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
+.page[data-offer-request] .requestFooter { padding: 0; border: 0; background: transparent; }

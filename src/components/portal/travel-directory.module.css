@@ -30,8 +30,8 @@
 .page :global(.commercial-columns) { grid-template-columns: minmax(0, 3.5fr) minmax(240px, 1fr); gap: 24px; margin-top: 0; }
 .page :global(.commercial-sidebar.advertising-rail) { display: block; padding: 16px; background: #fff; border: 1px solid #e2ebef; border-radius: var(--portal-radius, 5px); }
 .page :global(.advertising-rail-label) { color: #587487; font-size: .7rem; }
-.page :global(.travel-results-heading) { align-items: center; margin-bottom: 24px; padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: var(--portal-radius, 5px); }
-.page :global(.travel-results-heading h2) { font-size: 1.25rem; font-weight: var(--font-heading-weight); color: var(--portal-blue); }
+.page :global(.travel-results-heading) { align-items: center; margin-bottom: 24px; padding: 0; background: transparent; border: 0; }
+.page :global(.travel-results-heading h3) { font-size: 1.25rem; font-weight: var(--font-heading-weight); color: var(--portal-blue); }
 .page :global(.travel-results-heading p) { font-size: .85rem; line-height: 1.5; color: var(--portal-basalt); }
 .page :global(.travel-results-heading .eyebrow) { display: none; }
 .page :global(.travel-results-tools) { gap: 12px; flex-wrap: wrap; }
@@ -41,7 +41,7 @@
 .page :global(.reise-finder-reset:disabled) { opacity: .55; cursor: default; }
 .page :global(.travel-results) { min-width: 0; }
 .page :global(.travel-package-group + .travel-package-group) { margin-top: 28px; }
-.page :global(.travel-package-heading) { padding: 16px 20px; margin-bottom: 16px; background: #fff; border: 1px solid var(--line); border-radius: var(--portal-radius, 5px); }
+.page :global(.travel-package-heading) { padding: 0; margin-bottom: 16px; background: transparent; border: 0; }
 .page :global(.travel-package-heading h2) { color: var(--portal-blue); font-size: clamp(1.5rem, 2vw, 1.9rem); font-weight: var(--font-heading-weight); margin-bottom: 5px; }
 .page :global(.travel-package-heading p) { color: var(--portal-basalt); font-size: .9rem; }
 .page :global(:is(a, button, input, select):focus-visible) { outline: 3px solid var(--portal-blue); outline-offset: 3px; }

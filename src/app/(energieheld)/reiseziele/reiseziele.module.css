@@ -14,7 +14,7 @@
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .countryGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
 .countryCard, .inspirationCard, .quicklink, .benefit { border: 1px solid #e3eff7; border-radius: var(--portal-radius, 5px); background: var(--portal-white); box-shadow: 0 8px 26px rgb(32 105 158 / 5%); }
-.countryCard { display: block; padding: 2px; text-decoration: none; overflow: hidden; }
+.countryCard { display: block; padding: 0; border: 0; text-decoration: none; overflow: hidden; }
 .countryPhoto, .themePhoto { position: relative; overflow: hidden; }
 .countryPhoto { aspect-ratio: 2.9; border-radius: var(--portal-radius, 5px); }
 .countryPhoto img, .themePhoto img { object-fit: cover; transition: transform .25s ease; }
@@ -31,9 +31,9 @@
 .eyebrow { display: flex; align-items: center; gap: 9px; margin: 0 0 9px; color: var(--portal-blue); font-size: .73rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .eyebrow::before { content: ""; width: 23px; height: 3px; background: var(--portal-orange); border-radius: var(--portal-radius, 5px); flex-shrink: 0; }
 .sectionHeading h2, .partner h2 { margin: 0 0 8px; font-size: clamp(1.7rem, 2.7vw, 2.3rem); line-height: 1.15; letter-spacing: -.035em; }
-.sectionHeading > p:last-child:not(.eyebrow) { margin: 0; max-width: 1080px; padding:16px 20px; background:#fff; border-radius:var(--portal-radius,5px); font-size: 1.05rem; line-height: 1.5; color: var(--portal-ink); }
+.sectionHeading > p:last-child:not(.eyebrow) { margin: 0; max-width: 1080px; padding:0; background:transparent; font-size: 1.05rem; line-height: 1.5; color: var(--portal-ink); }
 .inspirationGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
-.inspirationCard { min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
+.inspirationCard { border: 0; min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
 .themeLink { display: block; text-decoration: none; flex: 1; }
 .themePhoto { aspect-ratio: 1.75; }
 .themeBody { display: flex; align-items: flex-start; gap: 8px; padding: 14px 17px 10px; }

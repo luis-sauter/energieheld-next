@@ -121,7 +121,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
       </Fragment>)}</div>;
     return <>
       {premium.length > 0 && <section className="travel-package-group" aria-labelledby="premium-title">
-        <header className="travel-package-heading"><h2 id="premium-title">Premium-Unterkünfte</h2><p>Unterkünfte mit erweitertem Profil im Reiseportal.</p></header>{render(premium)}
+        {render(premium)}
       </section>}
       {basic.length > 0 && render(basic)}
       {basicContacts.length>0&&<section className="travel-package-group" aria-labelledby="basic-contacts-title"><header className="travel-package-heading"><h2 id="basic-contacts-title">Basic-Unterkünfte</h2></header><div className="listing-rows">{basicContacts.map(entry=><BasicAccommodationCard key={entry.id} entry={entry}/>)}</div><BasicSourceCredit/></section>}
@@ -151,11 +151,11 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
           ? <SidebarOrderEditor ads={ads} slots={sidebarOrder} saveOrder={saveSidebarOrder} /> : undefined}>
         {finder}
         <section id="unterkunft-ergebnisse" className="travel-results" aria-labelledby="travel-results-title">
+          <header className="travel-package-heading"><h2 id="premium-title">{shownResults.some(row => !isBasicContact(row) && row.directoryPackage === "premium") ? "Premium-Unterkünfte" : "Unterkünfte"}</h2><p>Unterkünfte mit erweitertem Profil im Reiseportal.</p></header>
           <div className="results-heading travel-results-heading">
             <div>
               <p className="eyebrow">Unterkünfte A–Z</p>
-              <h2 id="travel-results-title" aria-live="polite">{pagination && profileStream.loading && !profileStream.items.length ? "Unterkünfte" : `${count.toLocaleString('de-DE')} ${travelResultNoun(count, matched.advertisers.length)}`}</h2>
-              <p>Entdecken Sie Gastgeber und besondere Orte für Ihre nächste Reise.</p>
+              <h3 id="travel-results-title" aria-live="polite">{pagination && profileStream.loading && !profileStream.items.length ? "Unterkünfte" : `${count.toLocaleString('de-DE')} ${travelResultNoun(count, matched.advertisers.length)} insgesamt`}</h3>
             </div>
             <div className="travel-results-tools">
               <label>Sortieren nach
