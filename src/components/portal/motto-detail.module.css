@@ -8,6 +8,11 @@
 .hero { margin:clamp(28px,5vw,60px) 0 24px; max-width: 750px; }
 .hero h1 { margin: 0 0 12px; color: #0b4969; font-size: clamp(2.6rem, 6vw, 4.3rem); line-height: 1.05; }
 .hero > p:last-child { max-width: 60ch; padding:20px; background:#fff; border-radius:var(--portal-radius,5px); font-size: 1.08rem; color: #244d61; line-height: 1.65; }
+/* Theme introductions follow the overview; destination copy keeps its own surface. */
+.page[data-motto-detail] .hero h1 { margin-bottom: 22px; color: var(--portal-blue); font-size: clamp(2.7rem, 4.6vw, 4rem); letter-spacing: -.035em; }
+.page[data-motto-detail] .hero > p:last-child { padding: 0; margin-bottom: 0; background: transparent; border-radius: 0; color: var(--portal-ink); font-size: clamp(1.05rem, 1.8vw, 1.25rem); }
+.page[data-motto-detail] .stays h2 { color: var(--portal-blue); }
+.page[data-motto-detail] .count { color: var(--portal-ink); }
 .stays h2 { color: #0b4969; margin: 5px 0 12px; font-size: clamp(1.5rem, 3vw, 2rem); }
 .count { margin-bottom: 22px; color: #345d72; font-size: .9rem; }
 .pair { margin-bottom: 22px; }
@@ -38,3 +43,8 @@
 .countryBannerRow :global([data-placement] > a) { width: 100%; aspect-ratio: 350 / 120; height: auto; overflow: hidden; }
 .countryBannerRow :global([data-placement] > a > span:not([data-banner-region])) { width: 100%; height: 100%; }
 .countryBannerRow :global([data-placement] img) { width: 100%; height: 100%; object-fit: contain; }
+
+@media (max-width: 600px) {
+  .page[data-motto-detail] .hero h1 { font-size: clamp(2.4rem, 10vw, 3rem); }
+  .page[data-motto-detail] .hero > p:last-child { font-size: 1.05rem; }
+}
