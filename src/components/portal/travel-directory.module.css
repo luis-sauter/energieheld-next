@@ -30,7 +30,7 @@
 .page :global(.commercial-columns) { grid-template-columns: minmax(0, 3.5fr) minmax(240px, 1fr); gap: 24px; margin-top: 0; }
 .page :global(.commercial-sidebar.advertising-rail) { display: block; padding: 16px; background: #fff; border: 1px solid #e2ebef; border-radius: var(--portal-radius, 5px); }
 .page :global(.advertising-rail-label) { color: #587487; font-size: .7rem; }
-.page :global(.travel-results-heading) { align-items: center; margin-bottom: 24px; padding: 0; background: transparent; border: 0; }
+.page :global(.travel-results-heading) { align-items: center; margin-bottom: 24px; padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: var(--portal-radius, 5px); }
 .page :global(.travel-results-heading h3) { font-size: 1.25rem; font-weight: var(--font-heading-weight); color: var(--portal-blue); }
 .page :global(.travel-results-heading p) { font-size: .85rem; line-height: 1.5; color: var(--portal-basalt); }
 .page :global(.travel-results-heading .eyebrow) { display: none; }

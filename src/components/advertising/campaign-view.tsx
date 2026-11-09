@@ -1,4 +1,6 @@
 "use client";
+import { Icon } from "@/components/portal/icon";
+
 
 import { imageCropStyle } from "@/lib/image-crop";
 import { bannerCropRatio } from "@/lib/banner-presentation";
@@ -89,7 +91,7 @@ export function CampaignSlot({
       <div>
         <strong>{displayAd.headline || "Ihre Überschrift"}</strong>
         {displayAd.body_text && <p>{displayAd.body_text}</p>}
-        <span>Mehr erfahren →</span>
+        <span>Mehr erfahren <Icon name="chevron-right" size={20} /></span>
       </div>
     )
   );
@@ -126,7 +128,7 @@ export function CampaignSlot({
               <span className={styles.promoLabel}>Reiseinspiration</span>
               <strong>{displayAd.headline}</strong>
               <p>{displayAd.body_text}</p>
-              <span className={styles.promoCta}>Jetzt entdecken <span aria-hidden="true">→</span></span>
+              <span className={styles.promoCta}>Jetzt entdecken <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></span>
             </div>}
           </a>
         )
@@ -136,7 +138,7 @@ export function CampaignSlot({
           <strong>Hier wird Ihr Unternehmen sichtbar.</strong>
           <p>Im passenden Umfeld. Nah an Ihren Kunden.</p>
           <Link className="text-link" href="/werbung">
-            Werbemöglichkeiten entdecken →
+            Werbemöglichkeiten entdecken <Icon name="chevron-right" size={20} />
           </Link>
         </div>
       )}

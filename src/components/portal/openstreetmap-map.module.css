@@ -21,3 +21,11 @@
 @media(max-width:600px) { .map,.loading { height:440px; } .frame { border-radius: var(--portal-radius, 5px); } .footer { align-items:flex-start; flex-direction:column; gap:4px; } .header h2 { font-size:1.8rem; } }
 
 .mapHelp { font-size: .9rem; color: #566873; }
+
+/* One clipped control surface; Leaflet touch sizing cannot leave white overhangs. */
+.map :global(.leaflet-control-zoom) { width: 44px; border: 2px solid #d2dadc; border-radius: 5px; overflow: hidden; box-shadow: 0 2px 8px #12354b20; background: #fff; }
+.map :global(.leaflet-control-zoom a) { box-sizing: border-box; display: grid; place-items: center; width: 40px !important; height: 40px !important; margin: 0; padding: 0 !important; border: 0; border-radius: 0 !important; line-height: 1; background: #fff; color: #13237f; }
+.map :global(.leaflet-control-zoom a:first-child) { border-bottom: 1px solid #d2dadc; }
+.map :global(.leaflet-control-zoom a:hover), .map :global(.leaflet-control-zoom a:focus-visible) { background: #eef1f2; }
+.map :global(.leaflet-control-zoom a span) { display: block; margin: 0; padding: 0; line-height: 1; background: transparent; }
+.map :global(.leaflet-control-zoom a.leaflet-disabled) { color: #9ba8ad; background: #f4f5f5; }

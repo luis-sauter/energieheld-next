@@ -36,7 +36,7 @@ export function ProfileDesignPreview({ listing, blocks = [] }: { listing: Listin
   return <main id="hauptinhalt" className={styles.preview}>
     <div className="container">
       <p className={styles.notice}>Isolierte Designvorschau · bestehende Unternehmensprofile bleiben unverändert</p>
-      <nav className={styles.breadcrumbs} aria-label="Brotkrümelnavigation"><Link href="/">Startseite</Link><span>›</span><Link href="/unterkuenfte-a-z">Unterkünfte A–Z</Link><span>›</span><span>{listing.name}</span></nav>
+      <nav className={styles.breadcrumbs} aria-label="Brotkrümelnavigation"><Link href="/">Startseite</Link><span><Icon name="chevron-right" size={20} /></span><Link href="/unterkuenfte-a-z">Unterkünfte A–Z</Link><span><Icon name="chevron-right" size={20} /></span><span>{listing.name}</span></nav>
       <header className={styles.heading}>
         <h1>{listing.name}</h1>
         <ul className={styles.tags} aria-label="Reiseinteressen">{signals.map(signal => <li key={signal.key}><Link href={discoveryShortcutHref(signal.key.startsWith('audience:') ? 'audience' : 'theme', signal.key.split(':')[1])}><TravelThemeIcon slug={signal.icon} />{signal.label}</Link></li>)}</ul>
@@ -74,7 +74,7 @@ export function ProfileDesignPreview({ listing, blocks = [] }: { listing: Listin
           {travelThemes.map(theme => <Link className={styles.themeCard} key={theme.slug} href={discoveryShortcutHref('theme', theme.slug)}><div className={styles.themePhoto}><Image src={`/reiseportal/redesign/mottoreisen/${theme.slug}.webp`} alt="" fill sizes="(max-width: 640px) 90vw, (max-width: 1100px) 45vw, 28vw" loading="lazy" /></div><span className={styles.themeIcon}><TravelThemeIcon slug={theme.slug} /></span><strong>{theme.title}</strong></Link>)}
         </ThemeScroller>
       </section>
-      <Link className={styles.back} href="/unterkuenfte-a-z">← Zurück zu Unterkünfte A–Z</Link>
+      <Link className={styles.back} href="/unterkuenfte-a-z"><Icon name="chevron-left" size={20} /> Zurück zu Unterkünfte A–Z</Link>
     </div>
   </main>;
 }

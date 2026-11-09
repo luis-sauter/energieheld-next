@@ -111,8 +111,8 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
 
   return <main id="hauptinhalt" className="container trade-page">
     <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
-      <Link href="/">Startseite</Link><span>›</span>
-      {trade && <><Link href="/gewerke">Gewerke</Link><span>›</span></>}
+      <Link href="/">Startseite</Link><span><Icon name="chevron-right" size={20} /></span>
+      {trade && <><Link href="/gewerke">Gewerke</Link><span><Icon name="chevron-right" size={20} /></span></>}
       <span>{trade?.name ?? "Experten A–Z"}</span>
     </nav>
     <section className="reference-intro directory-intro">

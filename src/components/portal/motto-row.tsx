@@ -1,4 +1,6 @@
 "use client";
+import { Icon } from "@/components/portal/icon";
+
 
 import { Children, useEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
@@ -6,7 +8,7 @@ import { useRotationMotion } from './use-rotation-motion';
 import styles from './motto-detail.module.css';
 
 // Recycle unique keyed cards, without cloning links or fetching server data.
-export function MottoRow({ children, label, speed = 18, direction = 'right' }: {
+export function MottoRow({ children, label, speed = 18, direction = 'left' }: {
   children: ReactNode; label: string; speed?: number; direction?: 'left' | 'right';
 }) {
   const items = Children.toArray(children);
@@ -77,8 +79,8 @@ export function MottoRow({ children, label, speed = 18, direction = 'right' }: {
       }
     }}>{ordered}</div>
     {overflowing && <>
-      <button className={`${styles.arrow} ${styles.previous}`} type="button" aria-label={`Vorherige ${label}`} onClick={() => move(-1)}>‹</button>
-      <button className={`${styles.arrow} ${styles.next}`} type="button" aria-label={`Weitere ${label}`} onClick={() => move(1)}>›</button>
+      <button className={`${styles.arrow} ${styles.previous}`} type="button" aria-label={`Vorherige ${label}`} onClick={() => move(-1)}><Icon name="chevron-left" size={20} /></button>
+      <button className={`${styles.arrow} ${styles.next}`} type="button" aria-label={`Weitere ${label}`} onClick={() => move(1)}><Icon name="chevron-right" size={20} /></button>
     </>}
   </div>;
 }

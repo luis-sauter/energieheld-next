@@ -4,7 +4,7 @@ import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type {PortalMapEntry} from '@/lib/portal-map-entries';
 import styles from './openstreetmap-map.module.css';
-import {mapViewportQuery,type MapViewportQuery} from '@/lib/nearby-map';
+import {mapViewportQuery,nearbyMapMaxRadius,type MapViewportQuery} from '@/lib/nearby-map';
 const tileUrl=process.env.NEXT_PUBLIC_OSM_TILE_URL||'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 type Props={entries:PortalMapEntry[];location:{lat:number;lon:number}|null;onViewChange?:(view:MapViewportQuery)=>void};
 export default function OpenStreetMap({entries,location,onViewChange}:Props){
@@ -29,7 +29,7 @@ export default function OpenStreetMap({entries,location,onViewChange}:Props){
   const visibleRadius=()=>Math.max(...corners().map(p=>instance.getCenter().distanceTo([p.lat,p.lon])/1000));
   const publish=()=>{constrainZoom();const c=instance.getCenter();viewCallback.current?.(mapViewportQuery({lat:c.lat,lon:c.lng},corners()));};
   const constrainZoom=()=>{
-   const min=instance.getZoom()+Math.log2(visibleRadius()/100);
+   const min=instance.getZoom()+Math.log2(visibleRadius()/nearbyMapMaxRadius);
    instance.setMinZoom(Math.max(4,Math.ceil((min-1e-8)*4)/4));
   };
   instance.fitBounds(L.latLng(location.lat,location.lon).toBounds(40000),{padding:[0,0],animate:false});

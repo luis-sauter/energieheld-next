@@ -12,6 +12,7 @@ const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "u
 registerHooks({
   resolve(specifier, context, next) {
     if (specifier.endsWith(".module.css")) return { url: 'data:text/javascript,export default {rotation:"rotation",page:"page",pages:"pages"}', shortCircuit: true };
+    if (specifier === "@/components/portal/icon") return next(new URL("../src/components/portal/icon.tsx", import.meta.url).href, context);
     if (specifier === "@/lib/profile-rotation") return next(new URL("../src/lib/profile-rotation.ts", import.meta.url).href, context);
     if (specifier === "./use-rotation-motion") return next(new URL("../src/components/portal/use-rotation-motion.ts", import.meta.url).href, context);
     return next(specifier, context);

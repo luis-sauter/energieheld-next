@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import Link from "@/components/portal/navigation-link";
 import { InlineBannerProvider } from "@/components/advertising/inline-banner-editor";
 import { loadInlineBannerOptions } from "@/lib/inline-advertising-loader";
@@ -69,7 +70,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <section className={`section container ${styles.stays}`} aria-labelledby="stays-title">
       <div className="section-heading"><div><p className="eyebrow">Ein guter Ort zum Ankommen</p><h2 id="stays-title">Ausgewählte Unterkünfte</h2></div>
-        <Link className="text-link" href="/unterkuenfte-a-z">Alle Unterkünfte →</Link></div>
+        <Link className="text-link" href="/unterkuenfte-a-z">Alle Unterkünfte <Icon name="chevron-right" size={20} /></Link></div>
       <MottoRow label="Ausgewählte Unterkünfte" speed={18}>
         {featured.map((listing) => <AccommodationCard key={listing.id} listing={listing} motto cardEditing={Boolean(bannerOptions)}
           sizes="(max-width: 600px) 86vw, (max-width: 900px) 45vw, 360px" />)}
@@ -81,7 +82,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <section className={`${styles.provider} container`} aria-labelledby="provider-title">
       <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Ihre Unterkunft auf DAS-Reiseportal.com</h2>
         <p>Machen Sie Ihre Unterkunft dort sichtbar, wo neue Reisepläne entstehen. Wir beraten Sie persönlich – unverbindlich und ohne Registrierung.</p></div>
-      <Link className="button button-primary" href="/angebot-anfragen">Angebot anfragen →</Link>
+      <Link className="button button-primary" href="/angebot-anfragen">Angebot anfragen <Icon name="chevron-right" size={20} /></Link>
     </section>
   </main></InlineBannerProvider>;
 }

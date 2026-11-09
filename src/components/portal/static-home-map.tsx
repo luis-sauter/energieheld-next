@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import styles from './europe-map.module.css';
 
 // Deliberately a fixed image: visiting Home must not fetch or render map points.
@@ -7,7 +8,7 @@ export function StaticHomeMap() {
       <header className={styles.header}>
         <h2 id="locations-title">Unsere Unterkünfte im Überblick</h2>
         <p>Entdecken Sie unsere Unterkünfte und ihre Standorte in Deutschland, Österreich, der Schweiz und Südtirol.</p>
-        <a href="/unterkuenfte-a-z" className={styles.link}>Alle Unterkünfte entdecken <span aria-hidden="true">→</span></a>
+        <a href="/unterkuenfte-a-z" className={styles.link}>Alle Unterkünfte entdecken <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></a>
       </header>
       <div className={styles.frame}>
         {/* Already compressed at double display resolution; no image-transform request needed. */}

@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import Link from "next/link";
 import { B2BPage } from "@/components/portal/b2b-page";
 import styles from "@/components/portal/b2b.module.css";
@@ -12,6 +13,6 @@ export default function ProvidersPage() {
       <article className={styles.card}><h3>Direkt in Kontakt kommen</h3><p>Reisende können Ihre Kontaktmöglichkeiten nutzen oder eine Anfrage über das Portal senden. Die Redaktion begleitet Ihren Auftritt und stimmt die nächsten Schritte persönlich mit Ihnen ab.</p></article>
     </div></section>
     <section className={styles.section + " " + styles.split}><div className={styles.card}><h2>Persönlich zum passenden Auftritt</h2><ol className={styles.steps}><li>Unverbindliche Anfrage mit Ihren Kontaktdaten senden.</li><li>Die Redaktion berät Sie zu Profil, Werbung oder einer Kombination.</li><li>Inhalte und Konditionen gemeinsam abstimmen.</li><li>Die Redaktion gestaltet und prüft Ihren Auftritt vor der Veröffentlichung.</li></ol></div><div className={styles.card}><h2>Basic und Premium</h2><p>Basic zeigt die wesentlichen Profil- und Kontaktangaben in einer kompakten Übersicht. Premium wird mit Bildern und einer ausführlicheren Karte vor Basic angezeigt.</p><p className={styles.note}>Die Paketzuordnung wird vom Portal verwaltet. Konditionen und mögliche Zusatzleistungen werden individuell geklärt; hier findet kein Paketkauf statt.</p><h3>Vollständig und aktuell</h3><p>Die Redaktion prüft eingereichte Inhalte. Bitte übermitteln Sie korrekte Angaben und nur Bilder, für die Sie die nötigen Rechte besitzen.</p></div></section>
-    <section className={styles.section + " " + styles.card + " " + styles.promo}><h2>Mehr Sichtbarkeit gewünscht?</h2><p>Banner sind ein optionales Zusatzangebot. Werbung wird als Anzeige gekennzeichnet und bleibt von redaktioneller Freigabe und Profilranking getrennt.</p><div className={styles.actions}><Link className="button" href="/werbung">Werbemöglichkeiten kennenlernen →</Link></div></section>
+    <section className={styles.section + " " + styles.card + " " + styles.promo}><h2>Mehr Sichtbarkeit gewünscht?</h2><p>Banner sind ein optionales Zusatzangebot. Werbung wird als Anzeige gekennzeichnet und bleibt von redaktioneller Freigabe und Profilranking getrennt.</p><div className={styles.actions}><Link className="button" href="/werbung">Werbemöglichkeiten kennenlernen <Icon name="chevron-right" size={20} /></Link></div></section>
   </B2BPage>;
 }

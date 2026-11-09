@@ -67,17 +67,17 @@ test('executed gallery keeps hover, focus and pointer pauses independent and adv
 });
 
 
-test('compact motion uses 30 px/s, is frame-independent and always moves cards left-to-right',()=>{
+test('compact motion uses 30 px/s, is frame-independent and always moves cards right-to-left',()=>{
  assert.equal(compactScrollSpeed,30);
- assert.deepEqual(continuousThemeScroll(100,1,100),{left:70,direction:-1});
+ assert.deepEqual(continuousThemeScroll(0,1,100),{left:30,direction:1});
  for(const rate of [30,60,120]){
-  let left=100;
+  let left=0;
   for(let frame=0;frame<rate;frame++)left=continuousThemeScroll(left,1/rate,100).left;
-  assert.ok(Math.abs(left-70)<1e-9,`${rate} Hz must move 30 pixels per second`);
+  assert.ok(Math.abs(left-30)<1e-9,`${rate} Hz must move 30 pixels per second`);
  }
- assert.ok(continuousThemeScroll(100,1/60,100).left>99);
- assert.deepEqual(continuousThemeScroll(1,1,100),{left:100,direction:-1});
- assert.deepEqual(continuousThemeScroll(0,1,0),{left:0,direction:-1});
+ assert.ok(continuousThemeScroll(0,1/60,100).left>0);
+ assert.deepEqual(continuousThemeScroll(99,1,100),{left:0,direction:1});
+ assert.deepEqual(continuousThemeScroll(0,1,0),{left:0,direction:1});
 });
 test('executed compact animation accumulates subpixels without React frame updates and stops for hover, focus, pointer and reduced motion',()=>{
  states=[];refs=[];effects=[];pending=[];
@@ -87,9 +87,9 @@ test('executed compact animation accumulates subpixels without React frame updat
  globalThis.document={hidden:false,addEventListener(){},removeEventListener(){}};
  globalThis.IntersectionObserver=class{constructor(f){observe=f}observe(){}disconnect(){}};
  globalThis.requestAnimationFrame=f=>{frame=f;return ++frames};globalThis.cancelAnimationFrame=()=>{frame=null;cancelled++};
- const rail={scrollLeft:600,scrollWidth:900,clientWidth:300};
+ const rail={scrollLeft:0,scrollWidth:900,clientWidth:300};
  const render=()=>{cursor=refCursor=effectCursor=0;const tree=ThemeScroller({count:12,label:'Mottoreisen',compact:true});refs[0].current=rail;states[1]=true;for(const f of pending.splice(0))f();return tree};
- try{let t=render();observe([{isIntersecting:true}]);t=render();assert.ok(frame);frame(0);for(let time=16;time<=1600;time+=16)frame(time);assert.ok(rail.scrollLeft>551&&rail.scrollLeft<553);const before=rail.scrollLeft;
+ try{let t=render();observe([{isIntersecting:true}]);t=render();assert.ok(frame);frame(0);for(let time=16;time<=1600;time+=16)frame(time);assert.ok(rail.scrollLeft>47&&rail.scrollLeft<49);const before=rail.scrollLeft;
  for(const pause of ['onMouseEnter','onFocusCapture','onPointerDown']){t.props[pause]();t=render();assert.equal(frame,null);assert.equal(rail.scrollLeft,before);if(pause==='onMouseEnter')t.props.onMouseLeave();if(pause==='onFocusCapture')t.props.onBlurCapture({currentTarget:{contains:()=>false},relatedTarget:null});if(pause==='onPointerDown')t.props.onPointerUp();t=render();assert.ok(frame);}
  reduced=true;change();render();assert.equal(frame,null);assert.ok(cancelled>=4);
  }finally{effects.forEach(e=>e.cleanup?.());Object.assign(globalThis,old)}
@@ -112,7 +112,7 @@ test('compact edge arrows jump 80% of rail, pause then resume and remain manual 
   let t=render();assert.equal(buttons(t).length,0,'no controls without overflow');states[1]=true;observe([{isIntersecting:true}]);t=render();
   let [back,next]=buttons(t);assert.equal(next.props['aria-label'],'Quicklinks weiter');assert.equal(back.props['aria-label'],'Quicklinks zurück');
   frame(0);now=100;next.props.onClick();t=render();assert.equal(rail.scrollLeft,400);frame(100);frame(1000);assert.equal(rail.scrollLeft,400);
-  now=1601;frame(1601);assert.ok(rail.scrollLeft<400,'left-to-right auto resumes after 1500 ms idle');
+  now=1601;frame(1601);assert.ok(rail.scrollLeft>400,'right-to-left auto resumes after 1500 ms idle');
   back.props.onClick();assert.ok(rail.scrollLeft<10,'left moves an entire visible group back');
   rail.scrollLeft=1000;next.props.onClick();assert.equal(rail.scrollLeft,0,'right endpoint wraps');
   reduced=true;change();t=render();assert.equal(frame,null);[back,next]=buttons(t);next.props.onClick();assert.equal(rail.scrollLeft,400);assert.equal(rail.behavior,'instant');back.props.onClick();assert.equal(rail.scrollLeft,0);

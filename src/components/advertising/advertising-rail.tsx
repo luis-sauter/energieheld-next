@@ -1,4 +1,6 @@
 "use client";
+import { Icon } from "@/components/portal/icon";
+
 
 import Link from "next/link";
 import { useInlineBanners } from "./inline-banner-context";
@@ -44,7 +46,7 @@ export function AdvertisingRail({
       ))}
       {continuation}
       {showAdvertiseLink && <Link className="advertise-link" href="/werbung">
-        Hier könnte Ihre Anzeige stehen →
+        Hier könnte Ihre Anzeige stehen <Icon name="chevron-right" size={20} />
       </Link>}
     </aside>
   );

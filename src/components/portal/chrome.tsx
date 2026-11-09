@@ -54,8 +54,7 @@ export function PortalFooter({ brand }: { brand: BrandConfig }) {
         <p className={styles.tagline}>{brand.tagline}</p>
       </div>
       <div className={styles.contactBlock}><h2 className={styles.heading}>Kontakt</h2><address className={styles.contact}>
-        <div><Link href="/">DAS-Reiseportal.com</Link><br />ist eine Marke von<br />WEIDNER Energie | Beratung | Medien</div>
-        <div>Am Haag 8<br />82166 Gräfelfing bei München</div>
+        <div><Link href="/">DAS-Reiseportal.com</Link><br />ist eine Marke von<br />WEIDNER Energie | Beratung | Medien<br />Am Haag 8<br />82166 Gräfelfing bei München</div>
         <div>Kontakt &amp; Feedback: <a href="mailto:wir@das-reiseportal.com">wir@das-reiseportal.com</a></div>
       </address></div>
     </div>

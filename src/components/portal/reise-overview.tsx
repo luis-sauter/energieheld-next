@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import Image from "next/image";
 import Link from "./navigation-link";
 import type { DiscoveryEntry } from "@/data/reiseportal-discovery";
@@ -9,7 +10,7 @@ export function DiscoveryCard({ entry, basePath, sizes }: { entry: DiscoveryEntr
     <span className={`discovery-card-image${entry.image ? "" : " discovery-card-image-fallback"}`}>
       {entry.image && <Image src={entry.image} alt={entry.alt} fill loading="lazy" sizes={sizes ?? "(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw"} />}
     </span>
-    <span className="discovery-card-title">{entry.title}<span aria-hidden="true">→</span></span>
+    <span className="discovery-card-title">{entry.title}<span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></span>
   </Link>;
 }
 
@@ -22,7 +23,7 @@ export function ReiseOverview({ title, intro, entries, basePath, advertising }: 
 }) {
   return <main id="hauptinhalt" className="container trade-page discovery-page">
     <nav className="breadcrumbs" aria-label="Brotkrumennavigation">
-      <Link href="/">Startseite</Link><span>›</span><span>{title}</span>
+      <Link href="/">Startseite</Link><span><Icon name="chevron-right" size={20} /></span><span>{title}</span>
     </nav>
     <DiscoveryAdvertising data={advertising}><section className="section">
       <div className="section-heading"><div>

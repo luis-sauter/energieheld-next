@@ -1,4 +1,6 @@
 "use client";
+import { Icon } from "@/components/portal/icon";
+
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { INITIAL_MAP_VIEW, MAP_HEIGHT, MAP_WIDTH, clampMapView, zoomMap, type MapLocation } from "@/lib/europe-map";
@@ -118,7 +120,7 @@ export function EuropeMap({ locations, loadBasics = false }: { locations: MapLoc
       <header className={styles.header}>
         <h2 id="locations-title">Unsere Unterkünfte im Überblick</h2>
         <p>Entdecken Sie unsere Unterkünfte und ihre Standorte in Deutschland, Österreich, der Schweiz und Südtirol.</p>
-        <a href="/unterkuenfte-a-z" className={styles.link}>Alle Unterkünfte entdecken <span aria-hidden="true">→</span></a>
+        <a href="/unterkuenfte-a-z" className={styles.link}>Alle Unterkünfte entdecken <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></a>
       </header>
       <div className={styles.frame}>
         <svg ref={svg} className={styles.map} data-touch-active={touchActive} data-zoom={zoom} preserveAspectRatio="xMidYMid slice"

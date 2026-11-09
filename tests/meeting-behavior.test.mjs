@@ -21,13 +21,13 @@ test('download names retain the original JPEG name and cannot turn an image into
  assert.equal(offerImageDownloadName(undefined,'webp','id'),'Banner-id.webp');
  assert(!/[\r\n/\\]/.test(offerImageDownloadName('../Bad\r\nName.png','png','id')));
 });
-test('local map allows 20 through 100km and rejects non-geographic inputs and unapproved distances',()=>{
+test('local map allows 20 through 300km and rejects non-geographic inputs and unapproved distances',()=>{
  const c={lat:48.14,lon:11.58};assert.equal(distanceKm(c,c),0);
  assert(distanceKm(c,{lat:48.34,lon:11.58})>20);assert(distanceKm(c,{lat:48.34,lon:11.58})<50);
  for(const query of ['', '?lat=48&lon=11&radius=500','?lat=NaN&lon=11&radius=20','?lat=91&lon=11&radius=20'])assert.equal(readNearbyQuery(new URL('https://portal.test/'+query)),null);
  assert.deepEqual(readNearbyQuery(new URL('https://portal.test/?lat=48&lon=11&radius=20')),{lat:48,lon:11,radius:20});
  for(const radius of [50,75,100])assert.equal(readNearbyQuery(new URL('https://portal.test/?lat=48&lon=11&radius='+radius)).radius,radius);
- assert.equal(readNearbyQuery(new URL('https://portal.test/?lat=48&lon=11&radius=101')),null);
+ assert.equal(readNearbyQuery(new URL('https://portal.test/?lat=48&lon=11&radius=301')),null);
 });
 test('agency exclusion follows exact target identities, not arbitrary accommodation text',()=>{
  for(const u of ['https://www.manta.ch/','https://das-reiseportal.com/unterkuenfte/unternehmen-e02e9d04-1561-40b9-b4e8-9dcf3da513b2','/unterkuenfte/wirodive-tauchreisen'])assert(excludedAgencyTarget(u));

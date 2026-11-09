@@ -1,4 +1,6 @@
 "use client";
+import { Icon } from "@/components/portal/icon";
+
 
 import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRotationMotion } from "./use-rotation-motion";
@@ -7,9 +9,9 @@ import styles from "./theme-scroller.module.css";
 export const themeScrollerDelay = 3000;
 export const compactScrollSpeed = 30; // Pixels/second, independent of display refresh rate.
 export function continuousThemeScroll(left: number, seconds: number, max: number) {
-  const next = left - compactScrollSpeed * seconds;
-  // Automatic motion stays left-to-right; manual arrow direction is independent.
-  return { left: max <= 0 ? 0 : next < 0 ? max : Math.min(max, next), direction: -1 };
+  const next = left + compactScrollSpeed * seconds;
+  // Automatic motion moves cards right-to-left; manual arrows stay independent.
+  return { left: max <= 0 ? 0 : next > max ? 0 : Math.max(0, next), direction: 1 };
 }
 export function nextThemeScroll(left: number, step: number, max: number, direction: number) {
   if (max <= 0) return 0;
@@ -41,7 +43,7 @@ export function ThemeScroller({ children, count, label, compact = false, heading
       element.scrollWidth - element.clientWidth, direction), behavior: smooth ? "smooth" : "instant" });
     setInteraction(value => value + 1);
   }, [compact, pageSize]);
-  const advance = useCallback(() => move(-1, true), [move]);
+  const advance = useCallback(() => move(1, true), [move]);
   const { root, handlers, reducedMotion, interact, canPlay } = useRotationMotion(overflowing ? count : 1, advance, interaction, themeScrollerDelay, !compact && autoPlay);
   useEffect(() => {
     if (!compact || !canPlay || !autoPlay) return;
@@ -92,20 +94,20 @@ export function ThemeScroller({ children, count, label, compact = false, heading
       <div className={styles.controls}>
         {moreLink}
         {count > 1 && !edgeNavigation && <>
-          <button type="button" disabled={!overflowing} aria-label={`${label}: zurück`} onClick={() => move(-1, !reducedMotion)}>←</button>
-          <button type="button" disabled={!overflowing} aria-label={`${label}: weiter`} onClick={() => move(1, !reducedMotion)}>→</button>
+          <button type="button" disabled={!overflowing} aria-label={`${label}: zurück`} onClick={() => move(-1, !reducedMotion)}><Icon name="chevron-left" size={20} /></button>
+          <button type="button" disabled={!overflowing} aria-label={`${label}: weiter`} onClick={() => move(1, !reducedMotion)}><Icon name="chevron-right" size={20} /></button>
         </>}
       </div>
     </div>}
     {compact && overflowing && <div className={styles.edgeControls}>
-      <button type="button" aria-label="Quicklinks zurück" onClick={() => move(-1, !reducedMotion)}>←</button>
-      <button type="button" aria-label="Quicklinks weiter" onClick={() => move(1, !reducedMotion)}>→</button>
+      <button type="button" aria-label="Quicklinks zurück" onClick={() => move(-1, !reducedMotion)}><Icon name="chevron-left" size={20} /></button>
+      <button type="button" aria-label="Quicklinks weiter" onClick={() => move(1, !reducedMotion)}><Icon name="chevron-right" size={20} /></button>
     </div>}
     {edgeNavigation ? <div className={styles.imageRail}>
       {cards}
       {count > 1 && <div className={styles.edgeControls}>
-        <button type="button" disabled={!overflowing} aria-label={`${label}: zurück`} onClick={() => move(-1, !reducedMotion)}>←</button>
-        <button type="button" disabled={!overflowing} aria-label={`${label}: weiter`} onClick={() => move(1, !reducedMotion)}>→</button>
+        <button type="button" disabled={!overflowing} aria-label={`${label}: zurück`} onClick={() => move(-1, !reducedMotion)}><Icon name="chevron-left" size={20} /></button>
+        <button type="button" disabled={!overflowing} aria-label={`${label}: weiter`} onClick={() => move(1, !reducedMotion)}><Icon name="chevron-right" size={20} /></button>
       </div>}
     </div> : cards}
   </div>;

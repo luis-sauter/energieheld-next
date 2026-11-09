@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import Image from 'next/image';
 import Link from './navigation-link';
 import type { DiscoveryEntry } from '@/data/reiseportal-discovery';
@@ -21,7 +22,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
   entry: DiscoveryEntry; listings: Listing[]; advertising?: DiscoveryAdvertisingData; seed: string; kind?: 'theme' | 'destination';
 }) {
   const destination = kind === 'destination';
-  const rowDirection = 'right';
+  const rowDirection = 'left';
   const basePath = destination ? '/reiseziele' : '/mottoreisen';
   const sectionTitle = destination ? 'Reiseziele' : 'Mottoreisen';
   const editorial = destination ? { ...entry, ...destinationEditorial[entry.slug] } : mottoEditorial[entry.slug];
@@ -60,9 +61,9 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
             <AdvertisingLayout ads={advertising.ads} sidebarOrder={advertising.sidebarOrder} collapseEmpty showEmptySlots>{null}</AdvertisingLayout>
           </details>}
         </InlineBannerProvider>
-        {!!companies.length && <Link className="text-link" href={`/unterkuenfte-a-z?${destination ? 'ziel' : 'thema'}=${entry.slug}`}>Alle passenden Unterkünfte ansehen →</Link>}
+        {!!companies.length && <Link className="text-link" href={`/unterkuenfte-a-z?${destination ? 'ziel' : 'thema'}=${entry.slug}`}>Alle passenden Unterkünfte ansehen <Icon name="chevron-right" size={20} /></Link>}
       </section>
-      <Link className="text-link" href={basePath}>{destination ? '← Weitere Reiseziele entdecken' : '← Alle Mottoreisen entdecken'}</Link>
+      <Link className="text-link" href={basePath}><Icon name="chevron-left" size={20} />{destination ? 'Weitere Reiseziele entdecken' : 'Alle Mottoreisen entdecken'}</Link>
     </div>
   </main>;
 }

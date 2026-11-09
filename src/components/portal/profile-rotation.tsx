@@ -1,4 +1,6 @@
 "use client";
+import { Icon } from "@/components/portal/icon";
+
 
 import { useCallback, useState, type ReactNode } from "react";
 import { nextProfileGroup } from "@/lib/profile-rotation";
@@ -9,7 +11,7 @@ import styles from "./profile-rotation.module.css";
 export function ProfileRotation({ groups, count }: { groups: ReactNode[]; count: number }) {
   const [page, setPage] = useState(0);
   const [interaction, setInteraction] = useState(0);
-  const advance = useCallback(() => setPage(value => nextProfileGroup(value, -1, groups.length)), [groups.length]);
+  const advance = useCallback(() => setPage(value => nextProfileGroup(value, 1, groups.length)), [groups.length]);
   const { root, handlers, focused, paused, reducedMotion, toggle } = useRotationMotion(groups.length, advance, `${page}:${interaction}`);
   function move(direction: number) {
     setPage((value) => nextProfileGroup(value, direction, groups.length));
@@ -25,9 +27,9 @@ export function ProfileRotation({ groups, count }: { groups: ReactNode[]; count:
       }
     }} tabIndex={groups.length > 1 ? 0 : undefined}>
     {groups.length > 1 && <div className={styles.controls}>
-      <button type="button" aria-label="Vorherige sechs Unterkünfte" onClick={() => move(-1)}>←</button>
+      <button type="button" aria-label="Vorherige sechs Unterkünfte" onClick={() => move(-1)}><Icon name="chevron-left" size={20} /></button>
       <span aria-live={focused ? "polite" : "off"} aria-atomic="true">Unterkünfte entdecken · {count} passende Unterkünfte</span>
-      <button type="button" aria-label="Nächste sechs Unterkünfte" onClick={() => move(1)}>→</button>
+      <button type="button" aria-label="Nächste sechs Unterkünfte" onClick={() => move(1)}><Icon name="chevron-right" size={20} /></button>
       <button type="button" aria-pressed={paused} disabled={reducedMotion}
         title={reducedMotion ? "Bei reduzierter Bewegung ist der automatische Wechsel deaktiviert." : undefined}
         onClick={toggle}>

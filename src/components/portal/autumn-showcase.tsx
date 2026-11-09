@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import Image from 'next/image';
 import Link from './navigation-link';
 import { TravelSignals } from './travel-signals';
@@ -8,6 +9,7 @@ import { SPECIAL_TOPIC_TERM } from '@/lib/travel-editorial';
 import type { Listing } from '@/types/portal';
 import styles from './autumn-showcase.module.css';
 import { CardImageSurface, CardImagePhoto, CardImageEditButton } from './card-image-surface';
+import cardStyles from './accommodation-card.module.css';
 import { imageCropStyle } from '@/lib/image-crop';
 
 export function AutumnShowcase({ listings, cardEditing = false }: { listings: readonly Listing[]; cardEditing?: boolean }) {
@@ -35,7 +37,7 @@ export function AutumnShowcase({ listings, cardEditing = false }: { listings: re
               <li><TravelThemeIcon slug="urlaub-am-wasser" /> Wasser &amp; Ruhe</li>
               <li><TravelThemeIcon slug="skifahren" /><Link href="/mottoreisen/skifahren">Winter &amp; Skiurlaub entdecken</Link></li>
             </ul>
-            <Link href={AUTUMN_HREF} className={styles.cta}>Alle Unterkünfte entdecken <span aria-hidden="true">→</span></Link>
+            <Link href={AUTUMN_HREF} className={styles.cta}>Alle Unterkünfte entdecken <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></Link>
           </div>
         </aside>
         <ThemeScroller count={stays.length} label="Sonderthemen-Unterkünfte" edgeNavigation pageSize={4} autoPlay={false}>
@@ -43,7 +45,7 @@ export function AutumnShowcase({ listings, cardEditing = false }: { listings: re
             <Link href={`/unterkuenfte/${listing.slug}`} className={styles.cardLink} aria-label={`${listing.name} – Unternehmensprofil ansehen`}>
               <div className={styles.photo}>{cardEditing ? <CardImagePhoto image={image} crop={crop} sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" /> : <Image src={image.src} alt={image.alt} fill style={crop ? imageCropStyle(crop) : undefined} unoptimized={image.src.startsWith('http')} loading="lazy" sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" />}</div>
               <div className={styles.copy}>
-                <h3>{listing.name}</h3>
+                <div className={styles.titleRow}><h3>{listing.name}</h3><span className={`${cardStyles.details} ${styles.details}`}>Details <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></span></div>
                 <p className={styles.location}>{[listing.location.city, listing.location.country].filter(Boolean).join(' · ')}</p>
                 <ul className={styles.seasonBadges} aria-label="Belegte Saisonangebote">
                   {listing.travelTermKeys?.includes('theme:saison-herbst') && <li className={styles.badge}>Herbst</li>}
@@ -51,7 +53,7 @@ export function AutumnShowcase({ listings, cardEditing = false }: { listings: re
                   {listing.travelTermKeys?.includes('theme:skifahren') && <li className={styles.badge}>Skiurlaub</li>}
                 </ul>
                 <TravelSignals termKeys={listing.travelTermKeys?.filter(key => key.startsWith('theme:') && !key.startsWith('theme:saison-'))} limit={2} />
-                <span className={styles.arrow} aria-hidden="true">→</span>
+
               </div>
             </Link>
             {cardEditing && <CardImageEditButton profileId={listing.id} profileName={listing.name} crop={crop} image={image} assetId={assetId} ratio={16 / 10} />}

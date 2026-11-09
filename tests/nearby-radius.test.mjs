@@ -4,9 +4,9 @@ import {readFileSync} from 'node:fs';
 import {distanceKm,selectNearbyLocations,mapViewportQuery,readNearbyQuery} from '../src/lib/nearby-map.ts';
 const locations=JSON.parse(readFileSync(new URL('../src/data/basic-map-locations.json',import.meta.url),'utf8'));
 
-test('20/50/75/100km retain real outer locations despite a dense centre and the 500-entry budget',()=>{
+test('20/50/75/100/300km retain real outer locations despite a dense centre and the 500-entry budget',()=>{
  const center={lat:48.12,lon:11.43};
- for(const radius of [20,50,75,100]){
+ for(const radius of [20,50,75,100,300]){
   const rows=locations.map(p=>({...p,distance:distanceKm(center,p)})).filter(p=>p.distance<=radius).sort((a,b)=>a.distance-b.distance);
   const selected=selectNearbyLocations(rows,495,{...center,radius});
   assert.equal(selected.length,Math.min(rows.length,495));assert.equal(new Set(selected.map(p=>p.id)).size,selected.length);
@@ -31,11 +31,11 @@ test('panning changes the request centre and visible corners determine the bound
  assert.deepEqual({lat:first.lat,lon:first.lon},{lat:48.123,lon:11.457});
  assert.notDeepEqual(first,moved);
  assert(first.radius>=distanceKm(a,{lat:48.05,lon:11.3}));
- assert.equal(mapViewportQuery(a,[{lat:52,lon:15}]).radius,100);
+ assert.equal(mapViewportQuery(a,[{lat:52,lon:15}]).radius,300);
  assert.equal(mapViewportQuery(a,[a]).radius,1);
  for(const view of [first,moved])assert.deepEqual(readNearbyQuery(new URL('https://portal.test/?'+new URLSearchParams(view))),view);
 });
 test('viewport API accepts intermediate integer radii but rejects unbounded or malformed requests',()=>{
- for(const radius of [1,7,19,33,84,100])assert.equal(readNearbyQuery(new URL('https://portal.test/?lat=48&lon=11&radius='+radius)).radius,radius);
- for(const radius of ['0','-1','101','500','NaN','2.5',''])assert.equal(readNearbyQuery(new URL('https://portal.test/?lat=48&lon=11&radius='+radius)),null);
+ for(const radius of [1,7,19,33,84,100,180,300])assert.equal(readNearbyQuery(new URL('https://portal.test/?lat=48&lon=11&radius='+radius)).radius,radius);
+ for(const radius of ['0','-1','301','500','NaN','2.5',''])assert.equal(readNearbyQuery(new URL('https://portal.test/?lat=48&lon=11&radius='+radius)),null);
 });

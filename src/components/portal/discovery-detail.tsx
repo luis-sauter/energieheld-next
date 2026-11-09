@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import { CardImageSurface, CardImagePhoto, CardImageEditButton } from "./card-image-surface";
 import { TravelSignals } from "./travel-signals";
 import Image from "next/image";
@@ -37,7 +38,7 @@ export function AccommodationCard({ listing, rotating = false, sizes, cardEditin
       <NewPlacementBadge id={listing.id} className={cardStyles.newBadge}/>
       <div className={`accommodation-card-copy ${cardStyles.copy}`}>
         <p className={cardStyles.location}>{[listing.location.city, listing.location.region, listing.location.country].filter(Boolean).filter((value, index, all) => all.indexOf(value) === index).join(" · ")}</p>
-        <div className={cardStyles.titleRow}><h3>{listing.name}</h3><span className={cardStyles.details}>Details <span aria-hidden="true">→</span></span></div>
+        <div className={cardStyles.titleRow}><h3>{listing.name}</h3><span className={cardStyles.details}>Details <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></span></div>
         <div className={cardStyles.signals}><TravelSignals termKeys={listing.travelTermKeys} /></div>
       </div>
     </Link>
@@ -80,7 +81,7 @@ export function DiscoveryDetail({ entry, title, basePath, listings, advertising,
             groups={profileGroups(selected).map((group, index) =>
               <div className="accommodation-grid" key={index}>{group.map((listing) =>
                 <AccommodationCard listing={listing} rotating showImportMarker cardEditing={cardEditing} key={listing.id} />)}</div>)} />
-          <Link className="text-link" href={`/unterkuenfte-a-z?${basePath === "/reiseziele" ? "ziel" : "thema"}=${entry.slug}`}>Alle passenden Unterkünfte ansehen →</Link>
+          <Link className="text-link" href={`/unterkuenfte-a-z?${basePath === "/reiseziele" ? "ziel" : "thema"}=${entry.slug}`}>Alle passenden Unterkünfte ansehen <Icon name="chevron-right" size={20} /></Link>
         </> : <div className="accommodation-grid">{listings.map((listing) => <AccommodationCard listing={listing} showImportMarker cardEditing={cardEditing} key={listing.id} />)}</div>}
       </> : <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}
       </div></DiscoveryAdvertising>
@@ -88,6 +89,6 @@ export function DiscoveryDetail({ entry, title, basePath, listings, advertising,
     <TravelRelations title={basePath === "/reiseziele" ? "Reiseideen für Ihren Aufenthalt" : "Reiseziele mit passenden Gastgebern"}
       intro={basePath === "/reiseziele" ? "Entdecken Sie Reisethemen, die zu Ihren Plänen für diese Region passen." : undefined}
       links={basePath === "/reiseziele" ? relations.themes : relations.destinations} />
-    <Link className="text-link discovery-back-link" href={basePath}>{basePath === "/reiseziele" ? "← Weitere Reiseziele entdecken" : `← Alle ${title} ansehen`}</Link>
+    <Link className="text-link discovery-back-link" href={basePath}><Icon name="chevron-left" size={20} />{basePath === "/reiseziele" ? "Weitere Reiseziele entdecken" : `Alle ${title} ansehen`}</Link>
   </main>;
 }

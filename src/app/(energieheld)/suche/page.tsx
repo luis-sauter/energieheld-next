@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import { compactResultCard } from "@/lib/portal-search-values";
 import { SearchResultStream } from "@/components/portal/search-result-stream";
 import Link from '@/components/portal/navigation-link';
@@ -32,7 +33,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   return <main id="hauptinhalt">
     <SearchTravelFinder basicEnabled={basicIntegrationEnabled()} key={JSON.stringify(values)} listings={travelFinderListings(finder.listings)} terms={finder.terms} initialValues={values} origin={origin} error={finder.error} completedSearch={{ values, total: !filtered && result.type ? undefined : result.total, error: result.error }} />
     <div className={`container ${styles.page}`}>
-    <Link className="text-link" href={travelSearchReturnUrl(values, origin)}>← Zur Suche zurück</Link>
+    <Link className="text-link" href={travelSearchReturnUrl(values, origin)}><Icon name="chevron-left" size={20} /> Zur Suche zurück</Link>
     <p>{filtered ? 'Ihre Reisefilter grenzen die Suche auf passende Unterkünfte ein. Für Reiseziele und Mottoreisen entfernen Sie die Reisefilter.' : 'Ergebnisse aus dem gesamten Reiseportal: Unterkünfte, Reiseziele und Mottoreisen.'}</p>
     <nav className={styles.types} aria-label="Ergebnistyp">
       {(filtered ? [['accommodation', 'Unterkünfte mit Ihren Reisefiltern']] : [['', 'Alle Inhalte'], ...Object.entries(searchTypes)]).map(([key, label]) => {

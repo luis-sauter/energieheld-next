@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import { loadProfileImports } from "@/lib/profile-import";
 import { loadAdminTravelTaxonomy, type TravelReviewSnapshot } from "@/lib/admin-travel-taxonomy";
 import { saveTravelTerms } from "@/app/(energieheld)/admin/firmen/[id]/travel-actions";
@@ -138,7 +139,7 @@ export default async function AccommodationDetail({
       />}
       <TravelRelations presentation="profile" title="Reiseinformationen und passende Rubriken" links={[...relations.destinations, ...relations.themes]} facts={result.terms} />
       <Link className="text-link back-link" href="/unterkuenfte-a-z">
-        ← Zurück zu Unterkünfte A–Z
+        <Icon name="chevron-left" size={20} /> Zurück zu Unterkünfte A–Z
       </Link>
     </main>
   );

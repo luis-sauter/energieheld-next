@@ -3584,3 +3584,6 @@ h6 {
 .row-title-link { display: inline-flex; flex-wrap: wrap; align-items: center; column-gap: 12px; row-gap: 6px; max-width: 100%; }
 .row-title-name { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
 .row-title-link .new-placement-badge { flex: none; white-space: nowrap; }
+
+.reiseportal-shell svg[data-chevron] { flex-shrink: 0; vertical-align: middle; }
+.reiseportal-shell button:has(> svg[data-chevron]:only-child) { display: inline-grid; place-items: center; padding: 0; line-height: 1; }

@@ -3,7 +3,9 @@ import type { CSSProperties } from "react";
 const paths: Record<string, string> = {
   search: "m21 21-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0",
   pin: "M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0ZM15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
-  arrow: "M4 12h16m-6-6 6 6-6 6",
+  arrow: "m9 5 7 7-7 7",
+  "chevron-right": "m9 5 7 7-7 7",
+  "chevron-left": "m15 5-7 7 7 7",
   leaf: "M20 3C6 2 2 8 5 15s15 7 15-12ZM4 21 15 10",
   sun: "M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM12 2v2m0 16v2M2 12h2m16 0h2M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2",
   heat: "M7 3C1 8 13 11 7 16m5-13c-6 5 6 8 0 13m5-13c-6 5 6 8 0 13M4 21h16",
@@ -38,6 +40,7 @@ export function Icon({
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      data-chevron={name === "arrow" || name.startsWith("chevron-") || undefined}
       style={style}
     >
       <path d={paths[name] ?? paths.home} />

@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import Link from './navigation-link';
 import { ListingRow } from './listing-row';
 import { DiscoveryCard } from './reise-overview';
@@ -34,7 +35,7 @@ export function SearchResults({ hits, listings, facts, travelLabels, season }: {
           sizes="(max-width: 700px) 100vw, 50vw" />
           : <article className={styles.textResult}><h3>{hit.external
             ? <a href={externalHref} target={externalHref?.startsWith('/') ? undefined : '_blank'} rel="sponsored noopener noreferrer">{hit.title} ↗</a>
-            : <Link href={hit.url}>{hit.title} →</Link>}</h3><p>{hit.excerpt}</p></article>}
+            : <Link href={hit.url}>{hit.title} <Icon name="chevron-right" size={20} /></Link>}</h3><p>{hit.excerpt}</p></article>}
     </li>;
   })}</ol>{hits.some(hit => hit.basic) && <BasicSourceCredit/>}</>;
 }

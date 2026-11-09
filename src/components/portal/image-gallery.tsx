@@ -1,4 +1,6 @@
 "use client";
+import { Icon } from "@/components/portal/icon";
+
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -87,8 +89,8 @@ export function ImageGallery({
           /></a>
         )}
         {images.length > 1 && <div className="gallery-navigation" aria-label="Galerie steuern">
-          <button type="button" aria-label="Vorheriges Bild" onClick={() => select(selectedIndex - 1)}>‹</button>
-          <button type="button" aria-label="Nächstes Bild" onClick={() => select(selectedIndex + 1)}>›</button>
+          <button type="button" aria-label="Vorheriges Bild" onClick={() => select(selectedIndex - 1)}><Icon name="chevron-left" size={20} /></button>
+          <button type="button" aria-label="Nächstes Bild" onClick={() => select(selectedIndex + 1)}><Icon name="chevron-right" size={20} /></button>
         </div>}
         <span className="image-caption">
           {isDemo ? "Symbolbild" : "Unternehmensbild"} · {selectedIndex + 1} /{" "}

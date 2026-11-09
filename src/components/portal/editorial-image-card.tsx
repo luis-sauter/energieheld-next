@@ -1,3 +1,4 @@
+import { Icon } from "@/components/portal/icon";
 import Image from "next/image";
 import Link from "./navigation-link";
 import styles from "./editorial-image-card.module.css";
@@ -23,7 +24,7 @@ export function EditorialImageCard({ title, text, href, image, alt, compact = fa
     <div className={styles.content}>
       {icon && <span className={styles.icon} aria-hidden="true">{icon}</span>}
       <div><h3>{title}</h3>{text && <span className={styles.text}>{text}</span>}</div>
-      <span className={styles.arrow} aria-hidden="true">→</span>
+      <span className={styles.arrow} aria-hidden="true"><Icon name="chevron-right" size={20} /></span>
     </div>
   </Link>;
 }

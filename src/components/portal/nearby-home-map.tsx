@@ -1,4 +1,6 @@
 'use client';
+import { Icon } from "@/components/portal/icon";
+
 import {useCallback,useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {validPortalMapData,type PortalMapData} from '@/lib/portal-map-entries';
@@ -31,12 +33,12 @@ export function NearbyHomeMap() {
   return()=>{clearTimeout(timer);controller.abort();};
  },[geoReady,location,view]);
  return <section ref={root} className={styles.section} aria-labelledby="locations-title" data-company-map data-nearby-map>
-  <div className="container"><header className={styles.header}><div><p className="eyebrow">Gastgeber entdecken</p><h2 id="locations-title">Unterkünfte in Ihrer Nähe</h2>{location?.city&&<p>{location.city}</p>}</div><p className={styles.mapHelp}>Karte verschieben oder zoomen · bis 100 km</p></header>
+  <div className="container"><header className={styles.header}><div><p className="eyebrow">Gastgeber entdecken</p><h2 id="locations-title">Unterkünfte in Ihrer Nähe</h2>{location?.city&&<p>{location.city}</p>}</div><p className={styles.mapHelp}>Karte verschieben oder zoomen · bis 300 km</p></header>
    <div className={styles.frame} data-map-radius={view?.radius??20} data-map-center={view?`${view.lat},${view.lon}`:undefined}>{ready&&geoReady?location?<OpenStreetMap entries={data?.entries??[]} location={location} onViewChange={onViewChange}/>:<div className={styles.loading}>Ihr Standort ist derzeit nicht verfügbar.</div>:<div className={styles.loading}>Unterkünfte und Karte werden geladen …</div>}</div>
    <div className={styles.footer}><p role="status">{error||(geoReady&&!location?'Bitte versuchen Sie es später erneut.':!data?'Unterkünfte werden geladen …':data.entries.length===0?'In diesem Kartenausschnitt sind derzeit keine Unterkunftsstandorte verfügbar.':'Unterkunftsstandorte im aktuellen Kartenausschnitt')}</p></div>
    {data&&data.entries.length>0&&<p className={styles.hint}>Standortauswahl aus unserem Portal. Vergrößern Sie die Karte, um weitere nah beieinanderliegende Pins zu sehen.</p>}
    {location?.source==='db-ip'&&<p className={styles.hint}>Standortbestimmung: <a href="https://db-ip.com" target="_blank" rel="noopener noreferrer">DB-IP</a></p>}
-   <a className={styles.directory} href="/unterkuenfte-a-z">Alle Unterkünfte entdecken <span aria-hidden="true">→</span></a>
+   <a className={styles.directory} href="/unterkuenfte-a-z">Alle Unterkünfte entdecken <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></a>
   </div>
  </section>;
 }
