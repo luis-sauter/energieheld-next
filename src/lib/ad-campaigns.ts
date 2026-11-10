@@ -124,6 +124,7 @@ export async function loadAdCampaigns(
   if (!admin && !id) query = query.or(customerAdListFilter);
   if (admin && pendingOnly) query = query.or('status.eq.pending,request_status.in.(new,in_progress)').is('archived_at', null).eq('is_editorial', false);
   if (admin && archivedOnly) query = query.not('archived_at', 'is', null);
+  if (admin && !archivedOnly && !id && !pendingOnly) query = query.is('archived_at', null);
   if (id) {
     if (!isProfileId(id)) return { campaigns: [] as AdCampaign[], count: 0 };
     query = query.eq("id", id);

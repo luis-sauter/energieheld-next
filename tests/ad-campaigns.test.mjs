@@ -109,6 +109,8 @@ function client({
           call.filters.push([k, v]);
           return this;
         },
+        is(k,v) { call.nullFilter=[k,v]; return this; },
+        not(k,op,v) { call.archiveFilter=[k,op,v]; return this; },
         order() {
           return this;
         },
@@ -490,4 +492,8 @@ test('server save rejects forged new directory slot before upload/RPC and accept
  const rejected=client();assert.ok((await saveOwnAd(rejected,form({targets:['experts_directory|top_banner'],image:png}))).error);assert.ok(!rejected.calls.some(c=>c.rpc||c.upload||c.download));
  const historical=client({status:'rejected',existingTargets:[{target_type:'experts_directory',category_id:null,placement:'top_banner'}]});assert.ok((await saveOwnAd(historical,form({targets:['experts_directory|top_banner'],image:png}))).success);
  const changed=client({status:'rejected',existingTargets:[{target_type:'experts_directory',category_id:null,placement:'top_banner'}]});assert.ok((await saveOwnAd(changed,form({targets:['experts_directory|sidebar_top'],image:png}))).error);assert.ok(!changed.calls.some(c=>c.rpc||c.upload));
+});
+
+test('admin active list excludes archive before pagination; archive and detail remain reachable',async()=>{
+ for(const [archived,detail]of [[false,undefined],[true,undefined],[false,id]]){const db=client({admin:true});await loadAdCampaigns(db,true,1,detail,archived);const q=db.calls.find(c=>c.table==='company_ad_campaigns');assert.deepEqual(q.nullFilter,!archived&&!detail?['archived_at',null]:undefined);assert.deepEqual(q.archiveFilter,archived?['archived_at','is',null]:undefined);}
 });

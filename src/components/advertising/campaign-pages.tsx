@@ -42,7 +42,7 @@ export async function CampaignIndex({
       <Link href={base}>
         ← Zurück zum {admin ? "Adminbereich" : "Firmenbereich"}
       </Link>
-      <h1>{admin ? (pendingOnly ? "Angebotsanfragen bearbeiten" : "Werbung verwalten") : "Meine Angebotsanfragen"}</h1>
+      <h1>{admin ? (archivedOnly ? "Archiv" : pendingOnly ? "Angebotsanfragen bearbeiten" : "Werbung verwalten") : "Meine Angebotsanfragen"}</h1>
       {admin && <nav className={styles.actions} aria-label="Kampagnenbestand">
         <Link href="/admin/werbung?ansicht=pruefung" aria-current={pendingOnly ? "page" : undefined}>Offene Angebotsanfragen</Link>
         <Link href="/admin/werbung" aria-current={!archivedOnly && !pendingOnly ? 'page' : undefined}>Alle Anfragen und Kampagnen</Link>
@@ -51,7 +51,7 @@ export async function CampaignIndex({
       {admin && campaigns?.length && !Object.hasOwn(campaigns[0], 'archived_at') ? <p role="status">Die Archivverwaltung wird nach der Datenbankaktualisierung verfügbar.</p> : null}
       <p className={styles.intro}>
         {admin
-          ? "Prüfen Sie Anzeigen und bestätigen Sie freie Zeiträume. Werbung bleibt unabhängig von Profilfreischaltung und Qualitätssiegel."
+          ? archivedOnly ? "Archivierte Anfragen und Banner. Öffnen Sie einen Eintrag, um ihn einzusehen oder zu verwalten." : "Bearbeiten Sie Angebotsanfragen und verwalten Sie Anzeigen. Archivierte Einträge finden Sie im Archiv."
           : "Planen Sie Ihre Anzeige auf der Startseite, bei Mottoreisen oder Reisezielen. Seite, Platz und Zeitraum werden vor der Veröffentlichung geprüft."}
       </p>
       {!admin && (
@@ -103,7 +103,7 @@ export async function CampaignDetail({
   if (!campaign && !("error" in result && result.error)) notFound();
   if (admin && campaign?.request_status) {
     const workspace=await client.from('portal_offer_request_workspaces').select('details,notes,revision').eq('request_id',campaign.id).maybeSingle();
-    return <main id="hauptinhalt" className={`container ${styles.page}`}><Link href="/admin/werbung?ansicht=pruefung">← Zur Anfragenübersicht</Link><h1>Angebotsanfrage</h1><OfferRequestDetail campaign={campaign} workspace={workspace.data as OfferWorkspace|null} workspaceError={Boolean(workspace.error)}/><Link href="/admin/werbung">Alle Anfragen und Kampagnen</Link></main>;
+    return <main id="hauptinhalt" className={`container ${styles.page}`}><Link href="/admin/werbung?ansicht=pruefung">← Zur Anfragenübersicht</Link><h1>{campaign.archived_at ? "Archivierte Angebotsanfrage" : "Angebotsanfrage"}</h1><OfferRequestDetail campaign={campaign} workspace={workspace.data as OfferWorkspace|null} workspaceError={Boolean(workspace.error)}/><Link href="/admin/werbung">Alle Anfragen und Kampagnen</Link></main>;
   }
   const inlinePath = admin && campaign ? campaign.is_editorial ? campaignTargetPage(campaign) : campaignInlinePage(campaign) : null;
   const presentation = inlinePath ? await loadBannerPresentations(client, inlineAdContext(inlinePath)!) : null;

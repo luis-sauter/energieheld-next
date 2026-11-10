@@ -6,6 +6,18 @@ import { validateMediaFile } from "@/lib/company-media";
 import { after } from "next/server";
 import { notifyOfferRequest } from "@/lib/offer-notification.server";
 import { revalidatePath } from "next/cache";
+import { redirect } from 'next/navigation';
+import { changeOfferRequestLifecycle } from '@/lib/offer-request-lifecycle';
+import type { LifecycleState } from '@/lib/ad-lifecycle';
+
+export async function lifecycleOfferRequest(_state: LifecycleState, form: FormData): Promise<LifecycleState> {
+ const result = await changeOfferRequestLifecycle(await createClient(), form);
+ if (result.success) {
+  revalidatePath('/', 'layout');
+  if (result.redirectTo) redirect(result.redirectTo);
+ }
+ return result;
+}
 import type { AdFormState } from "@/lib/ad-values";
 import { validateOfferWorkspace } from '@/lib/offer-request-workspace';
 export async function sendOfferRequest(_state:AdFormState, form:FormData):Promise<AdFormState> {

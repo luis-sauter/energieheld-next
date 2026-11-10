@@ -549,3 +549,7 @@
 .page[data-offer-request] .requestForm { padding: clamp(18px, 3vw, 28px); background: #fff; }
 .page[data-offer-request] .requestForm .formSection { padding: 0 0 24px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
 .page[data-offer-request] .requestFooter { padding: 0; border: 0; background: transparent; }
+.lifecycle { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.lifecycle p { max-width: 74ch; line-height: 1.65; }
+.deleteConfirmation { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0; line-height: 1.6; }
+.deleteConfirmation input { flex: 0 0 auto; margin-top: 6px; }

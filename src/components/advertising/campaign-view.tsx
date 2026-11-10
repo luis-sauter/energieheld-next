@@ -205,13 +205,14 @@ export function CampaignList({
           {admin && <p className="eyebrow">{c.companyName}</p>}
           <h2>{c.internal_name || (admin ? "Neue Werbekampagne" : "Neue Angebotsanfrage")}</h2>
           <CampaignFacts campaign={c} />
+          {c.archived_at && <p>Archiviert am {new Date(c.archived_at).toLocaleDateString("de-DE")}</p>}
           {!requestsOnly && !c.request_status && <CampaignSlot placement={c.placement} ad={c} preview />}
           <Link
             className="button"
             href={`${admin ? "/admin" : "/firma"}/werbung/${c.id}`}
           >
             {admin
-              ? c.request_status ? "Anfrage bearbeiten" : c.archived_at ? "Archiv ansehen" : requestsOnly ? "Anfrage prüfen" : "Kampagne prüfen"
+              ? c.request_status ? c.archived_at ? "Archivierte Anfrage ansehen" : "Anfrage bearbeiten" : c.archived_at ? "Archiv ansehen" : requestsOnly ? "Anfrage prüfen" : "Kampagne prüfen"
               : ["draft", "rejected"].includes(c.status)
                 ? "Angebotsanfrage bearbeiten"
                 : "Angebotsanfrage ansehen"}
