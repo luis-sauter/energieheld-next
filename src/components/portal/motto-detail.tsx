@@ -31,15 +31,20 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
   const banners = orderMottoItems(visibleMottoAds(advertising?.sliderAds ?? advertising?.ads ?? []).filter(ad => ad.placement !== 'top_banner'), ad => ad.id, seed + ':banners');
   const companyRows = mottoGroups(companies, 3), bannerRows = mottoGroups(banners, 2);
   const breadcrumbs = portalBreadcrumbs(entry.title, `${basePath}/${entry.slug}`, { name: sectionTitle, path: basePath });
-  return <main id="hauptinhalt" className={styles.page} data-motto-detail={destination ? undefined : entry.slug} data-destination-detail={destination ? entry.slug : undefined}>
-    <div className={styles.backdrop} aria-hidden="true"><Image src={editorial.image} alt="" fill sizes="100vw" preload /></div>
+  const camping = !destination && entry.slug === 'campingurlaub';
+  const introVariant = destination ? undefined : ({ 'natur-pur': 'panel', wanderurlaub: 'layer', campingurlaub: 'strip' } as Record<string, string>)[entry.slug];
+  return <main id="hauptinhalt" className={styles.page} data-motto-detail={destination ? undefined : entry.slug} data-destination-detail={destination ? entry.slug : undefined} data-mobile-intro-variant={introVariant}>
+    <div className={styles.backdrop} aria-hidden="true">{camping ? <picture>
+      <source media="(max-width: 600px)" srcSet="/reiseportal/motto-editorial-v2/campingurlaub-20261110-mobile.webp" />
+      <Image src={editorial.image} alt="" fill sizes="100vw" loading="eager" fetchPriority="high" />
+    </picture> : <Image src={editorial.image} alt="" fill sizes="100vw" preload />}</div>
     <div className={`${styles.content} container`}>
       <JsonLd data={jsonLdGraph([breadcrumbSchema(breadcrumbs), collectionSchema({ name: entry.title,
         description: editorial.intro, path: `${basePath}/${entry.slug}`,
         about: destination ? { '@type': 'Place', name: entry.title } : { '@type': 'DefinedTerm', name: entry.title, termCode: `theme:${entry.slug}` },
         items: companies.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <Breadcrumbs items={breadcrumbs} />
-      <header className={styles.hero}><p className="eyebrow">{sectionTitle}</p><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p className={introStyles.panel}>{editorial.intro}</p></header>
+      <header className={styles.hero}><p className="eyebrow">{sectionTitle}</p><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p className={introStyles.panel} data-intro-copy>{editorial.intro}</p></header>
       <section className={styles.stays} aria-labelledby="motto-stays">
         <p className="eyebrow">Aus dem Reiseportal</p><h2 id="motto-stays">Passende Unterkünfte</h2>
         <p className={styles.count}>{companies.length} passende {companies.length === 1 ? 'Unterkunft' : 'Unterkünfte'} · Entdecken Sie Ihre Gastgeber</p>

@@ -37,8 +37,8 @@ export const mottoEditorial: Record<string, MottoEditorial> = {
     "intro": "Am Wasser bekommt der Urlaub einen anderen Rhythmus. Ein Spaziergang am See, ein stiller Blick über den Fluss oder ein Tag an der Küste lassen sich ganz unterschiedlich erleben. Entdecken Sie passende Gastgeber und prüfen Sie, wie Sie das gewünschte Ufer erreichen und welche Möglichkeiten vor Ort tatsächlich bestehen."
   },
   "campingurlaub": {
-    "image": "/reiseportal/motto-editorial-v2/campingurlaub.webp",
-    "alt": "Kleines Zelt unter Laubbäumen am Rand einer Wiese nahe einem See",
+    "image": "/reiseportal/motto-editorial-v2/campingurlaub-20261110-desktop.webp",
+    "alt": "Camping am Alpensee mit Reisemobil und Zelt am grünen Ufer",
     "intro": "Morgens die frische Luft spüren und den Tag draußen beginnen: Camping lässt viel Raum für den eigenen Urlaubsrhythmus. Ob Zelt, Wohnwagen oder Reisemobil, der passende Platz richtet sich nach Ihren persönlichen Bedürfnissen. Vergleichen Sie Lage, Stellplatzangebote und die konkreten Angaben der Gastgeber, bevor Sie Ihre nächste Auszeit planen."
   },
   "romantik-zu-zweit": {
