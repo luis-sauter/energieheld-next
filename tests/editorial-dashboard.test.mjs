@@ -18,3 +18,8 @@ test('dashboard tasks precede statistics and full companies are a separate pagin
  const source=readFileSync(new URL('../src/app/(energieheld)/admin/page.tsx',import.meta.url),'utf8');assert.ok(source.indexOf('Offene Aufgaben')<source.indexOf('Auswertungen'));assert.doesNotMatch(source,/loadReviewOverview|result.profiles|offizielle Gewerke/);assert.match(source,/admin\/firmen[?]ansicht=/);assert.match(source,/getEditorialQueue/);
  const companies=readFileSync(new URL('../src/app/(energieheld)/admin/firmen/page.tsx',import.meta.url),'utf8');assert.match(companies,/editorial_company_page/);assert.match(companies,/p_page:page/);assert.match(companies,/name="q"/);assert.match(companies,/Nächste Seite/);
 });
+
+test('portal scope uses one dedicated paged RPC and rejects verification leakage; Energieheld remains available',async()=>{
+ const c=client();let called;c.rpc=async(name,args)=>{called={name,args};return{data:{counts:{profiles:1,advertising:2,verifications:0,total:3},tasks:[]},error:null}};assert.equal((await loadEditorialQueue(c,{personalVerification:false,page:2,limit:20,kind:'advertising'})).counts.total,3);assert.deepEqual(called,{name:'portal_editorial_work_queue',args:{p_page:2,p_limit:20,p_kind:'advertising'}});
+ c.rpc=async()=>({data:{counts:{profiles:0,advertising:0,verifications:1,total:1},tasks:[{kind:'verification'}]}});assert.ok((await loadEditorialQueue(c,{personalVerification:false})).error);assert.equal((await loadEditorialQueue(c)).counts.verifications,1);
+});

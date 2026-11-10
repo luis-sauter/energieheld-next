@@ -42,10 +42,10 @@ test('inline navigation only for active single campaign; original stays unchange
  for(const change of [{status:'pending'},{status:'draft'},{archived_at:'2026-10-07'},{approved_start_date:'2026-11-01'},{approved_end_date:'2026-10-01'},{targets:[...original.targets,...original.targets]},{targets:[{target_type:'trade',category_id:'legacy',placement:'sidebar_top'}]}])assert.equal(campaignInlinePage({...original,...change},'2026-10-08'),null);
  assert.equal(JSON.stringify(original),snapshot);
 });
-test('workspace renders all three zero-task cards, safe tools and honest inventory',async()=>{
+test('workspace renders the two Reiseportal zero-task cards, safe tools and honest inventory',async()=>{
  globalThis.workspaceClient=client();globalThis.workspaceQueue={counts:{profiles:0,advertising:0,verifications:0,total:0},tasks:[]};
  const html=renderToStaticMarkup(await AdminPage({searchParams:Promise.resolve({})}));
- assert.match(html,/Verifizierungsanfragen/);assert.equal((html.match(/Keine offenen Anfragen/g)||[]).length,3);assert.match(html,/href="\/admin\/inhalte"/);assert.match(html,/href="\/"/);assert.doesNotMatch(html,/inhaltspruefung|Banner für Anbieter anlegen|Analytics im gewählten Zeitraum|Impressionen|evil.example/);assert.match(html,/sobald die Erfassung aktiviert ist/);
+ assert.doesNotMatch(html,/Verifizierungsanfragen/);assert.match(html,/Firmenprofile/);assert.match(html,/Angebotsanfragen/);assert.equal((html.match(/Keine offenen Anfragen/g)||[]).length,2);assert.match(html,/href="\/admin\/inhalte"/);assert.match(html,/href="\/"/);assert.doesNotMatch(html,/inhaltspruefung|Banner für Anbieter anlegen|Analytics im gewählten Zeitraum|Impressionen|evil.example/);assert.match(html,/sobald die Erfassung aktiviert ist/);
  globalThis.workspaceQueue={tasks:[],error:'Nicht verfügbar'};const failed=renderToStaticMarkup(await AdminPage({searchParams:Promise.resolve({})}));assert.match(failed,/role="alert"/);assert.doesNotMatch(failed,/Keine offenen Anfragen/);
  const pages=await loadBannerWorkspacePages(client());assert.equal(pages.pages.length,2);assert.ok((await loadBannerWorkspacePages(client({admin:false}))).error);
 });

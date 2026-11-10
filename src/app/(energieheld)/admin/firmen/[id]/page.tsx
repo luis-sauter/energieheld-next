@@ -1,3 +1,4 @@
+import { editorialFeatures } from '@/config/editorial-features';
 import { loadProfileImports } from '@/lib/profile-import';
 import { ProfileImportNotice } from '@/components/admin/profile-import-notice';
 import { publicationStatus } from "@/lib/profile-publication";
@@ -77,11 +78,11 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       <div id="reisezuordnungen" className={styles.reviewSection}>
         {!travelTaxonomy ? <p role="alert">Die Reisezuordnungen konnten nicht geladen werden.</p> : "error" in travelTaxonomy ? <p role="alert">{travelTaxonomy.error}</p> : <TravelTaxonomyEditor published={profile.status === "approved"} />}
       </div>
-      <section id="verifizierung" className={styles.reviewSection} aria-labelledby="quality-section-title">
+      {editorialFeatures.personalVerification && <section id="verifizierung" className={styles.reviewSection} aria-labelledby="quality-section-title">
         <h2 id="quality-section-title">Optionale Qualitätsprüfung</h2>
         <p>Die persönliche Verifizierung ist unabhängig von der Erstfreischaltung.</p>
         <QualityReviewForm profileId={profile.id} review={profile.company_quality_reviews} request={profile.company_quality_requests} />
-      </section>
+      </section>}
       <section id="pruefung" className={styles.reviewSection} aria-labelledby="review-finish-title">
         <h2 id="review-finish-title">Redaktionelle Entscheidung</h2>
         <ReviewActions key={`${profile.id}:${profile.status}:${visibility.data?.is_listed !== false}`} profileId={profile.id} status={profile.status} listed={visibility.data?.is_listed !== false} slug={profile.slug} canPublishDraft={profile.approval_context === "reiseportal" && (Array.isArray(profile.companies) ? profile.companies[0] : profile.companies)?.owner_user_id === null} canReview={result.access === "admin"} />

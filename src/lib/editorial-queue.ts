@@ -3,11 +3,13 @@ import { checkAdmin } from "./admin-review";
 export type EditorialCounts = { profiles: number; advertising: number; verifications: number; total: number };
 export type EditorialTask = { id: string; kind: "profile" | "advertising" | "verification"; name: string; submitted_at: string | null; status: string; href: string };
 export type EditorialQueue = { counts?: EditorialCounts; tasks: EditorialTask[]; error?: string };
-export async function loadEditorialQueue(client: SupabaseClient): Promise<EditorialQueue> {
+export async function loadEditorialQueue(client: SupabaseClient, options: { page?: number; limit?: number; kind?: string | null; personalVerification?: boolean } = {}): Promise<EditorialQueue> {
   if (await checkAdmin(client) !== "admin") return { tasks: [], error: "Keine Berechtigung für Redaktionsaufgaben." };
   try {
-    const { data, error } = await client.rpc("editorial_work_queue");
+    const { data, error } = await client.rpc(options.personalVerification === false ? "portal_editorial_work_queue" : "editorial_work_queue",
+      { p_page: options.page ?? 1, p_limit: options.limit ?? 8, p_kind: options.kind ?? null });
     if (error || !data?.counts || !Array.isArray(data.tasks) || !(["profiles","advertising","verifications","total"] as const).every(key => Number.isSafeInteger(data.counts[key]) && data.counts[key] >= 0) || data.counts.total !== data.counts.profiles + data.counts.advertising + data.counts.verifications) throw Error();
+    if (options.personalVerification === false && (data.counts.verifications !== 0 || data.tasks.some((task: EditorialTask) => task.kind === 'verification'))) throw Error();
     return { counts: data.counts, tasks: data.tasks };
   } catch { return { tasks: [], error: "Die offenen Aufgaben konnten nicht geladen werden. Bitte laden Sie die Seite erneut." }; }
 }
