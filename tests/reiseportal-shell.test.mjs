@@ -207,10 +207,10 @@ test("homepage uses the supplied MP4 as the hero background with search above it
   const finder = readFileSync(new URL("../src/components/portal/travel-finder.tsx", import.meta.url), "utf8");
   const media = readFileSync(new URL("../src/components/portal/home-hero-media.tsx", import.meta.url), "utf8");
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
-  assert.ok(existsSync(new URL("../public/reiseportal/hero-loop.mp4", import.meta.url)));
+  assert.ok(existsSync(new URL("../public/reiseportal/hero-loop-v2.mp4", import.meta.url)));
   assert.match(source, /<HomeTravelFinder.*listings=/);
   assert.match(finder, /<section className="travel-hero"[\s\S]*?<HomeHeroMedia[\s\S]*?<h1 id="travel-hero-title">[\s\S]*?Finden Sie Ihren passenden Urlaub[\s\S]*?<\/h1>[\s\S]*?renderFinder\(finder\) : finder/);
-  assert.match(media, /<source src="\/reiseportal\/hero-loop\.mp4"/);
+  assert.match(media, /<source src="\/reiseportal\/hero-loop-v2\.mp4"/);
   assert.match(css, /\.travel-hero > video\s*\{[^}]*object-fit: cover;[^}]*pointer-events: none;/);
   assert.doesNotMatch(source, /<Image src="\/reiseportal\/hero\.jpg"/);
 });

@@ -38,8 +38,8 @@ test("hero uses a frame from the existing video before playback and respects red
   const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   assert.match(home, /<HomeTravelFinder/);
   assert.match(finder, /<HomeHeroMedia/);
-  assert.match(media, /play && <video autoPlay muted loop playsInline preload="none"/);
-  assert.match(media, /motion\.matches.*connection\?\.saveData/);
+  assert.match(media, /loaded && !failed && <video[^>]*autoPlay=\{active\} muted loop playsInline preload="none"/);
+  assert.match(media, /observeHeroPlayback\(poster\.current/);
   assert.ok(existsSync(asset('/reiseportal/hero-poster.webp')));
   assert.doesNotMatch(home, /hero\.jpg|poster=/);
   assert.match(css, /\.travel-hero\s*\{[^}]*background: var\(--portal-surface\);/);
@@ -60,7 +60,7 @@ test("retired hero has no active source reference; independent provider and dest
     }
   };
   scan(new URL('../src/', import.meta.url));
-  assert.ok(existsSync(asset('/reiseportal/hero-loop.mp4')));
+  assert.ok(existsSync(asset('/reiseportal/hero-loop-v2.mp4')));
   for (const original of ['/reiseportal/destinations/schweiz.jpg', '/reiseportal/unterkuenfte/blausee/01.jpg'])
     assert.ok(existsSync(asset(original)), original);
 });
