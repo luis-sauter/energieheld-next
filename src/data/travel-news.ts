@@ -32,7 +32,7 @@ export const travelNews: readonly TravelNewsItem[] = [
   {
     id: 'bayern-wintercamping-2026',
     title: 'Wintercamping: Bayern neu entdecken',
-    teaser: 'Auch in der kalten Jahreszeit bieten bayerische Campingplätze Möglichkeiten für eine Auszeit. Der ADAC stellt Plätze und Ideen zwischen Winterwandern, Wintersport und Erholung vor.',
+    teaser: 'Entdecken Sie Plätze und Ideen für Ihren Winterurlaub.',
     category: 'Camping & Natur', source: 'ADAC Südbayern',
     sourceUrl: 'https://www.adac.de/der-adac/regionalclubs/suedbayern/news/wintercamping-bayern-beste-campingplaetze/',
     publishedAt: '2026-10-27', dateLabel: 'Veröffentlicht', checkedAt: '2026-11-11',
@@ -43,7 +43,7 @@ export const travelNews: readonly TravelNewsItem[] = [
   {
     id: 'schweiz-advent-2026',
     title: 'Adventszeit in der Schweiz planen',
-    teaser: 'Lichter, Marktstände und historische Altstädte: Entdecken Sie die Weihnachtsmärkte 2026 in der Schweiz. Die offizielle Übersicht hilft Ihnen, passende Orte und Termine für einen Kurzurlaub zu finden.',
+    teaser: 'Die Weihnachtsmärkte 2026 mit Orten und Terminen.',
     category: 'Städte & Advent', source: 'Schweiz Tourismus',
     sourceUrl: 'https://www.myswitzerland.com/de-de/erlebnisse/veranstaltungen/veranstaltungen-suche/?rubrik=advents-undweihnachtsmaerkte',
     publishedAt: '2026-11-11', dateLabel: 'Stand', checkedAt: '2026-11-11',
