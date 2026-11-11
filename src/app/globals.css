@@ -3320,6 +3320,13 @@ h6 {
   cursor: pointer;
 }
 .reise-finder-reset { background: var(--white); text-decoration: underline; }
+/* Tablet controls keep a comfortable native Safari field height and readable widths. */
+@media (min-width: 701px) and (max-width: 1199px) {
+  .reiseportal-shell .reise-finder .reise-finder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reiseportal-shell .reise-finder .reise-finder-facets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reiseportal-shell .reise-finder .reise-finder-grid :is(.reise-finder-query, .reise-finder-submit) { grid-column: auto; }
+  .reiseportal-shell .reise-finder .reise-finder-grid :is(input, select) { min-height: 56px; font-size: .95rem; line-height: 1.4; padding: 12px; }
+}
 .travel-directory-content { padding-block: 28px 70px; }
 .travel-directory-content .breadcrumbs { margin-bottom: 20px; }
 .travel-results { scroll-margin-top: 24px; }

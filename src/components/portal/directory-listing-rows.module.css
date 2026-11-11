@@ -54,3 +54,12 @@
   .rows :global(.row-content) { padding: 10px 12px; }
   .rows :global(.row-profile-link) { width: 100%; }
 }
+
+/* Tablet: the desktop row structure with a bounded photo instead of a tall strip. */
+@media (min-width: 701px) and (max-width: 1199px) {
+  .rows :global(.listing-row--premium) { grid-template-columns: minmax(120px, 144px) minmax(0, 1fr) minmax(200px, 25%); gap: 10px; }
+  .rows:global([data-equal-premium-cards]) :global(.listing-row--premium .row-logo) { grid-row: auto; align-self: center; min-height: 0; aspect-ratio: 3 / 4; }
+  .rows :global(.listing-row--premium .row-content) { padding: 8px 4px; }
+  .rows :global(.listing-row--premium .row-contact) { grid-column: 3; margin: 8px 0; padding: 0 10px; border-top: 0; border-left: 1px solid #e3edf2; align-self: stretch; }
+  .rows :global(.listing-row--premium .row-profile-link) { padding-inline: 8px; gap: 6px; font-size: .8rem; overflow-wrap: normal; }
+}

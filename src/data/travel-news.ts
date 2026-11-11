@@ -6,48 +6,49 @@ export type TravelNewsItem = {
   source: string;
   sourceUrl: string;
   publishedAt: string;
-  dateLabel: 'Veröffentlicht' | 'Aktualisiert';
+  dateLabel: 'Veröffentlicht' | 'Aktualisiert' | 'Stand';
   checkedAt: string;
   image: string;
   imageAlt: string;
   imageCredit: string;
+  imagePosition?: string;
   featured: boolean;
 };
 
 // Manually selected and checked original sources. No runtime feeds or DB reads.
 export const travelNews: readonly TravelNewsItem[] = [
   {
-    id: 'gastein-thermenherbst',
-    title: 'Bergwelt und Thermen im Gasteinertal',
-    teaser: 'Erst die Bergwelt entdecken, dann im Thermalwasser entspannen: Gastein verbindet Wanderungen mit einer wohltuenden Auszeit in seinen beiden Thermen.',
-    category: 'Wellness & Erholung',
-    source: 'Gasteinertal Tourismus',
-    sourceUrl: 'https://presse.gastein.com/news-herbstauszeit-im-gasteinertal?id=246527&l=deutsch&menueid=18794',
-    publishedAt: '2026-08-18', dateLabel: 'Veröffentlicht', checkedAt: '2026-10-13',
-    image: '/reiseportal/news/thermenherbst.webp',
-    imageAlt: 'ruhiger Außenpool vor einer Alpenlandschaft, kein konkreter Betrieb.',
-    imageCredit: '', featured: true,
+    id: 'tirol-winteranreise-2026',
+    title: 'Mit der Bahn in den Tiroler Winter',
+    teaser: 'Neue Direktverbindungen und zusätzliche Nachtzugangebote erweitern die Winteranreise 2026/27 nach Tirol. Entdecken Sie die Verbindungen und planen Sie Ihre Auszeit in den Bergen.',
+    category: 'Winter & Anreise',
+    source: 'Tirol Werbung · Presse.Tirol',
+    sourceUrl: 'https://presse.tirol.at/anreiseneuigkeiten-winter-2026-27/299467/',
+    publishedAt: '2026-10-20', dateLabel: 'Aktualisiert', checkedAt: '2026-11-11',
+    image: '/reiseportal/news/winterbahn-2026.webp',
+    imageAlt: 'KI-Symbolbild: Personenzug in einer verschneiten Alpenlandschaft, kein konkreter Ort oder Zugdienst.',
+    imageCredit: 'KI-generiertes Symbolbild', imagePosition: '70% center', featured: true,
   },
   {
-    id: 'bayern-herbstcamping',
-    title: 'Camping in Bayern: Vorteile der Nebensaison',
-    teaser: 'Laut ADAC/PiNCAMP liegen Bayerns Campingpreise in der Nebensaison im Schnitt zehn Prozent unter der Hochsaison.',
-    category: 'Camping & Natur', source: 'ADAC Südbayern / PiNCAMP',
-    sourceUrl: 'https://presse.adac.de/regionalclubs/suedbayern/herbstcamping-in-bayern-besonders-gefragt.html',
-    publishedAt: '2026-09-17', dateLabel: 'Veröffentlicht', checkedAt: '2026-10-13',
-    image: '/reiseportal/news/herbstcamping.webp',
-    imageAlt: 'Wohnmobil und Campingstühle auf einem gepflegten Stellplatz am See.',
-    imageCredit: '', featured: false,
+    id: 'bayern-wintercamping-2026',
+    title: 'Wintercamping: Bayern neu entdecken',
+    teaser: 'Auch in der kalten Jahreszeit bieten bayerische Campingplätze Möglichkeiten für eine Auszeit. Der ADAC stellt Plätze und Ideen zwischen Winterwandern, Wintersport und Erholung vor.',
+    category: 'Camping & Natur', source: 'ADAC Südbayern',
+    sourceUrl: 'https://www.adac.de/der-adac/regionalclubs/suedbayern/news/wintercamping-bayern-beste-campingplaetze/',
+    publishedAt: '2026-10-27', dateLabel: 'Veröffentlicht', checkedAt: '2026-11-11',
+    image: '/reiseportal/news/wintercamping-2026.webp',
+    imageAlt: 'KI-Symbolbild: Wohnmobil auf einem winterlichen Stellplatz am Wald, kein konkreter Campingbetrieb.',
+    imageCredit: 'KI-generiertes Symbolbild', featured: false,
   },
   {
-    id: 'zell-gerlos-familienherbst',
-    title: 'Familienerlebnisse in Zell-Gerlos',
-    teaser: 'Natur entdecken und gemeinsam draußen sein: Zell-Gerlos stellt Ausflugs- und Freizeitideen für Familien vor.',
-    category: 'Familie & Aktiv', source: 'Zell-Gerlos · Presse.Tirol',
-    sourceUrl: 'https://presse.tirol.at/herbstgenuss-in-zell-gerlos-goldene-momente-im-herzen-des-zillertals/294358/',
-    publishedAt: '2026-08-11', dateLabel: 'Aktualisiert', checkedAt: '2026-10-13',
-    image: '/reiseportal/news/familienherbst.webp',
-    imageAlt: 'Familie auf einem breiten Wanderweg vor einer Berglandschaft.',
-    imageCredit: '', featured: false,
+    id: 'schweiz-advent-2026',
+    title: 'Adventszeit in der Schweiz planen',
+    teaser: 'Lichter, Marktstände und historische Altstädte: Entdecken Sie die Weihnachtsmärkte 2026 in der Schweiz. Die offizielle Übersicht hilft Ihnen, passende Orte und Termine für einen Kurzurlaub zu finden.',
+    category: 'Städte & Advent', source: 'Schweiz Tourismus',
+    sourceUrl: 'https://www.myswitzerland.com/de-de/erlebnisse/veranstaltungen/veranstaltungen-suche/?rubrik=advents-undweihnachtsmaerkte',
+    publishedAt: '2026-11-11', dateLabel: 'Stand', checkedAt: '2026-11-11',
+    image: '/reiseportal/news/advent-schweiz-2026.webp',
+    imageAlt: 'KI-Symbolbild: festlich beleuchteter Adventsmarkt in einer schweizerisch anmutenden Altstadt, kein konkreter Veranstaltungsort.',
+    imageCredit: 'KI-generiertes Symbolbild', featured: false,
   },
 ];

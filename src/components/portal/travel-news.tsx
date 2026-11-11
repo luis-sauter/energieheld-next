@@ -15,12 +15,14 @@ export function TravelNews() {
           href={item.sourceUrl} target="_blank" rel="noopener noreferrer" data-news-id={item.id}>
           <div className={styles.media}>
             <Image src={item.image} alt={item.imageAlt} fill loading="lazy"
+              style={item.imagePosition ? { objectPosition: item.imagePosition } : undefined}
               sizes={item.featured ? '(max-width: 760px) calc(100vw - 32px), (max-width: 1200px) 58vw, 760px' : '(max-width: 760px) calc(100vw - 32px), (max-width: 1200px) 36vw, 460px'} />
             <span className={styles.category}>{item.category}</span>
           </div>
           <div className={styles.body}>
             <h3>{item.title}</h3><p className={styles.teaser}>{item.teaser}</p>
             <p className={styles.source}>Quelle: {item.source} · {item.dateLabel} <time dateTime={item.publishedAt}>{item.publishedAt.split('-').reverse().join('.')}</time></p>
+            {item.imageCredit && <span className={styles.credit}>{item.imageCredit}</span>}
             <span className={styles.cta}>Weiterlesen <span aria-hidden="true">↗</span><span className={styles.visuallyHidden}> (öffnet in einem neuen Tab)</span></span>
           </div>
         </a>)}

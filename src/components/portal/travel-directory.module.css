@@ -78,6 +78,14 @@
   .page :global(.directory-mobile-banner img) { display: block; width: 100%; height: auto; }
 }
 
+@media (min-width: 701px) and (max-width: 1199px) {
+  .page :global(.commercial-columns) { grid-template-columns: minmax(0, 1fr); }
+  .page :global(.commercial-sidebar.advertising-rail) { display: none; }
+  .page :global(.directory-mobile-banner) { display: block; margin-block: 20px; }
+  .page :global(.directory-mobile-banner [data-ad-format-group] > div) { grid-template-columns: minmax(0, 1fr); }
+  .page :global(.directory-mobile-banner img) { display: block; width: 100%; height: auto; }
+}
+
 @media (max-width: 600px) {
   .page :global(.travel-hero::after) { background: linear-gradient(180deg, #faf7f2a6 0%, #faf7f2d9 45%, #faf7f2 78%); }
 }
