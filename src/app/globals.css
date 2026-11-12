@@ -3248,8 +3248,7 @@ h6 {
 @media (min-width: 701px) {
   .travel-hero-content { transform: translateY(30px); }
 }
-.travel-hero .eyebrow,
-.travel-intro-copy > p:not(.eyebrow) {
+.travel-hero .eyebrow {
   color: var(--portal-primary-deep);
 }
 .travel-hero h1 {
@@ -3260,10 +3259,13 @@ h6 {
   margin-bottom: 14px;
 }
 .travel-intro-copy > p:not(.eyebrow) {
-  max-width: 570px;
-  font-size: clamp(1rem, 1.5vw, 1.14rem);
+  max-width: 100%;
+  color: var(--portal-basalt);
+  font-size: var(--portal-subtitle-size);
+  line-height: var(--portal-subtitle-leading);
   margin-bottom: 28px;
 }
+.travel-intro-copy[data-home] > p:not(.eyebrow) { max-width: 1000px; text-wrap: balance; }
 .reiseportal-shell .travel-intro-copy:not([data-home]):not([data-directory]) { width: fit-content; max-width: 100%; padding: clamp(20px, 3vw, 28px); margin-bottom: 24px; background: #fff; border-radius: var(--portal-radius); }
 .reiseportal-shell .travel-intro-copy:not([data-home]):not([data-directory]) > p:last-child { margin-bottom: 0; }
 .travel-hero:has(.reise-finder) { min-height: 600px; }
@@ -3596,6 +3598,21 @@ h6 {
 .reiseportal-shell button:has(> svg[data-chevron]:only-child) { display: inline-grid; place-items: center; padding: 0; line-height: 1; }
 
 /* Shared corporate section hierarchy; photo-overlay card titles stay white. */
-.reiseportal-shell { --portal-section-title-size: clamp(1.8rem, 3vw, 2.5rem); }
+.reiseportal-shell {
+  --portal-section-title-size: clamp(1.8rem, 3vw, 2.5rem);
+  /* The former home lead, enlarged by 20%, is the common subtitle scale. */
+  --portal-subtitle-size: clamp(1.2rem, 1.8vw, 1.368rem);
+  --portal-subtitle-leading: 1.6;
+}
+.reiseportal-shell .section-heading p:not(.eyebrow) {
+  color: var(--portal-basalt);
+  font-size: var(--portal-subtitle-size);
+  line-height: var(--portal-subtitle-leading);
+}
+.reiseportal-shell .detail-tagline {
+  color: var(--portal-basalt);
+  font-size: var(--portal-subtitle-size);
+  line-height: var(--portal-subtitle-leading);
+}
 .reiseportal-shell main :is(h1, h2) { hyphens: none; text-wrap: balance; }
 .reiseportal-shell main :is(.section-heading, [data-autumn-showcase] header, [data-nearby-map] header) h2 { font-size: var(--portal-section-title-size); line-height: 1.15; }

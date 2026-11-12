@@ -9,7 +9,7 @@
 .tags { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; padding: 0; margin: 0 0 16px; }
 .tags a { display: flex; align-items: center; gap: 10px; padding: 8px 16px; border: 1px solid #d6eaf1; border-radius: var(--portal-radius, 5px); background: #edf7fb; text-decoration: none; }
 .tags svg { width: 24px; height: 24px; }
-.subtitle { font-family: var(--font-body); font-size: clamp(1.25rem, 2vw, 1.85rem); color: var(--portal-basalt); margin: 0 0 12px; }
+.subtitle { font-family: var(--font-body); font-size: var(--portal-subtitle-size); line-height: var(--portal-subtitle-leading); color: var(--portal-basalt); margin: 0 0 12px; }
 .address { display: flex; align-items: flex-start; gap: 8px; color: var(--portal-basalt); line-height: 1.5; }
 .address svg, .contactDetails svg { flex: 0 0 auto; width: 22px; height: 22px; }
 .hero { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }

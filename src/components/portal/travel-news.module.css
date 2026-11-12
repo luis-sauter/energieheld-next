@@ -1,7 +1,7 @@
 .section { padding-block: clamp(32px, 4vw, 56px); background: linear-gradient(125deg, #edf6fa, #faf7f2 70%, #f1f7fa); }
 .heading { margin-bottom: 24px; color: var(--portal-blue); }
 .heading h2 { font-family: var(--font-heading); font-size: clamp(1.9rem, 3vw, 2.8rem); line-height: 1.15; margin: 8px 0; }
-.heading > p:last-child { color: var(--portal-basalt); line-height: 1.6; margin: 0; }
+.heading > p:last-child { color: var(--portal-basalt); font-size: var(--portal-subtitle-size); line-height: var(--portal-subtitle-leading); margin: 0; }
 .grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); grid-template-rows: repeat(2, minmax(min-content, 1fr)); gap: 20px; }
 .card { display: flex; flex-direction: column; min-width: 0; color: var(--portal-blue); background: #fff; border: 1px solid #deeaef; border-radius: var(--portal-radius, 5px); overflow: hidden; text-decoration: none; box-shadow: 0 5px 24px rgb(31 74 99 / 6%); }
 .card:hover { color: var(--portal-blue); box-shadow: 0 8px 30px rgb(31 74 99 / 12%); }

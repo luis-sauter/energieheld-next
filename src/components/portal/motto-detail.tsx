@@ -44,7 +44,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
         about: destination ? { '@type': 'Place', name: entry.title } : { '@type': 'DefinedTerm', name: entry.title, termCode: `theme:${entry.slug}` },
         items: companies.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <Breadcrumbs items={breadcrumbs} />
-      <header className={styles.hero}><p className="eyebrow">{sectionTitle}</p><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p className={introStyles.panel} data-intro-copy>{editorial.intro}</p></header>
+      <header className={styles.hero}><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p className={introStyles.panel} data-intro-copy>{editorial.intro}</p></header>
       <section className={styles.stays} aria-labelledby="motto-stays">
         <p className="eyebrow">Aus dem Reiseportal</p><h2 id="motto-stays">Passende Unterkünfte</h2>
         <p className={styles.count}>{companies.length} passende {companies.length === 1 ? 'Unterkunft' : 'Unterkünfte'} · Entdecken Sie Ihre Gastgeber</p>

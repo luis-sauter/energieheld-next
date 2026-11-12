@@ -5,16 +5,16 @@
 .page[data-motto-detail] .backdrop { height:min(1450px,145vw); min-height:900px; }
 .page[data-motto-detail] .backdrop::after { background: linear-gradient(90deg, #faf9f659, #faf9f605 65%), linear-gradient(180deg, #faf9f60a 0%, #faf9f614 20%, #faf9f640 48%, #faf9f6a6 76%, #faf9f6 100%); }
 .content { position: relative; padding-top: 18px; }
-.hero { margin:clamp(28px,5vw,60px) 0 24px; max-width: 750px; }
+.hero { margin:clamp(20px,3vw,36px) 0 24px; max-width: none; }
 .hero h1 { margin: 0 0 12px; color: var(--portal-blue); font-size: clamp(2.6rem, 6vw, 4.3rem); line-height: 1.05; }
-.hero > p:last-child { max-width: 60ch; font-size: 1.08rem; color: var(--portal-blue); line-height: 1.65; }
+.hero > p:last-child { max-width: none; font-size: var(--portal-subtitle-size); color: var(--portal-basalt); line-height: var(--portal-subtitle-leading); text-shadow: 0 1px 3px rgb(255 255 255 / 90%); }
 /* Theme introductions follow the overview; destination copy keeps its own surface. */
 .page[data-motto-detail] .hero h1 { margin-bottom: 22px; color: var(--portal-blue); font-size: clamp(2.7rem, 4.6vw, 4rem); letter-spacing: -.035em; }
-.page[data-motto-detail] .hero > p:last-child { margin-bottom: 0; color: var(--portal-ink); font-size: clamp(1.05rem, 1.8vw, 1.25rem); }
+.page[data-motto-detail] .hero > p:last-child { margin-bottom: 0; }
 .page[data-motto-detail] .stays h2 { color: var(--portal-blue); }
 .page[data-motto-detail] .count { color: var(--portal-ink); }
 .stays h2 { color: var(--portal-blue); margin: 5px 0 12px; font-size: var(--portal-section-title-size); }
-.count { margin-bottom: 22px; color: var(--portal-blue); font-size: .9rem; }
+.count { margin-bottom: 22px; color: var(--portal-basalt); font-size: var(--portal-subtitle-size); line-height: var(--portal-subtitle-leading); }
 .pair { margin-bottom: 22px; }
 .row { position: relative; min-width: 0; }
 .track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 36px) / 3); gap: 18px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; overflow-anchor: none; padding: 5px 2px 10px; }
@@ -37,7 +37,7 @@
 .editorialGrid h3 { color: var(--portal-blue); font-size: 1.1rem; margin-bottom: 10px; }
 .editorialGrid p { color: var(--portal-basalt); line-height: 1.8; }
 @media (max-width: 900px) { .track { grid-auto-columns: calc((100% - 18px) / 2); } .editorialGrid { grid-template-columns: 1fr; gap: 12px; } }
-@media (max-width: 600px) { .content { padding-inline: 24px; } .hero { padding-top: 46px; } .track { grid-auto-columns: 100%; } .previous { left: -17px; } .next { right: -17px; } .arrow { width: 40px; height: 40px; } .backdrop { height: 850px; } .backdrop img { object-position: 60% 20%; } .editorial { margin-top: 34px; } }
+@media (max-width: 600px) { .content { padding-inline: 24px; } .hero { padding-top: 0; } .track { grid-auto-columns: 100%; } .previous { left: -17px; } .next { right: -17px; } .arrow { width: 40px; height: 40px; } .backdrop { height: 850px; } .backdrop img { object-position: 60% 20%; } .editorial { margin-top: 34px; } }
 
 .titlePart { white-space: nowrap; hyphens: none; }
 .countryBannerRow :global([data-placement] > a) { width: 100%; aspect-ratio: 350 / 120; height: auto; overflow: hidden; }
@@ -46,7 +46,6 @@
 
 @media (max-width: 600px) {
   .page[data-motto-detail] .hero h1 { font-size: clamp(2.4rem, 10vw, 3rem); }
-  .page[data-motto-detail] .hero > p:last-child { font-size: 1.05rem; }
   .page[data-motto-detail="campingurlaub"] .hero h1 { font-size: clamp(1.5rem, 8vw, 3rem); }
   .page[data-motto-detail="campingurlaub"] .backdrop img { object-position: left top; }
 }
@@ -64,7 +63,7 @@
 /* Three deliberately different review variants for phone and tablet.
    Desktop (1025px+) keeps transparent introductions. */
 @media (max-width: 1024px) {
-  .page[data-mobile-intro-variant] .content { width: 100%; padding-inline: 24px; }
+  .page .content { width: 100%; padding-inline: 24px; }
   .page[data-mobile-intro-variant] .hero { max-width: none; }
   .page[data-mobile-intro-variant="panel"] [data-intro-copy] {
     padding: 16px 18px;
