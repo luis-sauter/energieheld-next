@@ -27,5 +27,5 @@ test('countries reuse motto rendering while preserving destination queries and e
  assert.match(detail,/destination \? 'ziel' : 'thema'/);
  assert.match(detail,/AccommodationCard[^]*?listing=\{listing\} motto/);
  assert.match(detail,/CampaignSlot/);
- assert.match(detail,/relatedTravelPages\(listings\)/);
+ assert.doesNotMatch(detail,/TravelRelations|Reiseideen für Ihren Aufenthalt/);
 });

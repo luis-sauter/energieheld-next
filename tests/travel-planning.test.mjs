@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {legacyTravelRedirect as redirect, legacyProfileRewrite} from '../src/lib/legacy-travel-redirect.ts';
-import {travelPlanning} from '../src/data/travel-planning.ts';
+import {travelSeo} from '../src/data/travel-seo.ts';
 test('real Joomla spellings and query parameters become current URLs without losing modern filters',()=>{
  assert.equal(redirect('/reiseziele/%C3%B6sterreich','?types[0]=1'),'/reiseziele/oesterreich');
  assert.equal(redirect('/reiseziele/südtirol-italien',''),'/reiseziele/suedtirol-italien');
@@ -16,11 +16,11 @@ test('current routes, unknown categories and private requests are not guessed or
  assert.equal(redirect('/%broken',''),null);
  assert.equal(redirect('//external.example','?types[0]=1'),null);
 });
-test('all current countries and themes have distinct practical copy without historical hotel claims',()=>{
- assert.equal(Object.keys(travelPlanning).length,16);
- assert.equal(new Set(Object.values(travelPlanning).map(x=>x.description)).size,16);
- for(const entry of Object.values(travelPlanning)){
-  assert.equal(entry.tips.length,3);
+test('all current countries and themes have distinct metadata without hidden editorial copy',()=>{
+ assert.equal(Object.keys(travelSeo).length,16);
+ assert.equal(new Set(Object.values(travelSeo).map(x=>x.description)).size,16);
+ for(const entry of Object.values(travelSeo)){
+  assert.deepEqual(Object.keys(entry).sort(),['description','title']);
   assert.ok(entry.description.length<180);
   assert.doesNotMatch(entry.description,/Andreus|Sonnenhof|Tagungsräume/);
  }

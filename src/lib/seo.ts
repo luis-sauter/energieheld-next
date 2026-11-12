@@ -4,7 +4,7 @@ import type { Listing } from "@/types/portal";
 import { destinations, travelThemes, type DiscoveryEntry } from "@/data/reiseportal-discovery";
 import { demoProfileId, demoPublicSlug, demoSourceSlug } from "./reiseportal-demo";
 import { siteSeo, siteUrl, type SiteSeo } from "./site-seo";
-import { travelPlanning } from "@/data/travel-planning";
+import { travelSeo } from "@/data/travel-seo";
 
 export type SearchParameters = Record<string, string | string[] | undefined>;
 
@@ -63,7 +63,7 @@ export const hubDescriptions = {
 };
 
 export function discoveryMetadata(entry: DiscoveryEntry, kind: "destination" | "theme", config: SiteSeo = siteSeo()) {
-  const planning = travelPlanning[entry.slug];
+  const planning = travelSeo[entry.slug];
   if (planning) return pageMetadata({ title: planning.title, description: planning.description,
     path: `/${kind === "destination" ? "reiseziele" : "mottoreisen"}/${entry.slug}`, image: entry.image ?? undefined }, config);
   const description = kind === "destination"

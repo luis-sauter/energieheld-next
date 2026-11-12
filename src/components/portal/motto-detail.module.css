@@ -43,7 +43,7 @@
 .management > summary { cursor: pointer; }
 .editorial { margin-top: 54px; padding: clamp(24px, 4vw, 44px); border: 1px solid #e4eaeb; border-radius: var(--portal-radius, 5px); background: #fff; }
 .editorial h2 { max-width: 34ch; color: var(--portal-blue); font-size: var(--portal-section-title-size); }
-.lead { max-width: 78ch; line-height: 1.8; color: var(--portal-basalt); }
+.lead { max-width: 78ch; line-height: 1.8; color: var(--portal-blue); }
 .editorialGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; margin-top: 28px; }
 .editorialGrid h3 { color: var(--portal-blue); font-size: 1.1rem; margin-bottom: 10px; }
 .editorialGrid p { color: var(--portal-basalt); line-height: 1.8; }

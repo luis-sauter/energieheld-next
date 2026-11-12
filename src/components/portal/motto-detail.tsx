@@ -17,9 +17,6 @@ import { mottoEditorial } from '@/data/motto-editorial';
 import { mottoGroups, orderMottoItems, visibleMottoAds } from '@/lib/motto-rows';
 import { MottoRow } from './motto-row';
 import styles from './motto-detail.module.css';
-import { travelPlanning } from '@/data/travel-planning';
-import { relatedTravelPages } from '@/lib/travel-relations';
-import { TravelRelations } from './travel-relations';
 
 export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme' }: {
   entry: DiscoveryEntry; listings: Listing[]; advertising?: DiscoveryAdvertisingData; seed: string; kind?: 'theme' | 'destination';
@@ -34,8 +31,6 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
   const companyRows = mottoGroups(companies, 3), bannerRows = mottoGroups(banners, 2);
   const breadcrumbs = portalBreadcrumbs(entry.title, `${basePath}/${entry.slug}`, { name: sectionTitle, path: basePath });
   const camping = !destination && entry.slug === 'campingurlaub';
-  const planning = travelPlanning[entry.slug];
-  const relations = relatedTravelPages(listings);
   return <main id="hauptinhalt" className={styles.page} data-motto-detail={destination ? undefined : entry.slug} data-destination-detail={destination ? entry.slug : undefined}>
     <div className={styles.backdrop} aria-hidden="true">{camping ? <picture>
       <source media="(max-width: 600px)" srcSet="/reiseportal/motto-editorial-v2/campingurlaub-20261110-mobile.webp" />
@@ -70,16 +65,6 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
           </details>}
         </InlineBannerProvider>
       </section>
-      {planning && <section className={styles.editorial} aria-labelledby="travel-planning-heading">
-        <h2 id="travel-planning-heading">{planning.heading}</h2>
-        <p className={styles.lead}>{planning.lead}</p>
-        <div className={styles.editorialGrid}>{planning.tips.map(tip => <section key={tip.title}>
-          <h3>{tip.title}</h3><p>{tip.text}</p>
-        </section>)}</div>
-      </section>}
-      <TravelRelations title={destination ? 'Reisethemen für Ihren Aufenthalt' : 'Reiseziele mit passenden Gastgebern'}
-        intro="Entdecken Sie weitere Rubriken, denen die hier gezeigten Gastgeber zugeordnet sind."
-        links={destination ? relations.themes : relations.destinations} />
       <nav className={styles.endNavigation} aria-label="Weitere Unterkünfte und Rubriken">
         <Link className={styles.endButton} href={basePath}><Icon name="chevron-left" size={20} />{destination ? 'Alle Reiseziele entdecken' : 'Alle Mottoreisen entdecken'}</Link>
         <Link className={styles.endButton} href={`/unterkuenfte-a-z?${destination ? 'ziel' : 'thema'}=${entry.slug}`}>Alle passenden Unterkünfte ansehen <Icon name="chevron-right" size={20} /></Link>
