@@ -64,9 +64,11 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
             <AdvertisingLayout ads={advertising.ads} sidebarOrder={advertising.sidebarOrder} collapseEmpty showEmptySlots>{null}</AdvertisingLayout>
           </details>}
         </InlineBannerProvider>
-        {!!companies.length && <Link className="text-link" href={`/unterkuenfte-a-z?${destination ? 'ziel' : 'thema'}=${entry.slug}`}>Alle passenden Unterkünfte ansehen <Icon name="chevron-right" size={20} /></Link>}
       </section>
-      <Link className="text-link" href={basePath}><Icon name="chevron-left" size={20} />{destination ? 'Weitere Reiseziele entdecken' : 'Alle Mottoreisen entdecken'}</Link>
+      <nav className={styles.endNavigation} aria-label="Weitere Unterkünfte und Rubriken">
+        <Link className={styles.endButton} href={basePath}><Icon name="chevron-left" size={20} />{destination ? 'Alle Reiseziele entdecken' : 'Alle Mottoreisen entdecken'}</Link>
+        <Link className={styles.endButton} href={`/unterkuenfte-a-z?${destination ? 'ziel' : 'thema'}=${entry.slug}`}>Alle passenden Unterkünfte ansehen <Icon name="chevron-right" size={20} /></Link>
+      </nav>
     </div>
   </main>;
 }

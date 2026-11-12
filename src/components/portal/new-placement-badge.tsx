@@ -1,6 +1,9 @@
-import {isNewPlacement,isNewBannerPlacement,newPlacementStarts} from '@/config/new-placements';
-export function NewPlacementBadge({id,kind='profile',variant='ribbon'}:{id:string;kind?:'profile'|'banner';variant?:'ribbon'|'label'}) {
- const visible=kind==='banner'?isNewBannerPlacement(id):isNewPlacement(newPlacementStarts[id]);
+'use client';
+import {newBadgeVisible,type BadgeKind} from '@/lib/new-badge';
+import {useNewBadges} from './new-badge-context';
+export function NewPlacementBadge({id,kind='profile',variant='ribbon'}:{id:string;kind?:BadgeKind;variant?:'ribbon'|'label'}) {
+ const {rows,now}=useNewBadges();
+ const visible=rows!==null&&newBadgeVisible(id,kind,rows,now);
  if(!visible)return null;
  if(variant==='label')return <span className="new-placement-badge"> Neu</span>;
  return <svg className="new-placement-ribbon" data-new-ribbon data-new-kind={kind}

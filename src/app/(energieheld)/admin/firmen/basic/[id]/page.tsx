@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import {NewBadgeSettings} from '@/components/admin/new-badge-settings';
 import {notFound} from 'next/navigation';
 import {createClient} from '@/lib/supabase/server';
 import {requireAdminAccess} from '@/lib/admin';
@@ -16,5 +17,5 @@ export default async function BasicEditorPage({params}:{params:Promise<{id:strin
   if(!basicIntegrationEnabled())notFound();
   const {id}=await params,entry=await loadAdminBasicCategories(client,id);
   if(!entry)return <main id="hauptinhalt" className="container"><Link href="/admin/firmen?ansicht=basic">Zur Unterkunftsverwaltung</Link><p role="alert">Die Basic-Unterkunft konnte nicht geladen werden. Bitte laden Sie die Seite erneut.</p></main>;
-  return <main id="hauptinhalt" className={`container ${styles.page}`}><Link href="/admin/firmen?ansicht=basic">Zur Unterkunftsverwaltung</Link><p className="eyebrow">Basic-Unterkunft</p><h1>{entry.name}</h1><p>{[entry.city,entry.country].filter(Boolean).join(' · ')}</p><BasicCategoryEditor snapshot={entry.snapshot} saveAction={saveBasicCategories.bind(null,id)}/><BasicWithdrawal key={id} filter={{ids:[id]}}/></main>;
+  return <main id="hauptinhalt" className={`container ${styles.page}`}><Link href="/admin/firmen?ansicht=basic">Zur Unterkunftsverwaltung</Link><p className="eyebrow">Basic-Unterkunft</p><h1>{entry.name}</h1><p>{[entry.city,entry.country].filter(Boolean).join(' · ')}</p><NewBadgeSettings id={id} kind="basic"/><BasicCategoryEditor snapshot={entry.snapshot} saveAction={saveBasicCategories.bind(null,id)}/><BasicWithdrawal key={id} filter={{ids:[id]}}/></main>;
 }

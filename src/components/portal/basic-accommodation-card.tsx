@@ -7,7 +7,7 @@ export function BasicAccommodationCard({entry}:{entry:Omit<BasicContact,'kind'>}
   const country=labels[entry.address.country]??entry.address.country;
   return <article className={styles.card} data-basic-contact={entry.id}>
     <div className={styles.home} aria-hidden="true"><Icon name="home" size={36}/></div>
-    <h3 className={styles.name}>{entry.name}<NewPlacementBadge id={entry.id} variant="label"/></h3>
+    <h3 className={styles.name}>{entry.name}<NewPlacementBadge id={entry.id} kind="basic" variant="label"/></h3>
     <div className={styles.contact}>
       <p className={styles.address}><Icon name="pin" size={15}/><span>{[[entry.address.street,entry.address.houseNumber].filter(Boolean).join(' '),[entry.address.postalCode,entry.address.city].filter(Boolean).join(' '),entry.address.region,country].filter(Boolean).join(', ')}</span></p>
       <a className={styles.phone} href={`tel:${entry.phone}`}><Icon name="phone" size={15}/><span>{entry.phone}</span></a>

@@ -51,6 +51,12 @@
 @media (max-width: 600px) { .content { padding-inline: 24px; } .hero { padding-top: 0; } .track { grid-auto-columns: 100%; } .previous { left: -17px; } .next { right: -17px; } .arrow { width: 40px; height: 40px; } .backdrop { height: 850px; } .backdrop img { object-position: 60% 20%; } .editorial { margin-top: 34px; } }
 
 .titlePart { white-space: nowrap; hyphens: none; }
+.endNavigation { display: flex; justify-content: space-between; align-items: stretch; gap: 16px; margin-top: 32px; }
+.endNavigation .endButton { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-radius: var(--portal-radius, 5px); background: var(--portal-blue); color: var(--portal-white); font-size: .93rem; font-weight: 600; text-decoration: none; }
+.endButton svg { flex-shrink: 0; }
+.endNavigation .endButton:hover { background: var(--portal-blue); text-decoration: underline; text-underline-offset: 4px; }
+.endButton:focus-visible { outline: 3px solid var(--portal-blue); outline-offset: 3px; }
+@media (max-width: 600px) { .endNavigation { gap: 10px; } .endNavigation .endButton { flex: 1; min-width: 0; padding: 12px 10px; font-size: .82rem; gap: 6px; } }
 .countryBannerRow :global([data-placement] > a) { width: 100%; aspect-ratio: 350 / 120; height: auto; overflow: hidden; }
 .countryBannerRow :global([data-placement] > a > span:not([data-banner-region])) { width: 100%; height: 100%; }
 .countryBannerRow :global([data-placement] img) { width: 100%; height: 100%; object-fit: contain; }

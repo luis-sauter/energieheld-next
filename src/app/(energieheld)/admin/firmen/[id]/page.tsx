@@ -1,4 +1,5 @@
 import { editorialFeatures } from '@/config/editorial-features';
+import {NewBadgeSettings} from '@/components/admin/new-badge-settings';
 import { loadProfileImports } from '@/lib/profile-import';
 import { ProfileImportNotice } from '@/components/admin/profile-import-notice';
 import { publicationStatus } from "@/lib/profile-publication";
@@ -56,6 +57,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       {editorLink}
     </header>
     <ProfileImportNotice entry={importEntry}/>
+    <NewBadgeSettings id={profile.id} kind="profile"/>
     <TravelReviewProvider key={JSON.stringify(travelTaxonomy)} snapshot={"error" in travelTaxonomy ? { terms: [], assignedKeys: [], proposedKeys: [] } : travelTaxonomy} saveAction={saveTravelTerms.bind(null, profile.id)}>
     <div className={styles.card}>
       <section id="angaben" className={styles.reviewSection} aria-labelledby="review-details-title">

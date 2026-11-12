@@ -7,6 +7,8 @@ import { SignedImageRecovery } from '@/components/portal/signed-image-recovery';
 import { getPortalAccount } from "@/lib/portal-account-server";
 
 import { getEditorialQueue } from "@/lib/editorial-queue-server";
+import {loadPublicNewBadges} from '@/lib/new-badge.server';
+import {NewBadgeProvider} from '@/components/portal/new-badge-context';
 import type { AccountIdentity } from "@/components/portal/account-menu";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +18,7 @@ export default async function ReiseportalLayout({
 }: {
   children: ReactNode;
 }) {
-  const { access, hasCompany, user } = await getPortalAccount();
+  const [{ access, hasCompany, user },badges] = await Promise.all([getPortalAccount(),loadPublicNewBadges()]);
   const queue = access === "admin" ? await getEditorialQueue() : undefined;
   let identity: AccountIdentity | undefined;
   if (user) {
@@ -31,12 +33,17 @@ export default async function ReiseportalLayout({
     "--brand-accent": reiseportal.colors.accent,
     "--brand-surface": reiseportal.colors.surface,
   } as CSSProperties;
+  // This request-time value is serialized for matching server/client badge rendering.
+  // eslint-disable-next-line react-hooks/purity -- Async Server Component: capture once per request, not on client rerenders.
+  const badgeNow = Date.now();
   return (
     <div className="reiseportal-shell" style={style}>
+      <NewBadgeProvider rows={badges} now={badgeNow}>
       <SignedImageRecovery />
       <PortalHeader brand={reiseportal} access={access} hasCompany={hasCompany} identity={identity} taskCounts={queue?.counts} taskError={queue?.error} />
       {children}
       <PortalFooter brand={reiseportal} />
+      </NewBadgeProvider>
     </div>
   );
 }
