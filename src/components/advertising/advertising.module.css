@@ -546,6 +546,8 @@
 .regionBadge.regionBadge { opacity:0; transition:opacity .15s ease; }
 .interactiveCreative:is(:hover,:focus-visible) .regionBadge { opacity:1; }
 .interactiveCreative:has(:global([data-new-ribbon])) .regionBadge.regionBadge { top: auto; bottom: 8px; left: 8px; right: auto; }
+/* Wide Premium creatives need a quieter corner marker than accommodation cards. */
+.slot[data-placement="top_banner"] :global(.new-placement-ribbon) { width: clamp(40px, 10%, 64px); }
 .imageCreative { overflow:hidden; }
 .imageCreative img { scale:1.025; }
 @media(prefers-reduced-motion:reduce){.regionBadge.regionBadge{transition:none;}}
