@@ -5,7 +5,7 @@ import type { Listing } from "@/types/portal";
 // 465, 480) and company-media-manifest.json. Villner Hof has no media there.
 export const reiseportalPreview: Listing[] = [
   {
-    id: "legacy:443", slug: "bayerischer-wald", name: "Bayerischer Wald", initials: "BW",
+    id: "legacy:443", slug: "bayerischer-wald", name: "Ferienanlage am Nationalpark", initials: "FN",
     tagline: "Endlose Wiesen, grüne Wälder und Natur soweit das Auge reicht.",
     description: "", categoryIds: [], services: [], images: [
       { src: "/reiseportal/unterkuenfte/bayerischer-wald/01.jpg", alt: "Ferienanlage am Nationalpark Bayerischer Wald" },

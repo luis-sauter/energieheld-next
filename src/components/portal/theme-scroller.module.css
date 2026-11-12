@@ -18,7 +18,7 @@
 .rail { position: relative; display: flex; gap: 18px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: 4px; padding: 4px; scrollbar-width: none; }
 .rail::-webkit-scrollbar { display: none; }
 .scroller[data-page-size="4"] { align-self: start; }
-.scroller[data-page-size="4"] .rail > .page { flex-basis: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, auto); gap: 20px; align-content: start; }
+.scroller[data-page-size="4"] .rail > .page { flex-basis: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 20px; align-content: stretch; }
 .scroller[data-page-size="4"] .imageRail .edgeControls { top: 50%; }
 .edgeControls button:disabled { opacity: .4; cursor: default; }
 @media (max-width: 600px) {
@@ -37,15 +37,14 @@
 @media (prefers-reduced-motion: reduce) { .rail { scroll-behavior: auto; } }
 
 
-/* Restrained photography is visible before interaction; geometry stays fixed. */
-.scroller[data-compact] .rail > a[data-theme-image] img { object-fit: cover; opacity: .2; z-index: -2; transition: opacity .35s ease; }
-.scroller[data-compact] .rail > a[data-theme-image]::after { content: ""; position: absolute; inset: 0; z-index: -1; background: rgb(255 255 255 / 12%); transition: background-color .35s ease; }
-.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible) { color: var(--portal-blue); border-color: rgb(30 90 122 / 35%); box-shadow: 0 3px 10px rgb(14 68 96 / 10%); }
-.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible) img { opacity: .55; }
-.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible)::after { background: rgb(255 255 255 / 8%); }
-.scroller[data-compact] .rail > a[data-theme-image] :global(.travel-quicklink-icon) { transition: color .3s ease, background-color .3s ease; }
-.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible) :global(.travel-quicklink-icon) { color: inherit; background: rgb(255 255 255 / 85%); }
-@media (hover: none) { .scroller[data-compact] .rail > a[data-theme-image] img { opacity: .2; } }
+/* The former hover treatment is the default, including on touch devices. */
+.scroller[data-compact] .rail > a[data-theme-image] { color: var(--portal-blue); border-color: rgb(30 90 122 / 35%); box-shadow: 0 3px 10px rgb(14 68 96 / 10%); }
+.scroller[data-compact] .rail > a[data-theme-image] img { object-fit: cover; opacity: .55; z-index: -2; transition: opacity .35s ease; }
+.scroller[data-compact] .rail > a[data-theme-image]::after { content: ""; position: absolute; inset: 0; z-index: -1; background: rgb(255 255 255 / 8%); transition: background-color .35s ease; }
+.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible) img { opacity: .78; }
+.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible)::after { background: transparent; }
+.scroller[data-compact] .rail > a[data-theme-image] :global(.travel-quicklink-icon) { color: inherit; background: rgb(255 255 255 / 85%); transition: color .3s ease, background-color .3s ease; }
+.scroller[data-compact] .rail > a[data-theme-image]:is(:hover, :focus-visible) :global(.travel-quicklink-icon) { background: rgb(255 255 255 / 65%); }
 @media (prefers-reduced-motion: reduce) {
   .scroller[data-compact] .rail > a, .scroller[data-compact] .rail > a[data-theme-image] img,
   .scroller[data-compact] .rail > a[data-theme-image]::after,
