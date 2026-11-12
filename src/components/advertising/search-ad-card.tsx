@@ -5,6 +5,7 @@ import styles from './advertising.module.css';
 import grid from './search-ad-card.module.css';
 import { searchAdFormat, type CreativeGeometry } from '@/lib/search-ad-layout';
 import { bannerRegions } from '@/data/banner-regions';
+import { NewPlacementBadge } from '@/components/portal/new-placement-badge';
 
 // Search geometry is independent of booking placement, size and presentation crop.
 export function SearchAdCard({ banner, geometry, onGeometry, onEdit, loading = false, directory = false, onCreativeLoaded }: {
@@ -28,6 +29,7 @@ export function SearchAdCard({ banner, geometry, onGeometry, onEdit, loading = f
         loading={directory ? 'lazy' : dimensions.width && dimensions.height ? 'lazy' : 'eager'} decoding="async"
         onLoad={event => { onGeometry?.({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight }); onCreativeLoaded?.(banner.ad, event.currentTarget); }} />
       {bannerRegions[banner.ad.id] && <span className={styles.regionBadge} data-banner-region>{bannerRegions[banner.ad.id]}</span>}
+      {!directory && <NewPlacementBadge id={banner.ad.id} kind="banner"/>}
     </a>
   </article>;
 }

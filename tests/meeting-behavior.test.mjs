@@ -9,11 +9,22 @@ const {distanceKm,readNearbyQuery}=await import('../src/lib/nearby-map.ts');
 const {excludedAgencyTarget}=await import('../src/lib/travel-provider-eligibility.ts');
 const {validateOfferWorkspace,offerWorkspaceFields}=await import('../src/lib/offer-request-workspace.ts');
 const {offerImageDownloadName}=await import('../src/lib/offer-image-download.ts');
-const {isNewPlacement}=await import('../src/config/new-placements.ts');
+const {isNewPlacement,isNewBannerPlacement,newBannerProfiles,newPlacementStarts}=await import('../src/config/new-placements.ts');
 test('new placement expires after exactly fourteen days and cannot be inferred from a missing/future date',()=>{
  const start='2026-10-29T10:00:00Z',at=Date.parse(start);
  assert(isNewPlacement(start,at));assert(isNewPlacement(start,at+14*86400000-1));assert.equal(isNewPlacement(start,at+14*86400000),false);
  assert.equal(isNewPlacement(undefined,at),false);assert.equal(isNewPlacement(start,at-1),false);
+});
+test('only four selected banners inherit their accommodation expiry without restarting it',()=>{
+ assert.equal(Object.keys(newBannerProfiles).length,4);
+ for(const [banner,profile] of Object.entries(newBannerProfiles)){
+  const at=Date.parse(newPlacementStarts[profile]);
+  assert(isNewBannerPlacement(banner,at));
+  assert(isNewBannerPlacement(banner,at+14*86400000-1));
+  assert.equal(isNewBannerPlacement(banner,at+14*86400000),false);
+  assert.equal(isNewBannerPlacement(banner,at-1),false);
+ }
+ assert.equal(isNewBannerPlacement('unselected-banner',Date.parse('2026-11-12T12:00:00Z')),false);
 });
 test('download names retain the original JPEG name and cannot turn an image into an executable attachment',()=>{
  assert.equal(offerImageDownloadName('Hotel-Banner.jpeg','jpg','id'),'Hotel-Banner.jpeg');

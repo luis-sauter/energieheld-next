@@ -3590,6 +3590,9 @@ h6 {
 .profile-review-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .profile-import-badge { display: inline-flex; align-items: center; border: 1px solid #cfe1eb; border-radius: var(--portal-radius, 5px); padding: 4px 9px; color: var(--portal-blue); background: #eef7fc; font-size: .75rem; font-weight: 600; white-space: nowrap; }
 .new-placement-badge { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: var(--portal-radius, 5px); color: #fff; background: #00B050; font-size: .75rem; font-weight: 700; line-height: 1.4; text-shadow: none; vertical-align: middle; }
+.new-placement-ribbon { position: absolute; z-index: 2; top: 0; right: 0; width: clamp(56px, 18%, 96px); height: auto; max-height: 100%; margin: 0; padding: 0; overflow: visible; pointer-events: none; filter: drop-shadow(-1px 2px 2px rgb(0 0 0 / 40%)); }
+.new-placement-ribbon text { font-family: var(--font-body); font-size: 28px; font-weight: 700; letter-spacing: -.4px; }
+.reiseportal-shell :is(.accommodation-card, [data-autumn-profile]):has(.new-placement-ribbon) > button[aria-label="Vorschaubild bearbeiten"] { right: calc(clamp(56px, 18%, 96px) + 8px); }
 .row-title-link { display: inline-flex; flex-wrap: wrap; align-items: center; column-gap: 12px; row-gap: 6px; max-width: 100%; }
 .row-title-name { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
 .row-title-link .new-placement-badge { flex: none; white-space: nowrap; }

@@ -21,3 +21,14 @@ export function isNewPlacement(start:string|undefined,now=Date.now()) {
  const timestamp=start?Date.parse(start):NaN;
  return Number.isFinite(timestamp)&&now>=timestamp&&now-timestamp<14*24*60*60*1000;
 }
+
+// Selected existing creatives share their accommodation's original expiry.
+export const newBannerProfiles: Readonly<Record<string,string>> = {
+  '8011b97d-e715-4b6c-be3b-67c0cb075340': '0c8598b3-a2d2-45ad-bcbb-e19c4ee80e84', // JOAS guesthouse
+  'fc467656-d75a-4d3d-b31d-a49dc6c6a2c5': '0c8598b3-a2d2-45ad-bcbb-e19c4ee80e84', // JOAS Skiurlaub
+  'cf66f12b-6f5e-4bf1-8ba7-711f34be0bf2': '9a1a97da-2aad-439c-973d-8416ef4b4345', // Hotel Schneider
+  '8f12cf33-2bb6-4946-81b4-4815b98dbf16': '97e8cd41-abb6-4ba2-951f-fa0849ec2987', // Hotel Heiden
+};
+export function isNewBannerPlacement(id:string,now=Date.now()) {
+  return isNewPlacement(newPlacementStarts[newBannerProfiles[id] ?? ''],now);
+}

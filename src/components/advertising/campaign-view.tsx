@@ -21,6 +21,7 @@ import { offerRequestStatuses } from "@/lib/offer-requests";
 import styles from "./advertising.module.css";
 import { energieheld } from "@/config/energieheld";
 import { bannerRegions } from '@/data/banner-regions';
+import { NewPlacementBadge } from '@/components/portal/new-placement-badge';
 import { excludedAgencyTarget } from '@/lib/travel-provider-eligibility';
 
 function CreativeImage({ src, alt, width, height, mobile, crop, sizes, onDimensions }: { src: string; alt: string; sizes: string; width?: number; height?: number; mobile?: ActiveAd["mobile_image"]; crop?: ActiveAd["crop"]; onDimensions?: (width: number, height: number) => void }) {
@@ -125,6 +126,7 @@ export function CampaignSlot({
             target={portalDestination ? undefined : "_blank"}
           >
             {content}
+            {displayAd.imageUrl && <NewPlacementBadge id={displayAd.id} kind="banner"/>}
             {bannerRegions[displayAd.id] && <span className={styles.regionBadge} data-banner-region>{bannerRegions[displayAd.id]}</span>}
             {promo && <div className={styles.promoCopy}>
               <span className={styles.promoLabel}>Reiseinspiration</span>

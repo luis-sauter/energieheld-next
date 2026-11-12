@@ -35,7 +35,7 @@ export function AccommodationCard({ listing, rotating = false, sizes, cardEditin
           : <span className={cardStyles.fallback} aria-hidden="true">{listing.initials}</span>}
       </div>
       {showImportMarker && cardEditing && listing.importedAt && <span className={cardStyles.importMarker}><ProfileImportBadge imported /></span>}
-      <NewPlacementBadge id={listing.id} className={cardStyles.newBadge}/>
+      <NewPlacementBadge id={listing.id}/>
       <div className={`accommodation-card-copy ${cardStyles.copy}`}>
         <p className={cardStyles.location}>{[listing.location.city, listing.location.region, listing.location.country].filter(Boolean).filter((value, index, all) => all.indexOf(value) === index).join(" · ")}</p>
         <div className={cardStyles.titleRow}><h3>{listing.name}</h3><span className={cardStyles.details}>Details <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></span></div>

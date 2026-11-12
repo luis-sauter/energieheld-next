@@ -29,8 +29,7 @@
 .motto .details { font-size: .75rem; padding: 6px 10px; }
 .edit:focus-visible { outline: 3px solid var(--portal-blue); outline-offset: 3px; }
 .importMarker { position: absolute; top: 12px; left: 12px; max-width: calc(100% - 80px); pointer-events: none; }
-.newBadge { position: absolute; top: 12px; left: 12px; }
-.importMarker ~ .newBadge { top: 46px; }
+.card:has(:global([data-new-ribbon])) .importMarker { max-width: calc(100% - 160px); }
 .importMarker :global(.profile-import-badge) { color: var(--portal-blue); background: #f4fbffed; border-color: #ffffff80; font-size: .7rem; box-shadow: 0 1px 5px color-mix(in srgb, var(--portal-blue) 10.20%, transparent); }
 
 /* Shared, approved Natur-pur first-row treatment. */

@@ -545,6 +545,7 @@
 .regionBadge.regionBadge { position: absolute; top: 8px; right: 8px; z-index: 1; max-width: calc(100% - 16px); margin: 0; padding: 5px 9px; border-radius: var(--portal-radius, 5px); background: rgb(0 0 0 / 70%); color: #fff; font-size: .7rem; line-height: 1.35; font-weight: 650; text-shadow: none; pointer-events: none; }
 .regionBadge.regionBadge { opacity:0; transition:opacity .15s ease; }
 .interactiveCreative:is(:hover,:focus-visible) .regionBadge { opacity:1; }
+.interactiveCreative:has(:global([data-new-ribbon])) .regionBadge.regionBadge { top: auto; bottom: 8px; left: 8px; right: auto; }
 .imageCreative { overflow:hidden; }
 .imageCreative img { scale:1.025; }
 @media(prefers-reduced-motion:reduce){.regionBadge.regionBadge{transition:none;}}

@@ -10,6 +10,7 @@ import type { Listing } from '@/types/portal';
 import styles from './autumn-showcase.module.css';
 import { CardImageSurface, CardImagePhoto, CardImageEditButton } from './card-image-surface';
 import cardStyles from './accommodation-card.module.css';
+import { NewPlacementBadge } from './new-placement-badge';
 import { imageCropStyle } from '@/lib/image-crop';
 
 export function AutumnShowcase({ listings, cardEditing = false }: { listings: readonly Listing[]; cardEditing?: boolean }) {
@@ -44,6 +45,7 @@ export function AutumnShowcase({ listings, cardEditing = false }: { listings: re
           {stays.map(({ listing, image, crop, assetId }) => <Card className={styles.card} key={listing.id} data-autumn-profile={listing.id} data-editorial-term={SPECIAL_TOPIC_TERM}>
             <Link href={`/unterkuenfte/${listing.slug}`} className={styles.cardLink} aria-label={`${listing.name} – Unternehmensprofil ansehen`}>
               <div className={styles.photo}>{cardEditing ? <CardImagePhoto image={image} crop={crop} sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" /> : <Image src={image.src} alt={image.alt} fill style={crop ? imageCropStyle(crop) : undefined} unoptimized={image.src.startsWith('http')} loading="lazy" sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" />}</div>
+              <NewPlacementBadge id={listing.id}/>
               <div className={styles.copy}>
                 <div className={styles.titleRow}><h3>{listing.name}</h3><span className={`${cardStyles.details} ${styles.details}`}>Details <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></span></div>
                 <p className={styles.location}>{[listing.location.city, listing.location.country].filter(Boolean).join(' · ')}</p>
