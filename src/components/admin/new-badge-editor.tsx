@@ -11,7 +11,7 @@ export function NewBadgeEditor({kind,id,initial,now,error=false}:{kind:BadgeKind
   const [enabled,setEnabled]=useState(initial?.enabled??newBadgeVisible(id,kind,[],now));
   const [expiry,setExpiry]=useState(initial?.expires_at?localValue(initial.expires_at):localValue(new Date(now+14*86400000).toISOString()));
   return <section className={styles.panel} aria-label="Neu-Badge verwalten"><h2>Neu-Badge</h2><p>Markieren Sie diesen Eintrag als neu. Das Badge verschwindet automatisch zum gewählten Zeitpunkt. Eine erneute Veröffentlichung setzt es nicht automatisch.</p>
-    {error?<p role="alert">Badge-Einstellungen konnten nicht geladen werden. Bitte laden Sie die Seite erneut.</p>:<form action={action} className={styles.form}>
+    {error?<p role="alert">Badge-Einstellungen konnten nicht geladen werden. Bitte laden Sie die Seite erneut.</p>:<form action={action} className={styles.form} onReset={event=>event.preventDefault()}>
       <input type="hidden" name="kind" value={kind}/><input type="hidden" name="entity_id" value={id}/><input type="hidden" name="revision" value={revision}/>
       <label className={styles.toggle}><input type="checkbox" name="enabled" checked={enabled} onChange={e=>setEnabled(e.target.checked)} disabled={busy}/>Als „Neu“ kennzeichnen</label>
       <label>Badge anzeigen bis (Ihre Ortszeit)<input type="datetime-local" value={expiry} onChange={e=>setExpiry(e.target.value)} disabled={!enabled||busy} required={enabled}/></label>
