@@ -3,12 +3,29 @@ import { indexableProfile } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
+// Verified former Joomla slugs, same host identity and public destination.
+const legacyProfileSlugs: Record<string, string> = {
+  "landgasthof-neue-schänke": "landgasthof-neue-schaenke",
+  "rü-blanch": "rue-blanch",
+  "appartementhaus-salzburg-up": "appartementhaus-salzburg",
+  "feldhof": "feldhof-dolcevita-resort",
+  "hotel-salzburger-hof-wanderurlaub": "hotel-salzburger-hof",
+  "jägeralpe": "jaegeralpe",
+  "5-golfurlaub-südtirol-das-golfhotel-andreus": "golfhotel-andreus",
+  "schwarzwälderhof": "schwarzwaelderhof",
+  "der-königsleitner": "der-koenigsleitner-romantik-zu-zweit",
+  "anni´s-romantikhäuschen-in-der-sächsische-schweiz": "anni-romantikhaeuschen",
+  "hotel-ravelli-luxury-spaita": "hotel-ravelli-luxury-spa"
+};
+
+
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   let slug: string;
   try { slug = decodeURIComponent((await params).slug); }
   catch { return unavailable(404); }
   // This spelling is the existing verified alias on the current profile route.
   if (slug === 'höflehner') slug = 'hoeflehner';
+  slug = legacyProfileSlugs[slug] ?? slug;
   try {
     const result = await loadReiseportalListingBySlug(slug);
     if (result.error) return unavailable(503);

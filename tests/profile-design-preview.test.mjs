@@ -21,7 +21,8 @@ const {metadata}=await import('../src/app/(energieheld)/designvorschau/unternehm
 const {sitemapEntries}=await import('../src/lib/seo.ts');
 test('isolated preview preserves real text/media and exposes gallery, contact, Maps and existing motto links',()=>{
  const before=JSON.stringify(globalThis.previewFixture),html=renderToStaticMarkup(createElement(ProfileDesignPreview,{listing:globalThis.previewFixture}));
- for(const value of ['Hofgut Hafnerleiten','Vorhandener Untertitel','Erster vorhandener Absatz.','Zweiter vollständiger Absatz.','Weitere gespeicherte Informationen.','Brunndobl 16'])assert.ok(html.includes(value));
+ for(const value of ['Hofgut Hafnerleiten','Vorhandener Untertitel','Erster vorhandener Absatz.','Zweiter vollständiger Absatz.','Brunndobl 16'])assert.ok(html.includes(value));
+ assert.doesNotMatch(html,/Weitere gespeicherte Informationen\./);
  assert.match(html,/Nächstes Bild|N&#228;chstes Bild/);assert.match(html,/Bilderauswahl/);assert.doesNotMatch(html,/Kontakt aufnehmen|data-contact-profile/);assert.match(html,/Webseite besuchen/);assert.match(html,/mailto:post@hofgut.info/);assert.match(html,/tel:\+49856391511/);
  assert.match(html,/https:\/\/www.google.com\/maps\?/);assert.match(html,/In Google Maps öffnen/);assert.match(html,/href="\/mottoreisen\/natur-pur"/);assert.match(html,/href="\/mottoreisen\/romantik-zu-zweit"/);
  assert.doesNotMatch(html,/InlineProfileEditor|Bearbeitungsmodus|Banner bearbeiten/);assert.equal(JSON.stringify(globalThis.previewFixture),before);

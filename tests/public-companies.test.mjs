@@ -561,9 +561,9 @@ test("public accommodations directory shows five stored legacy profiles once and
   const html = renderToStaticMarkup(
     await DirectoryPage({ mode: "travel", searchParams: Promise.resolve({}) }),
   );
-  for (const name of ["Bayerischer Wald", "Höflehner", "Pension Sonnenhof", "Schafhuber", "Villner Hof", "Demo GmbH"])
+  for (const name of ["Ferienanlage am Nationalpark", "Höflehner", "Pension Sonnenhof", "Schafhuber", "Villner Hof", "Demo GmbH"])
     assert.match(html, new RegExp(name));
-  for (const name of ["Bayerischer Wald", "Höflehner", "Pension Sonnenhof", "Schafhuber", "Villner Hof"])
+  for (const name of ["Ferienanlage am Nationalpark", "Höflehner", "Pension Sonnenhof", "Schafhuber", "Villner Hof"])
     assert.equal((html.match(new RegExp(`>${name}<`, "g")) ?? []).length, 1);
   assert.match(html, /Demo\/Testprofil/);
   assert.match(html, /advertising-rail/);

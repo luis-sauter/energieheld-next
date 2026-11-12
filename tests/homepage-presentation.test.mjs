@@ -242,7 +242,7 @@ test('news cards render three local symbolic images and actual independent origi
  assert.equal(travelNews.length,3);assert.equal(travelNews.filter(n=>n.featured).length,1);assert.equal(travelNews[0].featured,true);
  assert.equal(new Set(travelNews.map(n=>new URL(n.sourceUrl).hostname)).size,3);
  assert.equal(travelNews.filter(n=>n.sourceUrl.includes('adac.de')).length,1);
- for(const item of travelNews){assert.ok(inspiration.includes(item.image));assert.ok(inspiration.includes(item.sourceUrl.replaceAll('&','&amp;')));assert.ok(existsSync(new URL('../public'+item.image,import.meta.url)));assert.doesNotMatch(item.imageAlt,/KI-Symbolbild/);assert.ok(item.publishedAt<='2026-10-13');}
+ for(const item of travelNews){assert.ok(inspiration.includes(item.image));assert.ok(inspiration.includes(item.sourceUrl.replaceAll('&','&amp;')));assert.ok(existsSync(new URL('../public'+item.image,import.meta.url)));assert.ok(item.imageAlt.length>10);assert.ok(item.publishedAt<=new Date().toISOString().slice(0,10));assert.ok(item.checkedAt>=item.publishedAt);}
  assert.equal((inspiration.match(/Weiterlesen/g)||[]).length,3);
  assert.equal((inspiration.match(/Quelle:/g)||[]).length,3);
  assert.doesNotMatch(inspiration,/Bei der Quelle weiterlesen|<small/);

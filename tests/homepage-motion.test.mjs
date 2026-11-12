@@ -48,7 +48,7 @@ test('homepage quicklinks retain their SSR scroller and public theme keys beside
  assert.match(component,/!compact && \(heading \|\| moreLink \|\| !edgeNavigation\) && <div className=\{styles.header\}/);
  assert.match(component,/\{heading\}[\s\S]*styles.controls[\s\S]*\{moreLink\}[\s\S]*zurück[\s\S]*weiter/);
  assert.match(css,/scrollbar-width: none/);assert.match(css,/::-webkit-scrollbar \{ display: none/);
- assert.match(css,/data-theme-image.*:is\(:hover, :focus-visible\)/);assert.match(css,/opacity: \.2/);assert.match(css,/opacity: \.55/);assert.match(css,/color: var\(--portal-blue\)/);assert.match(css,/background: rgb\(255 255 255 \/ 85%\)/);
+ assert.match(css,/data-theme-image.*:is\(:hover, :focus-visible\)/);assert.match(css,/opacity: \.55/);assert.match(css,/opacity: \.78/);assert.match(css,/color: var\(--portal-blue\)/);assert.match(css,/background: rgb\(255 255 255 \/ 85%\)/);
  assert.match(quicklinks,/loading="lazy"/);assert.match(quicklinks,/alt="" fill/);
  assert.match(css,/transition: none/);assert.doesNotMatch(css,/transform: scale/);
 });

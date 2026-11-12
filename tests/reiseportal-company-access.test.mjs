@@ -9,10 +9,12 @@ import { transpileModule, ModuleKind, JsxEmit } from "typescript";
 registerHooks({
   resolve(specifier, context, next) {
     const virtual = {
+      "server-only": 'export {}',
       "next/link": 'export function useLinkStatus(){return {pending:false}};export default "a"',
       "next/image": 'export default "img"',
       "next/navigation": 'export function redirect(path){throw Error("REDIRECT:"+path)}',
     };
+    if (specifier.endsWith('/new-badge.server')) return {url:'data:text/javascript,export async function loadPublicNewBadges(){return []}',shortCircuit:true};
     if (specifier.endsWith('/portal-account-server')) return {url:'data:text/javascript,export async function getPortalAccount(){globalThis.__companyAccessClientCalls++;const access=globalThis.__companyAccessRole;return {access,hasCompany:access==="forbidden",user:access==="unauthenticated"?null:{email:"test@example.org",user_metadata:{full_name:"Louis Sauter"}}}}',shortCircuit:true};
     if (specifier.endsWith('/editorial-queue-server')) return {url:'data:text/javascript,export async function getEditorialQueue(){return {counts:{profiles:0,advertising:0,verifications:0,total:0},tasks:[]}}',shortCircuit:true};
     if (virtual[specifier]) return { url: `data:text/javascript,${virtual[specifier]}`, shortCircuit: true };

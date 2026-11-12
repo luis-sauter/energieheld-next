@@ -68,7 +68,7 @@ test('banner sizes reserve common reference envelopes, lazy images retain proven
 test('mobile Premium art direction uses actual verified dimensions without another slot or request per banner',()=>{
  const banners=Object.values(legacyBannerPages).flat().filter(b=>b.mobile);assert.equal(banners.length,15);
  for(const b of banners){assert.equal(b.placement,'top_banner');assert.ok(b.mobile.width>0&&b.mobile.height>0);assert.ok(existsSync(new URL('../public'+b.mobile.imageUrl,import.meta.url)));}
- const source=readFileSync(new URL('../src/components/advertising/campaign-view.tsx',import.meta.url),'utf8');assert.match(source,/<source media="\(max-width: 760px\)" srcSet=\{mobile.imageUrl\}/);assert.match(source,/width=\{mobile.width\} height=\{mobile.height\}/);
+ const source=readFileSync(new URL('../src/components/advertising/campaign-view.tsx',import.meta.url),'utf8');assert.match(source,/<source media=\"\(max-width: 760px\)\" srcSet=\{mediaImageAttributes\(mobile.imageUrl, '92vw'\).srcSet \?\? mobile.imageUrl\}/);assert.match(source,/width=\{mobile.width\} height=\{mobile.height\}/);
  const rotationCss=readFileSync(new URL('../src/components/portal/profile-rotation.module.css',import.meta.url),'utf8');assert.match(rotationCss,/--rows: 3/);assert.match(rotationCss,/repeat\(2, minmax\(0, 1fr\)\)/);assert.match(rotationCss,/max-width: 700px.*--rows: 6.*grid-template-columns: 1fr/);
 });
 

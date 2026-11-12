@@ -16,3 +16,11 @@ test('unknown and demo profiles are 404, temporary upstream failures are retryab
  for(const slug of ['missing','demo','%broken']){const r=await GET(request,{params:Promise.resolve({slug})});assert.equal(r.status,404);assert.equal(r.headers.get('location'),null);assert.equal(r.headers.get('x-robots-tag'),'noindex');}
  const r=await GET(request,{params:Promise.resolve({slug:'offline'})});assert.equal(r.status,503);assert.equal(r.headers.get('retry-after'),'300');
 });
+
+test('verified Joomla provider names retain their current canonical identity',async()=>{
+ const aliases={"landgasthof-neue-schänke": "landgasthof-neue-schaenke", "rü-blanch": "rue-blanch", "appartementhaus-salzburg-up": "appartementhaus-salzburg", "feldhof": "feldhof-dolcevita-resort", "hotel-salzburger-hof-wanderurlaub": "hotel-salzburger-hof", "jägeralpe": "jaegeralpe", "5-golfurlaub-südtirol-das-golfhotel-andreus": "golfhotel-andreus", "schwarzwälderhof": "schwarzwaelderhof", "der-königsleitner": "der-koenigsleitner-romantik-zu-zweit", "anni´s-romantikhäuschen-in-der-sächsische-schweiz": "anni-romantikhaeuschen", "hotel-ravelli-luxury-spaita": "hotel-ravelli-luxury-spa"};
+ for(const [old,current] of Object.entries(aliases)){
+  const r=await GET(request,{params:Promise.resolve({slug:encodeURIComponent(old)})});
+  assert.equal(r.status,308);assert.equal(r.headers.get('location'),'/unterkuenfte/'+current,old);
+ }
+});

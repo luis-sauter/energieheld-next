@@ -112,7 +112,14 @@ test("legal pages preserve the approved sanitized body without an editorial revi
     const html = renderToStaticMarkup(createElement(page.default));
     assert.doesNotMatch(html, /Unveränderte Quellenübernahme|Eine rechtliche Prüfung für DAS-Reiseportal.com ist damit nicht erfolgt/);
     const text = value => value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    assert.ok(text(html).includes(text(sources[route].html)), 'Every approved source word remains visible');
+    if(route==='impressum') {
+      // The owner credentials were replaced on the explicit 09.11. approval.
+      const prefix=sources[route].html.split('<p><span>Georg E. Weidner')[0];
+      const suffix=sources[route].html.slice(sources[route].html.indexOf('<p><strong>Mitgliedschaften'));
+      assert.ok(text(html).includes(text(prefix)), 'Unchanged provider details remain visible');
+      assert.ok(text(html).includes(text(suffix)), 'Unchanged legal sections remain visible');
+      for(const credential of ['Georg E. Weidner, MA MSc','Leitender Berater','ISO/IEC 42001','ISO 9001 Lead Auditor','DIN EN 16247-1','https://www.amazon.de/dp/3446462120']) assert.ok(html.includes(credential), credential);
+    } else assert.ok(text(html).includes(text(sources[route].html)), 'Approved privacy text remains visible');
     assert.equal(sources[route].textSha256,hashes[route]);
     assert.doesNotMatch(sources[route].html,/<(?:script|style|iframe|img|form|input|button)\b|\son\w+=|\sstyle=|javascript:/i);
     assert.match(html, /href="\/impressum"/);assert.match(html, /href="\/datenschutz"/);
@@ -217,7 +224,7 @@ test("homepage uses the supplied MP4 as the hero background with search above it
 
 test("preview contains the five sourced legacy accommodations; the demo comes from Supabase", () => {
   assert.deepEqual(reiseportalPreview.map((item) => item.name), [
-    "Bayerischer Wald", "Höflehner", "Pension Sonnenhof",
+    "Ferienanlage am Nationalpark", "Höflehner", "Pension Sonnenhof",
     "Schafhuber", "Villner Hof",
   ]);
   assert.ok(reiseportalPreview.every((item) => item.directoryPackage === undefined));
@@ -242,7 +249,7 @@ test("discovery cards retain signed profile images without sending them to the N
   for (const src of ['/reiseportal/example.webp', 'https://example.supabase.co/storage/v1/object/sign/company-media/profile.jpg?token=test']) {
     const card = AccommodationCard({ listing: { ...reiseportalPreview[0], images: [{ src, alt: 'Profile image' }] } });
     const descendants = node => Array.isArray(node) ? node.flatMap(descendants) : node && typeof node === 'object' ? [node, ...descendants(node.props?.children)] : [];
-    const image = descendants(card).find(node => node.type === 'img');
+    const image = descendants(card).find(node => node.props?.alt === 'Profile image');
     assert.equal(image.props.src, src);
     assert.equal(image.props.unoptimized, src.startsWith('https://'));
     assert.equal(image.props.loading, 'lazy');
