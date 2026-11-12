@@ -58,7 +58,8 @@ export default async function AdminEditProfilePage({
               initialValues={values}
               saveAction={saveAdminProfile.bind(null, profile.id)}
               submitLabel="Änderungen speichern"
-              businessAreasHelp="Beschreiben Sie die Tätigkeitsbereiche des Unternehmens. Die weitere Einordnung wird getrennt verwaltet."
+              hideBusinessAreas
+              businessAreasHelp=""
             />
           </>
         )}

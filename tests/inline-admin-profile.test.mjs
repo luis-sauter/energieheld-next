@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import { readFileSync, existsSync } from "node:fs";
 import { transpileModule, ModuleKind, JsxEmit } from "typescript";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup, renderToReadableStream } from "react-dom/server";
 import { createElement } from "react";
 
 registerHooks({
@@ -177,8 +177,9 @@ test("published heading and text blocks render publicly without editorial contro
   ];
   for (const options of [{ authenticated: false }, { authenticated: true, admin: false }]) {
     const html = await renderPage(options, contentRows);
-    for (const text of ["Über unser Team", "Öffentliche Beschreibung", "Unsere Leistungen", "Persönliche Reiseplanung", "Unsere Tätigkeiten", "Reiseberatung"])
+    for (const text of ["Über unser Team", "Öffentliche Beschreibung", "Unsere Leistungen", "Persönliche Reiseplanung"])
       assert.match(html, new RegExp(text));
+    assert.doesNotMatch(html, /Unsere Tätigkeiten|Reiseberatung/);
     assert.doesNotMatch(html, /Inhalt hinzufügen|Block löschen|Überschrift speichern|Profil bearbeiten/);
   }
   const visitor = await renderPage({ authenticated: false }, contentRows);
@@ -835,8 +836,10 @@ test("explicit editorial entry starts existing editor for all statuses including
 test("review page follows editorial order with three same editor links and one final decision region",async()=>{
  const {default:ReviewPage}=await import('../src/app/(energieheld)/admin/firmen/[id]/page.tsx');
  const profile={...publicProfile,status:'pending',owner_note:'Privates Briefing'};globalThis.__inlineAdminClient=client({profile});
- const html=renderToStaticMarkup(await ReviewPage({params:Promise.resolve({id:profileId})}));
- const labels=['Aktueller Status','Angaben und Hinweise','Hinweise des Unternehmens','Firmenlogo und Unternehmensbilder','Reisezuordnungen','Optionale Qualitätsprüfung','Redaktionelle Entscheidung'];
+ const stream=await renderToReadableStream(await ReviewPage({params:Promise.resolve({id:profileId})}));
+ await stream.allReady;
+ const html=await new Response(stream).text();
+ const labels=['Aktueller Status','Angaben und Hinweise','Hinweise des Unternehmens','Firmenlogo und Unternehmensbilder','Reisezuordnungen','Redaktionelle Entscheidung'];
  let previous=-1;for(const label of labels){const at=label === "Redaktionelle Entscheidung" ? html.lastIndexOf(label) : html.indexOf(label);assert.ok(at>previous,label);previous=at;}
  assert.equal((html.match(/aria-label="Profilentscheidung"/g)||[]).length,1);assert.equal((html.match(/Profil veröffentlichen/g)||[]).length,1);assert.equal((html.match(/vorschau[?]bearbeiten=1/g)||[]).length,3);assert.match(html,/Privates Briefing/);assert.doesNotMatch(html,/Öffentliche Gewerke|Trockenbau/);
  assert.match(html,/aria-label="Redaktionelle Profilaktion"/);

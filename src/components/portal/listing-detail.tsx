@@ -146,6 +146,7 @@ export function ListingDetail({
   allowDemoMap = false,
   originalDemoMedia = false,
   showVerification = true,
+  showBusinessAreas = true,
 }: {
   listing: Listing;
   categories: Category[];
@@ -154,6 +155,7 @@ export function ListingDetail({
   allowDemoMap?: boolean;
   originalDemoMedia?: boolean;
   showVerification?: boolean;
+  showBusinessAreas?: boolean;
   qualityArea?: React.ReactNode;
   headingLevel?: 1 | 2;
   presentation?: "company";
@@ -244,7 +246,7 @@ export function ListingDetail({
       )}
       <div className="detail-grid">
         <div>
-          {!editorialContent && (listing.businessAreas || inlineFields?.business_areas) && (
+          {showBusinessAreas && !editorialContent && (listing.businessAreas || inlineFields?.business_areas) && (
             <section className="detail-section" data-profile-text>
               {businessHeadingEditor ?? <h2>
                 {presentation === "company"

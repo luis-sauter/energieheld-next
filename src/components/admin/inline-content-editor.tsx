@@ -132,7 +132,8 @@ export function FixedHeadingEditor({ slot, sectionKey, value, defaultText, align
   </SectionPartFrame>;
 }
 
-export function InlineContentEditor({ blocks, items, listing, renderSpecial, editing, available, imagesAvailable, saveAction, saveImage }: {
+export function InlineContentEditor({ blocks, items, listing, renderSpecial, editing, available, imagesAvailable, saveAction, saveImage, allowBusinessSection = true }: {
+  allowBusinessSection?: boolean;
   blocks: ProfileContentBlock[];
   items: EditorialItem[];
   listing: Listing;
@@ -341,7 +342,7 @@ export function InlineContentEditor({ blocks, items, listing, renderSpecial, edi
         }}>Video</button>
         {!items.some((item) => item.kind === "about") && <button type="button" className="button" disabled={busy || history.busy}
           onClick={() => void run(formFor("section-restore", "section:about"), () => setPickerBefore(undefined))}>Beschreibung wieder hinzufügen</button>}
-        {!items.some((item) => item.kind === "business") && <button type="button" className="button" disabled={busy || history.busy}
+        {allowBusinessSection && !items.some((item) => item.kind === "business") && <button type="button" className="button" disabled={busy || history.busy}
           onClick={() => void run(formFor("section-restore", "section:business"), () => setPickerBefore(undefined))}>Tätigkeitsbereiche wieder hinzufügen</button>}
       </div>}
       {activeDraft && <form className={styles.blockForm} onSubmit={(event) => {

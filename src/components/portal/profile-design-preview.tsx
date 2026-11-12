@@ -17,7 +17,7 @@ import styles from './profile-design-preview.module.css';
 
 export function ProfileDesignPreview({ listing, blocks = [] }: { listing: Listing; blocks?: ProfileContentBlock[] }) {
   const map = googleMapsLocation(listing.location);
-  const content = splitProfileContent(blocks, listing.name);
+  const content = splitProfileContent(blocks, listing.name, {hideBusiness:true});
   // Only this prototype starts with the fireplace shown in the reference.
   // Reordering a copy never changes the canonical gallery.
   const fireplace = listing.images.find(image => image.id === '554e4fe8-bf9d-48fe-b6a9-c8a791393c8a');
@@ -33,7 +33,7 @@ export function ProfileDesignPreview({ listing, blocks = [] }: { listing: Listin
       images: [{ id: atmosphere.id ?? 'existing-photo', block_id: 'preview-existing-photo', src: atmosphere.src, alt_text: atmosphere.alt, sort_order: 0 }] },
   } : item);
   const signals = profileTravelSignals(listing.travelTermKeys, 4);
-  return <main id="hauptinhalt" className={styles.preview}>
+  return <main id="hauptinhalt" className={styles.preview} data-travel-profile>
     <div className="container">
       <p className={styles.notice}>Isolierte Designvorschau · bestehende Unternehmensprofile bleiben unverändert</p>
       <nav className={styles.breadcrumbs} aria-label="Brotkrümelnavigation"><Link href="/">Startseite</Link><span><Icon name="chevron-right" size={20} /></span><Link href="/unterkuenfte-a-z">Unterkünfte A–Z</Link><span><Icon name="chevron-right" size={20} /></span><span>{listing.name}</span></nav>
@@ -64,7 +64,6 @@ export function ProfileDesignPreview({ listing, blocks = [] }: { listing: Listin
             text={<div className={styles.description}>{listing.description.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>}
             image={atmosphere ? <div className={styles.atmosphere}><Image src={atmosphere.src} alt={atmosphere.alt} fill unoptimized sizes="(max-width: 700px) 90vw, 35vw" loading="lazy" /></div> : null}
             textWidth={65} imageWidth={35} imageFirst={false} flow="standard" />
-          {listing.businessAreas && <div className={styles.description}><h2>{content.businessHeading}</h2><p>{listing.businessAreas}</p></div>}
         </>}
         <details className={styles.moreImages}><summary>Weitere Einblicke in die Unterkunft</summary><div>{listing.images.filter(image => image !== atmosphere).map(image => <figure key={image.src}><Image src={image.src} alt={image.alt} width={640} height={480} unoptimized loading="lazy" /><figcaption>{image.alt}</figcaption></figure>)}</div></details>
       </section>

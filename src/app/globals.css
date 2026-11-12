@@ -3592,6 +3592,15 @@ h6 {
 .new-placement-badge { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: var(--portal-radius, 5px); color: #fff; background: #00B050; font-size: .75rem; font-weight: 700; line-height: 1.4; text-shadow: none; vertical-align: middle; }
 .new-placement-ribbon { position: absolute; z-index: 2; top: 0; right: 0; width: clamp(56px, 18%, 96px); height: auto; max-height: 100%; margin: 0; padding: 0; overflow: visible; pointer-events: none; filter: drop-shadow(-1px 2px 2px rgb(0 0 0 / 40%)); }
 .new-placement-ribbon text { font-family: var(--font-body); font-size: 28px; font-weight: 700; letter-spacing: -.4px; }
+/* A shared white editorial surface covers plain text and every saved text/image flow. */
+.reiseportal-shell [data-travel-profile] .profile-content-canvas,
+.reiseportal-shell [data-travel-profile] section[aria-label="Unternehmensbeschreibung"] {
+  background: var(--portal-white); border: 1px solid var(--line);
+  border-radius: var(--portal-radius, 5px); padding: clamp(16px, 2vw, 28px); box-sizing: border-box;
+}
+.reiseportal-shell [data-travel-profile] .company-profile > .detail-grid .detail-section[data-profile-text] {
+  background: var(--portal-white);
+}
 .reiseportal-shell :is(.accommodation-card, [data-autumn-profile]):has(.new-placement-ribbon) > button[aria-label="Vorschaubild bearbeiten"] { right: calc(clamp(56px, 18%, 96px) + 8px); }
 .row-title-link { display: inline-flex; flex-wrap: wrap; align-items: center; column-gap: 12px; row-gap: 6px; max-width: 100%; }
 .row-title-name { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }

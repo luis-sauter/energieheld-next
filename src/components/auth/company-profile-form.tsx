@@ -53,19 +53,22 @@ export function ProfileForm({
   submitLabel,
   businessAreasHelp,
   travelSelection,
+  hideBusinessAreas = false,
 }: {
   initialValues: ProfileValues;
   saveAction: SaveAction;
   submitLabel: string;
   businessAreasHelp: string;
   travelSelection?: OwnerTravelSelectionProps;
+  hideBusinessAreas?: boolean;
 }) {
   const [values, setValues] = useState(initialValues);
   const [state, action, pending] = useActionState(saveAction, {});
   return (
     <form action={action} className={styles.form} aria-busy={pending}>
       {travelSelection && <OwnerTravelSelection {...travelSelection} pending={pending} />}
-      {fields.map(({ name, label, type, multiline, autoComplete }) => (
+      {hideBusinessAreas && <input type="hidden" name="business_areas" value={values.business_areas} />}
+      {fields.filter(field => !hideBusinessAreas || field.name !== "business_areas").map(({ name, label, type, multiline, autoComplete }) => (
         <label key={name} className={styles.field} htmlFor={name}>
           {name === "business_areas" && travelSelection ? "Weitere Informationen zu Ihrem Angebot" : label}
           {name === "display_name" ? " (Pflichtfeld)" : ""}

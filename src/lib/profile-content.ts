@@ -42,7 +42,7 @@ export function contentText(value: unknown, type: TextBlockType) {
     ? text : null;
 }
 
-export function splitProfileContent(blocks: ProfileContentBlock[], profileName: string) {
+export function splitProfileContent(blocks: ProfileContentBlock[], profileName: string, options: { hideBusiness?: boolean } = {}) {
   const pairLayouts = blocks.find((block) => block.slot === "about_heading")?.content.pair_layouts ?? {};
   const prepared = blocks.map((block) => block.slot === null && block.type === "text"
     ? { ...block, pair_layout: pairLayouts[block.id] } : block);
@@ -53,7 +53,7 @@ export function splitProfileContent(blocks: ProfileContentBlock[], profileName: 
     businessHeading: business || "Tätigkeitsbereiche",
     blocks: prepared.filter((block) => block.slot === null)
       .sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id)),
-    items: editorialItems(prepared, profileName),
+    items: editorialItems(prepared, profileName, options),
   };
 }
 
@@ -72,13 +72,14 @@ export type EditorialItem = {
   pairLayout?: TextBlockLayout;
 };
 
-export function editorialItems(blocks: ProfileContentBlock[], profileName: string): EditorialItem[] {
+export function editorialItems(blocks: ProfileContentBlock[], profileName: string, options: { hideBusiness?: boolean } = {}): EditorialItem[] {
   const normal = blocks.filter((block) => block.slot === null)
     .sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id));
   const about = blocks.find((block) => block.slot === "about_heading");
   const business = blocks.find((block) => block.slot === "business_areas_heading");
   const hiddenBlocks = new Set(about?.content.hidden_blocks ?? []);
   const deleted = new Set(about?.content.deleted_sections ?? []);
+  if (options.hideBusiness) deleted.add(BUSINESS_SECTION);
   const map = new Map<string, EditorialItem>([
     [ABOUT_SECTION, { key: ABOUT_SECTION, kind: "about", heading: about?.content.text || `Über ${profileName}`,
       headingAlign: about?.content.heading_align ?? normalizeTextBlockLayout(about?.content.layout).text_align,
@@ -97,7 +98,7 @@ export function editorialItems(blocks: ProfileContentBlock[], profileName: strin
       hidden: hiddenBlocks.has(block.id), layout: normalizeTextBlockLayout(block.config), block }]),
   ]);
   for (const key of deleted) map.delete(key);
-  const order = editorialOrder(blocks);
+  const order = editorialOrder(blocks, options);
   const paired = new Set<string>();
   for (const [key, section] of [[ABOUT_SECTION, about], [BUSINESS_SECTION, business]] as const) {
     const imageId = section?.content.adjacent_image_id;
@@ -113,11 +114,12 @@ export function editorialItems(blocks: ProfileContentBlock[], profileName: strin
     .filter((item): item is EditorialItem => Boolean(item));
 }
 
-export function editorialOrder(blocks: ProfileContentBlock[]): string[] {
+export function editorialOrder(blocks: ProfileContentBlock[], options: { hideBusiness?: boolean } = {}): string[] {
   const normal = blocks.filter((block) => block.slot === null)
     .sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id));
   const metadata = blocks.find((block) => block.slot === "about_heading")?.content;
   const deleted = new Set(metadata?.deleted_sections ?? []);
+  if (options.hideBusiness) deleted.add(BUSINESS_SECTION);
   const sections = [ABOUT_SECTION, BUSINESS_SECTION].filter((key) => !deleted.has(key));
   const saved = metadata?.order;
   if (!Array.isArray(saved)) return [

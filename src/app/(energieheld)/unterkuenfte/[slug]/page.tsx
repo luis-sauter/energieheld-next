@@ -74,7 +74,7 @@ export default async function AccommodationDetail({
   const content = storedProfile && !liveDemo
     ? await loadPublicProfileContent(createPublicClient(), listing.id)
     : { blocks: [], available: false, imagesAvailable: false };
-  const presentedContent = splitProfileContent(content.blocks, listing.name);
+  const presentedContent = splitProfileContent(content.blocks, listing.name, {hideBusiness:true});
   let editorData: { imported: boolean; values: ProfileValues; media: SignedMedia; rows: MediaRow[]; freshness: ContentFreshness | null; canReview: boolean; travel?: TravelReviewSnapshot; travelError?: string } | null = null;
   let editorContent = content;
   if (storedProfile) {
@@ -99,10 +99,11 @@ export default async function AccommodationDetail({
     }
   }
   return (
-    <main id="hauptinhalt" className="container detail-page">
+    <main id="hauptinhalt" className="container detail-page" data-travel-profile>
       <JsonLd data={indexableProfile(listing) ? jsonLdGraph([breadcrumbSchema(breadcrumbs), ...profileSchema(listing, result.terms)]) : null} />
       <Breadcrumbs items={breadcrumbs} />
       {editorData ? <InlineProfileEditor
+        hideBusinessAreas
         badgeSettings={<NewBadgeSettings id={listing.id} kind="profile"/>}
         imported={editorData.imported}
         travelError={editorData.travelError}
@@ -130,6 +131,7 @@ export default async function AccommodationDetail({
         listing={listing}
         categories={[]}
         showVerification={false}
+        showBusinessAreas={false}
         presentation="company"
         showMap
         allowDemoMap={listing.slug === "demo-gmbh"}

@@ -31,8 +31,9 @@ export function InlineProfileEditor(props: React.ComponentProps<typeof ProfileEd
 
 const formId = "inline-admin-profile-form";
 
-function ProfileEditor({ listing, categories, values, media, rows, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness, travelError, imported, badgeSettings }: {
+function ProfileEditor({ listing, categories, values, media, rows, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness, travelError, imported, badgeSettings, hideBusinessAreas = false }: {
   badgeSettings?: ReactNode;
+  hideBusinessAreas?: boolean;
   listing: Listing;
   imported?: boolean;
   categories: Category[];
@@ -71,7 +72,7 @@ function ProfileEditor({ listing, categories, values, media, rows, saveProfile, 
   const [mapLocation, setMapLocation] = useState(listing.location);
   const history = useInlineEditorHistoryController(saveContent, saveBlockImage, editing);
   const mediaEditor = useInlineAdminMedia({ legacyImages: media.images.length || listing.galleryInitialized ? [] : listing.images, profileId: listing.id, saveAction: saveMedia, media, rows, profileName: listing.name, initials: listing.initials });
-  const content = splitProfileContent(editing ? contentBlocks : publicContentBlocks ?? contentBlocks, listing.name);
+  const content = splitProfileContent(editing ? contentBlocks : publicContentBlocks ?? contentBlocks, listing.name, {hideBusiness:hideBusinessAreas});
 
   function field(name: keyof ProfileValues, label: string, multiline = false) {
     const common = { id: `inline-${name}`, name, form: formId, defaultValue: values[name], maxLength: name.startsWith("contact_") ? 120 : undefined, disabled: busy || contactBusy || history.busy, "aria-label": label, onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -182,6 +183,7 @@ function ProfileEditor({ listing, categories, values, media, rows, saveProfile, 
       <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || !history.state.future.length}
         onClick={() => void history.redo()}>↷ Wiederholen</button>
       <form id={formId} onSubmit={submit}>
+        {hideBusinessAreas && <input type="hidden" name="business_areas" value={values.business_areas}/>}
         <button type="submit" value="stay" className="button button-primary" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)}>{busy ? "Wird gespeichert …" : "Speichern"}</button>
         <button type="submit" value="close" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)}>Speichern und schließen</button>
         <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)} onClick={() => { if (travel?.dirty && !window.confirm("Ungespeicherte Reiseauswahl verwerfen?")) return; travel?.reset(); setEditing(false); setDirty(false); setSelectedReview(null); setFeedback({}); history.clear(); }}>Abbrechen</button>
@@ -203,6 +205,7 @@ function ProfileEditor({ listing, categories, values, media, rows, saveProfile, 
     <ListingDetail
       listing={listing}
       showVerification={showVerification}
+      showBusinessAreas={!hideBusinessAreas}
       categories={categories}
       presentation="company"
       showMap
@@ -219,7 +222,7 @@ function ProfileEditor({ listing, categories, values, media, rows, saveProfile, 
       editorialContent={contentAvailable && (editing || listing.description || listing.businessAreas || content.blocks.length)
         ? <InlineContentEditor key={editing ? "edit" : "view"}
         blocks={content.blocks} items={content.items} listing={listing} renderSpecial={renderSpecial}
-        editing={editing} available={contentAvailable} imagesAvailable={imagesAvailable}
+        editing={editing} available={contentAvailable} imagesAvailable={imagesAvailable} allowBusinessSection={!hideBusinessAreas}
         saveAction={saveContent} saveImage={saveBlockImage} /> : undefined}
       contactPersonEditor={editing ? <section id="profile-contact-editor" tabIndex={-1} aria-label="Ansprechpartner bearbeiten">
         <h3>Ansprechpartner und Bild bearbeiten</h3>

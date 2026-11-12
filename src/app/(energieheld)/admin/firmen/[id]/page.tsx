@@ -38,7 +38,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
     signCompanyMedia(client, profile).catch(() => null), loadReviewFeedback(client, profile.id),
   ]);
   const fields = [
-    ["Weitere Informationen zum Angebot", profile.business_areas], ["Einreichungsdatum", formatSubmission(profile.submitted_at)],
+    ["Einreichungsdatum", formatSubmission(profile.submitted_at)],
     ["Kurzbeschreibung", profile.tagline], ["Beschreibung", profile.description],
     ["Telefon", profile.phone], ["Öffentliche E-Mail", profile.public_email], ["Website", profile.website],
     ["Straße", profile.street], ["PLZ", profile.postal_code], ["Ort", profile.city], ["Region", profile.region], ["Land", profile.country],

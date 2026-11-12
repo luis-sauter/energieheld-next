@@ -59,7 +59,7 @@ export default async function AdminProfilePreview({ params, searchParams }: { pa
   </main>;
   const listing = withLegacyImages(companyProfileListing(profile, media));
   const values = Object.fromEntries(profileFields.map((field) => [field, profile[field] ?? ""])) as ProfileValues;
-  return <main id="hauptinhalt" className="container detail-page">
+  return <main id="hauptinhalt" className="container detail-page" data-travel-profile>
     <nav className="breadcrumbs" aria-label="Brotkrumennavigation"><span>Adminbereich</span><span>/</span><span>Interne Profilvorschau</span></nav>
     <header><h1>{editing ? "Profil redaktionell bearbeiten" : "Interne Profilvorschau"}</h1><p>{profile.status === "approved" ? (editing ? "Interner Redaktionsbereich eines freigegebenen Profils." : "Dieses Profil ist nicht im Reiseportal-Verzeichnis sichtbar.") : "Dieses Profil ist noch nicht öffentlich sichtbar."}</p></header>
     <ProfileImportNotice entry={importEntry}/>
@@ -68,6 +68,7 @@ export default async function AdminProfilePreview({ params, searchParams }: { pa
       {"error" in note ? <p role="alert">{note.error}</p> : <p className={styles.reviewNote}>{note.note || "Keine Hinweise hinterlegt."}</p>}
     </section>
     <InlineProfileEditor imported={Boolean(importEntry)} initialEditing={editing} returnHref={`/admin/firmen/${id}#reisezuordnungen`} freshness={freshness}
+      hideBusinessAreas
       badgeSettings={<NewBadgeSettings id={id} kind="profile"/>}
       travelError={"error" in travel ? travel.error : undefined}
       travelReview={"error" in travel ? undefined : { snapshot: travel, saveAction: saveTravelTerms.bind(null, id) }}

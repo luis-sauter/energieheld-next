@@ -77,6 +77,24 @@ test("both structured editorial sections attach their own adjacent image for eve
   }
 });
 
+test("travel profiles omit business sections without losing their adjacent photos or changing shared defaults", () => {
+  const image = {...block("business-photo", "image_grid", 50, 50), slot: null, sort_order: 1};
+  const about = {id: "about", slot: "about_heading", type: "heading", content: {
+    text: "Über die Unterkunft", order: [ABOUT_SECTION, BUSINESS_SECTION, image.id],
+  }};
+  const business = {id: "business", slot: "business_areas_heading", type: "heading", content: {
+    text: "Tätigkeitsbereiche", adjacent_image_id: image.id,
+  }};
+  const blocks = [about, business, image];
+  const before = JSON.stringify(blocks);
+  const travel = editorialItems(blocks, "Unterkunft", {hideBusiness: true});
+  assert.deepEqual(travel.map(item => item.key), [ABOUT_SECTION, image.id]);
+  assert.equal(travel[1].block.id, image.id);
+  const shared = editorialItems(blocks, "Unternehmen");
+  assert.equal(shared.find(item => item.kind === "business").imageBlock.id, image.id);
+  assert.equal(JSON.stringify(blocks), before);
+});
+
 test("shared image migration preserves admin boundaries and independent copied image rows", () => {
   const migration = source("supabase/migrations/20260929120000_share_profile_block_images.sql");
   assert.match(migration, /DROP CONSTRAINT profile_content_block_images_storage_path_key/);
