@@ -1,4 +1,5 @@
 import { loadProfileImports } from '@/lib/profile-import';
+import {NewBadgeSettings} from '@/components/admin/new-badge-settings';
 import { ProfileImportNotice } from '@/components/admin/profile-import-notice';
 import { loadAdminTravelTaxonomy } from "@/lib/admin-travel-taxonomy";
 import { saveTravelTerms } from "@/app/(energieheld)/admin/firmen/[id]/travel-actions";
@@ -67,6 +68,7 @@ export default async function AdminProfilePreview({ params, searchParams }: { pa
       {"error" in note ? <p role="alert">{note.error}</p> : <p className={styles.reviewNote}>{note.note || "Keine Hinweise hinterlegt."}</p>}
     </section>
     <InlineProfileEditor imported={Boolean(importEntry)} initialEditing={editing} returnHref={`/admin/firmen/${id}#reisezuordnungen`} freshness={freshness}
+      badgeSettings={<NewBadgeSettings id={id} kind="profile"/>}
       travelError={"error" in travel ? travel.error : undefined}
       travelReview={"error" in travel ? undefined : { snapshot: travel, saveAction: saveTravelTerms.bind(null, id) }}
       reviewFreshness={canReview ? reviewInlineProfile.bind(null, id, slug) : undefined}

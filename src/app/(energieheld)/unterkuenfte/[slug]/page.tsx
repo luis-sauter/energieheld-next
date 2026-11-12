@@ -1,4 +1,5 @@
 import { Icon } from "@/components/portal/icon";
+import {NewBadgeSettings} from '@/components/admin/new-badge-settings';
 import { loadProfileImports } from "@/lib/profile-import";
 import { loadAdminTravelTaxonomy, type TravelReviewSnapshot } from "@/lib/admin-travel-taxonomy";
 import { saveTravelTerms } from "@/app/(energieheld)/admin/firmen/[id]/travel-actions";
@@ -102,6 +103,7 @@ export default async function AccommodationDetail({
       <JsonLd data={indexableProfile(listing) ? jsonLdGraph([breadcrumbSchema(breadcrumbs), ...profileSchema(listing, result.terms)]) : null} />
       <Breadcrumbs items={breadcrumbs} />
       {editorData ? <InlineProfileEditor
+        badgeSettings={<NewBadgeSettings id={listing.id} kind="profile"/>}
         imported={editorData.imported}
         travelError={editorData.travelError}
         travelReview={editorData.travel ? { snapshot: editorData.travel, saveAction: saveTravelTerms.bind(null, listing.id) } : undefined}

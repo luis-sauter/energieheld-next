@@ -6,7 +6,7 @@ import { TravelTaxonomyEditor } from "./travel-taxonomy-editor";
 import type { TravelReviewSnapshot, TravelSaveResult } from "@/lib/admin-travel-taxonomy";
 import { ProfileFreshness } from './profile-freshness';
 import { freshnessStatus, freshnessStates, type ContentFreshness } from '@/lib/content-freshness';
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { ListingDetail, type InlineProfileFields } from "@/components/portal/listing-detail";
 import { useInlineAdminMedia } from "./use-inline-admin-media";
@@ -31,7 +31,8 @@ export function InlineProfileEditor(props: React.ComponentProps<typeof ProfileEd
 
 const formId = "inline-admin-profile-form";
 
-function ProfileEditor({ listing, categories, values, media, rows, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness, travelError, imported }: {
+function ProfileEditor({ listing, categories, values, media, rows, saveProfile, saveMedia, contentBlocks, publicContentBlocks, contentAvailable, imagesAvailable, saveContent, saveBlockImage, initialEditing = false, returnHref, showVerification = true, allowDemoMap = false, originalDemoMedia = false, freshness, reviewFreshness, withdrawFreshness, travelError, imported, badgeSettings }: {
+  badgeSettings?: ReactNode;
   listing: Listing;
   imported?: boolean;
   categories: Category[];
@@ -61,6 +62,7 @@ function ProfileEditor({ listing, categories, values, media, rows, saveProfile, 
   const travel = useTravelReview();
   const busyRef = useRef(false);
   const [editing, setEditing] = useState(initialEditing);
+  const [badgeOpen, setBadgeOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [contactBusy, setContactBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -173,6 +175,8 @@ function ProfileEditor({ listing, categories, values, media, rows, saveProfile, 
         if (busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || ((dirty || travel?.dirty || selectedReview !== null) && !window.confirm("Ungespeicherte Profilangaben verwerfen und zur Profilprüfung zurückkehren?"))) event.preventDefault();
       }}>Zur Profilprüfung</Link>}
       <strong>Bearbeitungsmodus aktiv</strong>
+      {badgeSettings && <button type="button" className="button" aria-expanded={badgeOpen} aria-controls="inline-profile-new-badge"
+        disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy)} onClick={()=>setBadgeOpen(open=>!open)}>Neu-Badge</button>}
       <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || !history.state.past.length}
         onClick={() => void history.undo()}>↶ Rückgängig</button>
       <button type="button" className="button" disabled={busy || contactBusy || mediaEditor.busy || history.busy || Boolean(travel?.busy) || !history.state.future.length}
@@ -191,6 +195,7 @@ function ProfileEditor({ listing, categories, values, media, rows, saveProfile, 
       {mediaEditor.status}
       <small>Inhalts- und Bildänderungen werden sofort gespeichert.</small>
     </div>}
+    {editing && badgeSettings && badgeOpen && <div id="inline-profile-new-badge">{badgeSettings}</div>}
     {!editing && feedback.success && <p role="status" className={styles.success}>{feedback.success}</p>}
     {editing && travelError && <p role="alert">{travelError}</p>}
     {editing && travel && <TravelTaxonomyEditor compact disabled={busy || contactBusy || mediaEditor.busy || history.busy} /> }
