@@ -7,14 +7,25 @@
 .content { position: relative; padding-top: 18px; }
 .hero { margin:clamp(20px,3vw,36px) 0 24px; max-width: none; }
 .hero h1 { margin: 0 0 12px; color: var(--portal-blue); font-size: clamp(2.6rem, 6vw, 4.3rem); line-height: 1.05; }
-.hero > p:last-child { max-width: none; font-size: var(--portal-subtitle-size); color: var(--portal-basalt); line-height: var(--portal-subtitle-leading); text-shadow: 0 1px 3px rgb(255 255 255 / 90%); }
-/* Theme introductions follow the overview; destination copy keeps its own surface. */
+.hero > p:last-child { max-width: none; font-size: var(--portal-subtitle-size); color: var(--portal-basalt); line-height: var(--portal-subtitle-leading); }
+/* Selected Natur-pur reading surface, with 30% less opacity on every device. */
+.hero > [data-intro-copy] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 16px 18px;
+  border: 1px solid rgb(255 255 255 / 31.5%);
+  border-radius: var(--portal-radius, 5px);
+  clip-path: inset(0 round var(--portal-radius, 5px));
+  background: linear-gradient(135deg, rgb(255 255 255 / 54.6%), rgb(253 241 228 / 50.4%));
+  box-shadow: 0 6px 22px rgb(67 81 82 / 4.2%);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
 .page[data-motto-detail] .hero h1 { margin-bottom: 22px; color: var(--portal-blue); font-size: clamp(2.7rem, 4.6vw, 4rem); letter-spacing: -.035em; }
 .page[data-motto-detail] .hero > p:last-child { margin-bottom: 0; }
 .page[data-motto-detail] .stays h2 { color: var(--portal-blue); }
-.page[data-motto-detail] .count { color: var(--portal-ink); }
 .stays h2 { color: var(--portal-blue); margin: 5px 0 12px; font-size: var(--portal-section-title-size); }
-.count { margin-bottom: 22px; color: var(--portal-basalt); font-size: var(--portal-subtitle-size); line-height: var(--portal-subtitle-leading); }
 .pair { margin-bottom: 22px; }
 .row { position: relative; min-width: 0; }
 .track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 36px) / 3); gap: 18px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; overflow-anchor: none; padding: 5px 2px 10px; }
@@ -60,31 +71,6 @@
   .page[data-motto-detail="campingurlaub"] .backdrop { height: 1000px; min-height: 0; }
 }
 
-/* Three deliberately different review variants for phone and tablet.
-   Desktop (1025px+) keeps transparent introductions. */
 @media (max-width: 1024px) {
   .page .content { width: 100%; padding-inline: 24px; }
-  .page[data-mobile-intro-variant] .hero { max-width: none; }
-  .page[data-mobile-intro-variant="panel"] [data-intro-copy] {
-    padding: 16px 18px;
-    border: 1px solid rgb(255 255 255 / 45%);
-    border-radius: var(--portal-radius, 5px);
-    background: linear-gradient(135deg, rgb(255 255 255 / 78%), rgb(253 241 228 / 72%));
-    box-shadow: 0 6px 22px rgb(67 81 82 / 6%);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-  }
-  .page[data-mobile-intro-variant="layer"] [data-intro-copy] {
-    padding: 0; border: 0; border-radius: 0; background: transparent;
-    box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
-  }
-  .page[data-mobile-intro-variant="layer"] .backdrop::after {
-    background: linear-gradient(rgb(255 255 255 / 62%), rgb(255 255 255 / 62%)),
-      linear-gradient(180deg, transparent 45%, #faf9f6 100%);
-  }
-  .page[data-mobile-intro-variant="strip"] [data-intro-copy] {
-    max-width: none; margin-inline: -24px; padding: 18px 24px;
-    border: 0; border-radius: 0; background: rgb(255 255 255 / 64%);
-    box-shadow: none; -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
-  }
 }

@@ -17,7 +17,6 @@ import { mottoEditorial } from '@/data/motto-editorial';
 import { mottoGroups, orderMottoItems, visibleMottoAds } from '@/lib/motto-rows';
 import { MottoRow } from './motto-row';
 import styles from './motto-detail.module.css';
-import introStyles from './mobile-intro.module.css';
 
 export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme' }: {
   entry: DiscoveryEntry; listings: Listing[]; advertising?: DiscoveryAdvertisingData; seed: string; kind?: 'theme' | 'destination';
@@ -32,8 +31,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
   const companyRows = mottoGroups(companies, 3), bannerRows = mottoGroups(banners, 2);
   const breadcrumbs = portalBreadcrumbs(entry.title, `${basePath}/${entry.slug}`, { name: sectionTitle, path: basePath });
   const camping = !destination && entry.slug === 'campingurlaub';
-  const introVariant = destination ? undefined : ({ 'natur-pur': 'panel', wanderurlaub: 'layer', campingurlaub: 'strip' } as Record<string, string>)[entry.slug];
-  return <main id="hauptinhalt" className={styles.page} data-motto-detail={destination ? undefined : entry.slug} data-destination-detail={destination ? entry.slug : undefined} data-mobile-intro-variant={introVariant}>
+  return <main id="hauptinhalt" className={styles.page} data-motto-detail={destination ? undefined : entry.slug} data-destination-detail={destination ? entry.slug : undefined}>
     <div className={styles.backdrop} aria-hidden="true">{camping ? <picture>
       <source media="(max-width: 600px)" srcSet="/reiseportal/motto-editorial-v2/campingurlaub-20261110-mobile.webp" />
       <Image src={editorial.image} alt="" fill sizes="100vw" loading="eager" fetchPriority="high" />
@@ -44,10 +42,9 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
         about: destination ? { '@type': 'Place', name: entry.title } : { '@type': 'DefinedTerm', name: entry.title, termCode: `theme:${entry.slug}` },
         items: companies.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <Breadcrumbs items={breadcrumbs} />
-      <header className={styles.hero}><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p className={introStyles.panel} data-intro-copy>{editorial.intro}</p></header>
+      <header className={styles.hero}><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p data-intro-copy>{editorial.intro}</p></header>
       <section className={styles.stays} aria-labelledby="motto-stays">
-        <p className="eyebrow">Aus dem Reiseportal</p><h2 id="motto-stays">Passende Unterkünfte</h2>
-        <p className={styles.count}>{companies.length} passende {companies.length === 1 ? 'Unterkunft' : 'Unterkünfte'} · Entdecken Sie Ihre Gastgeber</p>
+        <h2 id="motto-stays">{companies.length} passende {companies.length === 1 ? 'Unterkunft' : 'Unterkünfte'} · Entdecken Sie Ihre Gastgeber</h2>
         <InlineBannerProvider options={advertising?.options}>
           {Array.from({ length: Math.max(companyRows.length, bannerRows.length) }, (_, i) => <div key={i} className={styles.pair}>
             {companyRows[i] && <MottoRow label={`Unterkünfte, Reihe ${i + 1}`} speed={[18, 20, 17][i]} direction={rowDirection}>
