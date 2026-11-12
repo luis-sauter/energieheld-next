@@ -110,7 +110,7 @@ test('robots supports crawlable noindex previews without publishing their sitema
 
 test('breadcrumb UI and JSON-LD share hierarchy, current page and absolute URLs; unknown origin omits incomplete schema',()=>{
  const items=portalBreadcrumbs('Pension Sonnenhof','/unterkuenfte/sonnenhof',{name:'Unterkünfte A–Z',path:'/unterkuenfte-a-z'});
- const html=renderToStaticMarkup(createElement(Breadcrumbs,{items}));assert.equal((html.match(/aria-current="page"/g)||[]).length,1);assert.equal((html.match(/aria-hidden="true"/g)||[]).length,2);assert.ok(html.includes('href="/unterkuenfte-a-z"'));assert.ok(!html.includes('href="/unterkuenfte/sonnenhof"'));
+ const html=renderToStaticMarkup(createElement(Breadcrumbs,{items}));assert.equal((html.match(/aria-current="page"/g)||[]).length,1);assert.equal((html.match(/class="breadcrumb-separator"/g)||[]).length,2);assert.ok(html.includes('href="/unterkuenfte-a-z"'));assert.ok(!html.includes('href="/unterkuenfte/sonnenhof"'));
  const schema=breadcrumbSchema(items,production);assert.deepEqual(schema.itemListElement.map(i=>i.name),items.map(i=>i.name));assert.deepEqual(schema.itemListElement.map(i=>i.position),[1,2,3]);assert.equal(schema.itemListElement[2].item,'https://portal.example/unterkuenfte/sonnenhof');assert.equal(breadcrumbSchema(items,siteSeo({})),null);
 });
 
