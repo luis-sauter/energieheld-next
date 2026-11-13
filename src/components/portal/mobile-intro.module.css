@@ -4,13 +4,13 @@
   isolation: isolate;
   overflow: hidden;
   padding: 16px 18px;
-  border: 1px solid rgb(255 255 255 / 24%);
+  border: 1px solid rgb(255 255 255 / 16%);
   border-radius: var(--portal-radius, 5px);
   clip-path: inset(0 round var(--portal-radius, 5px));
-  background: linear-gradient(135deg, rgb(255 255 255 / 38%), rgb(253 241 228 / 34%));
-  box-shadow: 0 6px 22px rgb(67 81 82 / 3%);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  background: linear-gradient(135deg, rgb(255 255 255 / 26%), rgb(253 241 228 / 22%));
+  box-shadow: 0 6px 22px rgb(67 81 82 / 2%);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 .panel > :first-child { margin-top: 0; }
 .panel > :last-child { margin-bottom: 0; }
