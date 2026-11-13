@@ -43,7 +43,7 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
         about: destination ? { '@type': 'Place', name: entry.title } : { '@type': 'DefinedTerm', name: entry.title, termCode: `theme:${entry.slug}` },
         items: companies.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <Breadcrumbs items={breadcrumbs} />
-      <header className={styles.hero}><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p className={introStyles.panel} data-intro-copy>{editorial.intro}</p></header>
+      <header className={styles.hero}><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p className={introStyles.panel} data-intro-copy data-intro-variant={destination ? undefined : entry.slug}>{editorial.intro}</p></header>
       <section className={styles.stays} aria-labelledby="motto-stays">
         <h2 id="motto-stays">{companies.length} {companies.length === 1 ? 'passender Gastgeber' : 'passende Gastgeber'} · Entdecken Sie Ihre Gastgeber</h2>
         <InlineBannerProvider options={advertising?.options}>
