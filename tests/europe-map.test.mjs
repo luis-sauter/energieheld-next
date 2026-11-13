@@ -64,7 +64,7 @@ test('map SSR preserves public count and controls without duplicating every clie
  const html=renderToStaticMarkup(createElement(EuropeMap,{locations}));
  assert.equal((html.match(/data-location-id=/g)||[]).length,0);
  assert.match(html,new RegExp(locations.length+' belegte Standorte'));
- assert.match(html,/Unsere Unterkünfte im Überblick/);
+ assert.match(html,/Unsere Gastgeber im Überblick/);
  assert.match(html,/Karte vergrößern/);assert.match(html,/Karte zurücksetzen/);
  assert.match(html,/href="\/reiseportal\/maps\/europe.svg"/);
  assert.doesNotMatch(html,/Hofgut|Google|Mapbox|MapTiler|nominatim|tile\.openstreetmap|<input|<select|dialog/);

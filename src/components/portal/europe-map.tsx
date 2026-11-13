@@ -118,9 +118,9 @@ export function EuropeMap({ locations, loadBasics = false }: { locations: MapLoc
   return <section className={styles.section} aria-labelledby="locations-title" data-company-map>
     <div className="container">
       <header className={styles.header}>
-        <h2 id="locations-title">Unsere Unterkünfte im Überblick</h2>
-        <p>Entdecken Sie unsere Unterkünfte und ihre Standorte in Deutschland, Österreich, der Schweiz und Südtirol.</p>
-        <a href="/unterkuenfte-a-z" className={styles.link}>Alle Unterkünfte entdecken <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></a>
+        <h2 id="locations-title">Unsere Gastgeber im Überblick</h2>
+        <p>Entdecken Sie unsere Gastgeber und ihre Standorte in Deutschland, Österreich, der Schweiz und Südtirol.</p>
+        <a href="/unterkuenfte-a-z" className={styles.link}>Alle Gastgeber entdecken <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></a>
       </header>
       <div className={styles.frame}>
         <svg ref={svg} className={styles.map} data-touch-active={touchActive} data-zoom={zoom} preserveAspectRatio="xMidYMid slice"
@@ -139,7 +139,7 @@ export function EuropeMap({ locations, loadBasics = false }: { locations: MapLoc
             }
           }}>
           <title id="map-title">Unternehmensstandorte in Europa</title>
-          <desc id="map-description">{allLocations.length} belegte Standorte veröffentlichter Unterkünfte und aktuell vertretener Werbekunden. {loadBasics && loadState !== 'loaded' ? 'Weitere Kartenstandorte sind noch nicht vollständig geladen. ' : ''}Mit Plus und Minus zoomen, mit Pfeiltasten oder Ziehen verschieben, mit Pos1 zurücksetzen. Keine einzelnen Standortlinks.</desc>
+          <desc id="map-description">{allLocations.length} belegte Standorte veröffentlichter Gastgeber und aktuell vertretener Werbekunden. {loadBasics && loadState !== 'loaded' ? 'Weitere Kartenstandorte sind noch nicht vollständig geladen. ' : ''}Mit Plus und Minus zoomen, mit Pfeiltasten oder Ziehen verschieben, mit Pos1 zurücksetzen. Keine einzelnen Standortlinks.</desc>
           <image href="/reiseportal/maps/europe.svg" x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT} />
         </svg>
         <canvas ref={canvas} className={styles.pins} aria-hidden="true" data-location-count={allLocations.length} />

@@ -129,7 +129,7 @@ export function adScopeLabel(c: Pick<AdValues, "targets" | "placement">) {
       t.target_type === "homepage"
         ? "Startseite"
         : t.target_type === "experts_directory"
-          ? "Unterkünfte A–Z"
+          ? "Gastgeber A–Z"
         : t.target_type === "portal_area"
           ? portalAdAreaLabel(t.target_key ?? "")
         : (energieheld.categories.find((x) => x.id === t.category_id)?.name ??

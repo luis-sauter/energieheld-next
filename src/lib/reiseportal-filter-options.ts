@@ -62,7 +62,7 @@ export function activeTravelFilterLabels(
     options.destinations, "Nicht verfügbar")}`);
   if (values.theme) active.push(travelSeason(values.theme) ? `Jahreszeit: ${travelSeason(values.theme)!.label}` : `Motto: ${selected(values.theme, options.themes, "Nicht verfügbar")}`);
   if (values.audience) active.push(`Mit wem: ${selected(values.audience, options.audiences, "Nicht verfügbar")}`);
-  if (values.accommodation) active.push(`Unterkunft: ${selected(values.accommodation, options.accommodations, "Nicht verfügbar")}`);
+  if (values.accommodation) active.push(`Gastgeber: ${selected(values.accommodation, options.accommodations, "Nicht verfügbar")}`);
   if (values.query) active.push(`Suche: ${values.query}`);
   if (values.location) active.push(`Ort/PLZ: ${values.location}`);
   if (values.sort) active.push(`Sortierung: ${values.sort === "name" ? "Name A–Z"

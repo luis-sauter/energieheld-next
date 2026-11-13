@@ -31,7 +31,7 @@
 .eyebrow { display: flex; align-items: center; gap: 9px; margin: 0 0 9px; color: var(--portal-blue); font-size: .73rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .eyebrow::before { content: ""; width: 23px; height: 3px; background: var(--portal-orange); border-radius: var(--portal-radius, 5px); flex-shrink: 0; }
 .sectionHeading h2, .partner h2 { margin: 0 0 8px; font-size: clamp(1.7rem, 2.7vw, 2.3rem); line-height: 1.15; letter-spacing: -.035em; }
-.sectionHeading > p:last-child:not(.eyebrow) { margin: 0; max-width: none; padding:0; background:transparent; font-size: var(--portal-subtitle-size); line-height: var(--portal-subtitle-leading); color: var(--portal-basalt); }
+.sectionHeading > p:last-child:not(.eyebrow) { margin: 0; max-width: none;  font-size: var(--portal-subtitle-size); line-height: var(--portal-subtitle-leading); color: var(--portal-basalt); }
 .inspirationGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
 .inspirationCard { border: 0; min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
 .themeLink { display: block; text-decoration: none; flex: 1; }

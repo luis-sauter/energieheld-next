@@ -147,7 +147,7 @@ test("a copied URL restores values and human labels; reset removes all filters",
   });
   const labels = activeTravelFilterLabels(values, availableTravelFilters(approved, terms));
   assert.deepEqual(labels, ["Reiseziel: Deutschland", "Motto: Wellnessangebote",
-    "Mit wem: Zu zweit", "Unterkunft: Hotel", "Suche: Spa"]);
+    "Mit wem: Zu zweit", "Gastgeber: Hotel", "Suche: Spa"]);
   assert.ok(labels.every((label) => !/theme:|audience:|feature:|accommodation:/.test(label)));
   assert.deepEqual(readTravelFilterValues({}), {
     destination: "", theme: "", audience: "", accommodation: "", feature: "",

@@ -38,7 +38,7 @@ const quicklinks = [
 ];
 const benefits = [
   { title: "Ausgewählte Reiseideen", icon: "globe", text: "Inspiration für Deutschland, Österreich, die Schweiz und Südtirol / Italien – übersichtlich zusammengestellt." },
-  { title: "Passende Gastgeber", icon: "home", text: "Von familiär geführten Hotels bis zu besonderen Unterkünften: Finden Sie Gastgeber für Ihre Auszeit." },
+  { title: "Passende Gastgeber", icon: "home", text: "Von familiär geführten Hotels bis zu besonderen Gastgebern: Finden Sie Gastgeber für Ihre Auszeit." },
   { title: "Direkte Anfrage", icon: "mail", text: "Bei Gastgebern mit Unternehmensprofil einfach und direkt anfragen – ohne Umwege." },
 ];
 const countryTitle = (slug: string, title: string) => slug === "suedtirol-italien" ? "Südtirol / Italien" : title;
@@ -77,7 +77,7 @@ export default function DestinationsPage() {
         <section className={styles.inspiration} aria-labelledby="inspiration-title">
           <div className={styles.sectionHeading}><p className={styles.eyebrow}>Urlaub nach Ihren Wünschen</p>
             <h2 id="inspiration-title">Reiseinspiration nach Art des Urlaubs</h2>
-            <p>Ob Entspannung, gemeinsame Zeit oder aktive Erlebnisse – finden Sie Ihren ganz persönlichen Urlaub in Deutschland, Österreich, der Schweiz oder Südtirol / Italien.</p></div>
+            <p className={introStyles.panel}>Ob Entspannung, gemeinsame Zeit oder aktive Erlebnisse – finden Sie Ihren ganz persönlichen Urlaub in Deutschland, Österreich, der Schweiz oder Südtirol / Italien.</p></div>
           <div className={styles.inspirationGrid}>
             {inspirations.map(item => <article className={styles.inspirationCard} key={item.theme}>
               <Link className={styles.themeLink} href={`/mottoreisen/${item.theme}`}>
@@ -95,7 +95,7 @@ export default function DestinationsPage() {
         <section className={styles.section} aria-labelledby="quicklinks-title">
           <div className={styles.sectionHeading}><p className={styles.eyebrow}>Beliebte Einstiege</p>
             <h2 id="quicklinks-title">So finden Sie schneller das passende Reiseziel</h2>
-            <p>Lassen Sie sich von beliebten Urlaubsthemen inspirieren und entdecken Sie passende Gastgeber in allen vier Ländern.</p></div>
+            <p className={introStyles.panel}>Lassen Sie sich von beliebten Urlaubsthemen inspirieren und entdecken Sie passende Gastgeber in allen vier Ländern.</p></div>
           <div className={styles.quicklinks}>{quicklinks.map(item => <Link className={styles.quicklink} key={item.title} href={item.href}>
             <span className={styles.orangeIcon}><TravelThemeIcon slug={item.icon} /></span>
             <span>{item.title}</span><Arrow /></Link>)}</div>
@@ -109,7 +109,7 @@ export default function DestinationsPage() {
         <section className={styles.partner} aria-labelledby="partner-title">
           <Image src={`${imageRoot}/partner-chalet.webp`} alt="" fill sizes="(max-width: 1336px) 100vw, 1240px" />
           <div className={styles.partnerContent}><p className={styles.eyebrow}>Partner werden</p><h2 id="partner-title">Ihr Unternehmen auf DAS-Reiseportal.com</h2>
-            <p>Erreichen Sie neue Gäste und präsentieren Sie Ihre Unterkunft oder Ihr Angebot für Deutschland, Österreich, die Schweiz und Südtirol / Italien.</p>
+            <p>Erreichen Sie neue Gäste und präsentieren Sie Ihren Betrieb oder Ihr Angebot für Deutschland, Österreich, die Schweiz und Südtirol / Italien.</p>
             <Link className="button button-primary" href="/angebot-anfragen">Angebot anfragen <Icon name="arrow" /></Link></div>
         </section>
       </div>

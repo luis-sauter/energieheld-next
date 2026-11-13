@@ -24,8 +24,8 @@ test('pending reload/repeated or concurrent submission never writes twice; appro
 
 test('Owner onboarding, private feedback and Admin preparation order use existing routes; status-gated feedback avoids historical active notices',()=>{
  const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
- const first=read('src/app/(energieheld)/firma/profil/page.tsx');assert.match(first,/Angaben zu Ihrer Unterkunft/);assert.match(first,/Schritt 1 von 2/);assert.match(first,/Unsere Redaktion unterstützt/);
- const second=read('src/app/(energieheld)/firma/profil/gestalten/page.tsx');assert.match(second,/Schritt 2 von 2/);assert.match(second,/Zeigen Sie uns Ihre Unterkunft/);assert.match(second,/bis zu 8 Galeriebilder/);assert.match(second,/CompanyProfileDesigner/);
+ const first=read('src/app/(energieheld)/firma/profil/page.tsx');assert.match(first,/Angaben zu Ihrem Betrieb/);assert.match(first,/Schritt 1 von 2/);assert.match(first,/Unsere Redaktion unterstützt/);
+ const second=read('src/app/(energieheld)/firma/profil/gestalten/page.tsx');assert.match(second,/Schritt 2 von 2/);assert.match(second,/Zeigen Sie uns Ihren Betrieb/);assert.match(second,/bis zu 8 Galeriebilder/);assert.match(second,/CompanyProfileDesigner/);
  const company=read('src/app/(energieheld)/firma/page.tsx');assert.match(company,/status === "rejected" \? await loadReviewFeedback/);assert.match(company,/Unsere Redaktion hat eine Rückfrage/);
  const admin=read('src/app/(energieheld)/admin/firmen/[id]/page.tsx');assert.ok(admin.indexOf('id="angaben"')<admin.indexOf('id="reisezuordnungen"'));assert.ok(admin.indexOf('id="reisezuordnungen"')<admin.indexOf('id="verifizierung"'));assert.ok(admin.indexOf('id="verifizierung"')<admin.indexOf('id="pruefung"'));assert.equal((admin.match(/<ReviewActions /g)||[]).length,1);assert.match(admin,/bearbeiten=1/);
 });

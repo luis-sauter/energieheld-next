@@ -13,7 +13,7 @@ export function travelTermVisibility(key: string, basic = false) {
   if (key.startsWith('audience:')) return audiencePresentation[key.split(':')[1]]
     ? 'Öffentlicher Suchfilter und Profilmerkmal · keine eigene Premium-Mottoseite'
     : 'Öffentlicher Suchfilter · keine eigene Premium-Mottoseite';
-  if (key.startsWith('accommodation:')) return 'Öffentlicher Filter für die Unterkunftsart · keine eigene Premium-Mottoseite';
+  if (key.startsWith('accommodation:')) return 'Öffentlicher Filter für die Gastgeberart · keine eigene Premium-Mottoseite';
   return 'Nur intern · keine öffentliche Ausspielung';
 }
 

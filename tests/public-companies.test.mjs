@@ -114,7 +114,7 @@ const row = {
 };
 const travelRow = {
   ...row,
-  tagline: "Unterkunft in der Region",
+  tagline: "Gastgeber in der Region",
   business_areas: "Übernachtung",
   company_profile_categories: [],
 };
@@ -342,7 +342,7 @@ test('search uses actual A–Z rows and actual discovery cards in unchanged rele
  const html=renderToStaticMarkup(createElement(SearchResults,{hits,listings:[card],facts:[],travelLabels:{}}));
  const expected=renderToStaticMarkup(createElement(ListingRow,{listing:card,categories:[],href:hits[0].url,showVerification:false,travel:true,travelLabels:{}}));
  assert.ok(html.includes(expected.slice(expected.indexOf('<article'))));assert.ok(html.indexOf('data-search-id="'+card.id+'"')<html.indexOf('data-search-id="oesterreich"'));
- assert.doesNotMatch(html, /<p[^>]*>Unterkunft<\/p>/);
+ assert.doesNotMatch(html, /<p[^>]*>Gastgeber<\/p>/);
  assert.match(source('src/components/portal/search-results.tsx'), /cardStyles\.rows/);
  assert.match(source('src/components/portal/travel-directory.tsx'), /cardStyles\.rows/);
  assert.match(source('src/components/portal/directory-listing-rows.module.css'), /\.travel-card-tags li/);
@@ -464,7 +464,7 @@ test("homepage shows real travel cards and distributes only homepage ads without
   assert.doesNotMatch(html, /<video|hero-loop\.mp4|hero\.jpg/);
   assert.match(html, /name="q"/);
   assert.match(html, /href="\/mottoreisen\/natur-pur"/);
-  assert.match(html, /Ausgewählte Unterkünfte/);
+  assert.match(html, /Ausgewählte Gastgeber/);
   assert.doesNotMatch(html, /Demo GmbH/);
   assert.match(html, /href="\/unterkuenfte\/bayerischer-wald"/);
   assert.doesNotMatch(html, /Basic Home|Premium Home/);
@@ -577,9 +577,9 @@ test("travel directory groups Premium before Basic across filters, search and ex
     api([...legacyRows, demoRow], false, [], undefined, null, packageRows);
     const html = renderToStaticMarkup(await DirectoryPage({ mode: "travel", searchParams: Promise.resolve(params) }));
     const rows = [...html.matchAll(/<article class="listing-row listing-row--(premium|basic)"/g)].map(x => x[1]);
-    assert.ok(rows.includes("premium") && rows.includes("basic"), JSON.stringify({params,rows,html:html.includes("Die Unterkünfte")?"loader error":"rendered"}));
+    assert.ok(rows.includes("premium") && rows.includes("basic"), JSON.stringify({params,rows,html:html.includes("Die Gastgeber")?"loader error":"rendered"}));
     assert.deepEqual(rows, [...rows].sort((a, b) => Number(b === "premium") - Number(a === "premium")), JSON.stringify(params));
-    assert.match(html, new RegExp(`${rows.length} Unterk`));
+    assert.match(html, new RegExp(`${rows.length} Gastgeber`));
   }
 });
 
@@ -591,7 +591,7 @@ test("travel directory keeps old destination and theme URLs without inventing un
   assert.match(html, /name="ziel"/);
   assert.doesNotMatch(html, /<select name="thema"/);
   assert.match(html, /Motto: Nicht verfügbar/);
-  assert.match(html, /2 Unterkünfte/);
+  assert.match(html, /2 Gastgeber/);
   assert.match(html, /Höflehner|Schafhuber/);
   assert.doesNotMatch(html, /Demo GmbH|Pension Sonnenhof|Villner Hof|Energieheld Demo GmbH/);
 });

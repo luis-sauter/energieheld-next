@@ -124,7 +124,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
         {render(premium)}
       </section>}
       {basic.length > 0 && render(basic)}
-      {basicContacts.length>0&&<section className="travel-package-group" aria-labelledby="basic-contacts-title"><header className="travel-package-heading"><h2 id="basic-contacts-title">Basic-Unterkünfte</h2></header><div className="listing-rows">{basicContacts.map(entry=><BasicAccommodationCard key={entry.id} entry={entry}/>)}</div><BasicSourceCredit/></section>}
+      {basicContacts.length>0&&<section className="travel-package-group" aria-labelledby="basic-contacts-title"><header className="travel-package-heading"><h2 id="basic-contacts-title">Basic-Gastgeber</h2></header><div className="listing-rows">{basicContacts.map(entry=><BasicAccommodationCard key={entry.id} entry={entry}/>)}</div><BasicSourceCredit/></section>}
     </>;
   }
   const advertisements = <><SearchAdResults banners={bannerPool.map(asBanner)} filtered={false} compact directory canEdit={Boolean(bannerOptions)} onCreativeLoaded={recordCreative} />{pagination && <AutoLoad hasMore={bannerStream.nextCursor!==null} loading={bannerStream.loading} error={bannerStream.error} load={bannerStream.load} />}</>;
@@ -151,11 +151,11 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
           ? <SidebarOrderEditor ads={ads} slots={sidebarOrder} saveOrder={saveSidebarOrder} /> : undefined}>
         {finder}
         <section id="unterkunft-ergebnisse" className="travel-results" aria-labelledby="travel-results-title">
-          <header className="travel-package-heading"><h2 id="premium-title">{shownResults.some(row => !isBasicContact(row) && row.directoryPackage === "premium") ? "Premium-Unterkünfte" : "Unterkünfte"}</h2><p>Unterkünfte mit erweitertem Profil im Reiseportal.</p></header>
+          <header className="travel-package-heading"><h2 id="premium-title">{shownResults.some(row => !isBasicContact(row) && row.directoryPackage === "premium") ? "Premium-Gastgeber" : "Gastgeber"}</h2><p>Gastgeber mit erweitertem Profil im Reiseportal.</p></header>
           <div className="results-heading travel-results-heading">
             <div>
-              <p className="eyebrow">Unterkünfte A–Z</p>
-              <h3 id="travel-results-title" aria-live="polite">{pagination && profileStream.loading && !profileStream.items.length ? "Unterkünfte" : `${count.toLocaleString('de-DE')} ${travelResultNoun(count, matched.advertisers.length)} insgesamt`}</h3>
+              <p className="eyebrow">Gastgeber A–Z</p>
+              <h3 id="travel-results-title" aria-live="polite">{pagination && profileStream.loading && !profileStream.items.length ? "Gastgeber" : `${count.toLocaleString('de-DE')} ${travelResultNoun(count, matched.advertisers.length)} insgesamt`}</h3>
             </div>
             <div className="travel-results-tools">
               <label>Sortieren nach
@@ -192,7 +192,7 @@ export function TravelDirectory({ initialValues, database, preview, terms, error
               categories={[]} basePath="/unterkuenfte" showVerification={false} premiumFirst travelLabels={travelLabels} freshnessStatuses={freshnessStatuses ?? undefined} renderResults={ordered => renderResults([...ordered, ...previewResults,...extraBasics])}
               editingExtras={<div className="listing-rows">{previewResults.map(listing => <ListingRow key={listing.id} listing={listing} categories={[]} href={`/unterkuenfte/${listing.slug}`} showVerification={false} travel travelLabels={travelLabels} season={values.theme} />)}</div>} />
           </> : !error && count > 0 ? renderResults(shownResults) : !error && <div className="empty-state" role="status">
-              <p>Für diese Kombination haben wir aktuell keine passende Unterkunft.</p>
+              <p>Für diese Kombination haben wir aktuell keinen passenden Gastgeber.</p>
               <button type="button" className="button" onClick={() => { setValues(readTravelFilterValues({})); setReviewFilter(""); }}>Alle Filter zurücksetzen</button>
             </div>}
           {pagination && <AutoLoad hasMore={profileStream.nextCursor!==null} loading={profileStream.loading} showLoading={profileStream.items.length>0} error={profileStream.error} load={profileStream.load} />}

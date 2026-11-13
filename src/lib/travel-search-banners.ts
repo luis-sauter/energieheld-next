@@ -59,5 +59,5 @@ export function travelSearchResults(listings: Listing[], banners: TravelSearchBa
 
 // Counts include deduplicated advertisers, not only accommodation profiles.
 export function travelResultNoun(count: number, advertiserCount: number) {
-  return advertiserCount > 0 ? (count === 1 ? 'Ergebnis' : 'Ergebnisse') : (count === 1 ? 'Unterkunft' : 'Unterkünfte');
+  return advertiserCount > 0 ? (count === 1 ? 'Ergebnis' : 'Ergebnisse') : (count === 1 ? 'Gastgeber' : 'Gastgeber');
 }

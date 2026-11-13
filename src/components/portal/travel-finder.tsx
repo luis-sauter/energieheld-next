@@ -73,7 +73,7 @@ export function TravelFinder({ mode, listings, options:existingOptions, values, 
     { key: "destination", label: "Wohin?", all: "Alle Reiseziele", entries: options.destinations },
     { key: "theme", label: travelSeason(values.theme) ? "Jahreszeit / Motto" : "Motto", all: "Alle Mottoreisen", entries: travelSeason(values.theme) ? [{ slug: values.theme, label: travelSeason(values.theme)!.label }, ...options.themes] : options.themes },
     { key: "audience", label: "Mit wem?", all: "Alle Zielgruppen", entries: options.audiences },
-    { key: "accommodation", label: "Unterkunft", all: "Alle Unterkunftstypen", entries: options.accommodations },
+    { key: "accommodation", label: "Gastgeber", all: "Alle Gastgeberarten", entries: options.accommodations },
   ];
   const labels = new Map(facets.flatMap(({ key, label, entries }) => entries.map((entry) =>
     [`${key}:${entry.slug}`, `${label}: ${entry.label}`] as const)));
@@ -124,7 +124,7 @@ export function TravelFinder({ mode, listings, options:existingOptions, values, 
             Alle Filter zurücksetzen
           </button>
         </div>
-        <p id="reise-finder-hint">{portalQuery ? "Freitext durchsucht das gesamte Portal. Gewählte Reisefilter grenzen die Suche auf Unterkünfte ein." : "Mit einem Suchbegriff finden Sie auch Reiseziele, Mottoreisen und weitere Inhalte im gesamten Portal."}</p>
+        <p id="reise-finder-hint">{portalQuery ? "Freitext durchsucht das gesamte Portal. Gewählte Reisefilter grenzen die Suche auf Gastgeber ein." : "Mit einem Suchbegriff finden Sie auch Reiseziele, Mottoreisen und weitere Inhalte im gesamten Portal."}</p>
         {active.length > 0 && <div className="reise-finder-active" aria-label="Aktive Filter">
           {active.map(({ key, label }) => <button key={key} type="button" className="reise-finder-chip"
             onClick={() => update(key, "")} aria-label={`${label} entfernen`}>{label} <span aria-hidden="true">×</span></button>)}
@@ -134,10 +134,10 @@ export function TravelFinder({ mode, listings, options:existingOptions, values, 
   return <section className="travel-hero" aria-labelledby="travel-hero-title">
     {mode !== "home" ? <Image src="/reiseportal/redesign/unterkuenfte/hero.webp" alt="" fill sizes="100vw" priority className="directory-hero-image" /> : <HomeHeroMedia />}
     <div className="travel-hero-content container">
-      {mode !== "home" && <Breadcrumbs items={portalBreadcrumbs(mode === "search" ? "Suchergebnisse" : "Unterkünfte A–Z", mode === "search" ? "/suche" : "/unterkuenfte-a-z")} />}
-      <div className="travel-intro-copy" data-home={mode === "home" || undefined} data-directory={mode === "directory" || undefined}><p className="eyebrow">{mode === "home" ? "DAS-Reiseportal.com · Reiseideen seit über 15 Jahren" : mode === "directory" ? "UNTERKÜNFTE A–Z" : "DAS-Reiseportal.com"}</p>
-      <h1 id="travel-hero-title">{mode === "home" ? "Reisen beginnt mit einer guten Idee" : mode === "directory" ? "Finden Sie passende Unterkünfte" : "Finden Sie Ihren passenden Urlaub"}</h1>
-      <p>{mode === "home" ? "Ein stiller See, ein Weg in die Berge, ein Ort, den Sie noch nicht kennen. Finden Sie Reiseziele und Gastgeber, die zu Ihren Plänen passen." : mode === "directory" ? "Hotels, Pensionen, Ferienwohnungen und mehr – entdecken Sie besondere Orte für Ihren nächsten Urlaub." : "Sagen Sie uns, wie Sie reisen möchten – wir zeigen Ihnen passende Orte, Unterkünfte und Erlebnisse."}</p></div>
+      {mode !== "home" && <Breadcrumbs items={portalBreadcrumbs(mode === "search" ? "Suchergebnisse" : "Gastgeber A–Z", mode === "search" ? "/suche" : "/unterkuenfte-a-z")} />}
+      <div className="travel-intro-copy" data-home={mode === "home" || undefined} data-directory={mode === "directory" || undefined}><p className="eyebrow">{mode === "home" ? "DAS-Reiseportal.com · Reiseideen seit über 15 Jahren" : mode === "directory" ? "GASTGEBER A–Z" : "DAS-Reiseportal.com"}</p>
+      <h1 id="travel-hero-title">{mode === "home" ? "Reisen beginnt mit einer guten Idee" : mode === "directory" ? "Finden Sie passende Gastgeber" : "Finden Sie Ihren passenden Urlaub"}</h1>
+      <p>{mode === "home" ? "Ein stiller See, ein Weg in die Berge, ein Ort, den Sie noch nicht kennen. Finden Sie Reiseziele und Gastgeber, die zu Ihren Plänen passen." : mode === "directory" ? "Hotels, Pensionen, Ferienwohnungen und mehr – entdecken Sie besondere Orte für Ihren nächsten Urlaub." : "Sagen Sie uns, wie Sie reisen möchten – wir zeigen Ihnen passende Orte, Gastgeber und Erlebnisse."}</p></div>
       {renderFinder ? renderFinder(finder) : finder}
     </div>
   </section>;

@@ -20,5 +20,5 @@ export async function withdrawBasicSelection(client:SupabaseClient,filter:BasicW
  if(await checkAdmin(client)!=='admin'||!validWithdrawalFilter(filter)||typeof token!=='string'||!/^[a-f0-9]{64}$/.test(token)||typeof reason!=='string'||!reason.trim()||reason.length>1000)return {error:'Admin-Berechtigung, geprüfte Auswahl und Begründung erforderlich.'};
  const {data,error}=await client.rpc('withdraw_basic_contacts',{p_filter:filter,p_token:token,p_reason:reason.trim()});
  if(error||!data||!Number.isSafeInteger(data.withdrawn)||data.withdrawn<1||data.withdrawn>100)return {error:'Nicht zurückgenommen. Der Datenstand kann sich geändert haben; bitte die Auswahl erneut prüfen.'};
- return {success:`${data.withdrawn} Basic-Unterkünfte zurückgenommen. Die privaten Daten und Belege bleiben erhalten.`};
+ return {success:`${data.withdrawn} Basic-Gastgeber zurückgenommen. Die privaten Daten und Belege bleiben erhalten.`};
 }

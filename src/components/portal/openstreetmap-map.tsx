@@ -58,5 +58,5 @@ export default function OpenStreetMap({entries,location,onViewChange}:Props){
   };
   draw();instance.on('moveend',draw);return()=>{instance.off('moveend',draw);layer.clearLayers();};
  },[entries]);
- return <><div ref={element} className={styles.map} aria-label="OpenStreetMap mit Unterkünften aus dem Reiseportal" data-osm-map/>{tileError&&<p className={styles.tileError}>Einzelne Kartenteile konnten nicht geladen werden. Bitte versuchen Sie es später erneut.</p>}</>;
+ return <><div ref={element} className={styles.map} aria-label="OpenStreetMap mit Gastgebern aus dem Reiseportal" data-osm-map/>{tileError&&<p className={styles.tileError}>Einzelne Kartenteile konnten nicht geladen werden. Bitte versuchen Sie es später erneut.</p>}</>;
 }

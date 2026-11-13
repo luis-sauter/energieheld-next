@@ -123,7 +123,7 @@ export async function loadReiseportalDirectory(options?: { cardOnly: boolean }) 
     ]);
   } catch {
     return { preview: [] as Listing[], database: [] as Listing[], hiddenOrderKeys: [] as string[],
-      error: "Die Unterkunftsdarstellung konnte nicht geladen werden." };
+      error: "Die Gastgeberdarstellung konnte nicht geladen werden." };
   }
   if (result.error !== null) return {
     preview: [] as Listing[],

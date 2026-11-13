@@ -54,7 +54,7 @@ test('special topic uses its own assignment, keeps curated images and never muta
  assert.match(html,/href="\/unterkuenfte\/pension-sonnenhof"/);
  assert.match(html,/data-page-size="4"/);
  assert.equal((html.match(/data-carousel-page=/g)||[]).length,2);
- assert.match(html,/Sonderthemen-Unterkünfte: weiter/);
+ assert.match(html,/Sonderthemen-Gastgeber: weiter/);
 });
 
 test('seasonal layout keeps genuine linked cards, includes winter entry and omits public image-generation labels',()=>{
@@ -64,7 +64,7 @@ test('seasonal layout keeps genuine linked cards, includes winter entry and omit
  assert.doesNotMatch(html,/KI-generiertes Symbolbild/);
  assert.match(html,/Jahreszeiten mit Charakter/);
  assert.match(html,/href="\/mottoreisen\/skifahren"/);
- assert.match(html,/Alle Unterkünfte entdecken/);
+ assert.match(html,/Alle Gastgeber entdecken/);
  assert.doesNotMatch(html,/href="[^\"]*saison-/);
  assert.ok(html.includes('href="'+AUTUMN_HREF+'"'));
  for(const row of rows)assert.ok(html.includes('href="/unterkuenfte/'+row.slug+'"'));
@@ -82,7 +82,7 @@ test('season badges require an actual assignment and never create nested profile
 });
 
 test('additional ski hosts are mixed into the first page only with a saved editorial assignment',()=>{
- const base=fixtures();const ski=winterSelections.map(s=>({...base[0],id:s.profileId,slug:'ski-'+s.profileId,name:'Ski-Unterkunft',travelTermKeys:[SPECIAL_TOPIC_TERM,'theme:skifahren','theme:saison-winter'],images:[{id:s.imageId,src:'/operator-ski.jpg',alt:s.alt}]}));
+ const base=fixtures();const ski=winterSelections.map(s=>({...base[0],id:s.profileId,slug:'ski-'+s.profileId,name:'Ski-Gastgeber',travelTermKeys:[SPECIAL_TOPIC_TERM,'theme:skifahren','theme:saison-winter'],images:[{id:s.imageId,src:'/operator-ski.jpg',alt:s.alt}]}));
  const selected=selectAutumnStays([...base,...ski]);
  assert.equal(selected.length,9);
  assert.equal(selected[1].listing.id,ski[0].id);assert.equal(selected[3].listing.id,ski[1].id);

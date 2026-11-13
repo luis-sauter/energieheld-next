@@ -70,7 +70,7 @@ test('SSR includes every premium/basic profile, true package labels and public l
   assert.equal((html.match(/class="listing-row /g)||[]).length,5);
   assert.equal((html.match(/travel-premium-badge/g)||[]).length,4);
   assert.ok(html.indexOf('premium-3')<html.indexOf('href="/unterkuenfte/basic"'));
-  assert.match(html,/Premium-Unterkünfte/);assert.doesNotMatch(html,/Weitere Unterkünfte|Weitere Gastgeber aus dem Reiseportal/);
+  assert.match(html,/Premium-Gastgeber/);assert.doesNotMatch(html,/Weitere Gastgeber|Weitere Gastgeber aus dem Reiseportal/);
   for(const item of items) assert.match(html,new RegExp(`href="/unterkuenfte/${item.slug}"`));
   assert.doesNotMatch(html,/rating|Bewertungen|Qualitätsprüfung|redaktionell empfohlen/);
   assert.equal((html.match(/<h1 /g)||[]).length,1);
@@ -133,6 +133,6 @@ test('advertiser results move to the sidebar after all listings, retain packages
  assert.ok(html.lastIndexOf('data-search-banner=')>html.indexOf('href="/unterkuenfte/basic"')); assert.match(source('src/components/advertising/search-ad-results.module.css'),/repeat\(2, minmax\(0, 1fr\)\)/); assert.equal((html.match(/id="search-ads-title"/g)||[]).length,0);
  assert.match(html,/Anzeige/);assert.match(html,/sponsored noopener noreferrer/);
  const only=render([listing('premium',true)],readTravelFilterValues({thema:'wellnessangebote'}));
- assert.match(only,/1 Ergebnis anzeigen/);assert.match(only,/data-search-banner=/);assert.doesNotMatch(only,/aktuell keine passende Unterkunft/);
- const none=render([],readTravelFilterValues({ziel:'erfunden'}));assert.match(none,/aktuell keine passende Unterkunft/);assert.doesNotMatch(none,/data-search-banner=/);
+ assert.match(only,/1 Ergebnis anzeigen/);assert.match(only,/data-search-banner=/);assert.doesNotMatch(only,/aktuell keinen passenden Gastgeber/);
+ const none=render([],readTravelFilterValues({ziel:'erfunden'}));assert.match(none,/aktuell keinen passenden Gastgeber/);assert.doesNotMatch(none,/data-search-banner=/);
 });

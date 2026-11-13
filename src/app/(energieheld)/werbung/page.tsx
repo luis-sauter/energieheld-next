@@ -7,7 +7,7 @@ export default async function AdvertisingPage() {
   return <B2BPage eyebrow="Für Werbepartner" title="Werben auf DAS-Reiseportal.com" description="Präsentieren Sie Ihr Angebot im passenden Reiseumfeld. Lassen Sie sich persönlich zu passenden Bereichen, Bannerplätzen und Zeiträumen beraten – unverbindlich und ohne Konto.">
     <div className={styles.actions}><Link className="button button-primary" href="/angebot-anfragen">Angebot anfragen</Link></div>
     <section className={styles.section}><h2>Im passenden Kontext sichtbar</h2><div className={styles.grid}>
-      <article className={styles.card}><h3>Bereiche und Reiseinteressen</h3><p>Startseite, Unterkünfte A–Z, Reiseziele und Mottoreisen bieten seitenbezogene Bannerplätze. Wählen Sie den Bereich und die passende Unterrubrik.</p></article>
+      <article className={styles.card}><h3>Bereiche und Reiseinteressen</h3><p>Startseite, Gastgeber A–Z, Reiseziele und Mottoreisen bieten seitenbezogene Bannerplätze. Wählen Sie den Bereich und die passende Unterrubrik.</p></article>
       <article className={styles.card}><h3>Bild und direkte Verbindung</h3><p>Ihr Bannerbild führt über eine Ziel-URL direkt zu Ihrem Angebot. Belegte Suchzuordnungen zu Mit Hund, Mit Kindern oder Zu zweit unterstützen die Auffindbarkeit.</p></article>
       <article className={styles.card}><h3>Zeitraum und Prüfung</h3><p>Fragen Sie Ihren gewünschten Zeitraum an. DAS-Reiseportal.com prüft Inhalt und Verfügbarkeit, bevor eine Anzeige freigegeben wird.</p></article>
     </div></section>

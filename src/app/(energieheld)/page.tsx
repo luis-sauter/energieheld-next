@@ -28,7 +28,7 @@ import { travelFinderListings, travelFinderBanners } from '@/lib/travel-finder-d
 import { signSelectedPublicBanners } from '@/lib/public-banner-media';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParameters> }) {
-  return pageMetadata({ title: "DAS-Reiseportal.com – Reiseideen seit über 15 Jahren", description: "Reiseideen seit über 15 Jahren: Entdecken Sie Reiseziele, Mottoreisen und Unterkünfte für Ihre nächste Auszeit. Lernen Sie Gastgeber und ihre Angebote kennen.", path: "/", home: true,
+  return pageMetadata({ title: "DAS-Reiseportal.com – Reiseideen seit über 15 Jahren", description: "Reiseideen seit über 15 Jahren: Entdecken Sie Reiseziele, Mottoreisen und Gastgeber für Ihre nächste Auszeit. Lernen Sie Gastgeber und ihre Angebote kennen.", path: "/", home: true,
     noindex: Object.values(await searchParams).some(Boolean) });
 }
 
@@ -69,9 +69,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <HomeBannerGroup ads={ads} placements={["sidebar_04", "sidebar_05", "sidebar_06", "sidebar_09", "sidebar_10"]} sliderAds={bannerRows[1]} label="Anzeigen nach den Reisezielen" />
 
     <section className={`section container ${styles.stays}`} aria-labelledby="stays-title">
-      <div className="section-heading"><div><p className="eyebrow">Ein guter Ort zum Ankommen</p><h2 id="stays-title">Ausgewählte Unterkünfte</h2></div>
-        <Link className="text-link" href="/unterkuenfte-a-z">Alle Unterkünfte <Icon name="chevron-right" size={20} /></Link></div>
-      <MottoRow label="Ausgewählte Unterkünfte" speed={18}>
+      <div className="section-heading"><div><p className="eyebrow">Ein guter Ort zum Ankommen</p><h2 id="stays-title">Ausgewählte Gastgeber</h2></div>
+        <Link className="text-link" href="/unterkuenfte-a-z">Alle Gastgeber <Icon name="chevron-right" size={20} /></Link></div>
+      <MottoRow label="Ausgewählte Gastgeber" speed={18}>
         {featured.map((listing) => <AccommodationCard key={listing.id} listing={listing} motto cardEditing={Boolean(bannerOptions)}
           sizes="(max-width: 600px) 86vw, (max-width: 900px) 45vw, 360px" />)}
       </MottoRow>
@@ -80,8 +80,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
     <HomeBannerGroup ads={ads} placements={["top_banner"]} label="Premium-Anzeige vor dem Gastgeberbereich" instanceId="footer" supplementaryAd={footerPremium} editorOptions={footerEditorOptions} />
     <section className={`${styles.provider} container`} aria-labelledby="provider-title">
-      <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Ihre Unterkunft auf DAS-Reiseportal.com</h2>
-        <p>Machen Sie Ihre Unterkunft dort sichtbar, wo neue Reisepläne entstehen. Wir beraten Sie persönlich – unverbindlich und ohne Registrierung.</p></div>
+      <div><p className="eyebrow">Für Gastgeber</p><h2 id="provider-title">Ihr Betrieb auf DAS-Reiseportal.com</h2>
+        <p>Machen Sie Ihren Betrieb dort sichtbar, wo neue Reisepläne entstehen. Wir beraten Sie persönlich – unverbindlich und ohne Registrierung.</p></div>
       <Link className="button button-primary" href="/angebot-anfragen">Angebot anfragen <Icon name="chevron-right" size={20} /></Link>
     </section>
   </main></InlineBannerProvider>;

@@ -10,7 +10,7 @@ export const reiseportalPreview: Listing[] = [
     description: "", categoryIds: [], services: [], images: [
       { src: "/reiseportal/unterkuenfte/bayerischer-wald/01.jpg", alt: "Ferienanlage am Nationalpark Bayerischer Wald" },
       { src: "/reiseportal/unterkuenfte/bayerischer-wald/02.jpg", alt: "Ferienanlage im Bayerischen Wald" },
-      { src: "/reiseportal/unterkuenfte/bayerischer-wald/03.jpg", alt: "Unterkunft im Bayerischen Wald" },
+      { src: "/reiseportal/unterkuenfte/bayerischer-wald/03.jpg", alt: "Gastgeber im Bayerischen Wald" },
       { src: "/reiseportal/unterkuenfte/bayerischer-wald/04.jpg", alt: "Luchse im Nationalpark Bayerischer Wald" },
     ],
     location: { street: "Weiherweg 5 a – 11 b", postalCode: "94556", city: "Neuschönau", region: "", country: "Deutschland" },
@@ -35,7 +35,7 @@ export const reiseportalPreview: Listing[] = [
     description: "", categoryIds: [], services: [], images: [
       { src: "/reiseportal/unterkuenfte/pension-sonnenhof/01.jpg", alt: "Pension Sonnenhof in Meransen" },
       { src: "/reiseportal/unterkuenfte/pension-sonnenhof/02.jpg", alt: "Eindrücke aus der Pension Sonnenhof" },
-      { src: "/reiseportal/unterkuenfte/pension-sonnenhof/03.jpg", alt: "Unterkunft in der Pension Sonnenhof" },
+      { src: "/reiseportal/unterkuenfte/pension-sonnenhof/03.jpg", alt: "Gastgeber in der Pension Sonnenhof" },
     ],
     location: { street: "Lindenstrasse 10", postalCode: "39037", city: "Mühlbach", region: "", country: "Italien" },
     contact: { email: "", phone: "+39 0472 520164", website: "https://www.pension-sonnenhof.info/" },
@@ -47,7 +47,7 @@ export const reiseportalPreview: Listing[] = [
     description: "", categoryIds: [], services: [], images: [
       { src: "/reiseportal/unterkuenfte/schafhuber/01.jpg", alt: "Berglandschaft beim Schafhuber" },
       { src: "/reiseportal/unterkuenfte/schafhuber/02.jpg", alt: "Eindrücke vom Schafhuber" },
-      { src: "/reiseportal/unterkuenfte/schafhuber/03.jpg", alt: "Unterkunft beim Schafhuber" },
+      { src: "/reiseportal/unterkuenfte/schafhuber/03.jpg", alt: "Gastgeber beim Schafhuber" },
       { src: "/reiseportal/unterkuenfte/schafhuber/04.jpg", alt: "Urlaub beim Schafhuber" },
     ],
     location: { street: "Urslaustraße 4-6", postalCode: "5761", city: "Maria Alm-Hinterthal", region: "", country: "Österreich" },

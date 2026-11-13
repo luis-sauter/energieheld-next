@@ -67,7 +67,7 @@ export default async function AccommodationDetail({
     );
   const listing = result.data;
   if (!listing) notFound();
-  const breadcrumbs = portalBreadcrumbs(listing.name, `/unterkuenfte/${listing.slug}`, { name: "Unterkünfte A–Z", path: "/unterkuenfte-a-z" });
+  const breadcrumbs = portalBreadcrumbs(listing.name, `/unterkuenfte/${listing.slug}`, { name: "Gastgeber A–Z", path: "/unterkuenfte-a-z" });
   const relations = indexableProfile(listing) ? relatedTravelPages([listing]) : { themes: [], destinations: [] };
   const liveDemo = isLiveDemoProfile(listing);
   const storedProfile = !listing.isPreview && isProfileId(listing.id) && (!listing.isDemo || liveDemo);
@@ -143,7 +143,7 @@ export default async function AccommodationDetail({
       />}
       <TravelRelations presentation="profile" title="Reiseinformationen und passende Rubriken" links={[...relations.destinations, ...relations.themes]} facts={result.terms} />
       <Link className="text-link back-link" href="/unterkuenfte-a-z">
-        <Icon name="chevron-left" size={20} /> Zurück zu Unterkünfte A–Z
+        <Icon name="chevron-left" size={20} /> Zurück zu Gastgeber A–Z
       </Link>
     </main>
   );

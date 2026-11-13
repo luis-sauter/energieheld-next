@@ -9,7 +9,7 @@ import styles from "@/components/auth/auth.module.css";
 import { loadOwnerTravelInput } from "@/lib/owner-profile-input";
 
 export const metadata = {
-  title: "Angaben zu Ihrer Unterkunft",
+  title: "Angaben zu Ihrem Betrieb",
   robots: { index: false, follow: false },
 };
 export const dynamic = "force-dynamic";
@@ -27,8 +27,8 @@ export default async function CompanyProfilePage() {
     : null;
   return (
     <main id="hauptinhalt" className={`container ${styles.page}`}>
-      <p className="eyebrow">Schritt 1 von 2 · Angaben zu Ihrer Unterkunft</p>
-      <h1>Angaben zu Ihrer Unterkunft</h1>
+      <p className="eyebrow">Schritt 1 von 2 · Angaben zu Ihrem Betrieb</p>
+      <h1>Angaben zu Ihrem Betrieb</h1>
       <div className={styles.card}>
         {error && (
           <p className={styles.error} role="alert">
@@ -40,7 +40,7 @@ export default async function CompanyProfilePage() {
             <p>
               Profilstatus: <strong>{profileStatus(profile.status)}</strong>
             </p>
-            <p>Erzählen Sie uns von Ihrer Unterkunft. Tragen Sie die wichtigsten Informationen, Kontaktdaten und besonderen Angebote ein. Diese Angaben bilden die Grundlage für Ihr Profil auf DAS-Reiseportal.com.</p>
+            <p>Erzählen Sie uns von Ihrem Betrieb. Tragen Sie die wichtigsten Informationen, Kontaktdaten und besonderen Angebote ein. Diese Angaben bilden die Grundlage für Ihr Profil auf DAS-Reiseportal.com.</p>
             <p>Unsere Redaktion unterstützt Sie bei der Gestaltung Ihres öffentlichen Auftritts. Sie müssen noch keine fertigen Werbetexte oder ein eigenes Layout erstellen.</p>
             {profile.status === "approved" && <p>Änderungen an veröffentlichten Profiltexten und Kontaktdaten sind direkt sichtbar. Reisevorschläge werden separat von der Redaktion geprüft.</p>}
             {travel && ("error" in travel ? <p role="alert">{travel.error}</p> :

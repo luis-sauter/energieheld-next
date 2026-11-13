@@ -60,12 +60,12 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
     })().catch(()=>null);
     if(!loaded) {
 
-      return <TravelDirectory initialValues={initialValues} database={[]} preview={[]} terms={[]} error="Die Unterkünfte konnten gerade nicht geladen werden."
+      return <TravelDirectory initialValues={initialValues} database={[]} preview={[]} terms={[]} error="Die Gastgeber konnten gerade nicht geladen werden."
         ads={[]} sidebarOrder={[]} canReorder={false} hiddenOrderKeys={[]} />;
     }
     const {index,terms,sidebarOrder,profiles,advertisements}=loaded;
     const publicProfiles:Listing[]=profiles.items.flatMap(row=>isBasicContact(row)?[]:[row]);
-    return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Unterkünfte A–Z","/unterkuenfte-a-z")),collectionSchema({name:"Unterkünfte A–Z",description:hubDescriptions.directory,path:"/unterkuenfte-a-z",items:publicProfiles.filter(indexableProfile).map(row=>({name:row.name,path:'/unterkuenfte/'+row.slug}))})])}/>
+    return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Gastgeber A–Z","/unterkuenfte-a-z")),collectionSchema({name:"Gastgeber A–Z",description:hubDescriptions.directory,path:"/unterkuenfte-a-z",items:publicProfiles.filter(indexableProfile).map(row=>({name:row.name,path:'/unterkuenfte/'+row.slug}))})])}/>
         <TravelDirectory initialValues={initialValues} database={index.facts} preview={[]} terms={mergePublicTravelTerms(terms,index.terms)} banners={index.banners} directoryBanners={index.directoryBanners}
           error={null} bannerError={index.error} ads={advertisements.items} sidebarOrder={sidebarOrder} canReorder={false} hiddenOrderKeys={[]}
           basicEnabled={basicIntegrationEnabled()} pagination={{key:travelFilterUrl({...initialValues,query:""}),profiles,banners:advertisements}} /></>;
@@ -81,11 +81,11 @@ export async function DirectoryPage({ searchParams, trade, mode = "energy", canR
     const initialValues = readTravelFilterValues(params);
     const basicPagination=basicIntegrationEnabled()?await loadBasicDirectoryWindow(initialValues,'',true).catch(()=>null):undefined;
     const shown = filterTravelListings(loaded.database, { ...initialValues, query: "" }).filter(indexableProfile);
-    return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Unterkünfte A–Z", "/unterkuenfte-a-z")),
-      collectionSchema({ name: "Unterkünfte A–Z", description: hubDescriptions.directory, path: "/unterkuenfte-a-z",
+    return <><JsonLd data={jsonLdGraph([breadcrumbSchema(portalBreadcrumbs("Gastgeber A–Z", "/unterkuenfte-a-z")),
+      collectionSchema({ name: "Gastgeber A–Z", description: hubDescriptions.directory, path: "/unterkuenfte-a-z",
         items: shown.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <TravelDirectory initialValues={initialValues} database={loaded.database}
-      preview={loaded.preview} terms={mergePublicTravelTerms(terms,searchBanners.terms)} banners={searchBanners.banners} directoryBanners={searchBanners.directoryBanners} bannerError={searchBanners.error} error={loaded.error??(basicPagination===null?'Die Basic-Unterkünfte konnten nicht geladen werden.':null)} ads={ads} sidebarOrder={sidebarOrder}
+      preview={loaded.preview} terms={mergePublicTravelTerms(terms,searchBanners.terms)} banners={searchBanners.banners} directoryBanners={searchBanners.directoryBanners} bannerError={searchBanners.error} error={loaded.error??(basicPagination===null?'Die Basic-Gastgeber konnten nicht geladen werden.':null)} ads={ads} sidebarOrder={sidebarOrder}
       basicEnabled={basicIntegrationEnabled()} basicPagination={basicPagination??undefined} canReorder={canReorder} cardEditing={Boolean(adminClient)} freshnessStatuses={freshnessStatuses} importedProfileIds={importedProfileIds} hiddenOrderKeys={loaded.hiddenOrderKeys}
       saveOrder={saveOrder} saveSidebarOrder={saveSidebarOrder} bannerOptions={bannerOptions} /></>;
   }

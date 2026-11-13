@@ -1,4 +1,4 @@
-export const searchTypes = { accommodation: 'Unterkunft', theme: 'Mottoreise', destination: 'Reiseziel', page: 'Seite', ad: 'Anzeige' } as const;
+export const searchTypes = { accommodation: 'Gastgeber', theme: 'Mottoreise', destination: 'Reiseziel', page: 'Seite', ad: 'Anzeige' } as const;
 export type SearchType = keyof typeof searchTypes;
 export type SearchHit = { id: string; type: SearchType; title: string; excerpt: string; url: string; rank: number; external?: boolean; context?: string; basic?: import('./basic-contact').BasicContact };
 export type SearchDocument = { id: string; type: SearchType; title: string; body: string; url: string; context?: string };
@@ -51,7 +51,7 @@ export function searchResultPage(profiles: SearchHit[], otherHits: SearchHit[], 
 
 // The profile total comes from the RPC before pagination, never from cards or ads.
 export function accommodationResultSummary(total: number) {
-  return total === 0 ? 'Keine Unterkünfte gefunden' : total === 1 ? '1 Unterkunft gefunden' : `${total} Unterkünfte gefunden`;
+  return total === 0 ? 'Keine Gastgeber gefunden' : total === 1 ? '1 Gastgeber gefunden' : `${total} Gastgeber gefunden`;
 }
 
 

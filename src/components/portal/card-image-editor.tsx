@@ -50,7 +50,7 @@ export function CardImageEditor({ profileId, profileName, crop: savedCrop, image
       onClose={event => { if (event.target !== event.currentTarget) return; setOpen(false); setSelected(null); }}>
       {error && <p role="alert">{error}</p>}
       {selected ? <div style={{ padding: "1.5rem" }}><h2 id="media-library-title">Vorschaubild ändern</h2><p>{profileName}</p>
-        <p>Das Vorschaubild wird in A–Z und auf den Unterkunftskarten verwendet. Galerie und Medienoriginal bleiben erhalten.</p>
+        <p>Das Vorschaubild wird in A–Z und auf den Gastgeberkarten verwendet. Galerie und Medienoriginal bleiben erhalten.</p>
         {fit === "contain" && <p>Bei 100 % ist das ganze Bild sichtbar. Freie Flächen im quadratischen Rahmen bleiben weiß.</p>}
         <CropControls crop={crop} setCrop={setCrop} ratio={previewRatio} alt={selected.alt} disabled={busy}
           renderImage={value => {

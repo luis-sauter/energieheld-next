@@ -38,7 +38,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
 }
 
 function unavailable(status: 404 | 503) {
-  return new Response(status === 404 ? 'Unterkunft nicht gefunden.' : 'Unterkunft derzeit nicht erreichbar.', {
+  return new Response(status === 404 ? 'Gastgeber nicht gefunden.' : 'Gastgeber derzeit nicht erreichbar.', {
     status, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Robots-Tag': 'noindex',
       'Cache-Control': 'no-store', ...(status === 503 ? { 'Retry-After': '300' } : {}) },
   });

@@ -154,7 +154,7 @@ test("public navigation has only the three travel entries and uses the untouched
   assert.deepEqual(reiseportal.navigation, [
     { label: "Reiseziele", href: "/reiseziele" },
     { label: "Mottoreisen", href: "/mottoreisen" },
-    { label: "Unterkünfte A–Z", href: "/unterkuenfte-a-z" },
+    { label: "Gastgeber A–Z", href: "/unterkuenfte-a-z" },
   ]);
   const html = renderToStaticMarkup(createElement(PortalHeader, { brand: reiseportal }));
   assert.match(html, /src="\/brand\/das-reiseportal-15-jahre\.jpeg"/);
@@ -387,7 +387,7 @@ test("four destinations and eleven active themes have sourced images, links and 
 
 test('motto detail keeps every matching profile and campaign once in exactly five alternating rows', async()=>{
  const {MottoDetail}=await import('../src/components/portal/motto-detail.tsx');
- const listings=Array.from({length:47},(_,i)=>({...reiseportalPreview[0],id:'profile-'+i,slug:'profile-'+i,name:'Unterkunft '+i}));
+ const listings=Array.from({length:47},(_,i)=>({...reiseportalPreview[0],id:'profile-'+i,slug:'profile-'+i,name:'Gastgeber '+i}));
  const ads=Array.from({length:9},(_,i)=>({id:'ad-'+i,placement: i===0?'top_banner':'sidebar_'+String(i+3).padStart(2,'0'),headline:'Banner '+i,imageUrl:'/existing-'+i+'.jpg',target_url:'https://example.org/'+i}));
  const html=renderToStaticMarkup(createElement(MottoDetail,{entry:travelThemes[0],listings,advertising:{ads,sidebarOrder:[],options:undefined},seed:'fixed'}));
  assert.equal((html.match(/class="accommodation-card"/g)||[]).length,47);
@@ -397,10 +397,10 @@ test('motto detail keeps every matching profile and campaign once in exactly fiv
  assert.match(html,/motto-editorial-v2\/natur-pur.webp/);assert.match(html,/Natururlaub lebt von den kleinen Entdeckungen/);
  assert.equal((html.match(/role="region"/g)||[]).length,5);
  const rowNames=[...html.matchAll(/role="region" aria-label="([^"]+)"/g)].map(match=>match[1]);
- assert.deepEqual(rowNames,['Unterkünfte, Reihe 1','Banner, Reihe 1','Unterkünfte, Reihe 2','Banner, Reihe 2','Unterkünfte, Reihe 3']);
+ assert.deepEqual(rowNames,['Gastgeber, Reihe 1','Banner, Reihe 1','Gastgeber, Reihe 2','Banner, Reihe 2','Gastgeber, Reihe 3']);
  assert.doesNotMatch(html,/motto-editorial"|Reiseziele mit passenden Gastgebern|Wo die Landschaft den Takt vorgibt/);
- assert.ok(html.indexOf('aria-label="Unterkünfte, Reihe 1"')<html.indexOf('aria-label="Banner, Reihe 1"'));
- assert.ok(html.indexOf('aria-label="Banner, Reihe 1"')<html.indexOf('aria-label="Unterkünfte, Reihe 2"'));
+ assert.ok(html.indexOf('aria-label="Gastgeber, Reihe 1"')<html.indexOf('aria-label="Banner, Reihe 1"'));
+ assert.ok(html.indexOf('aria-label="Banner, Reihe 1"')<html.indexOf('aria-label="Gastgeber, Reihe 2"'));
  assert.doesNotMatch(html,/Angebot anfragen|Automatischen Wechsel pausieren|Freier Werbeplatz/);
  await assert.rejects(themeRoute.default({params:Promise.resolve({slug:'tauchurlaub'})}),/NOT_FOUND/);
 });

@@ -341,7 +341,7 @@ export function CampaignForm({
           <p role="alert">Ein ausgewählter Platz ist im gewünschten Zeitraum belegt. Bitte ändern Sie die Auswahl.</p>}
         {!pristine && !publicRequestKey && values.targets.filter((target) => target.target_type === "trade" || target.target_type === "experts_directory").map((target) => (
           <div key={adTargetFormValue(target)}>
-          <p>Historische Platzierung: {target.target_type === "experts_directory" ? "Unterkünfte A–Z" : "Gewerk"} · {adPlacements[target.placement ?? campaign.placement]} (bleibt erhalten)</p>
+          <p>Historische Platzierung: {target.target_type === "experts_directory" ? "Gastgeber A–Z" : "Gewerk"} · {adPlacements[target.placement ?? campaign.placement]} (bleibt erhalten)</p>
           <input key={`${target.category_id}|${target.placement}`} type="hidden" name="targets"
             value={adTargetFormValue({ ...target, placement: target.placement ?? campaign.placement })} />
           </div>

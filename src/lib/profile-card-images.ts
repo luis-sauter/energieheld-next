@@ -19,7 +19,7 @@ export async function withSavedCardImages(listings: Listing[]): Promise<Listing[
   return listings.map(listing => {
     const row = rows.find(row => row.profile_id === listing.id);
     const src = row?.bucket_id === "project-media" && row.storage_path.startsWith("/reiseportal/") ? row.storage_path : urls.get(row?.storage_path);
-    return correctProviderPreview(row && src ? { ...listing, travelImage: { src, alt: row.alt_text || `Unterkunft ${listing.name}` },
+    return correctProviderPreview(row && src ? { ...listing, travelImage: { src, alt: row.alt_text || `Gastgeber ${listing.name}` },
       cardImageAssetId: row.asset_id, cardImageCrop: normalizeImageCrop(row) } : listing);
   });
 }

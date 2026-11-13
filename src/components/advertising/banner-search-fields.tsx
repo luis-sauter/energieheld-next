@@ -3,7 +3,7 @@ import type { BannerSearchMetadata, BannerSearchTerm, BannerAdvertiserOption } f
 import { destinations } from '@/data/reiseportal-discovery';
 import { publicTravelLabel } from '@/lib/travel-presentation';
 import styles from './banner-search-fields.module.css';
-const dimensions: Record<string, string> = { theme: 'Reiseart', audience: 'Reisende', accommodation: 'Unterkunft', feature: 'Merkmal' };
+const dimensions: Record<string, string> = { theme: 'Reiseart', audience: 'Reisende', accommodation: 'Gastgeber', feature: 'Merkmal' };
 export function BannerSearchFields({ value, terms, onChange, advertisers = [], includeName = true }: {
   advertisers?: BannerAdvertiserOption[]; value: BannerSearchMetadata; terms: BannerSearchTerm[]; onChange: (value: BannerSearchMetadata) => void; includeName?: boolean;
 }) {
@@ -14,7 +14,7 @@ export function BannerSearchFields({ value, terms, onChange, advertisers = [], i
     term_keys: checked ? Array.from(new Set([...value.term_keys, key])) : value.term_keys.filter(entry => entry !== key) });
   return <>
     <h3>Suchzuordnung</h3>
-    <p>Diese Angaben steuern, bei welchen Unterkunftssuchen die Anzeige zusätzlich erscheint. Sie ändern nicht die gebuchten Werbeplätze.</p>
+    <p>Diese Angaben steuern, bei welchen Gastgebersuchen die Anzeige zusätzlich erscheint. Sie ändern nicht die gebuchten Werbeplätze.</p>
     <BannerAdvertiserPicker value={value.advertiser_key ?? ''}
       name={advertisers.find(row => row.key === value.advertiser_key)?.name || value.advertiser_name || 'Neuer oder eigenständiger Werbekunde'}
       advertisers={advertisers} onChange={key => {

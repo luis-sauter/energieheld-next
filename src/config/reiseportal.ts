@@ -6,13 +6,13 @@ export const reiseportal: BrandConfig = {
   name: "DAS-Reiseportal.com",
   tagline: "Neue Lieblingsorte entdecken.",
   colors: { primary: portalColors.blue, accent: portalColors.orange, surface: portalColors['light-gray'] },
-  providerLabel: "Unterkünfte",
-  searchLabel: "Unterkunft entdecken",
-  cta: { label: "Unterkünfte A–Z", href: "/unterkuenfte-a-z" },
+  providerLabel: "Gastgeber",
+  searchLabel: "Gastgeber entdecken",
+  cta: { label: "Gastgeber A–Z", href: "/unterkuenfte-a-z" },
   navigation: [
     { label: "Reiseziele", href: "/reiseziele" },
     { label: "Mottoreisen", href: "/mottoreisen" },
-    { label: "Unterkünfte A–Z", href: "/unterkuenfte-a-z" },
+    { label: "Gastgeber A–Z", href: "/unterkuenfte-a-z" },
   ],
   categories: [
     { id: "hotel", name: "Hotel", icon: "home" },

@@ -109,7 +109,7 @@ test('robots supports crawlable noindex previews without publishing their sitema
 });
 
 test('breadcrumb UI and JSON-LD share hierarchy, current page and absolute URLs; unknown origin omits incomplete schema',()=>{
- const items=portalBreadcrumbs('Pension Sonnenhof','/unterkuenfte/sonnenhof',{name:'Unterkünfte A–Z',path:'/unterkuenfte-a-z'});
+ const items=portalBreadcrumbs('Pension Sonnenhof','/unterkuenfte/sonnenhof',{name:'Gastgeber A–Z',path:'/unterkuenfte-a-z'});
  const html=renderToStaticMarkup(createElement(Breadcrumbs,{items}));assert.equal((html.match(/aria-current="page"/g)||[]).length,1);assert.equal((html.match(/class="breadcrumb-separator"/g)||[]).length,2);assert.ok(html.includes('href="/unterkuenfte-a-z"'));assert.ok(!html.includes('href="/unterkuenfte/sonnenhof"'));
  const schema=breadcrumbSchema(items,production);assert.deepEqual(schema.itemListElement.map(i=>i.name),items.map(i=>i.name));assert.deepEqual(schema.itemListElement.map(i=>i.position),[1,2,3]);assert.equal(schema.itemListElement[2].item,'https://portal.example/unterkuenfte/sonnenhof');assert.equal(breadcrumbSchema(items,siteSeo({})),null);
 });
@@ -128,7 +128,7 @@ test('provider schema type is based only on assigned accommodation terms and inc
 
 test('Website/Organization and CollectionPage describe real visible information, without fake FAQ or SearchAction',()=>{
  const site=jsonLdGraph(websiteSchema(production));assert.deepEqual(site['@graph'].map(n=>n['@type']),['Organization','WebSite']);assert.ok(!JSON.stringify(site).includes('SearchAction'));
- const collection=collectionSchema({name:'Österreich',description:'Unterkünfte im Portal',path:'/reiseziele/oesterreich',items:[{name:listing.name,path:'/unterkuenfte/sonnenhof'}]},production);assert.equal(collection['@type'],'CollectionPage');assert.equal(collection.mainEntity.numberOfItems,1);assert.equal(collection.mainEntity.itemListElement[0].item.url,'https://portal.example/unterkuenfte/sonnenhof');assert.ok(!JSON.stringify(collection).includes('FAQPage'));
+ const collection=collectionSchema({name:'Österreich',description:'Gastgeber im Portal',path:'/reiseziele/oesterreich',items:[{name:listing.name,path:'/unterkuenfte/sonnenhof'}]},production);assert.equal(collection['@type'],'CollectionPage');assert.equal(collection.mainEntity.numberOfItems,1);assert.equal(collection.mainEntity.itemListElement[0].item.url,'https://portal.example/unterkuenfte/sonnenhof');assert.ok(!JSON.stringify(collection).includes('FAQPage'));
 });
 
 test('JSON-LD escapes script termination, HTML, ampersands and Unicode separators and remains valid JSON',()=>{
@@ -140,7 +140,7 @@ test('JSON-LD escapes script termination, HTML, ampersands and Unicode separator
 test('visible relationships use real taxonomy/country data, never infer from descriptive text',()=>{
  const relation=relatedTravelPages([listing]);assert.deepEqual(relation.destinations.map(r=>r.name),['Südtirol/Italien']);assert.deepEqual(relation.themes.map(r=>r.name),['Wellnessangebote']);
  assert.deepEqual(relatedTravelPages([{...listing,travelTermKeys:[],tagline:'Golf Pool Wellness Wandern'}]).themes,[]);
- const html=renderToStaticMarkup(createElement(TravelRelations,{title:'Reiseinformationen',links:[...relation.destinations,...relation.themes],facts:terms.filter(t=>listing.travelTermKeys.includes(t.term_key))}));assert.ok(html.includes('Unterkunftsart'));assert.ok(html.includes('Pension'));assert.ok(html.includes('href="/mottoreisen/wellnessangebote"'));assert.ok(!html.includes('Pool'));
+ const html=renderToStaticMarkup(createElement(TravelRelations,{title:'Reiseinformationen',links:[...relation.destinations,...relation.themes],facts:terms.filter(t=>listing.travelTermKeys.includes(t.term_key))}));assert.ok(html.includes('Gastgeberart'));assert.ok(html.includes('Pension'));assert.ok(html.includes('href="/mottoreisen/wellnessangebote"'));assert.ok(!html.includes('Pool'));
 });
 
 test('unknown destination/topic slugs are 404 in metadata and page rendering',async()=>{

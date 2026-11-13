@@ -36,7 +36,7 @@ export function ProfileDesignPreview({ listing, blocks = [] }: { listing: Listin
   return <main id="hauptinhalt" className={styles.preview} data-travel-profile>
     <div className="container">
       <p className={styles.notice}>Isolierte Designvorschau · bestehende Unternehmensprofile bleiben unverändert</p>
-      <nav className={styles.breadcrumbs} aria-label="Brotkrümelnavigation"><Link href="/">Startseite</Link><span><Icon name="chevron-right" size={20} /></span><Link href="/unterkuenfte-a-z">Unterkünfte A–Z</Link><span><Icon name="chevron-right" size={20} /></span><span>{listing.name}</span></nav>
+      <nav className={styles.breadcrumbs} aria-label="Brotkrümelnavigation"><Link href="/">Startseite</Link><span><Icon name="chevron-right" size={20} /></span><Link href="/unterkuenfte-a-z">Gastgeber A–Z</Link><span><Icon name="chevron-right" size={20} /></span><span>{listing.name}</span></nav>
       <header className={styles.heading}>
         <h1>{listing.name}</h1>
         <ul className={styles.tags} aria-label="Reiseinteressen">{signals.map(signal => <li key={signal.key}><Link href={discoveryShortcutHref(signal.key.startsWith('audience:') ? 'audience' : 'theme', signal.key.split(':')[1])}><TravelThemeIcon slug={signal.icon} />{signal.label}</Link></li>)}</ul>
@@ -58,22 +58,22 @@ export function ProfileDesignPreview({ listing, blocks = [] }: { listing: Listin
         </aside>
       </div>
       {map && <ProfileLocation name={listing.name} location={listing.location} map={map} />}
-      <section className={styles.editorial} aria-label="Unternehmensbeschreibung"><p className={styles.eyebrow}>Über die Unterkunft</p>
+      <section className={styles.editorial} aria-label="Unternehmensbeschreibung"><p className={styles.eyebrow}>Über den Gastgeber</p>
         {blocks.length ? <ProfileEditorialContent items={editorialItems} listing={listing} /> : <>
           <TextImageSection heading={<h2>{content.aboutHeading}</h2>}
             text={<div className={styles.description}>{listing.description.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>}
             image={atmosphere ? <div className={styles.atmosphere}><Image src={atmosphere.src} alt={atmosphere.alt} fill unoptimized sizes="(max-width: 700px) 90vw, 35vw" loading="lazy" /></div> : null}
             textWidth={65} imageWidth={35} imageFirst={false} flow="standard" />
         </>}
-        <details className={styles.moreImages}><summary>Weitere Einblicke in die Unterkunft</summary><div>{listing.images.filter(image => image !== atmosphere).map(image => <figure key={image.src}><Image src={image.src} alt={image.alt} width={640} height={480} unoptimized loading="lazy" /><figcaption>{image.alt}</figcaption></figure>)}</div></details>
+        <details className={styles.moreImages}><summary>Weitere Einblicke beim Gastgeber</summary><div>{listing.images.filter(image => image !== atmosphere).map(image => <figure key={image.src}><Image src={image.src} alt={image.alt} width={640} height={480} unoptimized loading="lazy" /><figcaption>{image.alt}</figcaption></figure>)}</div></details>
       </section>
       <section className={styles.inspiration} aria-labelledby="preview-inspiration-title">
-        <p className={styles.eyebrow}>Inspiration für Ihre Auszeit</p><h2 id="preview-inspiration-title">Hier beginnt Ihre nächste Reiseidee</h2><p>Diese Unterkunft hat Sie inspiriert? Entdecken Sie passende Themen und mehr aus der Region.</p>
+        <p className={styles.eyebrow}>Inspiration für Ihre Auszeit</p><h2 id="preview-inspiration-title">Hier beginnt Ihre nächste Reiseidee</h2><p>Dieser Gastgeber hat Sie inspiriert? Entdecken Sie passende Themen und mehr aus der Region.</p>
         <ThemeScroller count={travelThemes.length} label="Reiseideen" edgeNavigation>
           {travelThemes.map(theme => <Link className={styles.themeCard} key={theme.slug} href={discoveryShortcutHref('theme', theme.slug)}><div className={styles.themePhoto}><Image src={`/reiseportal/redesign/mottoreisen/${theme.slug}.webp`} alt="" fill sizes="(max-width: 640px) 90vw, (max-width: 1100px) 45vw, 28vw" loading="lazy" /></div><span className={styles.themeIcon}><TravelThemeIcon slug={theme.slug} /></span><strong>{theme.title}</strong></Link>)}
         </ThemeScroller>
       </section>
-      <Link className={styles.back} href="/unterkuenfte-a-z"><Icon name="chevron-left" size={20} /> Zurück zu Unterkünfte A–Z</Link>
+      <Link className={styles.back} href="/unterkuenfte-a-z"><Icon name="chevron-left" size={20} /> Zurück zu Gastgeber A–Z</Link>
     </div>
   </main>;
 }

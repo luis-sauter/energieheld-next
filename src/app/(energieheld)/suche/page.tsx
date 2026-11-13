@@ -34,9 +34,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     <SearchTravelFinder basicEnabled={basicIntegrationEnabled()} key={JSON.stringify(values)} listings={travelFinderListings(finder.listings)} terms={finder.terms} initialValues={values} origin={origin} error={finder.error} completedSearch={{ values, total: !filtered && result.type ? undefined : result.total, error: result.error }} />
     <div className={`container ${styles.page}`}>
     <Link className="text-link" href={travelSearchReturnUrl(values, origin)}><Icon name="chevron-left" size={20} /> Zur Suche zurück</Link>
-    <p>{filtered ? 'Ihre Reisefilter grenzen die Suche auf passende Unterkünfte ein. Für Reiseziele und Mottoreisen entfernen Sie die Reisefilter.' : 'Ergebnisse aus dem gesamten Reiseportal: Unterkünfte, Reiseziele und Mottoreisen.'}</p>
+    <p>{filtered ? 'Ihre Reisefilter grenzen die Suche auf passende Gastgeber ein. Für Reiseziele und Mottoreisen entfernen Sie die Reisefilter.' : 'Ergebnisse aus dem gesamten Reiseportal: Gastgeber, Reiseziele und Mottoreisen.'}</p>
     <nav className={styles.types} aria-label="Ergebnistyp">
-      {(filtered ? [['accommodation', 'Unterkünfte mit Ihren Reisefiltern']] : [['', 'Alle Inhalte'], ...Object.entries(searchTypes)]).map(([key, label]) => {
+      {(filtered ? [['accommodation', 'Gastgeber mit Ihren Reisefiltern']] : [['', 'Alle Inhalte'], ...Object.entries(searchTypes)]).map(([key, label]) => {
         const next = new URLSearchParams(context); if (key) next.set('typ', key);
         return <Link key={key} href={`/suche?${next}`} aria-current={(result.type ?? '') === key ? 'page' : undefined}>{label}</Link>;
       })}

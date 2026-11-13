@@ -94,7 +94,7 @@ test('homepage brand history is visible before the headline and finder, with mat
  assert.ok(html.indexOf('Reiseideen seit über 15 Jahren')<html.indexOf('<h1'));
  assert.equal((html.match(/<h1\b/g)||[]).length,1);
  assert.match(html,/Reisen beginnt mit einer guten Idee/);
- assert.doesNotMatch(html,/Deine Unterkunft|Lass dich|Sag uns/);
+ assert.doesNotMatch(html,/Deine Gastgeber|Lass dich|Sag uns/);
  const meta=await homeMetadata({searchParams:Promise.resolve({})});
  assert.deepEqual(meta.title,{absolute:'DAS-Reiseportal.com – Reiseideen seit über 15 Jahren'});
  assert.match(meta.description,/seit über 15 Jahren/);assert.equal(meta.openGraph.description,meta.description);
@@ -144,7 +144,7 @@ test('homepage reuses one continuous motto row and follows the required fixed-sl
  const html=renderToStaticMarkup(await Home({searchParams:Promise.resolve({})}));
  assert.equal((html.match(/<article class="accommodation-card"/g)||[]).length,4);
  const stays=html.split('aria-labelledby="stays-title"')[1].split('</section>')[0];
- assert.match(stays,/role="region" aria-label="Ausgewählte Unterkünfte" data-speed="18"/);assert.equal((stays.match(/role="region"/g)||[]).length,1);assert.match(stays,/class="card motto"/);assert.doesNotMatch(stays,/featuredStay|recommendations|data-placement/);
+ assert.match(stays,/role="region" aria-label="Ausgewählte Gastgeber" data-speed="18"/);assert.equal((stays.match(/role="region"/g)||[]).length,1);assert.match(stays,/class="card motto"/);assert.doesNotMatch(stays,/featuredStay|recommendations|data-placement/);
  assert.ok(html.indexOf('inspiration-title') < html.indexOf('data-placement="top_banner"'));
  assert.ok(html.indexOf('data-placement="top_banner"') < html.indexOf('stays-title'));
  const source=read('src/app/(energieheld)/page.tsx');
@@ -330,7 +330,7 @@ test('shared company cards use the selected dark treatment and retain keyboard/t
  assert.match(css,/rgb\(0 0 0 \/ 58%\)/);assert.doesNotMatch(css,/soft-light|lighter-dark/);
  assert.match(css,/\.card:focus-visible/);assert.match(css,/\.card:hover/);assert.match(css,/hover: none/);assert.match(css,/prefers-reduced-motion: reduce/);
  assert.match(css,/overflow-wrap: anywhere/);assert.match(css,/line-clamp: 2/);
- const home=read('src/app/(energieheld)/page.tsx');assert.match(home,/<MottoRow label="Ausgewählte Unterkünfte" speed=\{18\}/);assert.doesNotMatch(home,/styles.featuredStay|styles.recommendations/);
+ const home=read('src/app/(energieheld)/page.tsx');assert.match(home,/<MottoRow label="Ausgewählte Gastgeber" speed=\{18\}/);assert.doesNotMatch(home,/styles.featuredStay|styles.recommendations/);
  const directory=read('src/components/portal/travel-directory.tsx');assert.match(directory,/<ListingRow/);assert.doesNotMatch(directory,/\bAccommodationCard\b/);
  const homeCss=read('src/app/(energieheld)/home.module.css');assert.doesNotMatch(homeCss,/accommodation-card-copy|accommodation-card-image/);
 });
@@ -346,9 +346,9 @@ test('all four countries interleave the same static Premium format after normal 
   const html=renderToStaticMarkup(createElement(MottoDetail,{entry,kind:'destination',listings:profiles,seed:'country-check',advertising:{ads,sliderAds:ads,premiumAds,editorOptions:{}}}));
   assert.equal((html.match(/data-static-premium=/g)||[]).length,2,entry.slug);
   const first=html.indexOf('data-static-premium="1"'),second=html.indexOf('data-static-premium="2"');
-  assert.ok(html.indexOf('Unterkünfte, Reihe 1')<html.indexOf('Banner, Reihe 1'));
-  assert.ok(html.indexOf('Banner, Reihe 1')<first&&first<html.indexOf('Unterkünfte, Reihe 2'));
-  assert.ok(html.indexOf('Banner, Reihe 2')<second&&second<html.indexOf('Unterkünfte, Reihe 3'));
+  assert.ok(html.indexOf('Gastgeber, Reihe 1')<html.indexOf('Banner, Reihe 1'));
+  assert.ok(html.indexOf('Banner, Reihe 1')<first&&first<html.indexOf('Gastgeber, Reihe 2'));
+  assert.ok(html.indexOf('Banner, Reihe 2')<second&&second<html.indexOf('Gastgeber, Reihe 3'));
   const slots=[...html.matchAll(/data-static-premium="\d">([\s\S]*?)<\/div>/g)];
   for(let i=0;i<slots.length;i++){assert.match(slots[i][1],/data-placement="top_banner"/);assert.ok(slots[i][1].includes(premiumAds[i].id));assert.doesNotMatch(slots[i][1],/role="region"|data-speed=|<button/);}
   assert.match(html,new RegExp(`href="/unterkuenfte-a-z\\?ziel=${entry.slug}"`));

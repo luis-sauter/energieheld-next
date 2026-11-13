@@ -67,9 +67,9 @@ export function discoveryMetadata(entry: DiscoveryEntry, kind: "destination" | "
   if (planning) return pageMetadata({ title: planning.title, description: planning.description,
     path: `/${kind === "destination" ? "reiseziele" : "mottoreisen"}/${entry.slug}`, image: entry.image ?? undefined }, config);
   const description = kind === "destination"
-    ? entry.seoDescription ?? `${entry.title} im DAS-Reiseportal.com: Entdecken Sie passende Unterkünfte mit Standort, Kontakt und zugeordneten Reisethemen.`
+    ? entry.seoDescription ?? `${entry.title} im DAS-Reiseportal.com: Entdecken Sie passende Gastgeber mit Standort, Kontakt und zugeordneten Reisethemen.`
     : `${entry.title}: ${plainSeoText(entry.intro)}`;
-  return pageMetadata({ title: kind === "destination" && entry.seoTitle ? entry.seoTitle : `${entry.title} – ${kind === "destination" ? "Reiseziele und Unterkünfte" : "Reisethema und passende Anbieter"}`,
+  return pageMetadata({ title: kind === "destination" && entry.seoTitle ? entry.seoTitle : `${entry.title} – ${kind === "destination" ? "Reiseziele und Gastgeber" : "Reisethema und passende Anbieter"}`,
     description, path: `/${kind === "destination" ? "reiseziele" : "mottoreisen"}/${entry.slug}`, image: entry.image ?? undefined }, config);
 }
 
@@ -80,7 +80,7 @@ export function directoryMetadata(params: SearchParameters, config: SiteSeo = si
   const destination = relevant.length === 1 && relevant[0] === "ziel" ? destinations.find(entry => entry.slug === single("ziel")) : undefined;
   const theme = relevant.length === 1 && relevant[0] === "thema" ? travelThemes.find(entry => entry.slug === single("thema")) : undefined;
   const path = destination ? `/reiseziele/${destination.slug}` : theme ? `/mottoreisen/${theme.slug}` : "/unterkuenfte-a-z";
-  return pageMetadata({ title: "Unterkünfte A–Z – Gastgeber entdecken", description: hubDescriptions.directory, path, noindex: filtered }, config);
+  return pageMetadata({ title: "Gastgeber A–Z – Gastgeber entdecken", description: hubDescriptions.directory, path, noindex: filtered }, config);
 }
 
 export function indexableProfile(listing: Pick<Listing, "id" | "slug" | "isDemo" | "isPreview">) {

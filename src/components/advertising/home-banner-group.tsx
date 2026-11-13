@@ -20,13 +20,13 @@ export function HomeBannerGroup({ ads, placements, label, adminOnly = false, sli
   const displayedAds = inline ? ads : ads.filter(ad => ad.imageUrl && !ad.suppressed);
   if (sliderAds?.length) return <section className={`section container ${styles.partners}`} aria-label={label}>
     <div className={`${rowStyles.bannerRow} ${rowStyles.countryBannerRow}`}><MottoRow label={label} speed={22}>
-      {inline ? placements.map(placement => <CampaignSlot key={placement} ad={sliderAds.find(ad => ad.placement === placement)} placement={placement} showLabel={false} />)
-        : sliderAds.map(ad => <CampaignSlot key={ad.id} ad={ad} placement={ad.placement} showLabel={false} />)}
+      {inline ? placements.map(placement => <CampaignSlot key={placement} ad={sliderAds.find(ad => ad.placement === placement)} placement={placement} />)
+        : sliderAds.map(ad => <CampaignSlot key={ad.id} ad={ad} placement={ad.placement} />)}
     </MottoRow></div>
   </section>;
   return <section className={`section container ${styles.partners}`} aria-label={label}>
     {placements[0] === "top_banner" ? <>
-      <ContextualCampaignSlot editorOptions={editorOptions} compactPremium searchResult={Boolean(supplementaryAd)} instanceId={instanceId} showLabel={false} placement="top_banner" ad={supplementaryAd ?? ads.find(row => row.placement === "top_banner")} />
+      <ContextualCampaignSlot editorOptions={editorOptions} compactPremium searchResult={Boolean(supplementaryAd)} instanceId={instanceId} placement="top_banner" ad={supplementaryAd ?? ads.find(row => row.placement === "top_banner")} />
     </>
       : <AdvertisingRail slots={placements as SidebarSlot[]} visibleSlots={placements as SidebarSlot[]} ads={displayedAds} showAdvertiseLink={false} />}
   </section>;

@@ -38,10 +38,10 @@ export function AutumnShowcase({ listings, cardEditing = false }: { listings: re
               <li><TravelThemeIcon slug="urlaub-am-wasser" /> Wasser &amp; Ruhe</li>
               <li><TravelThemeIcon slug="skifahren" /><Link href="/mottoreisen/skifahren">Winter &amp; Skiurlaub entdecken</Link></li>
             </ul>
-            <Link href={AUTUMN_HREF} className={styles.cta}>Alle Unterkünfte entdecken <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></Link>
+            <Link href={AUTUMN_HREF} className={styles.cta}>Alle Gastgeber entdecken <span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></Link>
           </div>
         </aside>
-        <ThemeScroller count={stays.length} label="Sonderthemen-Unterkünfte" edgeNavigation pageSize={4} autoPlay={false}>
+        <ThemeScroller count={stays.length} label="Sonderthemen-Gastgeber" edgeNavigation pageSize={4} autoPlay={false}>
           {stays.map(({ listing, image, crop, assetId }) => <Card className={styles.card} key={listing.id} data-autumn-profile={listing.id} data-editorial-term={SPECIAL_TOPIC_TERM}>
             <Link href={`/unterkuenfte/${listing.slug}`} className={styles.cardLink} aria-label={`${listing.name} – Unternehmensprofil ansehen`}>
               <div className={styles.photo}>{cardEditing ? <CardImagePhoto image={image} crop={crop} sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" /> : <Image src={image.src} alt={image.alt} fill style={crop ? imageCropStyle(crop) : undefined} unoptimized={image.src.startsWith('http')} loading="lazy" sizes="(max-width: 600px) 90vw, (max-width: 900px) 44vw, 30vw" />}</div>

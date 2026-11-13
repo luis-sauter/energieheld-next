@@ -17,7 +17,7 @@ export function ProfileRotation({ groups, count }: { groups: ReactNode[]; count:
     setPage((value) => nextProfileGroup(value, direction, groups.length));
     setInteraction((value) => value + 1);
   }
-  return <div ref={root} className={styles.rotation} role="region" aria-label="Unterkünfte entdecken"
+  return <div ref={root} className={styles.rotation} role="region" aria-label="Gastgeber entdecken"
     {...handlers}
     onKeyDown={(event) => {
       // Do not intercept keys belonging to links or other controls.
@@ -27,9 +27,9 @@ export function ProfileRotation({ groups, count }: { groups: ReactNode[]; count:
       }
     }} tabIndex={groups.length > 1 ? 0 : undefined}>
     {groups.length > 1 && <div className={styles.controls}>
-      <button type="button" aria-label="Vorherige sechs Unterkünfte" onClick={() => move(-1)}><Icon name="chevron-left" size={20} /></button>
-      <span aria-live={focused ? "polite" : "off"} aria-atomic="true">Unterkünfte entdecken · {count} passende Unterkünfte</span>
-      <button type="button" aria-label="Nächste sechs Unterkünfte" onClick={() => move(1)}><Icon name="chevron-right" size={20} /></button>
+      <button type="button" aria-label="Vorherige sechs Gastgeber" onClick={() => move(-1)}><Icon name="chevron-left" size={20} /></button>
+      <span aria-live={focused ? "polite" : "off"} aria-atomic="true">Gastgeber entdecken · {count} passende Gastgeber</span>
+      <button type="button" aria-label="Nächste sechs Gastgeber" onClick={() => move(1)}><Icon name="chevron-right" size={20} /></button>
       <button type="button" aria-pressed={paused} disabled={reducedMotion}
         title={reducedMotion ? "Bei reduzierter Bewegung ist der automatische Wechsel deaktiviert." : undefined}
         onClick={toggle}>
@@ -38,7 +38,7 @@ export function ProfileRotation({ groups, count }: { groups: ReactNode[]; count:
     </div>}
     <div className={groups.length > 1 ? styles.pages : undefined}>
       {groups.map((group, index) => <div key={index} hidden={index !== page} inert={index !== page}
-        className={styles.page} aria-label={`Unterkünfte ${index * 6 + 1} bis ${Math.min((index + 1) * 6, count)}`}>{group}</div>)}
+        className={styles.page} aria-label={`Gastgeber ${index * 6 + 1} bis ${Math.min((index + 1) * 6, count)}`}>{group}</div>)}
     </div>
   </div>;
 }

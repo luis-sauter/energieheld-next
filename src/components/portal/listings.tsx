@@ -114,7 +114,7 @@ export function EmptyState({ isDemo = true, travel = false }: { isDemo?: boolean
         {isDemo && !travel && " Diese Vorschau enthält acht Beispielbetriebe."}
       </p>
       <Link className="button button-primary" href={travel ? "/unterkuenfte-a-z" : "/experten"}>
-        {travel ? "Alle Unterkünfte anzeigen" : isDemo
+        {travel ? "Alle Gastgeber anzeigen" : isDemo
           ? "Alle Beispielbetriebe anzeigen"
           : "Alle Fachbetriebe anzeigen"}
       </Link>

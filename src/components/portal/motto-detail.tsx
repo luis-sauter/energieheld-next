@@ -1,3 +1,4 @@
+import introStyles from './mobile-intro.module.css';
 import { Icon } from "@/components/portal/icon";
 import Image from 'next/image';
 import Link from './navigation-link';
@@ -42,12 +43,12 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
         about: destination ? { '@type': 'Place', name: entry.title } : { '@type': 'DefinedTerm', name: entry.title, termCode: `theme:${entry.slug}` },
         items: companies.map(listing => ({ name: listing.name, path: `/unterkuenfte/${listing.slug}` })) })])} />
       <Breadcrumbs items={breadcrumbs} />
-      <header className={styles.hero}><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p data-intro-copy>{editorial.intro}</p></header>
+      <header className={styles.hero}><h1>{destination && entry.title.includes('/') ? <><span className={styles.titlePart}>{entry.title.split('/')[0]}/</span><wbr /><span className={styles.titlePart}>{entry.title.split('/')[1]}</span></> : entry.title}</h1><p className={introStyles.panel} data-intro-copy>{editorial.intro}</p></header>
       <section className={styles.stays} aria-labelledby="motto-stays">
-        <h2 id="motto-stays">{companies.length} passende {companies.length === 1 ? 'Unterkunft' : 'Unterkünfte'} · Entdecken Sie Ihre Gastgeber</h2>
+        <h2 id="motto-stays">{companies.length} {companies.length === 1 ? 'passender Gastgeber' : 'passende Gastgeber'} · Entdecken Sie Ihre Gastgeber</h2>
         <InlineBannerProvider options={advertising?.options}>
           {Array.from({ length: Math.max(companyRows.length, bannerRows.length) }, (_, i) => <div key={i} className={styles.pair}>
-            {companyRows[i] && <MottoRow label={`Unterkünfte, Reihe ${i + 1}`} speed={[18, 20, 17][i]} direction={rowDirection}>
+            {companyRows[i] && <MottoRow label={`Gastgeber, Reihe ${i + 1}`} speed={[18, 20, 17][i]} direction={rowDirection}>
               {companyRows[i].map(listing => <AccommodationCard key={listing.id} listing={listing} motto
                 cardEditing={Boolean(advertising?.options)} showImportMarker sizes="(max-width: 600px) 86vw, (max-width: 900px) 45vw, 360px" />)}
             </MottoRow>}
@@ -59,15 +60,15 @@ export function MottoDetail({ entry, listings, advertising, seed, kind = 'theme'
               <ContextualCampaignSlot editorOptions={advertising.editorOptions} placement="top_banner" ad={advertising.premiumAds[i]} compactPremium searchResult={!advertising.ads.some(local => local.id === advertising.premiumAds[i].id)} />
             </div>}
           </div>)}
-          {!companies.length && <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}
+          {!companies.length && <p>Für diese Rubrik sind derzeit keine freigegebenen Gastgeber verfügbar.</p>}
           {advertising?.options && <details className={styles.management}><summary>Bannerplätze verwalten</summary>
             <AdvertisingLayout ads={advertising.ads} sidebarOrder={advertising.sidebarOrder} collapseEmpty showEmptySlots>{null}</AdvertisingLayout>
           </details>}
         </InlineBannerProvider>
       </section>
-      <nav className={styles.endNavigation} aria-label="Weitere Unterkünfte und Rubriken">
+      <nav className={styles.endNavigation} aria-label="Weitere Gastgeber und Rubriken">
         <Link className={styles.endButton} href={basePath}><Icon name="chevron-left" size={20} />{destination ? 'Alle Reiseziele entdecken' : 'Alle Mottoreisen entdecken'}</Link>
-        <Link className={styles.endButton} href={`/unterkuenfte-a-z?${destination ? 'ziel' : 'thema'}=${entry.slug}`}>Alle passenden Unterkünfte ansehen <Icon name="chevron-right" size={20} /></Link>
+        <Link className={styles.endButton} href={`/unterkuenfte-a-z?${destination ? 'ziel' : 'thema'}=${entry.slug}`}>Alle passenden Gastgeber ansehen <Icon name="chevron-right" size={20} /></Link>
       </nav>
     </div>
   </main>;

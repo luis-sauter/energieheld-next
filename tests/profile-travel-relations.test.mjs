@@ -17,7 +17,7 @@ test('assigned travel facts and destination/theme links are grouped and remain i
  const facts=[{term_key:'accommodation:hotel',dimension:'accommodation',slug:'hotel',label:'Hotel'},{term_key:'audience:familie',dimension:'audience',slug:'familie',label:'Familie'}];
  const links=[{name:'Radwandern',path:'/mottoreisen/radwandern'},{name:'Südtirol/Italien',path:'/reiseziele/suedtirol-italien'},{name:'Radwandern',path:'/mottoreisen/radwandern'}];
  const html=renderToStaticMarkup(createElement(TravelRelations,{title:'Reiseinformationen',facts:[...facts,facts[0]],links}));
- for(const label of ['Unterkunftsart','Für wen passt die Unterkunft?','Reisethemen','Reiseziele'])assert.ok(html.includes(label));
+ for(const label of ['Gastgeberart','Für wen passt der Gastgeber?','Reisethemen','Reiseziele'])assert.ok(html.includes(label));
  for(const href of ['/mottoreisen/radwandern','/reiseziele/suedtirol-italien','/unterkuenfte-a-z?unterkunftstyp=hotel','/unterkuenfte-a-z?zielgruppe=familie'])assert.equal(html.split('href="'+href+'"').length-1,1);
  assert.doesNotMatch(html,/Nordic Walking|Deutschland|Gut zu wissen/);
 });
@@ -31,7 +31,7 @@ test('profile closing retains its introduction and uses the identical homepage s
  const props={title:'Reiseinformationen und passende Rubriken',links:[{name:'Radwandern',path:'/mottoreisen/radwandern'},{name:'Italien',path:'/reiseziele/suedtirol-italien'}],facts:[]};
  const html=renderToStaticMarkup(createElement(TravelRelations,{...props,presentation:'profile'}));
  const {TravelQuicklinks}=await import('../src/components/portal/travel-quicklinks.tsx');
- assert.match(html,/profile-discover/);assert.match(html,/Inspiration für Ihre Auszeit/);assert.match(html,/Hier beginnt Ihre nächste Reiseidee/);assert.match(html,/Diese Unterkunft hat Sie inspiriert\?/);assert.equal((html.match(/<h2/g)||[]).length,1);
+ assert.match(html,/profile-discover/);assert.match(html,/Inspiration für Ihre Auszeit/);assert.match(html,/Hier beginnt Ihre nächste Reiseidee/);assert.match(html,/Dieser Gastgeber hat Sie inspiriert\?/);assert.equal((html.match(/<h2/g)||[]).length,1);
  assert.ok(html.includes(renderToStaticMarkup(createElement(TravelQuicklinks))));
  assert.equal((html.match(/data-theme-image="true"/g)||[]).length,15);
  assert.match(html,/href="\/mottoreisen\/romantik-zu-zweit"/);assert.match(html,/href="\/unterkuenfte-a-z\?zielgruppe=mit-hund"/);assert.match(html,/href="\/unterkuenfte-a-z\?zielgruppe=familie"/);

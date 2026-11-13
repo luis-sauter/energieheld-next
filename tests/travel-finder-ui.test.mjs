@@ -67,7 +67,7 @@ test("both routes use the same finder and show actual initial totals", () => {
   assert.match(source("src/components/portal/travel-directory.tsx"), /<TravelFinder mode="directory"/);
   const html = render(readTravelFilterValues({}));
   assert.match(html, /redesign\/unterkuenfte\/hero\.webp/);
-  assert.match(html, /Finden Sie passende Unterkünfte/);
+  assert.match(html, /Finden Sie passende Gastgeber/);
   assert.doesNotMatch(html, /<video/);
   const homeHtml = render(readTravelFilterValues({}), "home");
   assert.match(homeHtml, /hero-poster\.webp/);
@@ -111,14 +111,14 @@ test('both hero forms submit portal queries despite zero local matches or direct
       const values = readTravelFilterValues({ q, ziel: 'schweiz', ort: 'Unpassender Ort' });
       let assigned;
       globalThis.window = { location: { assign(url) { assigned = url; } } };
-      const form = formIn(TravelFinder({ mode, listings, options, values, onChange() {}, error: 'Unterkünfte nicht verfügbar' }));
+      const form = formIn(TravelFinder({ mode, listings, options, values, onChange() {}, error: 'Gastgeber nicht verfügbar' }));
       form.props.onSubmit({ preventDefault() {} });
       const url = new URL(assigned, 'https://das-reiseportal.com');
       assert.equal(url.pathname, '/suche'); assert.equal(url.searchParams.get('q'), q);
       assert.equal(url.searchParams.get('ziel'), 'schweiz'); assert.equal(url.searchParams.get('von'), mode);
-      const html = renderToStaticMarkup(createElement(TravelFinder, { mode, listings, options, values, onChange() {}, error: 'Unterkünfte nicht verfügbar' }));
+      const html = renderToStaticMarkup(createElement(TravelFinder, { mode, listings, options, values, onChange() {}, error: 'Gastgeber nicht verfügbar' }));
       assert.match(html, /Ergebnisse werden gezählt/); assert.doesNotMatch(html, /type="submit" disabled/);
-      assert.match(html, /Gewählte Reisefilter grenzen die Suche auf Unterkünfte ein/);
+      assert.match(html, /Gewählte Reisefilter grenzen die Suche auf Gastgeber ein/);
     }
   } finally { globalThis.window = previousWindow; }
 });
@@ -157,7 +157,7 @@ test('result-route finder retains all context fields and submits with the origin
   const values = readTravelFilterValues({ q: 'City Apart', ziel: 'deutschland', thema: 'wellnessangebote', zielgruppe: 'paar', unterkunftstyp: 'hotel', besonderheit: 'sauna', ort: 'Berlin', sort: 'name' });
   const html = render(values, 'search');
   assert.equal((html.match(/role="search"/g) ?? []).length, 1);
-  for (const label of ['Wohin?', 'Motto', 'Mit wem?', 'Unterkunft', 'Suchbegriff']) assert.ok(html.includes(label));
+  for (const label of ['Wohin?', 'Motto', 'Mit wem?', 'Gastgeber', 'Suchbegriff']) assert.ok(html.includes(label));
   for (const selected of ['deutschland', 'wellnessangebote', 'paar', 'hotel']) assert.ok(html.includes(`value="${selected}" selected`));
   assert.match(html,/value="City Apart"/); assert.doesNotMatch(html,/name="ort"/);
   const previous = globalThis.window;
@@ -189,7 +189,7 @@ test('completed search places its full result total on the button and removes th
  for(const [total,label] of [[0,'0 Ergebnisse anzeigen'],[1,'1 Ergebnis anzeigen'],[8,'8 Ergebnisse anzeigen'],[127,'127 Ergebnisse anzeigen']]){
   const values=readTravelFilterValues({q:'Wellness',ziel:'oesterreich'});
   const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'search',listings,options,values,onChange(){},completedSearch:{values,total}}));
-  assert.ok(html.includes(label));assert.match(html,/aria-live="polite"/);assert.doesNotMatch(html,/reise-finder-summary|Unterkünfte gefunden/);
+  assert.ok(html.includes(label));assert.match(html,/aria-live="polite"/);assert.doesNotMatch(html,/reise-finder-summary|Gastgeber gefunden/);
  }
 });
 test('editing or resetting a completed query/filter never leaves a stale result count, and failures are not zero matches',()=>{
@@ -200,7 +200,7 @@ test('editing or resetting a completed query/filter never leaves a stale result 
  }
  assert.match(renderCase(readTravelFilterValues({})),/2 Ergebnisse anzeigen/);
  const failed=renderCase(completed,'Die Live-Trefferzahl ist gerade nicht verfügbar.');assert.match(failed,/Live-Trefferzahl ist gerade nicht verfügbar/);assert.doesNotMatch(failed,/127 Ergebnisse anzeigen|0 Ergebnisse anzeigen/);
- for(const mode of ['home','directory'])assert.doesNotMatch(render(readTravelFilterValues({q:'Wellness'}),mode),/\d+ Unterkünfte gefunden/);
+ for(const mode of ['home','directory'])assert.doesNotMatch(render(readTravelFilterValues({q:'Wellness'}),mode),/\d+ Gastgeber gefunden/);
 });
 
 for(const mode of ['home','directory','search'])test(mode+' finder removes the separate location field and ignores legacy location filters',()=>{const values=readTravelFilterValues({q:'München',ort:'nonmatching'});assert.equal(values.location,'');const html=render(values,mode);assert.doesNotMatch(html,/name="ort"|Ort oder Postleitzahl/);assert.match(html,/value="München"/);assert.doesNotMatch(travelSearchUrl({...values,location:'stale'},'home'),/ort=/);});
@@ -210,8 +210,8 @@ test('structured page total is taken from the page response rather than rendered
 for (const mode of ['home', 'directory', 'search']) test(mode + ' distinguishes draft, submitted and completed query chips without inventing a count', () => {
   const values = readTravelFilterValues({q:'pension',ziel:'oesterreich'});
   const html = extra => renderToStaticMarkup(createElement(TravelFinder,{mode,listings,options,values,onChange(){},...extra}));
-  assert.match(html({}),/Eingabe: pension/); assert.doesNotMatch(html({}),/Suche: pension|\d+ Unterkünfte gefunden/);
-  const pending=html({searchPending:true}); assert.match(pending,/Suche läuft/); assert.match(pending,/aria-busy="true"/); assert.match(pending,/Suche: pension/); assert.doesNotMatch(pending,/Ergebnisse werden gezählt|\d+ Unterkünfte gefunden/);
+  assert.match(html({}),/Eingabe: pension/); assert.doesNotMatch(html({}),/Suche: pension|\d+ Gastgeber gefunden/);
+  const pending=html({searchPending:true}); assert.match(pending,/Suche läuft/); assert.match(pending,/aria-busy="true"/); assert.match(pending,/Suche: pension/); assert.doesNotMatch(pending,/Ergebnisse werden gezählt|\d+ Gastgeber gefunden/);
   const completed=html({completedSearch:{values,total:51}}); assert.match(completed,/51 Ergebnisse anzeigen/); assert.match(completed,/Suche: pension/); assert.doesNotMatch(completed,/Eingabe: pension|Ergebnisse werden gezählt/);
   const changed=html({completedSearch:{values:{...values,query:'Wellness'},total:51}}); assert.match(changed,/Eingabe: pension/); assert.doesNotMatch(changed,/51 Ergebnisse anzeigen|Suche: pension/);
 });
@@ -233,5 +233,5 @@ test('live preview displays counts/loading/error while keeping the full search a
 });
 
 test('a narrowed result-type page can fetch the all-results button count without seeding a wrong subtype total',()=>{
- const values=readTravelFilterValues({q:'Wellness'});const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'search',listings,options,values,onChange(){},completedSearch:{values},liveCount:{key:'q=Wellness',status:'ready',total:87}}));assert.match(html,/87 Ergebnisse anzeigen/);assert.doesNotMatch(html,/reise-finder-summary|Unterkünfte gefunden/);
+ const values=readTravelFilterValues({q:'Wellness'});const html=renderToStaticMarkup(createElement(TravelFinder,{mode:'search',listings,options,values,onChange(){},completedSearch:{values},liveCount:{key:'q=Wellness',status:'ready',total:87}}));assert.match(html,/87 Ergebnisse anzeigen/);assert.doesNotMatch(html,/reise-finder-summary|Gastgeber gefunden/);
 });

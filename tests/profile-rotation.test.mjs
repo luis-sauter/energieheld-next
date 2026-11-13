@@ -99,9 +99,9 @@ test("server HTML retains actual card links, only one group is exposed to keyboa
   const html = renderToStaticMarkup(createElement(ProfileRotation, { count: 30, groups }));
   assert.equal((html.match(/href="\/unterkuenfte\//g) ?? []).length, 30);
   assert.equal((html.match(/hidden="" inert=""/g) ?? []).length, 4);
-  assert.match(html, /Vorherige sechs Unterkünfte/);
-  assert.match(html, /Nächste sechs Unterkünfte/);
-  assert.match(html, /Unterkünfte entdecken · 30 passende Unterkünfte/);assert.doesNotMatch(html,/Gruppe/);
+  assert.match(html, /Vorherige sechs Gastgeber/);
+  assert.match(html, /Nächste sechs Gastgeber/);
+  assert.match(html, /Gastgeber entdecken · 30 passende Gastgeber/);assert.doesNotMatch(html,/Gruppe/);
   assert.match(html, /disabled="" title="Bei reduzierter Bewegung/);
   assert.match(html, /Automatischen Wechsel pausieren/);
 });

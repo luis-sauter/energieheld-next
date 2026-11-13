@@ -73,7 +73,7 @@ export function DiscoveryDetail({ entry, title, basePath, listings, advertising,
     </header>
     <p className="discovery-intro">{entry.intro}</p>
     <section className="discovery-stays" aria-labelledby="related-stays">
-        <div className="section-heading"><div><p className="eyebrow">Aus dem Reiseportal</p><h2 id="related-stays">{basePath === "/reiseziele" ? entry.stayHeading ?? "Passende Unterkünfte" : "Passende Unterkünfte"}</h2></div></div>
+        <div className="section-heading"><div><p className="eyebrow">Aus dem Reiseportal</p><h2 id="related-stays">{basePath === "/reiseziele" ? entry.stayHeading ?? "Passende Gastgeber" : "Passende Gastgeber"}</h2></div></div>
       <DiscoveryAdvertising data={advertising}><div className="discovery-detail-content">
       {listings.length > 0 ? <>
         {rotateProfiles ? <>
@@ -81,9 +81,9 @@ export function DiscoveryDetail({ entry, title, basePath, listings, advertising,
             groups={profileGroups(selected).map((group, index) =>
               <div className="accommodation-grid" key={index}>{group.map((listing) =>
                 <AccommodationCard listing={listing} rotating showImportMarker cardEditing={cardEditing} key={listing.id} />)}</div>)} />
-          <Link className="text-link" href={`/unterkuenfte-a-z?${basePath === "/reiseziele" ? "ziel" : "thema"}=${entry.slug}`}>Alle passenden Unterkünfte ansehen <Icon name="chevron-right" size={20} /></Link>
+          <Link className="text-link" href={`/unterkuenfte-a-z?${basePath === "/reiseziele" ? "ziel" : "thema"}=${entry.slug}`}>Alle passenden Gastgeber ansehen <Icon name="chevron-right" size={20} /></Link>
         </> : <div className="accommodation-grid">{listings.map((listing) => <AccommodationCard listing={listing} showImportMarker cardEditing={cardEditing} key={listing.id} />)}</div>}
-      </> : <p>Für diese Rubrik sind derzeit keine freigegebenen Unterkünfte verfügbar.</p>}
+      </> : <p>Für diese Rubrik sind derzeit keine freigegebenen Gastgeber verfügbar.</p>}
       </div></DiscoveryAdvertising>
     </section>
     <TravelRelations title={basePath === "/reiseziele" ? "Reiseideen für Ihren Aufenthalt" : "Reiseziele mit passenden Gastgebern"}

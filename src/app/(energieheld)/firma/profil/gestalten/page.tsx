@@ -44,8 +44,8 @@ export default async function CompanyDesignPage() {
         <div>
           <p className="eyebrow">Schritt 2 von 2</p>
           <h1>Profil gestalten</h1>
-          <h2>Zeigen Sie uns Ihre Unterkunft von ihrer schönsten Seite</h2>
-          <p>Laden Sie Ihr Logo und aussagekräftige Bilder Ihrer Unterkunft hoch. Unsere Redaktion erstellt daraus ein ansprechendes Firmenprofil für DAS-Reiseportal.com.</p>
+          <h2>Zeigen Sie uns Ihren Betrieb von seiner schönsten Seite</h2>
+          <p>Laden Sie Ihr Logo und aussagekräftige Bilder Ihres Betriebs hoch. Unsere Redaktion erstellt daraus ein ansprechendes Firmenprofil für DAS-Reiseportal.com.</p>
           <p>Sie müssen hier keine fertigen Werbetexte verfassen oder das Layout selbst gestalten. Ihre Angaben aus dem vorherigen Schritt übernehmen wir als Grundlage. Besondere Wünsche können Sie uns unten als Hinweis mitteilen.</p>
           <p>Besonders hilfreich sind Bilder von Zimmern, Außenansichten, besonderen Angeboten und der Umgebung. Sie können bis zu 8 Galeriebilder hinzufügen.</p>
         </div>

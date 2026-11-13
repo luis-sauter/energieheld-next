@@ -70,7 +70,7 @@ export default async function MottoTravelPage({ searchParams }: { searchParams?:
       <section aria-labelledby="inspiration-heading">
         <div className={styles.sectionHeading}>
           <h2 id="inspiration-heading" className={styles.sectionTitle}>Beliebte Reisemotive</h2>
-          <p>Lassen Sie sich von unseren vorhandenen Themen inspirieren.</p>
+          <p className={introStyles.panel}>Lassen Sie sich von unseren vorhandenen Themen inspirieren.</p>
         </div>
         <div className={styles.regionGrid}>
           {inspirations.map(item => <EditorialImageCard key={item.group} compact title={item.title} text={item.text}

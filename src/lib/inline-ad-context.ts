@@ -10,7 +10,7 @@ export type InlineAdContext = {
 
 export function inlineAdContext(path: string, registeredArea = false): InlineAdContext | null {
   if (path === "/") return { path, label: "Startseite", target_type: "homepage", target_key: null };
-  if (path === "/unterkuenfte-a-z") return { path, label: "Unterkünfte A–Z", target_type: "experts_directory", target_key: null };
+  if (path === "/unterkuenfte-a-z") return { path, label: "Gastgeber A–Z", target_type: "experts_directory", target_key: null };
   const key = path.slice(1);
   return path.startsWith("/") && (portalAdSection(key) || registeredArea) && /^(mottoreisen|reiseziele)(\/[a-z0-9-]+)?$/.test(key)
     ? { path, label: portalAdSection(key) ? portalAdAreaLabel(key) : key.split('/').at(-1)!.replaceAll('-', ' '), target_type: "portal_area", target_key: key }

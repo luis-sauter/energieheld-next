@@ -103,7 +103,7 @@ test('archive controls use banner wording, no separate card, and reuse the exist
 test('existing inline add/edit dialogs include the same public metadata on every supported banner page, including shared creatives',()=>{
  const metadata={name:'City Apart Dresden',postal_code:'',city:'',term_keys:['theme:wellnessangebote']};
  const terms=[{term_key:'theme:wellnessangebote',dimension:'theme',label:'Wellness'}];
- for(const label of ['Startseite','Unterkünfte A–Z',...portalAdSections.flatMap(section=>section.areas.map(area=>area.label))]){
+ for(const label of ['Startseite','Gastgeber A–Z',...portalAdSections.flatMap(section=>section.areas.map(area=>area.label))]){
    for(const banner of [undefined,{id:'existing',placement:'sidebar_top',source:'campaign',shared:true,metadata,target_url:'https://example.org/',imageUrl:'/image.png'}]){
      const html=renderToStaticMarkup(createElement(InlineBannerDialog,{options:{label,availability:{},banners:[],terms},selected:{placement:'sidebar_top',banner},onClose(){},onSaved(){},onChanged(){},onRemoved(){},onMetadataSaved(){}}));
      for(const name of ['Name / Bezeichnung','PLZ','Ort','Kategorien'])assert.ok(html.includes(name));
@@ -322,8 +322,8 @@ test("campaign form loads saved page/slot pairs without a cross product", () => 
     assert.ok(inputs.some((input) => input.includes(`value="${pair}"`) && input.includes('checked=""')));
   assert.equal(inputs.filter((input) => input.includes('checked=""')).length, 1);
   assert.match(html, /Startseite/);
-  assert.match(html, /Unterkünfte A–Z/);
-  assert.match(html, /Startseite entfernen|Unterkünfte A–Z entfernen/);
+  assert.match(html, /Gastgeber A–Z/);
+  assert.match(html, /Startseite entfernen|Gastgeber A–Z entfernen/);
   assert.match(html, /Ansprechpartner|Telefonnummer|E-Mail-Adresse|Ziel-URL|Gewünschter Start|Gewünschtes Ende/);
   assert.match(html, /Haben Sie bereits ein Bannerbild\?|unterstützen Sie gerne bei der Erstellung/);
   assert.match(html, /Hinweise oder Wünsche|name="body_text"/);
@@ -340,7 +340,7 @@ test("campaign form loads saved page/slot pairs without a cross product", () => 
     categoryIds: [],
   });
   assert.equal((noTrades.match(/type="checkbox"/g) || []).length, 0);
-  assert.match(noTrades,/Historische Platzierung: Unterkünfte A–Z/);
+  assert.match(noTrades,/Historische Platzierung: Gastgeber A–Z/);
   const removed = render(CampaignForm, { campaign, categoryIds: ["solar"] });
   assert.doesNotMatch(removed, /<input[^>]*type="checkbox"[^>]*value="trade:elektro/);
   assert.match(removed, /ohne aktuelle Firmenzuordnung/);
@@ -354,7 +354,7 @@ test("admin review exposes every target and explains removed assignments", () =>
     },
   });
   for (const label of [
-    "Unterkünfte A–Z",
+    "Gastgeber A–Z",
     "Photovoltaik",
     "Smart Home &amp; Elektro",
     "Premium-Banner oben",

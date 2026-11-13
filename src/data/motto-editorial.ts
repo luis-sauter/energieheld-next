@@ -14,7 +14,7 @@ export const mottoEditorial: Record<string, MottoEditorial> = {
   "radwandern": {
     "image": "/reiseportal/motto-editorial-v2/radwandern.webp",
     "alt": "Reiserad an einem Flussradweg zwischen Weinbergen",
-    "intro": "Vom Sattel aus werden kleine Orte, Flussufer und Landschaften zu Etappen einer ganz eigenen Reise. Eine Pause auf dem Dorfplatz gehört genauso dazu wie die nächste Strecke durch die Weinberge. Finden Sie einen passenden Ausgangspunkt und vergleichen Sie Lage, Wege und Unterkunft für Ihre geplanten Touren."
+    "intro": "Vom Sattel aus werden kleine Orte, Flussufer und Landschaften zu Etappen einer ganz eigenen Reise. Eine Pause auf dem Dorfplatz gehört genauso dazu wie die nächste Strecke durch die Weinberge. Finden Sie einen passenden Ausgangspunkt und vergleichen Sie Lage, Wege und Gastgeber für Ihre geplanten Touren."
   },
   "wanderurlaub": {
     "image": "/reiseportal/motto-editorial-v2/wanderurlaub.webp",
@@ -44,7 +44,7 @@ export const mottoEditorial: Record<string, MottoEditorial> = {
   "romantik-zu-zweit": {
     "image": "/reiseportal/motto-editorial-v2/romantik-zu-zweit.webp",
     "alt": "Zwei Erwachsene auf einem ruhigen Obstgartenweg am See in der Abenddämmerung",
-    "intro": "Zeit füreinander entsteht oft bei den einfachen Dingen: einem Spaziergang, einem guten Gespräch und einem Tag ohne festen Takt. Ein neuer Lieblingsort kann ruhig im Grünen liegen oder mitten in einer lebendigen Stadt. Entdecken Sie Gastgeber und wählen Sie die Umgebung und Unterkunft, die zu Ihren gemeinsamen Vorstellungen passen."
+    "intro": "Zeit füreinander entsteht oft bei den einfachen Dingen: einem Spaziergang, einem guten Gespräch und einem Tag ohne festen Takt. Ein neuer Lieblingsort kann ruhig im Grünen liegen oder mitten in einer lebendigen Stadt. Entdecken Sie Gastgeber und wählen Sie die Umgebung und Gastgeber, die zu Ihren gemeinsamen Vorstellungen passen."
   },
   "wellnessangebote": {
     "image": "/reiseportal/motto-editorial-v2/wellnessangebote.webp",
